@@ -1,0 +1,88 @@
+$ python -m unittest tests.test_sw_session_safety -v
+test_attached_user_session_cannot_be_torn_down (tests.test_sw_session_safety.SessionSafetyTests.test_attached_user_session_cannot_be_torn_down) ... skipped close of unowned document 'Part9'
+ok
+test_automation_mode_requires_exclusive_proof (tests.test_sw_session_safety.SessionSafetyTests.test_automation_mode_requires_exclusive_proof) ... ok
+test_baseline_hashes_match_uploaded_sources (tests.test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources) ... skipped 'results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test'
+test_batch_export_records_refusal_and_still_builds_without_teardown (tests.test_sw_session_safety.SessionSafetyTests.test_batch_export_records_refusal_and_still_builds_without_teardown) ... SolidWorks 内存过高（私有 5000 MB，系统可用提交 100.0 MB）。仅当本任务已证明独占会话时才回收。
+拒绝回收 SolidWorks 会话（不关闭、不退出、不结束未知实例）：Refusing to recycle SolidWorks (private memory 5000 MB, free commit 100.0). No verified exclusive session. This task will not GetActiveObject, CloseAllDocuments, ExitApp, or kill SLDWORKS.exe.
+ok
+test_com_disconnect_does_not_exit_or_kill (tests.test_sw_session_safety.SessionSafetyTests.test_com_disconnect_does_not_exit_or_kill) ... COM disconnect closing owned document 'Part1'; not calling ExitApp and not force-killing SolidWorks
+ok
+test_concurrent_task_is_refused_without_closing_docs (tests.test_sw_session_safety.SessionSafetyTests.test_concurrent_task_is_refused_without_closing_docs) ... ok
+test_dispatch_without_matching_pid_is_not_exclusive (tests.test_sw_session_safety.SessionSafetyTests.test_dispatch_without_matching_pid_is_not_exclusive) ... ok
+test_exclusive_recycle_closes_only_owned_documents (tests.test_sw_session_safety.SessionSafetyTests.test_exclusive_recycle_closes_only_owned_documents) ... ok
+test_exclusive_timeout_signals_only_owned_pid_off_sta (tests.test_sw_session_safety.SessionSafetyTests.test_exclusive_timeout_signals_only_owned_pid_off_sta) ... SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+task sw-task-684db00fb95e: timeout; owned pid handled outside COM. Watchdog is not calling COM.
+task worker poisoned: call timed out or the watchdog abandoned the wait
+ok
+test_generator_entrypoints_refuse_to_touch_com_for_local_errors (tests.test_sw_session_safety.SessionSafetyTests.test_generator_entrypoints_refuse_to_touch_com_for_local_errors) ... ok
+test_marshaling_shared_com_to_another_thread_is_refused (tests.test_sw_session_safety.SessionSafetyTests.test_marshaling_shared_com_to_another_thread_is_refused) ... ok
+test_non_absent_connect_error_is_not_swallowed (tests.test_sw_session_safety.SessionSafetyTests.test_non_absent_connect_error_is_not_swallowed) ... ok
+test_patched_sources_have_no_process_name_kill (tests.test_sw_session_safety.SessionSafetyTests.test_patched_sources_have_no_process_name_kill) ... ok
+test_proven_spawn_can_exit_only_on_sta (tests.test_sw_session_safety.SessionSafetyTests.test_proven_spawn_can_exit_only_on_sta) ... ok
+test_recycle_without_exclusive_session_returns_immediately (tests.test_sw_session_safety.SessionSafetyTests.test_recycle_without_exclusive_session_returns_immediately) ... SolidWorks 内存过高（私有 4200 MB，系统可用提交 100.0 MB）。仅当本任务已证明独占会话时才回收。
+ok
+test_turned_part_and_dwg_import_refuse_without_exclusive_session (tests.test_sw_session_safety.SessionSafetyTests.test_turned_part_and_dwg_import_refuse_without_exclusive_session) ... ok
+test_unproven_inline_timeout_does_not_touch_com (tests.test_sw_session_safety.SessionSafetyTests.test_unproven_inline_timeout_does_not_touch_com) ... SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+task sw-task-2cdbbc0c6a84: timeout; unproven sessions are not closed or killed. Watchdog is not calling COM.
+task worker poisoned: call timed out or the watchdog abandoned the wait
+ok
+test_watchdog_returns_without_killing_or_calling_com (tests.test_sw_session_safety.SessionSafetyTests.test_watchdog_returns_without_killing_or_calling_com) ... SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+ok
+test_wrong_image_or_foreign_doc_blocks_exclusive_kill (tests.test_sw_session_safety.SessionSafetyTests.test_wrong_image_or_foreign_doc_blocks_exclusive_kill) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.672s
+
+OK (skipped=1)
+
+$ python work/test_review_session_boundaries.py -v
+test_closed_title_cannot_be_reused_to_close_replacement (__main__.SessionBoundaryReview.test_closed_title_cannot_be_reused_to_close_replacement) ... ok
+test_disconnected_session_cannot_exit (__main__.SessionBoundaryReview.test_disconnected_session_cannot_exit) ... ok
+test_lease_cannot_exit_different_application (__main__.SessionBoundaryReview.test_lease_cannot_exit_different_application) ... ok
+test_new_foreign_document_blocks_exit (__main__.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK
+
+$ python -m unittest discover -s tests -v
+test_engineering_controls (unittest.loader.ModuleSkipped.test_engineering_controls) ... skipped "engineering_controls.py is not in the GORK-CLOUD-002 cloud-safe subset; module skipped so discovery can continue. Not a SolidWorks live test. (No module named 'engineering_controls')"
+test_attached_user_session_cannot_be_torn_down (test_sw_session_safety.SessionSafetyTests.test_attached_user_session_cannot_be_torn_down) ... skipped close of unowned document 'Part9'
+ok
+test_automation_mode_requires_exclusive_proof (test_sw_session_safety.SessionSafetyTests.test_automation_mode_requires_exclusive_proof) ... ok
+test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources) ... skipped 'results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test'
+test_batch_export_records_refusal_and_still_builds_without_teardown (test_sw_session_safety.SessionSafetyTests.test_batch_export_records_refusal_and_still_builds_without_teardown) ... SolidWorks 内存过高（私有 5000 MB，系统可用提交 100.0 MB）。仅当本任务已证明独占会话时才回收。
+拒绝回收 SolidWorks 会话（不关闭、不退出、不结束未知实例）：Refusing to recycle SolidWorks (private memory 5000 MB, free commit 100.0). No verified exclusive session. This task will not GetActiveObject, CloseAllDocuments, ExitApp, or kill SLDWORKS.exe.
+ok
+test_com_disconnect_does_not_exit_or_kill (test_sw_session_safety.SessionSafetyTests.test_com_disconnect_does_not_exit_or_kill) ... COM disconnect closing owned document 'Part1'; not calling ExitApp and not force-killing SolidWorks
+ok
+test_concurrent_task_is_refused_without_closing_docs (test_sw_session_safety.SessionSafetyTests.test_concurrent_task_is_refused_without_closing_docs) ... ok
+test_dispatch_without_matching_pid_is_not_exclusive (test_sw_session_safety.SessionSafetyTests.test_dispatch_without_matching_pid_is_not_exclusive) ... ok
+test_exclusive_recycle_closes_only_owned_documents (test_sw_session_safety.SessionSafetyTests.test_exclusive_recycle_closes_only_owned_documents) ... ok
+test_exclusive_timeout_signals_only_owned_pid_off_sta (test_sw_session_safety.SessionSafetyTests.test_exclusive_timeout_signals_only_owned_pid_off_sta) ... SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+task sw-task-64b9d6479231: timeout; owned pid handled outside COM. Watchdog is not calling COM.
+task worker poisoned: call timed out or the watchdog abandoned the wait
+ok
+test_generator_entrypoints_refuse_to_touch_com_for_local_errors (test_sw_session_safety.SessionSafetyTests.test_generator_entrypoints_refuse_to_touch_com_for_local_errors) ... ok
+test_marshaling_shared_com_to_another_thread_is_refused (test_sw_session_safety.SessionSafetyTests.test_marshaling_shared_com_to_another_thread_is_refused) ... ok
+test_non_absent_connect_error_is_not_swallowed (test_sw_session_safety.SessionSafetyTests.test_non_absent_connect_error_is_not_swallowed) ... ok
+test_patched_sources_have_no_process_name_kill (test_sw_session_safety.SessionSafetyTests.test_patched_sources_have_no_process_name_kill) ... ok
+test_proven_spawn_can_exit_only_on_sta (test_sw_session_safety.SessionSafetyTests.test_proven_spawn_can_exit_only_on_sta) ... ok
+test_recycle_without_exclusive_session_returns_immediately (test_sw_session_safety.SessionSafetyTests.test_recycle_without_exclusive_session_returns_immediately) ... SolidWorks 内存过高（私有 4200 MB，系统可用提交 100.0 MB）。仅当本任务已证明独占会话时才回收。
+ok
+test_turned_part_and_dwg_import_refuse_without_exclusive_session (test_sw_session_safety.SessionSafetyTests.test_turned_part_and_dwg_import_refuse_without_exclusive_session) ... ok
+test_unproven_inline_timeout_does_not_touch_com (test_sw_session_safety.SessionSafetyTests.test_unproven_inline_timeout_does_not_touch_com) ... SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+task sw-task-2756f8af5e71: timeout; unproven sessions are not closed or killed. Watchdog is not calling COM.
+task worker poisoned: call timed out or the watchdog abandoned the wait
+ok
+test_watchdog_returns_without_killing_or_calling_com (test_sw_session_safety.SessionSafetyTests.test_watchdog_returns_without_killing_or_calling_com) ... SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+ok
+test_wrong_image_or_foreign_doc_blocks_exclusive_kill (test_sw_session_safety.SessionSafetyTests.test_wrong_image_or_foreign_doc_blocks_exclusive_kill) ... ok
+test_workbench (unittest.loader.ModuleSkipped.test_workbench) ... skipped "a01.py and data/machine_spec.json are not in the GORK-CLOUD-002 cloud-safe subset; workbench tests skipped so discovery can continue. Not a SolidWorks live test. (No module named 'a01')"
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.720s
+
+OK (skipped=3)

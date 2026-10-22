@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Secrets and local auth
+.env
+.env.*
+secrets/
+*.pem
+*.key
+credentials.json
+
+# CAD product files (do not commit customer or generated parts)
+*.sldprt
+*.sldasm
+*.slddrw
+*.dwg
+*.dxf
+
+# Local trees, dumps, and backups
+data/
+legacy/
+backups/
+backup/
+*.bak
+*.zip
+*.7z
+
+# IDE junk
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local run output. The committed cloud simulated log is results/cloud/.
+results/*
+!results/cloud/
+!results/cloud/**

@@ -1,0 +1,43 @@
+{
+  "task_id": "GORK-CLOUD-002",
+  "branch": "dev/cloud-ai",
+  "status": "simulated_pass",
+  "python": "3.12.3",
+  "requirements": "requirements-cloud.txt",
+  "simulated": {
+    "tests.test_sw_session_safety": {
+      "command": "python -m unittest tests.test_sw_session_safety -v",
+      "ran": 19,
+      "failed": 0,
+      "skipped": 1,
+      "result": "ok"
+    },
+    "work.test_review_session_boundaries": {
+      "command": "python work/test_review_session_boundaries.py -v",
+      "ran": 4,
+      "failed": 0,
+      "skipped": 0,
+      "result": "ok"
+    },
+    "unittest_discover_tests": {
+      "command": "python -m unittest discover -s tests -v",
+      "ran": 21,
+      "failed": 0,
+      "skipped": 3,
+      "result": "ok"
+    }
+  },
+  "skips": [
+    "tests.test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources: results/cursor/baseline/src originals were not in the cloud pack.",
+    "tests.test_engineering_controls: engineering_controls.py was not in the cloud-safe subset.",
+    "tests.test_workbench: a01.py and data/machine_spec.json were not in the cloud-safe subset."
+  ],
+  "import_smoke": {
+    "src_modules_imported": 20,
+    "failed": 0,
+    "export_dialog": "not imported; this headless image has no tkinter. Not used by the simulated suite and not a SolidWorks live check."
+  },
+  "sw_live": "not_applicable_on_linux",
+  "solidworks_live_tested": false,
+  "log": "results/cloud/test-log.txt"
+}

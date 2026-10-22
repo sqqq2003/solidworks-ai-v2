@@ -1,0 +1,4 @@
+# Captured installed versions; not a full clean-install dependency lock.
+# Linux cloud installs use requirements-cloud.txt and do not install pywin32.
+ezdxf==1.4.4
+pywin32==312

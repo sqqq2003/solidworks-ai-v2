@@ -1,0 +1,301 @@
+{
+  "source": "D:\\工程\\钣金导入\\程序",
+  "source_read_only": true,
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 38,
+      "sha256": "599e8d09a18b6bac6f70ed12bf96f67e49c4d992ee2601bc173d92fbcb64b11d"
+    },
+    {
+      "path": "app.py",
+      "bytes": 196324,
+      "sha256": "3388b20521bd6b9b04c61b8eb3789bf0703a6e530cb1057fca6ef8fa4f9480ca"
+    },
+    {
+      "path": "app_icon.ico",
+      "bytes": 270398,
+      "sha256": "1570141eeaf15f8dde4186c5438d2295d4e94b9e2eb7cb6922082027b208bc49"
+    },
+    {
+      "path": "app_icon.png",
+      "bytes": 4079,
+      "sha256": "7070d7d055a24b801f01275a565d8b4a12dba3a797295b866b96fd97009e129a"
+    },
+    {
+      "path": "batch_export.py",
+      "bytes": 17525,
+      "sha256": "472e86abcfa13cc14ac309592ee2dcf5c64cd83a2c64d578ec7fe9214d3c582f"
+    },
+    {
+      "path": "bend_allowance.py",
+      "bytes": 9615,
+      "sha256": "6a016fa696098ac156b4770b5c04482efce5b80d76acfd8ba53e37fc70ec0d60"
+    },
+    {
+      "path": "BEND_RELIEF.md",
+      "bytes": 3164,
+      "sha256": "1e8c84248db045459b196389215e1c6acee5873fa416ff59c49f569c21292f6e"
+    },
+    {
+      "path": "cad_analyzer.py",
+      "bytes": 61965,
+      "sha256": "edbd04130b6f60907c73acba5741299ed8bb7fff1fc4ed59761112d4d27d1c2c"
+    },
+    {
+      "path": "cad_import.py",
+      "bytes": 22187,
+      "sha256": "7aee03b43ad85b64ade64b60c82c8eca8959cb7faa4e82dc8e8b7a4cf1de188a"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 17577,
+      "sha256": "0bc6dc4ff286dac83f516d1a91fad5703aee2974b732db66abbf5ef09f694eb9"
+    },
+    {
+      "path": "drawing_notes.py",
+      "bytes": 20811,
+      "sha256": "925045b9453f6fe38c2b04ca085c891b9fef4866cccf7af7fb378be0c176f479"
+    },
+    {
+      "path": "dwg_converter.py",
+      "bytes": 7288,
+      "sha256": "a3422fc000f1840fde0849bd23b05d2493b2aee959bb673d2bd266f14ced5341"
+    },
+    {
+      "path": "export_dialog.py",
+      "bytes": 11504,
+      "sha256": "3b76212078a0210a41616e80dd819012262ee75b7a880e3d14fcf0fc193f92d6"
+    },
+    {
+      "path": "logging_setup.py",
+      "bytes": 4535,
+      "sha256": "6c0d8dc57a070f005ee945ad0b5886b5520f74cfe7c0a425b5c0796f80ca4727"
+    },
+    {
+      "path": "make_icon.py",
+      "bytes": 3973,
+      "sha256": "2f62d9c458ebc6dce95b410d9d6e71c917853dbf633e35aae92731e95df94fc3"
+    },
+    {
+      "path": "paths_local.py",
+      "bytes": 807,
+      "sha256": "a91aa838f1f08b420485136625a55ad8f4a49014e856ee9330867bf8b4dce660"
+    },
+    {
+      "path": "profile_edit.py",
+      "bytes": 16786,
+      "sha256": "3440a94f091dbe47fcf958f7f1893b20c951fcaf95cad53ffa9b28ed03e97e6f"
+    },
+    {
+      "path": "profile_sanitize.py",
+      "bytes": 22557,
+      "sha256": "5449eecba8758fcff5629640f799547a313ddcf6999ad038da9b6a07d67bf76f"
+    },
+    {
+      "path": "profile_selection.py",
+      "bytes": 13120,
+      "sha256": "0c511367015a8de4e24b8b695fb659b73ae9acea154dff1e950e5dc654befd89"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2621,
+      "sha256": "c268a1048ed5356c5ac7feec0149caa88a32b921d5e9092a4ecdd27890d0fbf8"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 49,
+      "sha256": "57d5b5d257199b737e7931ac5165068dd71968d40024310d6c38290c7c11a13a"
+    },
+    {
+      "path": "roller_drawing.py",
+      "bytes": 47691,
+      "sha256": "5a7c1cea69294c3e6450a1196068b5678c2401b82ab6f822ef0c27cc9fb9d4c8"
+    },
+    {
+      "path": "roller_spec.py",
+      "bytes": 3383,
+      "sha256": "9b6a2bd4462a10dd3d53b91ec188d00e691b114d6965bdea4c79a537e03d1100"
+    },
+    {
+      "path": "solidworks_generator.py",
+      "bytes": 228176,
+      "sha256": "0b1e3d722ce681d0f7fd7a17afe6b8d5594572aff6b39beac4c8e25656d8c7bd"
+    },
+    {
+      "path": "sw_tool_cli.py",
+      "bytes": 8049,
+      "sha256": "c2a402168a1ae105c3a6285154b05d9b4b07284c38cd4b7366400414d097cde4"
+    },
+    {
+      "path": "turned_features.py",
+      "bytes": 40048,
+      "sha256": "2bc4f87851dede113bdc8360dd7f3a4afc80eddc6dd1089bc55f31f60c2ce44b"
+    },
+    {
+      "path": "turned_generate.py",
+      "bytes": 34370,
+      "sha256": "d1da24954c1d50f93a59ecd2232c49590382f4681ab8d0ac4ebf76e1db9ed2df"
+    },
+    {
+      "path": "turned_outline.py",
+      "bytes": 35638,
+      "sha256": "71ecc0264e150b6be95c069e867ec279aea0a9b90f05e9fe731f489860160f65"
+    },
+    {
+      "path": "turned_part.py",
+      "bytes": 63108,
+      "sha256": "347df79e3915116e28fc9e1dadd0e07165eb4345b910fd7cefe5eb652d40be4f"
+    },
+    {
+      "path": "user_settings.py",
+      "bytes": 3588,
+      "sha256": "df8b10069505dc6be9688509ae76c889640b27e49830016e90d613988bacc2b2"
+    },
+    {
+      "path": "交给WorkBuddy.txt",
+      "bytes": 764,
+      "sha256": "8391e29c1a19ab742accbec5aff24cc419cb3aa10ad9b07c933809b73f3d16e9"
+    },
+    {
+      "path": "启动.bat",
+      "bytes": 89,
+      "sha256": "bd513457b88383b0c8f3cc054a8c7142d236b0a4a01d19c623037c9640ed9505"
+    },
+    {
+      "path": "安装到本机.bat",
+      "bytes": 340,
+      "sha256": "66ea9a1a95e660b8650c72b5adee5bed2f325c03e3877ab2903f7575aa6a3816"
+    },
+    {
+      "path": "放到桌面.bat",
+      "bytes": 169,
+      "sha256": "4f03601795ea79acff6591a763218abc1b09051ad79b0b9c3ef86602d13ab90a"
+    },
+    {
+      "path": "放到桌面.ps1",
+      "bytes": 558,
+      "sha256": "219dde049bb5f250826c8e15866ff2ebe1c2f7b253cee14c6a50709ed4a06d83"
+    },
+    {
+      "path": "tests/test_app_preview.py",
+      "bytes": 2961,
+      "sha256": "17d55fb978aa028468a8df38241e1ef45ca3e2c6972675ecc74edefaad75b9b6"
+    },
+    {
+      "path": "tests/test_batch_export.py",
+      "bytes": 1679,
+      "sha256": "a5023c0a6d77d3a3997f80fbf9ecd63d73d9e363af5168356a09113d5da51508"
+    },
+    {
+      "path": "tests/test_bend_allowance.py",
+      "bytes": 3119,
+      "sha256": "75db278293cf578caf5c5da52b7593cbbcb0b988a2e887fef8de961d65b44b61"
+    },
+    {
+      "path": "tests/test_bend_hang_fallback.py",
+      "bytes": 6166,
+      "sha256": "08aad015c9f5bfe415c4f2800a3a89f3628f7ef11c8df05ba0c4a01307e695f3"
+    },
+    {
+      "path": "tests/test_border_relief_notch.py",
+      "bytes": 7360,
+      "sha256": "fd2cef7170f99ae4c47fed6c2d8112237b1365b3537f0d2b7fe500c20bb9996e"
+    },
+    {
+      "path": "tests/test_cad_analyzer.py",
+      "bytes": 32966,
+      "sha256": "4d2b1f9243a6b3d753001e82fe2146a54cae79492da331f9214b6103b24ed12e"
+    },
+    {
+      "path": "tests/test_cad_import.py",
+      "bytes": 6679,
+      "sha256": "0182a3bcef624f67704f9f9cbfccafd89a610f72f830738bd9c9e06757d99b7b"
+    },
+    {
+      "path": "tests/test_com_disconnect_relief.py",
+      "bytes": 3729,
+      "sha256": "72c7687655da76fbad7004c8bfbb95e9a3f9f19d7eb743efda619a9e614af33e"
+    },
+    {
+      "path": "tests/test_drawing_notes.py",
+      "bytes": 7855,
+      "sha256": "0ee2d781de3389d5025ebbc1a0b3c5554083f62fe6bf7e9fc9abbdcd5548f021"
+    },
+    {
+      "path": "tests/test_logging_setup.py",
+      "bytes": 5169,
+      "sha256": "0936aed1e52cd9ec77b2dba192adf7efbbb14a109b2d3be0849298429fca0185"
+    },
+    {
+      "path": "tests/test_partial_bend_count.py",
+      "bytes": 3187,
+      "sha256": "ed3a9d76d294894064cb554fdff4549ab823fe34e9617b01d8bd01b711229772"
+    },
+    {
+      "path": "tests/test_profile_selection.py",
+      "bytes": 7164,
+      "sha256": "680f5045d228d6201dfab408fff695f0c9c61df360497fa1aaeab1b6eb709f28"
+    },
+    {
+      "path": "tests/test_rect_relief_expand.py",
+      "bytes": 14235,
+      "sha256": "e8c67422199d7341c68d875d334bde723d925cf5b5d7d51a7901b3567ab95b9d"
+    },
+    {
+      "path": "tests/test_region_export.py",
+      "bytes": 16065,
+      "sha256": "d3660791edd0d64e245c4ac5a74fad967c155ecbf3b2fddabad6ac7c53fe3ad7"
+    },
+    {
+      "path": "tests/test_relief_cutouts.py",
+      "bytes": 2237,
+      "sha256": "56cb3173d057ffe0d8e5c235964817233e51a8f2bf6d5fb3fdab5ffbd4d2fb96"
+    },
+    {
+      "path": "tests/test_relief_notch_preserve.py",
+      "bytes": 3293,
+      "sha256": "a33773d4c5c6d91e44e9b83556cebea9ccc46a299bb7bf99d065d4d6c555a559"
+    },
+    {
+      "path": "tests/test_roller_drawing.py",
+      "bytes": 5943,
+      "sha256": "10ea04837db3765df7cc0fe4cc4ea3e206f2fae2beb615e2bebf8c10a06258fc"
+    },
+    {
+      "path": "tests/test_roller_geometry.py",
+      "bytes": 12298,
+      "sha256": "4b0c10007bd7966772aa87d46f62cccc0e5a7dcb997777afd69d81c5d6b12dcc"
+    },
+    {
+      "path": "tests/test_roller_spec.py",
+      "bytes": 4310,
+      "sha256": "877d7c465622210716c43b428c30d83e94c17e0f1c720c7b604210c30e639842"
+    },
+    {
+      "path": "tests/test_sheet_metal.py",
+      "bytes": 57861,
+      "sha256": "c4e900cb9492312d0a384018f6a23395782e7d110a4b5ca1360dd06f7e903d14"
+    },
+    {
+      "path": "tests/test_solidworks_generator.py",
+      "bytes": 20038,
+      "sha256": "b868c28101b7ae1ac917059a0f3ec0da88d7e8de586856391636a212a297f55c"
+    },
+    {
+      "path": "tests/test_spur_segments.py",
+      "bytes": 3580,
+      "sha256": "b86059b57fe659be924acd404ba258a69aa6bd613dfd9563154523eedaab297c"
+    },
+    {
+      "path": "tests/test_turned_part.py",
+      "bytes": 21298,
+      "sha256": "b622bef224475b078cca5604fb0cda307fe890bf8b1008d2fb6a14769da732f0"
+    },
+    {
+      "path": "tests/test_user_settings.py",
+      "bytes": 3991,
+      "sha256": "7006629bfcf0c18c8523812a431c132120dca96dcb256c97ce3e0fce5342b0e3"
+    }
+  ]
+}
