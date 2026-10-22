@@ -2,7 +2,6 @@ name: Portable Python regression
 on:
   push:
     branches: [dev/cloud-ai]
-  pull_request:
   workflow_dispatch:
 permissions:
   contents: read

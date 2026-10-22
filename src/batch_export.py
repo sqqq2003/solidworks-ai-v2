@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Callable, Sequence
 
@@ -20,6 +20,7 @@ from solidworks_generator import (
     profile_bend_indices,
 )
 from sw_session import SessionOwnershipError, recycle_exclusive_session
+from resume_manifest import fingerprint, verified_output, write_record
 
 logger = logging.getLogger(__name__)
 
@@ -101,13 +102,14 @@ class SheetPartResult:
     cad_imported: bool = False
     bend_sketch_line_count: int = 0
     skipped: bool = False
+    resume_verified: bool = False
 
     @property
     def status(self) -> str:
         if not self.ok:
             return "failed"
         if self.skipped:
-            return "unverified_existing"
+            return "passed" if self.resume_verified else "unverified_existing"
         if self.auto_bend_abandoned or self.bend_failed_count:
             return "degraded"
         return "passed"
@@ -300,8 +302,18 @@ def _export_jobs(
         part_thickness = resolved_part_thickness(job, thickness_mm)
         filename = format_sheet_part_name(sequence, job.quantity, part_thickness)
         canonical = out_root / filename
-        if skip_existing and canonical.is_file() and canonical.stat().st_size > 0:
-            item = SheetPartResult(job=job, ok=True, path=canonical, skipped=True)
+        resume_key = fingerprint(Path(analysis.path), dict(
+            job=asdict(job), thickness_mm=part_thickness, radius_mm=radius_mm,
+            angle_degrees=angle_degrees, flip_direction=flip_direction,
+            bend_allowance=asdict(bend_allowance) if bend_allowance else None,
+            auto_bend=auto_bend, primitives=[asdict(p) for p in analysis.primitives],
+        ), Path(__file__).resolve().parent)
+        existing = verified_output(canonical, resume_key) if skip_existing else None
+        if existing is not None:
+            item = SheetPartResult(job=job, ok=True, path=existing, skipped=True,
+                                   resume_verified=True,
+                                   auto_bent=auto_bend and bool(job.bend_indices),
+                                   bend_count=len(job.bend_indices) if auto_bend else 0)
             logger.info("已存在，跳过 %s：%s", job.label, canonical)
             if progress:
                 progress(f"{job.label} 已存在，跳过")
@@ -358,6 +370,7 @@ def _export_jobs(
                 cad_imported=result.cad_imported,
                 bend_sketch_line_count=result.bend_sketch_line_count,
             )
+            write_record(canonical, Path(result.path), resume_key, item.status)
             logger.info(
                 "导出成功 %s path=%s auto_bent=%s bends=%d 原样导入=%s 折弯线草图=%d/%d %.1fs",
                 job.label,

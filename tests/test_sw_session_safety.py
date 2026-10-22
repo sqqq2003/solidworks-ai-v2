@@ -518,7 +518,7 @@ class SessionSafetyTests(unittest.TestCase):
             )
             with tempfile.TemporaryDirectory() as folder:
                 results = batch_export._export_jobs(
-                    types.SimpleNamespace(path=Path("drawing.dwg"), bend_lines=[]),
+                    types.SimpleNamespace(path=Path("drawing.dwg"), bend_lines=[], primitives=()),
                     [(1, job)],
                     Path(folder),
                     2.0,

@@ -4909,7 +4909,7 @@ def generate_sheet_metal_with_relief_retries(
             result = generate_sheet_metal(*args, auto_bend=True,
                 relief_bend_indices=relief, relief_step=step, **common)
             return replace(result, auto_bend_attempts=attempts,
-                           auto_bend_failed_count=failures,
+                           auto_bend_failed_count=max(0, len(selected) - result.bend_count),
                            auto_bend_abandoned=not result.auto_bent)
         except (ComDisconnectedBendError, BendRejectedError) as error:
             failures += 1
@@ -4920,7 +4920,7 @@ def generate_sheet_metal_with_relief_retries(
         progress("自动折弯未完成，改为出平板及折弯参考线；需要人工复核")
     result = generate_sheet_metal(*args, auto_bend=False, **common)
     return replace(result, auto_bend_attempts=attempts,
-                   auto_bend_failed_count=failures, auto_bend_abandoned=True)
+                   auto_bend_failed_count=len(selected), auto_bend_abandoned=True)
 
 
 
