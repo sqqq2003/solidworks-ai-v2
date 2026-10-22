@@ -1,0 +1,34 @@
+{
+  "scope": "portable_simulation_only",
+  "platform": "Windows",
+  "python": "3.14.7",
+  "tests_run": 270,
+  "passed": 266,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [
+    {
+      "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+      "reason": "测试用滚筒 DWG 不在 uploads"
+    },
+    {
+      "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+      "reason": "本机未安装 LibreDWG dwg2dxf"
+    },
+    {
+      "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+      "reason": "Drawing1_e7b7.dwg 未上传"
+    },
+    {
+      "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+      "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    }
+  ],
+  "pending_feature_cases": {
+    "test_border_relief_notch.py": 9,
+    "test_spur_segments.py": 5,
+    "test_turned_part.py": 22
+  },
+  "cross_process_lock_passed": true,
+  "solidworks_live_verified": false
+}

@@ -1,0 +1,108 @@
+{
+  "machine_id": "A01",
+  "revision": "draft-001",
+  "units": "mm",
+  "candidate_source_model": "QL-5050PX",
+  "template_identity_confirmed": false,
+  "engineering_approved": false,
+  "native_template": null,
+  "target_envelope_mm": {
+    "length": 1800,
+    "width": 900,
+    "height": 1500
+  },
+  "carton_passage_mm": null,
+  "parameter_graph": {
+    "length": {
+      "kind": "input",
+      "axis": "length",
+      "depends_on": []
+    },
+    "width": {
+      "kind": "input",
+      "axis": "width",
+      "depends_on": []
+    },
+    "height": {
+      "kind": "input",
+      "axis": "height",
+      "depends_on": []
+    },
+    "front_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "rear_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "left_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "right_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "top_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "bottom_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "frame_length": {
+      "kind": "subtract",
+      "depends_on": [
+        "length",
+        "front_allowance",
+        "rear_allowance"
+      ],
+      "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
+    },
+    "frame_width": {
+      "kind": "subtract",
+      "depends_on": [
+        "width",
+        "left_allowance",
+        "right_allowance"
+      ],
+      "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
+    },
+    "column_height": {
+      "kind": "subtract",
+      "depends_on": [
+        "height",
+        "top_allowance",
+        "bottom_allowance"
+      ],
+      "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
+    }
+  },
+  "preserve_interfaces": [
+    "电机、轴承等采购件尺寸",
+    "轴承配合与轴颈接口",
+    "齿形、齿距及传动接口",
+    "板厚和螺纹规格（除非有明确工艺变更）"
+  ],
+  "part_rules_status": "pending_drawing_review"
+}

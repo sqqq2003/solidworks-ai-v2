@@ -49,9 +49,11 @@ try:
 finally:
     (folder / 'release').write_text('done', encoding='utf-8')
     out, err = first.communicate(timeout=12)
-report = {'scope': 'pure-marker-jobs-only-no-CAD', 'passed': not overlap,
+report = {'scope': 'pure-marker-jobs-only-no-CAD', 'passed': not overlap and first.returncode == 0 and second.returncode == 0 and second.stdout.strip() == 'refused',
           'overlapping_processes_entered': overlap, 'first_output': out,
           'second_output': second.stdout, 'second_stderr': second.stderr,
           'cad_started': False, 'processes_terminated': False}
 (ROOT / 'results' / 'codex' / 'cross-process-lock-initial.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
 print(json.dumps(report))
+
+raise SystemExit(0 if report["passed"] else 1)

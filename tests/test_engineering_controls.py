@@ -5,14 +5,7 @@ from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-try:
-    from engineering_controls import production_parameter_issues, stable_reference_issues
-except ImportError as exc:
-    raise unittest.SkipTest(
-        "engineering_controls.py is not in the GORK-CLOUD-002 cloud-safe subset; "
-        "module skipped so discovery can continue. Not a SolidWorks live test. "
-        f"({exc})"
-    ) from exc
+from engineering_controls import production_parameter_issues, stable_reference_issues
 
 
 class EngineeringControlTests(unittest.TestCase):

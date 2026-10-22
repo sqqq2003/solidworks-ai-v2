@@ -45,6 +45,9 @@ def convert_dwg_with_libredwg(source: str | Path, target: str | Path) -> None:
     if not source_path.is_file():
         raise FileNotFoundError(f"找不到 DWG 文件：{source_path}")
 
+    if source_path == target_path:
+        raise ValueError("DWG conversion output must not overwrite its source")
+
     converters = _dwg2dxf_candidates()
     if not converters:
         raise DwgConversionError(
@@ -58,6 +61,8 @@ def convert_dwg_with_libredwg(source: str | Path, target: str | Path) -> None:
     env = os.environ.copy()
     last_error = ""
     for converter in converters:
+        # Never accept a partial artifact left by a previous failed converter.
+        target_path.unlink(missing_ok=True)
         lib_dir = converter.parent.parent / "lib"
         if lib_dir.is_dir():
             env["LD_LIBRARY_PATH"] = (
@@ -70,11 +75,12 @@ def convert_dwg_with_libredwg(source: str | Path, target: str | Path) -> None:
                 text=True,
                 env=env,
                 check=False,
+                timeout=120,
             )
-        except OSError as error:
+        except (OSError, subprocess.TimeoutExpired) as error:
             last_error = str(error)
             continue
-        if target_path.is_file() and target_path.stat().st_size > 0:
+        if completed.returncode == 0 and target_path.is_file() and target_path.stat().st_size > 0:
             return
         last_error = (completed.stderr or completed.stdout or "").strip() or (
             f"exit {completed.returncode}"

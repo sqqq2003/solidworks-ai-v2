@@ -23,63 +23,6 @@ BASELINE_SHA256 = {
 }
 
 
-def _install_stubs() -> None:
-    def install(name: str, **attrs: object) -> None:
-        module = types.ModuleType(name)
-        for key, value in attrs.items():
-            setattr(module, key, value)
-        sys.modules[name] = module
-
-    class BendAllowanceSpec:
-        pass
-
-    class DrawingAnalysis:
-        pass
-
-    class Primitive:
-        pass
-
-    class SketchSegment:
-        pass
-
-    install("bend_allowance", BendAllowanceSpec=BendAllowanceSpec)
-    install(
-        "cad_analyzer",
-        DrawingAnalysis=DrawingAnalysis,
-        DrawingText=object,
-        Primitive=Primitive,
-        SketchSegment=SketchSegment,
-        primitive_bounds=lambda *args, **kwargs: None,
-    )
-    install(
-        "profile_sanitize",
-        profile_span_mm=lambda *args, **kwargs: None,
-        refit_circular_fillets=lambda *args, **kwargs: None,
-        reverse_closed_profile=lambda *args, **kwargs: None,
-        sanitize_closed_profile=lambda *args, **kwargs: None,
-    )
-    install(
-        "profile_selection",
-        contained_hole_indices=lambda *args, **kwargs: (),
-        outermost_containing_profile_index=lambda *args, **kwargs: 0,
-        candidate_profile_indices=lambda *args, **kwargs: (),
-        profile_area=lambda *args, **kwargs: 0.0,
-    )
-    install(
-        "drawing_notes",
-        annotate_sheet_parts=lambda *args, **kwargs: {},
-        reading_order=lambda *args, **kwargs: [],
-    )
-    install(
-        "paths_local",
-        ensure_dirs=lambda: None,
-        export_dir_for=lambda stem: Path("."),
-        BACKUP=Path("."),
-    )
-
-
-_install_stubs()
-
 import batch_export  # noqa: E402
 import dwg_converter  # noqa: E402
 import solidworks_generator as swg  # noqa: E402

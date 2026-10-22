@@ -162,10 +162,13 @@ def run_sheet(args: argparse.Namespace) -> int:
     emit(
         "done",
         kind="sheet",
+        status="degraded" if result.auto_bend_abandoned else "passed",
+        auto_bend_attempts=result.auto_bend_attempts,
+        bend_count=result.bend_count,
         path=str(result.path),
         message=f"钣金零件已生成：{Path(result.path).name}",
     )
-    return 0
+    return 3 if result.auto_bend_abandoned else 0
 
 
 def run_roller(args: argparse.Namespace) -> int:

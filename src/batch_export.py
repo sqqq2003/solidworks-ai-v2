@@ -102,6 +102,17 @@ class SheetPartResult:
     bend_sketch_line_count: int = 0
     skipped: bool = False
 
+    @property
+    def status(self) -> str:
+        if not self.ok:
+            return "failed"
+        if self.skipped:
+            return "unverified_existing"
+        if self.auto_bend_abandoned or self.bend_failed_count:
+            return "degraded"
+        return "passed"
+
+
 
 # SolidWorks 连续建很多零件会持续吃内存。超过阈值时只允许回收本任务
 # 已经证明独占的会话；证明不了就拒绝，不关闭、不退出用户正在用的实例。

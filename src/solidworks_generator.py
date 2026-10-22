@@ -7,7 +7,7 @@ import tempfile
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Callable
 
 from bend_allowance import BendAllowanceSpec
 from cad_analyzer import (
@@ -195,7 +195,8 @@ SHAFT_THREAD_SPECS_MM = {
     "M10": 8.5,
 }
 # step6 累计 +3.5mm，才能让浅槽朝板面越过中心线达到现场约 3.4mm。
-MAX_RELIEF_STEPS = 6
+MAX_AUTO_BEND_ATTEMPTS = 3
+MAX_RELIEF_STEPS = MAX_AUTO_BEND_ATTEMPTS - 1
 # 写死：矩形释放槽扩级（绝对值，不是板厚比例）。
 # step0 不扩；step1 长宽各 +1.0mm；之后每级再 +0.5mm。
 # 累计：step≥1 → 1.0 + (step-1)*0.5
@@ -469,6 +470,9 @@ class GenerationResult:
     bend_sketch_line_count: int = 0
     # True=基体法兰草图来自原图 DWG/DXF 原样导入；False=回退 Python 重画。
     cad_imported: bool = False
+    auto_bend_attempts: int = 0
+    auto_bend_abandoned: bool = False
+    auto_bend_failed_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -3435,11 +3439,11 @@ def _create_bends_with_fallbacks(
     relief_step: int,
     bend_allowance: BendAllowanceSpec | None,
     outer_profile: Primitive,
-) -> None:
+) -> int:
     """自动折弯总调度：先全部同草图，再平行分组，最后逐条（仍在当前最大平面上）。"""
 
     if not bend_indices:
-        return
+        return 0
 
     global _auto_bend_deadline
     _auto_bend_deadline = time.monotonic() + AUTO_BEND_WALL_TIMEOUT_SEC
@@ -3482,7 +3486,7 @@ def _create_bends_with_fallbacks(
     try:
         _ensure_time("all-bends")
         _attempt(bend_indices)
-        return
+        return len(bend_indices)
     except ComDisconnectedBendError:
         raise
     except BendRejectedError as error:
@@ -3526,7 +3530,7 @@ def _create_bends_with_fallbacks(
             except BendRejectedError:
                 failed.append(index)
         if not failed:
-            return
+            return len(bend_indices)
         if len(failed) >= len(bend_indices):
             raise BendRejectedError(tuple(failed), relief_step=relief_step)
         logger.warning(
@@ -3551,6 +3555,8 @@ def _create_bends_with_fallbacks(
         except Exception:
             logger.exception("失败折弯的手折参考草图没有画上")
 
+
+    return len(bend_indices) - len(failed)
 
 def _closed_points(profile: Primitive) -> tuple[tuple[float, float], ...]:
     points = list(profile.points)
@@ -4712,7 +4718,7 @@ def generate_sheet_metal(
             bend_phase = True
             global _auto_bend_deadline
             _auto_bend_deadline = time.monotonic() + AUTO_BEND_WALL_TIMEOUT_SEC
-            _create_bends_with_fallbacks(
+            completed_bends = _create_bends_with_fallbacks(
                 model,
                 part,
                 feature_manager,
@@ -4731,7 +4737,7 @@ def generate_sheet_metal(
                 bend_allowance,
                 profile,
             )
-            auto_bent = True
+            auto_bent = completed_bends == len(selected_bends)
 
         # 基体法兰创建后写入全局钣金扣除，展开图与折弯特征一致。
         _apply_sheet_metal_bend_allowance(model, type_library, bend_allowance)
@@ -4817,7 +4823,7 @@ def generate_sheet_metal(
         return GenerationResult(
             output,
             profile_index,
-            len(selected_bends) if auto_bent else 0,
+            completed_bends if selected_bends and auto_bend else 0,
             len(hole_profiles),
             folded_bounds,
             flat_bounds,
@@ -4869,142 +4875,52 @@ def generate_sheet_metal(
 
 
 def generate_sheet_metal_with_relief_retries(
-    analysis: DrawingAnalysis,
-    profile_index: int,
-    bend_indices: Iterable[int],
-    thickness_mm: float,
-    radius_mm: float,
-    angle_degrees: float,
-    output_path: str | Path,
-    *,
-    flip_direction: bool = False,
+    analysis: DrawingAnalysis, profile_index: int, bend_indices: Iterable[int],
+    thickness_mm: float, radius_mm: float, angle_degrees: float,
+    output_path: str | Path, *, flip_direction: bool = False,
     fixed_face_point: tuple[float, float] | None = None,
-    relief_bend_indices: Iterable[int] = (),
-    relief_step: int = 0,
-    bend_allowance: BendAllowanceSpec | None = None,
-    auto_bend: bool = True,
-    cad_import: bool | None = None,
+    relief_bend_indices: Iterable[int] = (), relief_step: int = 0,
+    bend_allowance: BendAllowanceSpec | None = None, auto_bend: bool = True,
+    cad_import: bool | None = None, progress: Callable[[str], None] | None = None,
 ) -> GenerationResult:
-    """Auto-bend with rectangular relief growth; on hang/timeout or max steps, flat+sketch."""
+    """Bounded retries; return explicit degraded evidence for a flat fallback.
+
+    A real timed-out/disconnected lease remains write-blocked: its fallback
+    will fail closed rather than reconnecting to an unknown CAD session.
+    """
     selected = tuple(dict.fromkeys(int(i) for i in bend_indices))
     relief = tuple(dict.fromkeys(int(i) for i in relief_bend_indices)) or selected
-    if not auto_bend:
-        return generate_sheet_metal(
-            analysis,
-            profile_index,
-            selected,
-            thickness_mm,
-            radius_mm,
-            angle_degrees,
-            output_path,
-            flip_direction=flip_direction,
-            fixed_face_point=fixed_face_point,
-            bend_allowance=bend_allowance,
-            auto_bend=False,
-            cad_import=cad_import,
-        )
     step = int(relief_step)
-    while True:
+    if not 0 <= step <= MAX_RELIEF_STEPS:
+        raise ValueError("relief_step outside supported range")
+    common = dict(flip_direction=flip_direction, fixed_face_point=fixed_face_point,
+                  bend_allowance=bend_allowance, cad_import=cad_import)
+    args = (analysis, profile_index, selected, thickness_mm, radius_mm,
+            angle_degrees, output_path)
+    if not auto_bend:
+        return generate_sheet_metal(*args, auto_bend=False, **common)
+    attempts = 0
+    failures = 0
+    while step <= MAX_RELIEF_STEPS and attempts < MAX_AUTO_BEND_ATTEMPTS:
+        attempts += 1
+        if progress:
+            progress(f"自动折弯第 {attempts}/{MAX_AUTO_BEND_ATTEMPTS} 次")
         try:
-            return generate_sheet_metal(
-                analysis,
-                profile_index,
-                selected,
-                thickness_mm,
-                radius_mm,
-                angle_degrees,
-                output_path,
-                flip_direction=flip_direction,
-                fixed_face_point=fixed_face_point,
-                relief_bend_indices=relief,
-                relief_step=step,
-                bend_allowance=bend_allowance,
-                auto_bend=True,
-                cad_import=cad_import,
-            )
-        except ComDisconnectedBendError as error:
-            if error.timed_out:
-                logger.warning(
-                    "bend insert hung (relief_step=%d); skip more relief, fall back to flat+sketch",
-                    step,
-                )
-                return generate_sheet_metal(
-                    analysis,
-                    profile_index,
-                    selected,
-                    thickness_mm,
-                    radius_mm,
-                    angle_degrees,
-                    output_path,
-                    flip_direction=flip_direction,
-                    fixed_face_point=fixed_face_point,
-                    bend_allowance=bend_allowance,
-                    auto_bend=False,
-                    cad_import=cad_import,
-                )
-            # Non-timeout COM: same expand path as BendRejected (one level only).
-            logger.warning(
-                "COM disconnect treated as BendRejected (relief_step=%d); expand rect relief",
-                step,
-            )
-            bend_indices = error.bend_indices
-            if step >= MAX_RELIEF_STEPS:
-                logger.warning(
-                    "auto-bend failed (%s, relief expanded %d times); fall back to flat+sketch",
-                    tuple(index + 1 for index in bend_indices),
-                    step,
-                )
-                return generate_sheet_metal(
-                    analysis,
-                    profile_index,
-                    selected,
-                    thickness_mm,
-                    radius_mm,
-                    angle_degrees,
-                    output_path,
-                    flip_direction=flip_direction,
-                    fixed_face_point=fixed_face_point,
-                    bend_allowance=bend_allowance,
-                    auto_bend=False,
-                    cad_import=cad_import,
-                )
+            result = generate_sheet_metal(*args, auto_bend=True,
+                relief_bend_indices=relief, relief_step=step, **common)
+            return replace(result, auto_bend_attempts=attempts,
+                           auto_bend_failed_count=failures,
+                           auto_bend_abandoned=not result.auto_bent)
+        except (ComDisconnectedBendError, BendRejectedError) as error:
+            failures += 1
+            if isinstance(error, ComDisconnectedBendError) and error.timed_out:
+                break
             step += 1
-            logger.info(
-                "释放槽重试：扩大级别=%d 折弯=%s（矩形槽长宽各 +%.1f mm，累计 +%.1f mm）",
-                step,
-                tuple(index + 1 for index in bend_indices),
-                RECT_RELIEF_EXPAND_MM if step > 1 else RECT_RELIEF_FIRST_EXPAND_MM,
-                rect_relief_extra_mm(step),
-            )
-        except BendRejectedError as error:
-            if step >= MAX_RELIEF_STEPS:
-                logger.warning(
-                    "auto-bend failed (%s, relief expanded %d times); fall back to flat+sketch",
-                    tuple(index + 1 for index in error.bend_indices),
-                    step,
-                )
-                return generate_sheet_metal(
-                    analysis,
-                    profile_index,
-                    selected,
-                    thickness_mm,
-                    radius_mm,
-                    angle_degrees,
-                    output_path,
-                    flip_direction=flip_direction,
-                    fixed_face_point=fixed_face_point,
-                    bend_allowance=bend_allowance,
-                    auto_bend=False,
-                    cad_import=cad_import,
-                )
-            step += 1
-            logger.info(
-                "释放槽重试：扩大级别=%d 折弯=%s（矩形槽长宽各 +%.1f mm，累计 +%.1f mm）",
-                step,
-                tuple(index + 1 for index in error.bend_indices),
-                RECT_RELIEF_EXPAND_MM if step > 1 else RECT_RELIEF_FIRST_EXPAND_MM,
-                rect_relief_extra_mm(step),
-            )
+    if progress:
+        progress("自动折弯未完成，改为出平板及折弯参考线；需要人工复核")
+    result = generate_sheet_metal(*args, auto_bend=False, **common)
+    return replace(result, auto_bend_attempts=attempts,
+                   auto_bend_failed_count=failures, auto_bend_abandoned=True)
 
 
 

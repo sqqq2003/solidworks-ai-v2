@@ -783,6 +783,10 @@ def require_model_write(lease: SessionLease | None = None) -> SessionLease:
         raise SessionOwnershipError(
             "refusing model write: no task lease. GetActiveObject/Dispatch is not exclusive ownership"
         )
+    _require_sta(lease)
+    worker = active_worker()
+    if worker is None or worker.lease is not lease or not on_task_sta():
+        raise SessionOwnershipError("refusing model write outside the serialized task worker")
     if _session_writes_blocked(lease):
         raise SessionOwnershipError(
             "refusing model write: the session is abandoned, disconnected, or writes are blocked"
@@ -1010,7 +1014,11 @@ def terminate_owned_process(
         raise SessionOwnershipError(
             "refusing to terminate: exclusive ownership failed re-verification"
         )
-    killer = killer or lease.killer or _terminate_pid
+    killer = killer or lease.killer
+    if killer is None:
+        raise SessionOwnershipError(
+            "native PID termination disabled until a process-lifetime-bound handle is implemented"
+        )
     killer(pid)
     lease.terminate_sent = True
 

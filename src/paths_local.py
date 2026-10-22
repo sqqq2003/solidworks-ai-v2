@@ -4,8 +4,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 
-ROOT = Path(r"D:\工程\钣金导入")
+ROOT = Path(os.environ.get("SW_AI_WORKSPACE", str(Path(__file__).resolve().parents[1] / "runtime"))).expanduser().resolve()
 SELFTEST = ROOT / "自测"
 BACKUP = ROOT / "备份"
 TEMP = ROOT / "临时"

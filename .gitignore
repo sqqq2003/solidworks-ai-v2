@@ -24,7 +24,9 @@ credentials.json
 *.dxf
 
 # Local trees, dumps, and backups
-data/
+data/*
+!data/machine_spec.json
+!data/tasks.json
 legacy/
 backups/
 backup/
@@ -42,3 +44,6 @@ backup/
 results/*
 !results/cloud/
 !results/cloud/**
+
+runtime/
+reports/

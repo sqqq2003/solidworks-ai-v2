@@ -1101,12 +1101,27 @@ def _append_oriented_edge(
     return key(primitive.points[0])
 
 
+class _LoopSearchBudget:
+    """Shared finite operation budget for one contour analysis."""
+    def __init__(self, limit: int):
+        self.remaining = max(0, int(limit))
+        self.exhausted = False
+
+    def take(self) -> bool:
+        if self.remaining <= 0:
+            self.exhausted = True
+            return False
+        self.remaining -= 1
+        return True
+
+
 def _walk_closed_loop(
     start_index: int,
     active: set[int],
     adjacency: dict[tuple[int, int], list[int]],
     segments: list[Primitive],
     key,
+    budget: _LoopSearchBudget | None = None,
 ) -> tuple[list[Point], list[SketchSegment], set[int]] | None:
     """从一条边出发寻找闭合环；遇分支时回溯尝试。"""
 
@@ -1123,6 +1138,10 @@ def _walk_closed_loop(
         ordered_curves: list[SketchSegment],
         used: set[int],
     ) -> tuple[list[Point], list[SketchSegment], set[int]] | None:
+        if budget is not None and not budget.take():
+            return None
+        if len(used) > 400:
+            return None
         if current_key == start_key and len(used) >= 2:
             closed = list(ordered)
             closed[-1] = closed[0]
@@ -1277,7 +1296,7 @@ def _split_lines_at_tjunctions(
     return rebuilt
 
 
-def _line_contours(primitives: Iterable[Primitive]) -> list[Primitive]:
+def _line_contours(primitives: Iterable[Primitive], *, strict: bool = False) -> list[Primitive]:
     segments = _contour_edge_segments(primitives)
     if not segments:
         return []
@@ -1322,7 +1341,11 @@ def _line_contours(primitives: Iterable[Primitive]) -> list[Primitive]:
 
     visited: set[int] = set()
     contours: list[Primitive] = []
+    budget = _LoopSearchBudget(20000)
     for initial in range(len(segments)):
+        if budget.exhausted:
+            logger.warning("Contour search budget exhausted; remaining geometry requires review")
+            break
         if initial in visited:
             continue
         component: set[int] = set()
@@ -1343,8 +1366,10 @@ def _line_contours(primitives: Iterable[Primitive]) -> list[Primitive]:
         while len(active) >= 2:
             walked = None
             for candidate in sorted(active):
+                if budget.exhausted:
+                    break
                 walked = _walk_closed_loop(
-                    candidate, active, adjacency, segments, key
+                    candidate, active, adjacency, segments, key, budget
                 )
                 if walked is not None:
                     break
@@ -1364,6 +1389,8 @@ def _line_contours(primitives: Iterable[Primitive]) -> list[Primitive]:
                     tuple(ordered_curves),
                 )
             )
+    if strict and budget.exhausted:
+        raise ValueError("Contour search limit reached; refusing incomplete manufacturing geometry")
     return contours
 
 
@@ -1542,7 +1569,7 @@ def analyze_dxf(
     explicit_profiles = [
         primitive for primitive in primitives if primitive.closed and not primitive.is_bend
     ]
-    connected_profiles = _line_contours(primitives)
+    connected_profiles = _line_contours(primitives, strict=True)
     profiles = tuple(explicit_profiles + connected_profiles)
     primitives, bends = merge_collinear_bend_lines(primitives, profiles)
     visible_primitives = primitives + tuple(connected_profiles)

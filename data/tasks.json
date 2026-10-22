@@ -1,0 +1,23 @@
+{
+  "tasks": [
+    {
+      "task_id": "A01-002B-1",
+      "status": "review_required",
+      "depends_on": [],
+      "note": "Simulated regression only; Windows gate pending"
+    },
+    {
+      "task_id": "A01-002B-2",
+      "status": "queued",
+      "depends_on": [
+        "A01-002B-1"
+      ]
+    },
+    {
+      "task_id": "A01-003",
+      "status": "queued",
+      "depends_on": [],
+      "mode": "read_only"
+    }
+  ]
+}
