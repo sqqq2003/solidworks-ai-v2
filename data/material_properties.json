@@ -1,0 +1,41 @@
+{
+  "table_version": 1,
+  "note": "Material density table. Generic physical reference values, not OEM measurements; the source field says so per row. The example row is confirmed=false and the resolver refuses to use it.",
+  "densities": [
+    {
+      "material": "SUS304",
+      "density_g_per_cm3": 7.93,
+      "confirmed": true,
+      "source": "generic material reference; not an OEM measurement",
+      "provenance": null
+    },
+    {
+      "material": "SUS201",
+      "density_g_per_cm3": 7.93,
+      "confirmed": true,
+      "source": "generic material reference; not an OEM measurement",
+      "provenance": null
+    },
+    {
+      "material": "Q235",
+      "density_g_per_cm3": 7.85,
+      "confirmed": true,
+      "source": "generic material reference; not an OEM measurement",
+      "provenance": null
+    },
+    {
+      "material": "AL6061",
+      "density_g_per_cm3": 2.70,
+      "confirmed": true,
+      "source": "generic material reference; not an OEM measurement",
+      "provenance": null
+    },
+    {
+      "material": "EXAMPLE-not-for-production",
+      "density_g_per_cm3": 0.0,
+      "confirmed": false,
+      "source": "schema example only",
+      "provenance": null
+    }
+  ]
+}

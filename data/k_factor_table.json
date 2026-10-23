@@ -1,0 +1,14 @@
+{
+  "table_version": 1,
+  "note": "K-factor (neutral-axis position) lookup. K is process-dependent (press brake, tooling, material temper), so this table ships with NO confirmed production rows. Only confirmed=true rows are usable; a measured override must carry provenance; a missing row stays unresolved rather than borrowing a default K.",
+  "k_factors": [
+    {
+      "material": "EXAMPLE-not-for-production",
+      "thickness_mm": 2.5,
+      "k_factor": 0.33,
+      "confirmed": false,
+      "source": "schema example only; NOT a production value",
+      "provenance": null
+    }
+  ]
+}
