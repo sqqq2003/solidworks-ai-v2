@@ -75,6 +75,12 @@ DEFAULT_CHAIN_PITCH_MM = 12.7
 CHAIN_ROLLER_DIAMETER_RATIO = 0.67
 
 
+def _com_read(instance: Any, name: str) -> Any:
+    """pywin32 may expose parameterless COM members as properties or methods."""
+    value = getattr(instance, name)
+    return value() if callable(value) else value
+
+
 def _installed_typelib_majors() -> tuple[int, ...]:
     """从注册表读出本机已注册的 SolidWorks 类型库主版本号。
 
@@ -2991,7 +2997,7 @@ def _try_insert_sheet_metal_bend(
         if type_name != "SM3dBend":
             _delete_model_item(model, bend_feature.Name, "BODYFEATURE")
             return False
-        if not model.EditRebuild3():
+        if not _com_read(model, "EditRebuild3"):
             _delete_model_item(model, bend_feature.Name, "BODYFEATURE")
             return False
         return True
@@ -4038,6 +4044,7 @@ def generate_sheet_metal(
     bend_allowance: BendAllowanceSpec | None = None,
     auto_bend: bool = False,
     cad_import: bool | None = None,
+    close_saved_document: bool = False,
 ) -> GenerationResult:
     if not on_task_sta():
         return run_on_task_sta(
@@ -4056,6 +4063,7 @@ def generate_sheet_metal(
                 bend_allowance=bend_allowance,
                 auto_bend=auto_bend,
                 cad_import=cad_import,
+                close_saved_document=close_saved_document,
             ),
             timeout=SW_SESSION_CALL_TIMEOUT_SEC,
             task_name="generate_sheet_metal",
@@ -4673,7 +4681,7 @@ def generate_sheet_metal(
                 raise SolidWorksGenerationError(
                     f"SolidWorks 拒绝创建包含 {len(hole_profiles)} 个轮廓的孔位切除。"
                 )
-            if not model.EditRebuild3():
+            if not _com_read(model, "EditRebuild3"):
                 raise SolidWorksGenerationError("SolidWorks 重建孔位切除失败。")
             body = _as_interface(
                 type_library,
@@ -4743,7 +4751,7 @@ def generate_sheet_metal(
         _apply_sheet_metal_bend_allowance(model, type_library, bend_allowance)
 
         try:
-            rebuild_ok = model.EditRebuild3()
+            rebuild_ok = _com_read(model, "EditRebuild3")
         except Exception as error:  # noqa: BLE001
             if bend_phase and _is_com_disconnect_error(error):
                 logger.warning(
@@ -4785,7 +4793,7 @@ def generate_sheet_metal(
                 raise SolidWorksGenerationError("无法选择平板型式以验证展开。")
             model.EditUnsuppress2()
             model.ClearSelection2(True)
-            if not model.EditRebuild3():
+            if not _com_read(model, "EditRebuild3"):
                 raise SolidWorksGenerationError("SolidWorks 展开钣金失败。")
             flat_bounds = _body_bounds(part, type_library)
             if all(
@@ -4801,7 +4809,7 @@ def generate_sheet_metal(
                 raise SolidWorksGenerationError("无法选择平板型式以恢复折叠状态。")
             model.EditSuppress2()
             model.ClearSelection2(True)
-            if not model.EditRebuild3():
+            if not _com_read(model, "EditRebuild3"):
                 raise SolidWorksGenerationError("SolidWorks 恢复折叠状态失败。")
         logger.info(
             "展开验证通过：折叠包围盒=%s 展开包围盒=%s",
@@ -4863,7 +4871,7 @@ def generate_sheet_metal(
                 close_document=(
                     solidworks is not None
                     and document_title is not None
-                    and (not saved or started_solidworks or CLOSE_SAVED_DOCS)
+                    and (not saved or started_solidworks or CLOSE_SAVED_DOCS or close_saved_document)
                 ),
                 saved=saved,
                 model=model,
@@ -4952,6 +4960,8 @@ def export_flat_pattern_dxf(
     target = Path(dxf_path).expanduser().resolve()
     if target.suffix.casefold() != ".dxf":
         raise ValueError("展开图必须导出为 .dxf 文件。")
+    if target == part or target.exists():
+        raise FileExistsError("refusing to overwrite an existing DXF/source file")
 
     try:
         import pythoncom
@@ -4993,7 +5003,7 @@ def export_flat_pattern_dxf(
 
         target.parent.mkdir(parents=True, exist_ok=True)
         if target.exists():
-            target.unlink()
+            raise FileExistsError("DXF destination appeared before export")
 
         # OpenDoc6 在多数绑定下返回 (model, errors, warnings)，兼容两种返回形式。
         require_model_write(lease)
@@ -5292,7 +5302,7 @@ def generate_roller_part(
                     True,
                 )
             model.ClearSelection2(True)
-            if feature is None or not model.EditRebuild3():
+            if feature is None or not _com_read(model, "EditRebuild3"):
                 raise SolidWorksGenerationError(f"SolidWorks 创建{label}失败。")
             return feature
 
@@ -5555,7 +5565,7 @@ def generate_roller_part(
                             True,
                         )
                         model.ClearSelection2(True)
-                        if cut_feature is None or not model.EditRebuild3():
+                        if cut_feature is None or not _com_read(model, "EditRebuild3"):
                             raise SolidWorksGenerationError(
                                 "链轮切齿特征创建失败。"
                             )
@@ -5842,3 +5852,4 @@ def generate_roller_part(
         finally:
             if com_initialized:
                 pythoncom.CoUninitialize()
+

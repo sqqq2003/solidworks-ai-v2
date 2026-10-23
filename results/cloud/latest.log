@@ -266,6 +266,20 @@ test_unpowered_reads_middle_step_diameter_from_any_drawing (test_sheet_metal.Rol
 任一无动力图标了中间直径时，台阶外径跟该图，不写死 15。 ... ok
 test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)
 用户 Drawing1.dwg：无文字注记，侧视几何应识别 7 种滚筒。 ... skipped 'Drawing1_e7b7.dwg 未上传'
+test_dryrun_has_json_only_and_verified_resume (test_sheet_metal_pipeline.PipelineTests.test_dryrun_has_json_only_and_verified_resume) ... ok
+test_export_refuses_overwrite_before_com (test_sheet_metal_pipeline.PipelineTests.test_export_refuses_overwrite_before_com) ... ok
+test_failure_each_stage_cleans_only_staged_products (test_sheet_metal_pipeline.PipelineTests.test_failure_each_stage_cleans_only_staged_products) ... ok
+test_internal_hole_not_silently_promoted (test_sheet_metal_pipeline.PipelineTests.test_internal_hole_not_silently_promoted) ... ok
+test_invalid_parameters_and_reliefs (test_sheet_metal_pipeline.PipelineTests.test_invalid_parameters_and_reliefs) ... ok
+test_k_changed_flat_unchanged_requires_dimensional_basis (test_sheet_metal_pipeline.PipelineTests.test_k_changed_flat_unchanged_requires_dimensional_basis) ... ok
+test_missing_values_and_units_are_pending (test_sheet_metal_pipeline.PipelineTests.test_missing_values_and_units_are_pending) ... ok
+test_native_feature_plan_reuses_holes_bends_and_relief_rules (test_sheet_metal_pipeline.PipelineTests.test_native_feature_plan_reuses_holes_bends_and_relief_rules) ... ok
+test_native_gate_rejects_incomplete_bend_and_wrong_k (test_sheet_metal_pipeline.PipelineTests.test_native_gate_rejects_incomplete_bend_and_wrong_k) ... ok
+test_pywin32_parameterless_property_and_method (test_sheet_metal_pipeline.PipelineTests.test_pywin32_parameterless_property_and_method) ... ok
+test_recovery_failure_is_explicit (test_sheet_metal_pipeline.PipelineTests.test_recovery_failure_is_explicit) ... ok
+test_source_geometry_and_plan_edits_invalidate (test_sheet_metal_pipeline.PipelineTests.test_source_geometry_and_plan_edits_invalidate) ... ok
+test_import_is_lazy_and_linux_execution_refused (test_sheet_metal_pipeline.WindowsBridgeContractTests.test_import_is_lazy_and_linux_execution_refused) ... ok
+test_native_reopen_reads_definition_and_closes_owned_document (test_sheet_metal_pipeline.WindowsBridgeContractTests.test_native_reopen_reads_definition_and_closes_owned_document) ... ok
 test_does_not_match_open_profile (test_solidworks_generator.ProfileBendMatchingTests.test_does_not_match_open_profile) ... ok
 test_matches_fold_lines_whose_midpoint_is_inside_profile (test_solidworks_generator.ProfileBendMatchingTests.test_matches_fold_lines_whose_midpoint_is_inside_profile) ... ok
 test_bend_rejection_records_failed_lines_and_retry_state (test_solidworks_generator.ReliefCutoutSuggestionTests.test_bend_rejection_records_failed_lines_and_retry_state) ... ok
@@ -355,6 +369,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 319 tests in 3.598s
+Ran 333 tests in 3.726s
 
 OK (skipped=4)

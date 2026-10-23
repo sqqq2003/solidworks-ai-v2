@@ -78,3 +78,16 @@
 - 10 项新增模拟测试覆盖 Gork 数据、显式求解、几何不跟随、原生求解失败、共享引用与未知依赖阻断、删除失败、无效输入及公式循环。
 - `python work/run_cloud_tests.py`：319 ran / 315 passed / 4 skipped / 0 failures / 0 errors，跨进程锁通过。36 pending_features 未计通过。
 - Windows 操作和调用方式见 docs/a01-windows-live.md。待本机 Pack and Go、独占会话调用、实际尺寸及保存重开读回；未宣称根因已实机确认或模型已修好。
+
+## P0-CODEX-001：Issue #4 二维 CAD → 原生可编辑钣金首轮云端交付
+
+- 新最高优先级为 #4，Gork 实机联调 #5；整机改型降为 P3。本轮复用已有分析/拓扑/轮廓修复/折弯计算/原生生成器与展开导出，未重做几何引擎。
+- 新增 sheet_metal_pipeline：来源/解析几何/代码指纹，轮廓/孔/折弯特征计划，明确参数/方向/单位/折弯分类确认；未知保持 pending。支持首轮同角度绘制折弯，复杂混合角度/岛屿不猜测。
+- 新增 WindowsSheetMetalPort：调用既有原生生成器、关闭后重开、检查原生特征树和可访问特征定义、t/R/K、折弯完成数，再展开导出并检查 DXF；参考草图或参数读回不符不能通过。
+- 产物 staging、失败清理/独立诊断、恢复失败显式状态、跨进程发布锁、内容校验幂等。mock 永远只有 JSON trace，不产生伪 CAD。
+- 修复 pywin32 将无参数 EditRebuild3 暴露为属性导致 bool 不可调用的问题；展开导出拒绝覆盖已有目标。新增 close_saved_document 选项保证重开检查使用磁盘文件。
+- t=2.5/R=1、释放槽规则、折弯中心失败清理、K 对固定毛坯/固定折后外尺寸的差异均有回归；不能仅因固定毛坯展开长度不变就认定 K 未生效。
+- `python work/run_cloud_tests.py`：333 ran / 329 passed / 4 skipped / 0 failures / 0 errors，跨进程锁通过；14 项新增算法/mock/Windows 接口合约测试。36 pending_features 仍不计通过。
+- `python examples/sheet_metal_dry_run.py`：synthetic 二维板件→计划→JSON trace 通过；`work/run_sheet_metal.py` 提供本地 CAD 计划/dry-run/Windows live 入口。联调说明见 docs/p0-sheet-metal.md。
+- 当前没有这次验收的真实钣金源样例与 Windows SW 执行环境；首轮真实 SLDPRT/可编辑/保存重开/展开/DXF 测量尚未验收。sw_live_verified=false（本次云端证据），不关闭 #4/#5。
+- 开发期间收到 Gork 新提交 c6e00d8/b0c4dec：p190/p209/p243 报告本机原生钣金特征、重建、展开和 DXF 成功，保留全部原始记录。这些已有实机进展与本次新适配器测试分开；t/R/K 原生读回和明确关闭后重开证据仍待补齐。

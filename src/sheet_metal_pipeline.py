@@ -1,0 +1,260 @@
+"""P0 CAD -> native sheet metal plan and recoverable artifact transaction.
+
+Legacy geometry and generation remain the implementation; mock success is never
+native acceptance. Parameters and bend direction require explicit confirmation.
+"""
+from __future__ import annotations
+from dataclasses import asdict
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import shutil
+import tempfile
+import uuid
+from typing import Protocol
+
+from bend_allowance import resolve_bend_allowance_spec
+from profile_selection import contained_hole_indices, outermost_containing_profile_index
+from profile_sanitize import contour_self_intersects, sanitize_closed_profile
+from solidworks_generator import (profile_bend_indices, minimal_relief_width_mm,
+                                 minimal_relief_depth_past_centerline_mm)
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, default=str, allow_nan=False).encode()).hexdigest()
+
+
+def file_hash(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def analysis_hash(analysis):
+    return digest(asdict(analysis))
+
+
+def code_hash():
+    root = Path(__file__).parent
+    return digest({name: file_hash(root/name) for name in (
+        'sheet_metal_pipeline.py', 'sheet_metal_windows.py', 'cad_analyzer.py',
+        'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py',
+        'bend_allowance.py', 'sw_session.py')})
+
+
+def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
+               angle_degrees=None, k_factor=None, flip_direction=None,
+               relief_bend_indices=(), units_confirmed=False, bends_confirmed=False):
+    if not 0 <= profile_index < len(analysis.profiles):
+        raise ValueError('selected profile does not exist')
+    if outermost_containing_profile_index(analysis.profiles, profile_index) != profile_index:
+        raise ValueError('selected contour is an internal hole; select outer contour explicitly')
+    profile = analysis.profiles[profile_index]
+    if not profile.closed or profile.is_bend or contour_self_intersects(profile.points):
+        raise ValueError('outer profile must be closed and non-self-intersecting')
+    sanitize_closed_profile(profile, min_edge_mm=0.05)
+    holes = contained_hole_indices(analysis.profiles, profile_index)
+    for index in holes:
+        if contour_self_intersects(analysis.profiles[index].points):
+            raise ValueError('self-intersecting internal contour')
+        if contained_hole_indices(analysis.profiles, index):
+            raise ValueError('nested islands require explicit topology review')
+    bends = profile_bend_indices(profile, analysis.bend_lines, [analysis.profiles[i] for i in holes])
+    relief = tuple(dict.fromkeys(relief_bend_indices))
+    if any(type(i) is not int or i not in bends for i in relief):
+        raise ValueError('relief indices must belong to selected bend lines')
+    pending = []
+    if bends and not bends_confirmed:
+        pending.append('bend_line_classification')
+    for index in bends:
+        bend = analysis.bend_lines[index]
+        if len(bend.points) < 2 or math.dist(bend.points[0], bend.points[-1]) <= 1e-8:
+            raise ValueError('degenerate bend line')
+        if any(segment.center is not None for segment in bend.curve_segments):
+            pending.append('curved_bend_' + str(index))
+    params = dict(thickness_mm=thickness_mm, radius_mm=radius_mm,
+                  angle_degrees=angle_degrees, k_factor=k_factor, flip_direction=flip_direction)
+    for key in ('thickness_mm', 'radius_mm', 'angle_degrees', 'k_factor'):
+        value = params[key]
+        if value is None:
+            pending.append(key)
+        elif type(value) not in (float, int) or not math.isfinite(value):
+            raise ValueError(key + ' must be finite numeric')
+    for key in ('thickness_mm', 'radius_mm'):
+        if params[key] is not None and params[key] <= 0:
+            raise ValueError(key + ' must be positive')
+    if angle_degrees is not None and not 0 < angle_degrees < 180:
+        raise ValueError('bend angle must be between 0 and 180')
+    if k_factor is not None and not 0 <= k_factor <= 1:
+        raise ValueError('K factor must be between 0 and 1')
+    if flip_direction is None:
+        pending.append('bend_direction')
+    elif type(flip_direction) is not bool:
+        raise ValueError('bend direction must be boolean')
+    if '未指定' in analysis.units_name and not units_confirmed:
+        pending.append('source_units')
+    allowance = None
+    if all(params[k] is not None for k in ('thickness_mm','radius_mm','angle_degrees','k_factor')):
+        if radius_mm <= 0:
+            raise ValueError('native generator requires positive radius')
+        spec, preview = resolve_bend_allowance_spec(thickness_mm=thickness_mm, radius_mm=radius_mm,
+            angle_degrees=angle_degrees, mode='k_factor', k_factor=k_factor)
+        allowance = {'spec': asdict(spec), 'preview': asdict(preview)}
+    relief_rule = None if thickness_mm is None or radius_mm is None else {
+        'width_mm': minimal_relief_width_mm(thickness_mm),
+        'depth_past_centerline_mm': minimal_relief_depth_past_centerline_mm(thickness_mm, radius_mm),
+        'source': 'existing_generator_rule_not_measured', 'selected_bends': list(relief)}
+    plan = {'schema_version': 1, 'source': str(analysis.path),
+            'source_sha256': file_hash(analysis.path), 'analysis_sha256': analysis_hash(analysis),
+            'code_sha256': code_hash(), 'units': 'mm', 'source_units': analysis.units_name,
+            'profile_index': profile_index, 'hole_indices': list(holes), 'bend_indices': list(bends),
+            'relief_bend_indices': list(relief), 'bend_classification_confirmed': bool(bends_confirmed),
+            'parameters': params,
+            'parameter_source': 'explicit_operator_inputs', 'bend_allowance': allowance,
+            'relief_rule': relief_rule, 'pending': pending,
+            'status': 'pending' if pending else 'ready_for_windows',
+            'feature_plan': ['closed_profile_and_holes', 'native_base_flange',
+                *(['native_sketched_bends'] if bends else []), 'rebuild', 'save',
+                'reopen_and_inspect_editable_features', 'flat_pattern', 'export_dxf'],
+            'sw_live_verified': False}
+    plan['plan_id'] = digest(plan)
+    return plan
+
+
+class SheetMetalPort(Protocol):
+    simulated: bool
+    def generate(self, analysis, plan: dict, part: Path) -> dict: ...
+    def reopen_inspect(self, part: Path) -> dict: ...
+    def export_flat(self, part: Path, dxf: Path) -> None: ...
+    def abort(self, stage: Path) -> None: ...
+
+
+def validate_native(plan, evidence):
+    if not evidence.get('reopened') or not evidence.get('rebuilt'):
+        raise RuntimeError('reopen/rebuild not verified')
+    types = set(evidence.get('feature_types', []))
+    if not {'SheetMetal', 'FlatPattern', 'SMBaseFlange'} <= types or not evidence.get('editable'):
+        raise RuntimeError('native editable sheet-metal feature tree not verified')
+    if plan['bend_indices'] and evidence.get('bend_feature_count', 0) < len(plan['bend_indices']):
+        raise RuntimeError('native bend features incomplete; reference sketch is not an automatic bend')
+    for key in ('thickness_mm', 'radius_mm', 'k_factor'):
+        actual = evidence.get(key)
+        if type(actual) not in (float, int) or not math.isfinite(actual) or not math.isclose(actual, plan['parameters'][key], abs_tol=1e-6):
+            raise RuntimeError(key + ' native readback mismatch or missing')
+
+
+def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
+    expected = dict(plan)
+    plan_id = expected.pop('plan_id')
+    if digest(expected) != plan_id or plan['code_sha256'] != code_hash():
+        raise ValueError('modified or stale plan; regenerate')
+    if plan['source_sha256'] != file_hash(analysis.path) or plan['analysis_sha256'] != analysis_hash(analysis):
+        raise ValueError('source or analyzed geometry changed; regenerate plan')
+    if plan['pending']:
+        return {'status': 'pending', 'pending': plan['pending'], 'sw_live_verified': False}
+    root = Path(output_dir).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    label = ('simulation-' if port.simulated else 'native-') + plan_id
+    destination = root / label
+    lock = root / ('.' + label + '.lock')
+    lock.mkdir()  # Cross-process single publisher; never clear someone else's lock.
+    stage = None
+    try:
+        if destination.exists():
+            manifest = json.loads((destination/'result.json').read_text())
+            if manifest['plan_id'] != plan_id or manifest['simulated_only'] != port.simulated:
+                raise RuntimeError('existing artifact manifest does not match')
+            expected_status = 'simulated_pass' if port.simulated else 'native_features_verified'
+            if manifest.get('status') != expected_status or manifest.get('sw_live_verified') != (not port.simulated):
+                raise RuntimeError('existing result status inconsistent with backend')
+            if not port.simulated:
+                validate_native(plan, manifest['reopen'])
+            required = {'part.trace.json', 'flat.trace.json'} if port.simulated else {'part.SLDPRT', 'flat.DXF'}
+            if set(manifest['artifact_sha256']) != required:
+                raise RuntimeError('incomplete artifact manifest')
+            for name, checksum in manifest['artifact_sha256'].items():
+                if Path(name).name != name or file_hash(destination/name) != checksum:
+                    raise RuntimeError('artifact changed; refusing stale resume')
+            return {**manifest, 'resumed': True, 'output_dir': str(destination)}
+        stage = Path(tempfile.mkdtemp(prefix='.'+label+'-', dir=root))
+        part = stage / ('part.trace.json' if port.simulated else 'part.SLDPRT')
+        flat = stage / ('flat.trace.json' if port.simulated else 'flat.DXF')
+        generated = port.generate(analysis, plan, part)
+        if not port.simulated and plan['bend_indices'] and (not generated.get('auto_bent') or generated.get('auto_bend_failed_count', 0)):
+            raise RuntimeError('automatic bending incomplete; manual/reference fallback rejected')
+        evidence = port.reopen_inspect(part)
+        if not port.simulated:
+            validate_native(plan, evidence)
+        port.export_flat(part, flat)
+        if not port.simulated:
+            import ezdxf
+            drawing = ezdxf.readfile(flat)
+            if not list(drawing.modelspace()):
+                raise RuntimeError('flat DXF contains no geometry')
+        for product in (part, flat):
+            if not product.is_file() or product.stat().st_size == 0:
+                raise RuntimeError('missing or empty product: ' + product.name)
+        result = {'status': 'simulated_pass' if port.simulated else 'native_features_verified',
+                  'plan_id': plan_id, 'simulated_only': port.simulated,
+                  'sw_live_verified': not port.simulated, 'mechanical_acceptance': 'unverified',
+                  'generation': generated, 'reopen': evidence,
+                  'artifact_sha256': {p.name: file_hash(p) for p in (part, flat)}}
+        (stage/'result.json').write_text(json.dumps(result, indent=2, default=str, allow_nan=False)+'\n')
+        os.rename(stage, destination)
+        stage = None
+        return {**result, 'resumed': False, 'output_dir': str(destination)}
+    except Exception as exc:
+        recovery = 'not_needed'
+        if stage is not None:
+            try:
+                port.abort(stage)
+                shutil.rmtree(stage)
+                recovery = 'staging_removed'
+            except Exception as rollback:
+                recovery = 'recovery_required: ' + str(rollback)
+        failure = {'status': 'failed', 'error': str(exc), 'recovery': recovery,
+                   'plan_id': plan_id, 'sw_live_verified': False,
+                   'diagnostic_stage': str(stage) if stage and stage.exists() else None}
+        diagnostic = root / ('failure-' + uuid.uuid4().hex + '.json')
+        diagnostic.write_text(json.dumps(failure, ensure_ascii=False, indent=2)+'\n')
+        return {**failure, 'diagnostic_file': str(diagnostic)}
+    finally:
+        lock.rmdir()
+
+
+class MockSheetMetalPort:
+    simulated = True
+    def generate(self, analysis, plan, part):
+        part.write_text(json.dumps({'mock': True, 'plan_id': plan['plan_id']}))
+        return {'auto_bent': False, 'cad_executed': False}
+    def reopen_inspect(self, part):
+        return {'mock': True, 'reopened': False, 'editable': False}
+    def export_flat(self, part, dxf):
+        dxf.write_text(json.dumps({'mock': True, 'cad_executed': False}))
+    def abort(self, stage):
+        pass
+
+
+def diagnose_k_change(*, thickness_mm, radius_mm, angle_degrees, old_k, new_k,
+                      geometry_basis, old_flat_mm=None, new_flat_mm=None):
+    """K changes need a dimension basis. A fixed DXF blank need not change length.
+
+    This is a formula diagnostic, never proof of a SolidWorks run. Folded legs
+    refer to fixed outside legs at their virtual sharp intersection.
+    """
+    from bend_allowance import compute_bend_allowance
+    old = compute_bend_allowance(thickness_mm, radius_mm, angle_degrees, old_k)
+    new = compute_bend_allowance(thickness_mm, radius_mm, angle_degrees, new_k)
+    if geometry_basis not in {'fixed_blank', 'fixed_outside_legs'}:
+        raise ValueError('unknown dimensional basis; do not guess K effect')
+    expected = 0.0 if geometry_basis == 'fixed_blank' else new.bend_allowance_mm - old.bend_allowance_mm
+    observed = None
+    if old_flat_mm is not None and new_flat_mm is not None:
+        if any(type(v) not in (float, int) or not math.isfinite(v) or v <= 0 for v in (old_flat_mm, new_flat_mm)):
+            raise ValueError('flat lengths must be finite positive measurements')
+        observed = new_flat_mm - old_flat_mm
+    return {'geometry_basis': geometry_basis, 'expected_single_bend_delta_mm': expected,
+            'observed_delta_mm': observed, 'native_k_readback': 'required',
+            'status': 'pending_measurement' if observed is None else (
+                'consistent_with_formula' if math.isclose(observed, expected, abs_tol=1e-5) else 'mismatch'),
+            'sw_live_verified': False}
