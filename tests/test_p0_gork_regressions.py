@@ -92,6 +92,9 @@ class GorkRegressions(unittest.TestCase):
         self.assertEqual(steps, [(0,0),(1,1),(2,1.5)])
         self.assertTrue(result.auto_bend_abandoned)
         self.assertEqual(result.auto_bend_failed_count,4)
+        self.assertEqual([r['relief_step'] for r in result.bend_attempts], [0,1,2])
+        self.assertTrue(all(r['status'] == 'rejected' for r in result.bend_attempts))
+        self.assertTrue(all(r['completed_bend_count'] == 2 for r in result.bend_attempts))
 
     def test_many_bend_lines_can_be_one_native_feature(self):
         plan = {'bend_indices':[13,14,15,16,27,28], 'parameters':{'thickness_mm':2.5,'radius_mm':1,'k_factor':.25}}

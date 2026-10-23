@@ -319,6 +319,14 @@ test_uses_native_solidworks_arc_for_exact_curve_segment (test_solidworks_generat
 test_dry_run_skips_unresolved_and_writes_json_only (test_sw_api_adapter.MockAdapterTests.test_dry_run_skips_unresolved_and_writes_json_only) ... ok
 test_same_path_and_cad_suffix_are_refused (test_sw_api_adapter.MockAdapterTests.test_same_path_and_cad_suffix_are_refused) ... ok
 test_win32_backend_does_not_import_com_at_import (test_sw_api_adapter.MockAdapterTests.test_win32_backend_does_not_import_com_at_import) ... ok
+test_forwarded_or_exited_process_refused (test_sw_owned_launch.OwnedLaunchTests.test_forwarded_or_exited_process_refused) ... ok
+test_inventory_property_binding_and_phantom_count (test_sw_owned_launch.OwnedLaunchTests.test_inventory_property_binding_and_phantom_count) ... ok
+test_keepalive_prevents_intermediate_exit (test_sw_owned_launch.OwnedLaunchTests.test_keepalive_prevents_intermediate_exit) ... ok
+test_launcher_cannot_bind_off_worker (test_sw_owned_launch.OwnedLaunchTests.test_launcher_cannot_bind_off_worker) ... ok
+test_nonempty_or_unreadable_new_process_inventory_refused (test_sw_owned_launch.OwnedLaunchTests.test_nonempty_or_unreadable_new_process_inventory_refused) ... ok
+test_success_uses_spawned_pid_and_never_refetches_active_object (test_sw_owned_launch.OwnedLaunchTests.test_success_uses_spawned_pid_and_never_refetches_active_object) ... ok
+test_unknown_document_appearing_later_blocks_writes (test_sw_owned_launch.OwnedLaunchTests.test_unknown_document_appearing_later_blocks_writes) ... ok
+test_wrong_active_pid_never_becomes_exclusive (test_sw_owned_launch.OwnedLaunchTests.test_wrong_active_pid_never_becomes_exclusive) ... ok
 test_attached_user_session_cannot_be_torn_down (test_sw_session_safety.SessionSafetyTests.test_attached_user_session_cannot_be_torn_down) ... ok
 test_automation_mode_requires_exclusive_proof (test_sw_session_safety.SessionSafetyTests.test_automation_mode_requires_exclusive_proof) ... ok
 test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources) ... skipped 'results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test'
@@ -379,6 +387,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 343 tests in 3.677s
+Ran 351 tests in 3.756s
 
 OK (skipped=4)

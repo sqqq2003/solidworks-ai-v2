@@ -365,29 +365,34 @@ def _list_open_document_titles(application: Any) -> list[str]:
     """Best-effort open-document titles. Raises if the session cannot be listed."""
 
     titles: list[str] = []
-    count = int(application.GetDocumentCount())
-    current = application.GetFirstDocument()
-    seen = 0
-    while current is not None and seen < count:
-        getter = getattr(current, "GetTitle", None)
-        if callable(getter):
-            titles.append(str(getter()))
-        else:
-            titles.append(str(getter))
-        nxt = getattr(current, "GetNext", None)
-        current = nxt() if callable(nxt) else None
-        seen += 1
+    count = int(_com_read(application, "GetDocumentCount"))
+    if count < 0 or count > 10000:
+        raise SessionOwnershipError("invalid document count")
+    current = _com_read(application, "GetFirstDocument")
+    for _ in range(count):
+        if current is None:
+            raise SessionOwnershipError("document enumeration shorter than count")
+        title = _com_read(current, "GetTitle")
+        if not title or str(title) in titles:
+            raise SessionOwnershipError("document inventory has empty/ambiguous titles")
+        titles.append(str(title))
+        current = _com_read(current, "GetNext")
+    if current is not None:
+        raise SessionOwnershipError("document enumeration longer than count")
     return titles
 
 
 def _connect_task_solidworks(lease, win32com: Any, pythoncom: Any):
-    """Attach for modeling. Dispatch after a miss is not exclusive ownership."""
+    """Reuse a proved native launch; legacy Dispatch/attach stays unproven."""
 
     if lease is None:
         raise SessionOwnershipError(
             "SolidWorks call is not on the task STA worker; refusing to attach "
             "to a session this task cannot prove it owns."
         )
+
+    if lease.native_launch is not None:
+        return lease.native_launch.reconnect(lease)
 
     def _get_active():
         return win32com.client.GetActiveObject("SldWorks.Application")
@@ -483,6 +488,7 @@ class GenerationResult:
     bend_allowance_verified: bool = False
     k_factor_readback: float | None = None
     relief_step_used: int = 0
+    bend_attempts: tuple[dict, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -4953,6 +4959,7 @@ def generate_sheet_metal_with_relief_retries(
         return generate_sheet_metal(*args, auto_bend=False, **common)
     attempts = 0
     failures = 0
+    trace: list[dict] = []
     while step <= MAX_RELIEF_STEPS and attempts < MAX_AUTO_BEND_ATTEMPTS:
         attempts += 1
         if progress:
@@ -4960,11 +4967,18 @@ def generate_sheet_metal_with_relief_retries(
         try:
             result = generate_sheet_metal(*args, auto_bend=True,
                 relief_bend_indices=relief, relief_step=step, **common)
-            return replace(result, auto_bend_attempts=attempts,
+            trace.append(dict(attempt=attempts, relief_step=step,
+                relief_extra_mm=rect_relief_extra_mm(step), status="completed" if result.auto_bent else "degraded",
+                completed_bend_count=result.bend_count, relief_slot_count=result.relief_slot_count))
+            return replace(result, auto_bend_attempts=attempts, bend_attempts=tuple(trace),
                            auto_bend_failed_count=max(0, len(selected) - result.bend_count),
                            auto_bend_abandoned=not result.auto_bent)
         except (ComDisconnectedBendError, BendRejectedError) as error:
             failures += 1
+            trace.append(dict(attempt=attempts, relief_step=step,
+                relief_extra_mm=rect_relief_extra_mm(step), status="rejected",
+                failed_bend_indices=list(error.bend_indices), completed_bend_count=error.completed_bend_count,
+                error_kind=type(error).__name__, error=str(error)))
             logger.warning("auto bend rejected attempt=%d relief_step=%d failed=%s completed=%d",
                 attempts, step, error.bend_indices, error.completed_bend_count)
             if isinstance(error, ComDisconnectedBendError) and error.timed_out:
@@ -4973,7 +4987,7 @@ def generate_sheet_metal_with_relief_retries(
     if progress:
         progress("自动折弯未完成，改为出平板及折弯参考线；需要人工复核")
     result = generate_sheet_metal(*args, auto_bend=False, **common)
-    return replace(result, auto_bend_attempts=attempts,
+    return replace(result, auto_bend_attempts=attempts, bend_attempts=tuple(trace),
                    auto_bend_failed_count=len(selected), auto_bend_abandoned=True)
 
 

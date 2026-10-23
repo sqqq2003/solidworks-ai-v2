@@ -103,3 +103,14 @@
 - 复测命令与读回字段见 docs/p0-sheet-metal.md。真实 p209 的 K 0.25/0.5、p248 加深、矩形内孔释放槽样本仍待本机核对；本轮没有新 SW 实机通过声明，也未覆盖用户 D 盘程序。
 - Gork 在提交期间补交 b1319a0：本机补丁 K 已读回 0.5/0.25，但固定源毛坯 DXF bbox 相同。本轮保留该证据，新增 audit_k_factor_evidence，未确认尺寸基准时 pending；fixed_blank 假设下仅为 consistent_fixed_blank_pending_folded_measurements，不能断言 SW 忽略 K。
 - Windows 重开诊断新增折叠/展平实体 bbox 测量并恢复 FlatPattern 原状态，不保存；任一步失败不得继续导出。等待两组 K 的折叠尺寸/真实展平实体/DXF 对照，不把同 bbox 或公式差当作最终机械结论。
+
+## P0-CODEX-003：独占启动入口与 p248 重试证据
+
+- 基线 f563120；Gork 最新复测 K 写入和重开读回已匹配，固定毛坯展开不变、折后 Z 差异约 0.98mm；继续区分尺寸基准。该轮临时 attach shim 不能当成正式会话验收。
+- 新增 sw_owned_launch：显式指定 EXE，真实 Popen 启动，保留 Windows 进程句柄核对 image/生存期，匹配 COM GetProcessID，完整空文档清单后才 claim_spawned_process。错误进程、转发/退出、枚举失败、外来文档均拒绝写入。
+- 正式会话在每次写入前复核，复用已绑定对象；中间生成/重开/导出不退出实例，最终只在空且归属有效时 ExitApp，无强杀。保留 cleanup_status 和失败 PID 诊断，不接管已有活动实例。
+- CLI 与 work/run_sheet_metal.py 新增 --sw-exe；work/probe_owned_solidworks.py 提供无 CAD 写入的 Windows 会话烟测。默认严格写门槛不变，不加入 P0_RETEST_ATTACH 绕过。
+- 修复文档计数与实际枚举不一致时错误返回空清单的问题，支持 pywin32 无参数属性/方法两种绑定。
+- p248 新增结构化 bend_attempts（级别/请求加深/失败索引/实际完成数），native 发布失败 JSON 保留 generation 以便联调，仍不把加深请求当成实际几何验证。
+- 新增 8 项模拟会话测试；`python work/run_cloud_tests.py`：351 ran / 347 passed / 4 skipped / 0 failures / 0 errors，跨进程锁通过。36 pending_features 未计通过。Linux 没有启动真实 SW。
+- 下一步：Gork 使用无 shim 的 --sw-exe 探针核对 PID/句柄/清单，再复测 p248。Windows 启动注册行为、独占证明与释放槽实机结果仍 pending。操作说明见 docs/p0-sheet-metal.md。

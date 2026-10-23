@@ -56,6 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--thickness", type=float, default=1.2, help="钣金：板厚 mm")
     parser.add_argument("--radius", type=float, default=1.2, help="钣金：折弯半径 mm")
     parser.add_argument("--angle", type=float, default=90.0, help="钣金：折弯角度")
+    parser.add_argument("--sw-exe", type=Path, default=None,
+                        help="启动此 SLDWORKS.exe 并验证新 PID 的独占任务会话")
     parser.add_argument("--k-factor", type=float, default=None,
                         help="钣金：显式 K 因子 0~1，创建时传入并要求原生读回一致")
     parser.add_argument("--flip", action="store_true", help="钣金：反向折弯")
@@ -184,6 +186,8 @@ def run_sheet(args: argparse.Namespace) -> int:
         k_factor_readback=result.k_factor_readback,
         bend_allowance_verified=result.bend_allowance_verified,
         relief_step_used=result.relief_step_used,
+        bend_attempts=result.bend_attempts,
+        auto_bend_failed_count=result.auto_bend_failed_count,
         bend_count=result.bend_count,
         path=str(result.path),
         message=f"钣金零件已生成：{Path(result.path).name}",
@@ -239,9 +243,18 @@ def main(argv: list[str] | None = None) -> int:
     # 详细日志落到文件，插件出错时能回看；事件流仍只走标准输出。
     LOGGER.debug("详细日志：%s", configured or log_file_path())
     try:
-        if args.mode == "sheet":
-            return run_sheet(args)
-        return run_roller(args)
+        runner = run_sheet if args.mode == "sheet" else run_roller
+        if args.sw_exe is not None and not args.analyze_only:
+            from sw_owned_launch import owned_solidworks
+            from sw_session import run_on_task_sta
+            def owned_job():
+                with owned_solidworks(args.sw_exe) as binding:
+                    emit("session", **binding.evidence())
+                    rc = runner(args)
+                emit("session_end", **binding.evidence())
+                return rc
+            return run_on_task_sta(owned_job, timeout=300, task_name="owned-sheet-metal-cli")
+        return runner(args)
     except Exception as error:  # 插件按 error 事件提示用户
         LOGGER.exception("生成失败")
         emit("error", message=str(error), detail=type(error).__name__)

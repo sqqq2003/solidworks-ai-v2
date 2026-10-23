@@ -101,6 +101,9 @@ class SessionLease:
     bound_app_ids: set[int] = field(default_factory=set)
     list_open_titles: Callable[[Any], list[str]] | None = None
     probe: Probe | None = None
+    native_launch: Any = None
+    native_launch_attempt: Any = None
+    keep_application_open: bool = False
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)
@@ -795,6 +798,8 @@ def require_model_write(lease: SessionLease | None = None) -> SessionLease:
         raise SessionOwnershipError(
             "refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership"
         )
+    if lease.native_launch is not None:
+        lease.native_launch.validate(lease)
     return lease
 
 
@@ -970,7 +975,7 @@ def release_task_documents(
             logger.exception("failed to close owned document %r", active_title)
     if lease.disconnected:
         return
-    if lease.verified_exclusive:
+    if lease.verified_exclusive and not lease.keep_application_open:
         try:
             exit_owned_application(lease, app)
         except SessionOwnershipError:
@@ -1226,3 +1231,4 @@ def call_with_watchdog(
     finally:
         finished.set()
         watcher.join(timeout=1.0)
+

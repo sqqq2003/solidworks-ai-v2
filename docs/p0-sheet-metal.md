@@ -84,3 +84,29 @@ python work/audit_k_factor_evidence.py results/windows/p0_sheetmetal_accept_kfac
 该证据审计在 fixed_blank 假设下得到 consistent_fixed_blank_pending_folded_measurements，K 持久化匹配、平料差=0 与假设一致；若输入 fixed_outside_legs 则仍是 mismatch。两种审计均退出 3，不是实机通过。理论 ΔBA≈0.982mm 不能脱离尺寸基准直接要求 DXF bbox 变化。
 
 Windows 新适配器在关闭重开后，会切换 FlatPattern 状态，分别读取折叠和展平实体的模型坐标 bbox（mm），恢复初始抑制状态，不保存；选择/重建/测量/恢复失败会阻止继续导出验收。结果在 reopen.geometry_states。下一轮对两组 K 比较折叠实体、真实展平实体和 DXF 三者，另行记录具体法兰/折弯尺寸；模型轴与 DXF 轴可能不同，不能未经对齐直接按 bbox 宽度相减。
+
+## 正式独占进程入口与 p248 重试日志
+
+Gork 对 f563120 的复测报告：K 写入/保存/重开正确；同源毛坯的展开尺寸相同，折叠 Z 尺寸已有约 0.98mm 差异。会话部分用过 P0_RETEST_ATTACH shim，这不属于本仓库的正式归属证明；以下入口不使用该 shim，也不放松 require_model_write。
+
+先在独立仓库工作副本上跑一次**无 CAD 写入**的 Windows 会话探针（把路径换成实际安装位置）：
+
+```bat
+py work\probe_owned_solidworks.py --sw-exe "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe" --out runtime\owned-session.json
+```
+
+流程为 Popen 启动指定 EXE → 保留进程 lifetime handle → 只读查找 COM 注册对象 → GetProcessID 与新 PID 匹配 → 通过保留句柄验证进程存活/真实 image → 完整文档清单为空 → claim_spawned_process。已有活动 SW 对象只用于只读候选匹配，不自动获得写权限；若新进程转发给旧实例后退出、COM PID 不符、文档计数与枚举不符或有未知文档，拒绝写入，报告本次 PID，不结束未知会话。Windows 会话注册、许可证/启动行为仍需实际验证。
+
+正式建模入口（旧 CLI 的 profile 从 1 开始）：
+
+```bat
+py src\sw_tool_cli.py --mode sheet --input <独立工作副本.dwg> --out <新的独立目录>\p248.SLDPRT --profile 248 --thickness 2.5 --radius 1 --angle 90 --sw-exe "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe"
+```
+
+K 对照时对 profile 209 分别加 --k-factor 0.25 / 0.5，输出必须是两个新路径。更完整的生成→重开→测量→展开→DXF 管线，可在 work/run_sheet_metal.py --live 上加同样的 --sw-exe，注意该脚本的 --profile 使用**零基索引**（p248 对应 247）。未给 --sw-exe 的路径仍保持原有严格归属门槛，不自动接管正在运行的 SW。
+
+每次写入前重新核对 retained handle、COM PID 和当前文档归属。生成/重开/导出复用同一对象，不再重新 GetActiveObject；中间步骤不 ExitApp。结束时只在归属仍有效且清单为空时请求本次实例 ExitApp；不强杀。session/session_end 和探针结果提供 PID、image、attached_existing=false、cleanup_status（exit_requested 或 left_open_for_recovery），exit_requested 不是已确认进程退出。失败证明会保留新进程以供恢复，不能手动把别的 PID 填成 spawned PID。
+
+p248 的 done 事件新增 bend_attempts，逐轮包含 attempt、relief_step、请求累计 relief_extra_mm、status、failed_bend_indices、completed_bend_count、错误类型；成功轮还报告 relief_slot_count。原槽/+1.0/+1.5mm 的请求记录不能替代实际槽几何变化证据。全部失败仍为 degraded/exit3；原生发布管线拒绝通过，并在 failure JSON 中保留 generation/bend_attempts。当前没有真实矩形内孔释放槽样本，保持未验收，不用模拟补上实机结论。
+
+同步时需要同一提交的 src/sw_owned_launch.py、sw_session.py、solidworks_generator.py、sw_tool_cli.py 及所用管线模块，避免混用旧归属函数。不自动覆盖 D 盘客户程序。正式复测需提供 owned-session.json、session 事件和 p248 每轮日志；在此之前独占会话及释放槽实机验收仍 pending。

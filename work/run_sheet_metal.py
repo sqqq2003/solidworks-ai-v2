@@ -12,6 +12,7 @@ from sheet_metal_pipeline import build_plan, run_plan, MockSheetMetalPort
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('source', type=Path)
+    p.add_argument('--sw-exe', type=Path, help='installed SLDWORKS.exe; spawn and verify a dedicated process')
     p.add_argument('--profile', type=int, default=0, help='zero-based contour index')
     for key in ('thickness','radius','angle','k-factor'):
         p.add_argument('--'+key, type=float)
@@ -37,9 +38,17 @@ def main():
         elif args.live:
             from sheet_metal_windows import WindowsSheetMetalPort
             from sw_session import run_on_task_sta
-            report['execution'] = run_on_task_sta(
-                lambda: run_plan(analysis, plan, args.out, WindowsSheetMetalPort()),
-                timeout=240, task_name='p0-sheet-metal')
+            def live_job():
+                if args.sw_exe is None:
+                    return run_plan(analysis, plan, args.out, WindowsSheetMetalPort())
+                from sw_owned_launch import owned_solidworks
+                with owned_solidworks(args.sw_exe) as binding:
+                    report['session'] = binding.evidence()
+                    result = run_plan(analysis, plan, args.out, WindowsSheetMetalPort())
+                report['session'] = binding.evidence()
+                return result
+            report['execution'] = run_on_task_sta(live_job,
+                timeout=300, task_name='p0-sheet-metal')
         print(json.dumps(report, indent=2, ensure_ascii=False, default=str, allow_nan=False))
         status = report.get('execution', plan)['status']
         return 1 if status == 'failed' else (3 if status == 'pending' else 0)

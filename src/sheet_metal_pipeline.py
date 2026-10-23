@@ -39,7 +39,7 @@ def code_hash():
     return digest({name: file_hash(root/name) for name in (
         'sheet_metal_pipeline.py', 'sheet_metal_windows.py', 'cad_analyzer.py',
         'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py',
-        'bend_allowance.py', 'sw_session.py')})
+        'bend_allowance.py', 'sw_session.py', 'sw_owned_launch.py')})
 
 
 def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
@@ -160,6 +160,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
     lock = root / ('.' + label + '.lock')
     lock.mkdir()  # Cross-process single publisher; never clear someone else's lock.
     stage = None
+    generated = None
     try:
         if destination.exists():
             manifest = json.loads((destination/'result.json').read_text())
@@ -214,7 +215,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
             except Exception as rollback:
                 recovery = 'recovery_required: ' + str(rollback)
         failure = {'status': 'failed', 'error': str(exc), 'recovery': recovery,
-                   'plan_id': plan_id, 'sw_live_verified': False,
+                   'plan_id': plan_id, 'sw_live_verified': False, 'generation': generated,
                    'diagnostic_stage': str(stage) if stage and stage.exists() else None}
         diagnostic = root / ('failure-' + uuid.uuid4().hex + '.json')
         diagnostic.write_text(json.dumps(failure, ensure_ascii=False, indent=2)+'\n')
