@@ -19,6 +19,15 @@ from src.a01_parametric.solver import dependency_order, solve, solve_spec
 FIXTURE = ROOT / "tests" / "fixtures" / "a01_sim_assembly.json"
 
 
+def _com_importable() -> bool:
+    try:
+        import pythoncom  # noqa: F401
+        import win32com.client  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 def _index(plan: dict, name: str) -> int:
     return plan["parameter_order"].index(name)
 
@@ -159,6 +168,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(report["dry_run"]["variables_set"], ["height", "length", "width"])
         self.assertFalse(trace.with_suffix(".sldasm").exists())
 
+    @unittest.skipIf(_com_importable(), "COM runtime present: refusal happens after the COM check")
     def test_live_flag_is_refused_without_com(self):
         completed = subprocess.run(
             [
@@ -178,6 +188,28 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 2, completed.stdout)
         self.assertIn("not_applicable_on_linux", completed.stdout)
+        self.assertFalse((ROOT / "runtime" / "copy.SLDASM").exists())
+
+    @unittest.skipUnless(_com_importable(), "requires an importable COM runtime")
+    def test_live_without_mapping_is_refused_after_com_check(self):
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "src.a01_parametric.cli",
+                "--live",
+                "--assembly",
+                str(ROOT / "runtime" / "original.SLDASM"),
+                "--save-as",
+                str(ROOT / "runtime" / "copy.SLDASM"),
+            ],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 1, completed.stdout)
+        self.assertIn("require confirmed mappings", completed.stdout)
         self.assertFalse((ROOT / "runtime" / "copy.SLDASM").exists())
 
 

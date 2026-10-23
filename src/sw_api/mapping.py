@@ -56,8 +56,14 @@ def load_mappings(payload: dict) -> list[ParameterMapping]:
 
 
 def mapping_template(plan: dict) -> dict:
+    """Only units the v1 mapping schema can express become template rows.
+
+    Plan registers may carry non-length units such as mm/s or W; those stay
+    pending in the plan rather than producing an unloadable template.
+    """
     return {"schema_version": 1, "parameters": [asdict(ParameterMapping(
         parameter=name, unit=row.get("unit", "mm"),
         depends_on=tuple(row.get("depends_on", [])),
         component_kind="fixed" if row.get("preserve_interface") else "editable",
-    )) for name, row in plan["parameter_register"].items()]}
+    )) for name, row in plan["parameter_register"].items()
+        if row.get("unit", "mm") in {"mm", "m", "deg", "count"}]}

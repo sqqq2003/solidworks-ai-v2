@@ -8,6 +8,12 @@ def numeric(value, name, minimum=0):
     return float(value)
 
 
+def finite_number(value, name):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not isfinite(value):
+        raise ValueError(f"{name}: finite number required")
+    return float(value)
+
+
 MODULES = {
     "frame": ("frame_length", "frame_width", "frame_height", "sheet_thickness"),
     "conveyor": ("conveyor_length", "conveyor_width", "conveyor_height"),
@@ -39,7 +45,9 @@ def build_plan(envelope=None, measurements=None):
             raise ValueError(f"unknown QL parameter: {name}")
         if row.get("confirmed") is not True or not row.get("source"):
             continue
-        values[name] = numeric(row["value"], name)
+        # left_drive_x is a signed offset from the centre line.
+        read = finite_number if name == "left_drive_x" else numeric
+        values[name] = read(row["value"], name)
         register[name].update(source=row["source"], status="confirmed_input")
     rules = {
         "frame_length": (("target_length", "end_allowance"), lambda a,b: a-2*b),

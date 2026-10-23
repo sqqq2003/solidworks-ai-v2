@@ -19,7 +19,11 @@ def build_bom(components):
         number = c.get("part_number")
         if not isinstance(number,str) or not number.strip():
             raise ValueError("stable part_number required; use explicit provisional identifier")
-        key = (number,c.get("configuration",""),c.get("material") or "pending_mapping",bool(c.get("purchased")))
+        configuration = c.get("configuration") or ""
+        material = c.get("material") or "pending_mapping"
+        if not isinstance(configuration,str) or not isinstance(material,str):
+            raise ValueError("configuration and material must be strings")
+        key = (number,configuration,material,bool(c.get("purchased")))
         if key not in grouped:
             grouped[key] = {"part_number": key[0], "configuration": key[1], "material": key[2],
                             "purchased": key[3], "quantity": 0, "instances": [],

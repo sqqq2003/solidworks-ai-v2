@@ -12,7 +12,7 @@ def _box(box):
 
 
 def interference(components, clearance_mm=0):
-    if not isfinite(clearance_mm) or clearance_mm < 0:
+    if isinstance(clearance_mm, bool) or not isfinite(clearance_mm) or clearance_mm < 0:
         raise ValueError("nonnegative finite clearance required")
     hits, missing = [], []
     boxes = {}
@@ -44,12 +44,12 @@ def inspect_assembly(components, mates, transmissions=()):
         if a not in nodes or b not in nodes or a == b:
             issues.append({"kind": "invalid_reference", "mate": m})
             continue
+        # Only active mates contribute connectivity; a suppressed mate must not
+        # erase an otherwise valid edge between the same pair.
+        if m.get("suppressed"):
+            continue
         adjacency[a].add(b)
         adjacency[b].add(a)
-        if m.get("suppressed"):
-            adjacency[a].discard(b)
-            adjacency[b].discard(a)
-            continue
         if m["type"] not in rank:
             issues.append({"kind": "unsupported_mate", "mate": m})
             continue

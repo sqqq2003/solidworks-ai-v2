@@ -1,7 +1,7 @@
 """Callable development fixture; invented example geometry is not OEM mapping.
 
 From repo root: python examples/ql5050px_batch.py --output NEW_DIRECTORY
-This example was NOT executed during the development-only batch.
+All outputs are offline simulation fixtures; tests/test_ql5050px_cli.py runs it.
 """
 import argparse
 import json
@@ -35,7 +35,7 @@ def main(output):
                             notes=["Development fixture; not an OEM release"],bom=bom)
     export_drawing_json(drawing,output/"drawing.json")
     export_drawing_json({"plan":plan,"control":control,"assembly":assembly,"motion":motion,"blank":blank,
-                         "test_status":"not_run_in_development_batch"},output/"batch.json")
+                         "test_status":"offline_simulation_only"},output/"batch.json")
 
 
 if __name__ == "__main__":

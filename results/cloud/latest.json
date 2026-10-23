@@ -1,12 +1,20 @@
 {
   "scope": "portable_simulation_only",
-  "platform": "Linux",
-  "python": "3.12.14",
-  "tests_run": 351,
-  "passed": 347,
+  "platform": "Windows",
+  "python": "3.14.7",
+  "tests_run": 448,
+  "passed": 441,
   "failures": 0,
   "errors": 0,
   "skipped": [
+    {
+      "test": "test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com)",
+      "reason": "COM runtime present: refusal happens after the COM check"
+    },
+    {
+      "test": "test_refuses_off_windows (test_ql5050px_sheet_metal.NativeGenerationTests.test_refuses_off_windows)",
+      "reason": "Windows branch covered by path refusal"
+    },
     {
       "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
       "reason": "测试用滚筒 DWG 不在 uploads"
@@ -22,12 +30,16 @@
     {
       "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
       "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    },
+    {
+      "test": "test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux)",
+      "reason": "Linux refusal test"
     }
   ],
   "pending_feature_cases": {
     "test_border_relief_notch.py": 9,
-    "test_turned_part.py": 22,
-    "test_spur_segments.py": 5
+    "test_spur_segments.py": 5,
+    "test_turned_part.py": 22
   },
   "cross_process_lock_passed": true,
   "solidworks_live_verified": false,

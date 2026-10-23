@@ -156,3 +156,13 @@
 - 确认 _transform_to_sketch 使用连续行作输出点积，与 SW 行向量旋转布局相反，且遗漏缩放。修正为旋转列点积、缩放后平移；身份/镜像矩阵掩盖的问题由旋转坐标回归检出。
 - 新增5项测试（含无效输入子测试），旧实现明确失败，新实现通过。共享助手用于折弯、手折参考及孔草图，整轮离线回归370 ran / 365 passed / 0 failures/errors / 5 skipped，跨进程锁通过，36 pending不计通过。
 - 本轮增加 Bend sketch coordinates 原生矩阵及模型/草图端点日志，留在本机诊断。下一次先在正式独占会话核对原生 MathPoint.MultiplyTransform 与输出一致，再测step0；未证明本缺陷是108/109全部根因。客户坐标不得公开提交。
+
+
+## ISSUE6-OFFLINE-001：五模块离线单测补齐
+
+- 分支 `feat/issue6-offline-tests`，基线 `13cc10c2a4fb29cbe166b16f82c9a72b7896ea0a`；只补测试与接口契约，不改原生生成语义，不接触客户 CAD。
+- 新增 77 项离线测试，覆盖参数依赖、受控执行、装配/运动/干涉、钣金展开/DXF、BOM/工程图和 CLI/示例入口；全部为纯 Python 或 mock，不启动 SolidWorks。
+- 本机 Windows 全量：448 ran / 441 passed / 0 failures / 0 errors / 7 skipped，跨进程锁通过；36 pending_features 仍不计通过。Linux CI 运行同一套件。
+- 修复 7 项跨模块/边界缺陷：映射模板非法单位、抑制配合删除有效连通边、BOM 空配置排序异常、负值 `left_drive_x` 被拒、bool 间隙、未知导出类型 `KeyError`、`pending_mapping` 混入目标包络。另有 Windows COM 环境下旧测试的平台假设修正。
+- 未执行任何 SolidWorks 实机操作；`solidworks_live_verified=false`。Windows 驱动、原生钣金/工程图导出、OEM 映射和 p248 闭环仍待 Gork 证据。
+- 测试矩阵、拒绝条件、skip/pending 与回滚说明见 `docs/issue6-offline-tests.md`。

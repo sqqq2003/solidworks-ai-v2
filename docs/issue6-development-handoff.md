@@ -48,3 +48,8 @@ Windows 实机接口：`execute_variant(plan, mapping_payload, destination, driv
 先完成手头旧 GT-ZX/Step0 工作，再切换本批。建议先运行示例和纯接口，再接真实映射/driver，随后在独立副本验证小改型、重建、读回、保存重开、配合/运动/精确干涉，最后生成钣金和工程图/BOM。原始客户 CAD 不入仓库、不覆盖。记录失败参数、调用、SW 版本、返回码、文件和重现步骤，集中修复本批。
 
 回滚：功能分支未合并时回到基线即可；合并后 revert 本批提交。删除仅由本批创建且明确归属的模拟输出；原生失败文件先保留证据，不能关闭或删除未知文档。提交 SHA 与交接链接在 Issue #6 统一评论，不逐模块触发测试。
+
+
+## 后续补交：离线单测（feat/issue6-offline-tests）
+
+上文“本批测试全部未测”指开发批次当时的范围；其后已在独立分支补 77 项离线测试并修复 7 项接口/边界缺陷，全量 448 ran / 441 passed / 0 failures / 7 skipped（Windows 本机，跨进程锁通过）。这些仍是纯 Python/mock 结果，**不代表 Windows 实机或机械验收**。矩阵、拒绝条件、skip/pending 与回滚见 `docs/issue6-offline-tests.md`。

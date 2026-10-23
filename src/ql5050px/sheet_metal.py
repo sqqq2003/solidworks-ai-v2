@@ -15,7 +15,8 @@ def unfold_strip(legs_mm, angles_deg, *, thickness_mm, radius_mm, k_factor, widt
     width = numeric(width_mm,"width")
     if len(legs) < 2 or len(angles_deg) != len(legs)-1:
         raise ValueError("N legs require N-1 bends")
-    bends = [compute_bend_allowance(thickness_mm,radius_mm,a,k_factor) for a in angles_deg]
+    angles = [numeric(a,"angle") for a in angles_deg]
+    bends = [compute_bend_allowance(thickness_mm,radius_mm,a,k_factor) for a in angles]
     tangent = []
     for i,leg in enumerate(legs):
         setbacks = (bends[i-1].outside_setback_mm if i else 0) + (bends[i].outside_setback_mm if i < len(bends) else 0)
@@ -31,7 +32,7 @@ def unfold_strip(legs_mm, angles_deg, *, thickness_mm, radius_mm, k_factor, widt
     for i,bend in enumerate(bends):
         cursor += tangent[i]
         center = cursor+bend.bend_allowance_mm/2
-        lines.append({"x_mm": center, "angle_deg": angles_deg[i]})
+        lines.append({"x_mm": center, "angle_deg": angles[i]})
         for y in (0,width-rd):
             slots.append({"x_mm": center-rw/2, "y_mm": y, "width_mm": rw, "depth_mm": rd})
         cursor += bend.bend_allowance_mm
