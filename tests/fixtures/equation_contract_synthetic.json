@@ -1,0 +1,83 @@
+{
+  "source": "synthetic_contract_fixture_not_native_evidence",
+  "equations": [
+    {
+      "index": 0,
+      "equation": "\"Width\"= 600mm",
+      "value": 600.0,
+      "global_variable": true
+    },
+    {
+      "index": 1,
+      "equation": "\"Height\"= 750mm",
+      "value": 750.0,
+      "global_variable": true
+    },
+    {
+      "index": 2,
+      "equation": "\"Beam692Extra\"= 92mm",
+      "value": 92.0,
+      "global_variable": true
+    },
+    {
+      "index": 3,
+      "equation": "\"FootHeight\"= 50mm",
+      "value": 50.0,
+      "global_variable": true
+    },
+    {
+      "index": 4,
+      "equation": "\"DeckHeight\"= \"Height\" - \"FootHeight\"",
+      "value": 700.0,
+      "global_variable": true
+    },
+    {
+      "index": 5,
+      "equation": "\"ColumnExtra\"= 135mm",
+      "value": 135.0,
+      "global_variable": true
+    },
+    {
+      "index": 6,
+      "equation": "\"D1@Sketch1@SyntheticPanelA.Part\" = \"Length\"",
+      "value": 0.0,
+      "global_variable": false
+    },
+    {
+      "index": 7,
+      "equation": "\"SheetTrim\"= 4mm",
+      "value": 4.0,
+      "global_variable": true
+    },
+    {
+      "index": 8,
+      "equation": "\"D2@Sketch1@SyntheticPanelB.Part\" = \"Length\" - \"SheetTrim\"",
+      "value": 0.0,
+      "global_variable": false
+    },
+    {
+      "index": 9,
+      "equation": "\"Beam682Extra\"= 82mm",
+      "value": 82.0,
+      "global_variable": true
+    },
+    {
+      "index": 10,
+      "equation": "\"RollerLong\"= \"Width\" + \"RollerLongExtra\"",
+      "value": 700.0,
+      "global_variable": true
+    },
+    {
+      "index": 11,
+      "equation": "\"RollerLongExtra\"= 100mm",
+      "value": 100.0,
+      "global_variable": true
+    },
+    {
+      "index": 12,
+      "equation": "\"Length\"= 1300mm",
+      "value": 1300.0,
+      "global_variable": true
+    }
+  ]
+}

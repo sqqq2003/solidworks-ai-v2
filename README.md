@@ -1,33 +1,26 @@
-# solidworks-ai-v2
+# SolidWorks AI V2
 
-云端分支 `dev/cloud-ai` 放的是可以在 Linux 上导入、并用假 COM 做会话安全检查的源码。这里没有 SolidWorks，也没有 `pywin32`。
-
-**云端测试通过只表示模拟通过。它不是 SolidWorks 实机通过。** 实机钣金 / SW 核对在用户本机，由 Grok Bot 做，Codex 另轨复核。
-
-## 跑云端模拟测试
+项目工作台覆盖二维 CAD 识别、钣金/滚筒/车件入口、整机参数预检、串行任务与报告。原生 SolidWorks 操作仅在 Windows 独占工作会话执行；Linux 测试只证明离线算法和模拟合同。
 
 ```bash
 python -m pip install -r requirements-cloud.txt
-python -m unittest tests.test_sw_session_safety -v
-python work/test_review_session_boundaries.py -v
-python -m unittest discover -s tests -v
+python work/project.py doctor
+python examples/project_smoke.py
+python app.py
 ```
 
-日志在 `results/cloud/`。`sw_live` 在 Linux 上记为 `not_applicable_on_linux`。
+app.py 需要桌面与 tkinter。Windows 原生生成另需 pywin32、SolidWorks 与 --sw-exe 正式会话入口。
 
-## A01 参数化 dry-run
+- [整体项目测试与交接](docs/project-testing.md)：桌面、三类零件、批量任务和测试回传。
+- [钣金实机联调](docs/p0-sheet-metal.md)：独占进程、K因子、展开与p248未解决项。
+- [整机参数预检](docs/a01-parametric.md)：真实OEM未知值保持pending，不冒充整机完成。
 
 ```bash
-python -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --dry-run
+python work/run_cloud_tests.py
+python work/project.py status
+python work/project.py batch runtime/whole-project-smoke/jobs.json
 ```
 
-说明在 `docs/a01-parametric.md`。这是模拟尺寸计划，不是 SolidWorks 实机改型。
+装配配合/干涉/运动、原生工程图目前仍有骨架或未实现部分，工作台如实显示。36项原始pending特征合约不计通过；重开尺寸验证也不等于机械验收。
 
-## 布局
-
-- `src/`：从本机工作台迁来的 Python 模块。COM 导入留在调用点，避免 Linux 上 `unittest` 发现失败。
-- `tests/`、`work/`：模拟测试与会话边界复查。不启动 SolidWorks。
-- `tasks/`：交接说明，不是已完成的实机结果。
-- `requirements-cloud.txt`：云端纯 Python 依赖。Windows 锁文件见 `requirements-offline.lock.txt`（含 `pywin32`，不要在 Linux 上安装）。
-
-会话安全补丁的说明见 `README-A01-session-safety.md`。角色和阶段见 `AGENTS.md`、`AI_MASTER_PLAN.md`。
+源码测试包可用 work/prepare_test_handoff.py 创建，校验入口为 work/verify_test_handoff.py。不包含客户CAD、凭据、原生产程序和原生实机通过承诺。请在独立目录测试，不自动覆盖用户D盘程序。

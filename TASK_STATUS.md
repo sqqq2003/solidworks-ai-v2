@@ -156,3 +156,17 @@
 - 确认 _transform_to_sketch 使用连续行作输出点积，与 SW 行向量旋转布局相反，且遗漏缩放。修正为旋转列点积、缩放后平移；身份/镜像矩阵掩盖的问题由旋转坐标回归检出。
 - 新增5项测试（含无效输入子测试），旧实现明确失败，新实现通过。共享助手用于折弯、手折参考及孔草图，整轮离线回归370 ran / 365 passed / 0 failures/errors / 5 skipped，跨进程锁通过，36 pending不计通过。
 - 本轮增加 Bend sketch coordinates 原生矩阵及模型/草图端点日志，留在本机诊断。下一次先在正式独占会话核对原生 MathPoint.MultiplyTransform 与输出一致，再测step0；未证明本缺陷是108/109全部根因。客户坐标不得公开提交。
+
+## PROJECT-001：整体项目工作台与测试交付
+
+- 基线 e81438b，先同步上游固定面/草图矩阵修复与最新实机证据，不覆盖其他执行者成果。本轮按用户“整体项目”推进，未继续仅围绕p248补丁。
+- 新增根app.py：统一钣金、滚筒、车件、整机参数入口，串行队列、识别/计划/原生生成、参数确认、当前任务后停止、项目状态与环境页。后台线程不触碰Tk控件，不强杀CAD进程。桌面显示/点击仍需Windows测试。
+- 原CLI增加turned、plan-only与verify-reopen；复用现有车件轮廓/特征算法。修复车件绕过已证明实例而重新GetActiveObject的问题，统一正式会话连接，严格检查保存码与非空文件，保存后按新标题关闭自己文档。
+- 三类零件可选关闭重开、重建、实体尺寸核对；滚筒与车件还比对生成结果/计划尺寸。缺失滚筒尺寸默认pending，显式允许的通用默认值仍标来源，不当作OEM实测；化妆螺纹仍不冒充真实螺纹验收。
+- 新增project.py：整体能力状态、doctor和JSON清单批量入口；原生失败停止后续任务，离线失败可继续。JSON/任务CSV/参数CSV报告，未知OEM值保持空；退出码0本身不构成成功证据。
+- 新增源码测试包构建和SHA清单校验，排除客户CAD、凭据、Git历史和Windows证据，附独立测试记录；不覆盖D盘生产程序。
+- 新增15项整体合同测试；全回归 `python work/run_cloud_tests.py`：385 ran / 381 passed / 4 skipped / 0 failures/errors，跨进程锁通过；36原始pending合约仍不计通过。
+- `python examples/project_smoke.py`：5项synthetic离线任务，1 analyzed / 2 planned / 2 review_required / 0 failed；未执行SW。完整交接见docs/project-testing.md。
+- 装配/配合/干涉/运动、原生工程图仍有骨架/未实现部分；本轮没有伪造这些CAD功能，也没有完成新的Windows整体验收。
+
+源码交接包已独立解压验证：完整回归 385 项，381 通过、4 跳过；离线整项目烟测 5 项均得到预期状态。方程测试使用明确标记的合成夹具，不再要求分发 Windows 原始证据。

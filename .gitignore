@@ -49,3 +49,6 @@ results/*
 
 runtime/
 reports/
+
+# Generated local CLI logs
+src/logs/

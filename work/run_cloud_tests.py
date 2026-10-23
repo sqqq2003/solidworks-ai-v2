@@ -40,6 +40,9 @@ report = dict(scope='portable_simulation_only', platform=platform.system(), pyth
               pending_feature_cases=pending, cross_process_lock_passed=probe.returncode == 0,
               solidworks_live_verified=False, sw_live='not_applicable_on_linux',
               a01_parametric=a01_parametric)
+from project_workbench import capabilities, doctor
+report['whole_project'] = capabilities()
+report['runtime_capabilities'] = doctor()
 (output / 'latest.json').write_text(json.dumps(report, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
 print(json.dumps(report, indent=2, ensure_ascii=True))
 if not result.wasSuccessful():

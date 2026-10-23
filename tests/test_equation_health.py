@@ -62,9 +62,9 @@ class Model:
 
 class EquationHealthTests(unittest.TestCase):
     def setUp(self):
-        self.rows = json.loads((ROOT/'results/windows/readonly_equation_dump.json').read_text())['equations']
+        self.rows = json.loads((ROOT/'tests/fixtures/equation_contract_synthetic.json').read_text())['equations']
 
-    def test_actual_dump_identifies_forward_refs_and_unverified_geometry(self):
+    def test_contract_dump_identifies_forward_refs_and_unverified_geometry(self):
         report = analyze_equations(self.rows)
         self.assertEqual(report['expected_mm']['DeckHeight'], 700)
         self.assertEqual(report['expected_mm']['RollerLong'], 700)

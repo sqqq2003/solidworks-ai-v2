@@ -647,26 +647,13 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     document_title = None
     com_initialized = False
     typed_solidworks = None
+    saved = False
+    model = None
     try:
         pythoncom.CoInitialize()
         com_initialized = True
 
-        def _get_active():
-            return win32com.client.GetActiveObject("SldWorks.Application")
-
-        def _dispatch():
-            return win32com.client.Dispatch("SldWorks.Application")
-
-        def _absent(error: BaseException) -> bool:
-            return isinstance(error, pythoncom.com_error)
-
-        solidworks, _created_here = session.connect_application(
-            lease,
-            get_active=_get_active,
-            dispatch=_dispatch,
-            list_titles=sw._list_open_document_titles,
-            is_absent=_absent,
-        )
+        solidworks, _created_here = sw._connect_task_solidworks(lease, win32com, pythoncom)
         # 目标机装的 SolidWorks 版本未必和开发机一致，主版本号要现探测。
         type_library = sw.ensure_solidworks_typelib()
         typed_solidworks = sw._as_interface(type_library, solidworks, "ISldWorks")
@@ -903,13 +890,16 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         )
         _prefer_millimeters(model, type_library)
 
+        if not sw._com_read(model, "EditRebuild3"):
+            raise sw.SolidWorksGenerationError("车件最终重建失败，不保存")
         output.parent.mkdir(parents=True, exist_ok=True)
+        if output.exists():
+            raise FileExistsError(f"输出已存在：{output}")
         session.require_model_write(lease)
         errors = model.SaveAs3(str(output), 0, 2)
-        if not output.is_file():
-            raise sw.SolidWorksGenerationError(
-                f"SolidWorks 未能保存车件（错误代码：{errors}）。"
-            )
+        from part_verification import assert_native_save
+        assert_native_save(output, errors)
+        saved = True
         return str(output)
     finally:
         try:
@@ -920,6 +910,7 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                     application,
                     title=str(document_title) if document_title else None,
                     close=bool(document_title),
+                    resolve_title=(lambda: sw._com_read(model, "GetTitle")) if saved and model is not None else None,
                 )
         finally:
             if com_initialized:

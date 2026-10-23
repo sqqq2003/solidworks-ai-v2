@@ -1,0 +1,222 @@
+"""Shared project jobs for desktop UI and serial batch runner. No shell scripts."""
+from __future__ import annotations
+import csv
+import hashlib
+import importlib.util
+import json
+import math
+import os
+from pathlib import Path
+import platform
+import subprocess
+import sys
+import time
+import uuid
+
+ROOT = Path(__file__).resolve().parents[1]
+MODES = {'sheet','roller','turned'}
+
+
+def capabilities():
+    return {'project':'SolidWorks AI V2', 'scope':'whole_project',
+        'modules':[
+            {'id':'cad','state':'implemented','entry':'src/cad_analyzer.py'},
+            {'id':'sheet','state':'native_implemented_partial_live','entry':'src/sw_tool_cli.py --mode sheet'},
+            {'id':'roller','state':'native_implemented_pending_live','entry':'src/sw_tool_cli.py --mode roller'},
+            {'id':'turned','state':'native_implemented_pending_live','entry':'src/sw_tool_cli.py --mode turned'},
+            {'id':'parametric','state':'offline_implemented_pending_mapping','entry':'src.a01_parametric.cli'},
+            {'id':'assembly_mates_motion','state':'scaffold_pending_native','entry':'src/a01_next/mate_check.py'},
+            {'id':'native_engineering_drawings','state':'scaffold_pending_native','entry':'src/a01_next/drawing_export.py'},
+            {'id':'desktop','state':'implemented_pending_desktop_test','entry':'app.py'},
+        ], 'mechanical_acceptance':'unverified','pending_original_feature_contracts':36}
+
+
+def doctor():
+    def available(name):
+        try:
+            return importlib.util.find_spec(name) is not None
+        except (ValueError,ModuleNotFoundError):
+            return False
+    return {'platform':platform.system(),'python':platform.python_version(),
+        'python_executable':sys.executable,'ezdxf_available':available('ezdxf'),
+        'tkinter_available':available('tkinter'),
+        'pywin32_available':available('pythoncom'),
+        'sw_started':False,'cad_executed':False,'desktop_display_tested':False,
+        'note':'Import availability is not SolidWorks installation or ownership proof.'}
+
+
+def number(value, name):
+    if type(value) not in (float,int) or not math.isfinite(value) or value <= 0:
+        raise ValueError(name+' must be finite positive numeric')
+    return str(value)
+
+
+def build_command(job: dict, *, root=ROOT):
+    kind = job.get('kind')
+    if kind == 'parametric':
+        cmd = [sys.executable,'-X','utf8','-m','src.a01_parametric.cli']
+        for key in ('length','width','height'):
+            cmd.extend(['--'+key,number(job.get(key),key)])
+        return cmd  # Parameter planning only; never silently run a live assembly.
+    if kind not in MODES:
+        raise ValueError('unknown job kind')
+    action = job.get('action','analyze')
+    if action not in {'analyze','plan','generate'}:
+        raise ValueError('unknown action')
+    source = Path(job['source']).expanduser().resolve()
+    if not source.is_file() or source.suffix.casefold() not in {'.dwg','.dxf'}:
+        raise ValueError('source must be an existing DWG/DXF file')
+    cmd = [sys.executable,'-X','utf8',str(Path(root)/'src/sw_tool_cli.py'),
+           '--mode',kind,'--input',str(source)]
+    if action == 'analyze':
+        cmd.append('--analyze-only')
+    elif action == 'plan':
+        cmd.append('--plan-only')
+    else:
+        if job.get('confirmed') is not True:
+            raise ValueError('review identified geometry and parameters before native generation')
+        executable = Path(job.get('sw_exe','')).expanduser().resolve()
+        if not executable.is_file() or executable.name.casefold() != 'sldworks.exe':
+            raise ValueError('native generation requires installed SLDWORKS.exe')
+        output = Path(job['output']).expanduser().resolve()
+        if output == source or output.exists() or output.suffix.casefold() != '.sldprt':
+            raise ValueError('output must be a new .SLDPRT path, distinct from source')
+        cmd.extend(['--out',str(output),'--sw-exe',str(executable),'--verify-reopen'])
+    if kind == 'sheet' and action != 'analyze':
+        for key in ('thickness','radius','angle'):
+            cmd.extend(['--'+key,number(job.get(key),key)])
+        k = job.get('k_factor')
+        if type(k) not in (int,float) or not math.isfinite(k) or not 0 <= k <= 1:
+            raise ValueError('explicit K factor from 0 to 1 required')
+        cmd.extend(['--k-factor',str(k)])
+        if type(job.get('profile')) is not int or job['profile'] < 1:
+            raise ValueError('sheet profile is one-based, positive integer')
+        cmd.extend(['--profile',str(job['profile'])])
+        if job.get('flip') is True:
+            cmd.append('--flip')
+    if kind == 'roller' and job.get('allow_inferred') is True:
+        cmd.append('--allow-inferred')
+    if kind in {'roller','turned'}:
+        variant = job.get('variant',0)
+        if type(variant) is not int or variant < 0:
+            raise ValueError('variant is a nonnegative zero-based integer')
+        cmd.extend(['--variant',str(variant)])
+    return cmd
+
+
+def execute_job(job, *, root=ROOT, runner=subprocess.run):
+    started = time.monotonic()
+    base = {'name':job.get('name',job.get('kind','job')),'kind':job.get('kind'),
+            'mechanical_acceptance':'unverified','cad_verified':False}
+    try:
+        command = build_command(job,root=root)
+        native = job.get('action') == 'generate' and job.get('kind') in MODES
+        if native and sys.platform != 'win32':
+            raise RuntimeError('native generation requires Windows; use analyze/plan on cloud')
+        # No shell interpolation, environment dump or automatic native-process kill.
+        completed = runner(command,cwd=root,capture_output=True,text=True,encoding='utf-8',errors='replace',shell=False)
+        events, raw = [], []
+        for line in completed.stdout.splitlines():
+            try:
+                event = json.loads(line)
+                if isinstance(event,dict):
+                    events.append(event)
+                else:
+                    raw.append(line)
+            except ValueError:
+                raw.append(line)
+        if job.get('kind') == 'parametric' and not events:
+            try:
+                payload = json.loads(completed.stdout)
+                if isinstance(payload,dict) and isinstance(payload.get('plan'),dict):
+                    events.append({'event':'plan','kind':'parametric','plan':payload['plan'],'cad_executed':False})
+            except ValueError:
+                pass
+        errors = [e for e in events if e.get('event') == 'error']
+        done = next((e for e in reversed(events) if e.get('event') in {'done','plan','analysis'}),None)
+        if completed.returncode not in (0,3) or errors:
+            status = 'failed'
+        elif job.get('kind') == 'parametric' and done is not None:
+            status = 'review_required' if completed.returncode == 3 else 'planned'
+        elif done is None:
+            status = 'failed'  # No success from rc=0 alone.
+        elif done.get('event') == 'analysis':
+            status = 'analyzed'
+        elif done.get('event') == 'plan':
+            status = 'review_required' if completed.returncode == 3 else 'planned'
+        elif done.get('status') == 'degraded' or completed.returncode == 3:
+            status = 'review_required'
+        else:
+            status = 'generated_unverified'
+            if (done.get('reopen') or {}).get('status') == 'reopen_geometry_verified':
+                status = 'reopen_geometry_verified'
+        result = {**base,'status':status,'returncode':completed.returncode,'events':events,
+                  'stderr':completed.stderr,'non_json_output':raw,'command':command,
+                  'elapsed_seconds':round(time.monotonic()-started,3)}
+        if native and status != 'failed':
+            output = Path(job['output']).resolve()
+            if not output.is_file() or output.stat().st_size == 0:
+                raise RuntimeError('generation reported success without a nonempty product')
+            result['artifact'] = {'path':str(output),'sha256':hashlib.sha256(output.read_bytes()).hexdigest()}
+            result['cad_verified'] = status == 'reopen_geometry_verified'
+        return result
+    except Exception as exc:
+        return {**base,'status':'failed','error':str(exc),'elapsed_seconds':round(time.monotonic()-started,3)}
+
+
+def run_batch(jobs, *, execute=execute_job, stop_requested=lambda:False):
+    if not isinstance(jobs,list) or not jobs:
+        raise ValueError('nonempty jobs array required')
+    # Preflight every command before the first native side effect.
+    outputs = set()
+    for job in jobs:
+        build_command(job)
+        if job.get('action') == 'generate':
+            output = str(Path(job['output']).resolve()).casefold()
+            if output in outputs:
+                raise ValueError('duplicate native output path in batch')
+            outputs.add(output)
+    results = []
+    blocked = False
+    for job in jobs:
+        if blocked or stop_requested():
+            results.append({'name':job.get('name',job['kind']),'kind':job['kind'],
+                'status':'not_run','reason':'queue stopped after current job','cad_verified':False})
+            continue
+        result = execute(job)
+        results.append(result)
+        # Never continue CAD writes after an unknown native failure.
+        if job.get('action') == 'generate' and result['status'] == 'failed':
+            blocked = True
+    counts = {state:sum(r['status']==state for r in results) for state in sorted({r['status'] for r in results})}
+    return {'schema_version':1,'status':'failed' if counts.get('failed') else (
+        'review_required' if counts.get('review_required') or counts.get('not_run') else 'completed'),
+        'results':results,'counts':counts,'mechanical_acceptance':'unverified'}
+
+
+def write_report(report, folder):
+    folder = Path(folder).resolve()
+    folder.mkdir(parents=True,exist_ok=True)
+    path = folder/('project-report-'+uuid.uuid4().hex+'.json')
+    path.write_text(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False)+'\n',encoding='utf-8')
+    with path.with_suffix('.csv').open('w',newline='',encoding='utf-8-sig') as stream:
+        writer = csv.writer(stream)
+        writer.writerow(['name','kind','status','returncode','artifact','cad_verified'])
+        for row in report.get('results',[]):
+            values = [row.get('name',''),row.get('kind',''),row['status'],row.get('returncode',''),
+                      row.get('artifact',{}).get('path',''),row.get('cad_verified',False)]
+            writer.writerow(["'"+v if isinstance(v,str) and v.startswith(('=','+','-','@')) else v for v in values])
+    # Export real parameter-register entries only. Unmapped values stay blank.
+    with path.with_name(path.stem+'-parameters.csv').open('w',newline='',encoding='utf-8-sig') as stream:
+        writer = csv.writer(stream)
+        writer.writerow(['job','parameter','value_mm','unit','confirmation','source'])
+        for row in report.get('results',[]):
+            for event in row.get('events',[]):
+                plan = event.get('plan',{})
+                register = plan.get('parameter_register',{})
+                for parameter,metadata in register.items():
+                    value = plan.get('values_mm',{}).get(parameter)
+                    cells = [row.get('name',''),parameter,'' if value is None else value,
+                        metadata.get('unit',''),metadata.get('confirmation_status',''),metadata.get('source','')]
+                    writer.writerow(["'"+v if isinstance(v,str) and v.startswith(('=','+','-','@')) else v for v in cells])
+    return path

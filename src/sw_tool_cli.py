@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import logging
 import math
 import json
@@ -42,15 +43,18 @@ LOGGER = logging.getLogger("sw_tool_cli")
 
 def emit(event: str, **payload: object) -> None:
     payload["event"] = event
-    sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    sys.stdout.write(json.dumps(payload, ensure_ascii=False, default=lambda value: sorted(value) if isinstance(value,(set,frozenset)) else str(value)) + "\n")
     sys.stdout.flush()
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="钣金 / 滚筒零件一键生成（SolidWorks 插件后端）")
-    parser.add_argument("--mode", choices=("sheet", "roller"), required=True)
+    parser.add_argument("--mode", choices=("sheet", "roller", "turned"), required=True)
     parser.add_argument("--input", required=True, help="DWG / DXF 图纸路径")
     parser.add_argument("--out", help="输出 .SLDPRT 路径；--analyze-only 时可省略")
+    parser.add_argument("--plan-only", action="store_true", help="只输出特征计划，不连接 SolidWorks")
+    parser.add_argument("--allow-inferred", action="store_true", help="明确允许滚筒通用默认值；这些不是 OEM 实测数据")
+    parser.add_argument("--verify-reopen", action="store_true", help="生成后关闭重开并核对实体尺寸")
     parser.add_argument("--analyze-only", action="store_true", help="只识别图纸并汇报，不建模")
     parser.add_argument("--profile", type=int, default=None, help="钣金：轮廓序号（从 1 开始）")
     parser.add_argument("--thickness", type=float, default=1.2, help="钣金：板厚 mm")
@@ -132,6 +136,14 @@ def run_sheet(args: argparse.Namespace) -> int:
         emit("analysis", **describe_drawing(analysis))
         return 0
 
+    if args.plan_only:
+        from sheet_metal_pipeline import build_plan
+        index = args.profile - 1 if args.profile is not None else _largest_closed_profile_index(analysis)
+        plan = build_plan(analysis, profile_index=index, thickness_mm=args.thickness,
+            radius_mm=args.radius, angle_degrees=args.angle, k_factor=args.k_factor,
+            flip_direction=args.flip, bends_confirmed=False)
+        emit("plan",kind="sheet",plan=plan,cad_executed=False)
+        return 3 if plan['pending'] else 0
     if not args.out:
         emit("error", message="缺少 --out 输出路径。")
         return 2
@@ -177,9 +189,15 @@ def run_sheet(args: argparse.Namespace) -> int:
         or not math.isclose(result.k_factor_readback, allowance.k_factor, abs_tol=1e-8)
     ):
         raise RuntimeError("requested K factor was not verified; refusing success event")
+    verification = None
+    if args.verify_reopen and not result.auto_bend_abandoned:
+        from part_verification import verify_saved_part
+        verification = verify_saved_part(result.path)
     emit(
         "done",
         kind="sheet",
+        reopen=verification,
+        mechanical_acceptance="unverified",
         status="degraded" if result.auto_bend_abandoned else "passed",
         auto_bend_attempts=result.auto_bend_attempts,
         requested_k_factor=args.k_factor,
@@ -203,7 +221,7 @@ def run_roller(args: argparse.Namespace) -> int:
         emit("analysis", **describe_drawing(analysis))
         return 0
 
-    if not args.out:
+    if not args.out and not args.plan_only:
         emit("error", message="缺少 --out 输出路径。")
         return 2
     if not analysis.roller_variants:
@@ -214,23 +232,76 @@ def run_roller(args: argparse.Namespace) -> int:
         return 2
 
     variant = analysis.roller_variants[args.variant]
+    missing = [name for name in ('overall_length_mm','outer_diameter_mm','wall_thickness_mm',
+        'shaft_diameter_mm','shaft_projection_mm','shaft_thread_designation') if getattr(variant,name) is None]
+    if variant.is_powered:
+        missing.extend(name for name in ('sprocket_teeth','chain_pitch_mm') if getattr(variant,name) is None)
+    elif variant.shaft_step_diameter_mm is None:
+        missing.append('shaft_step_diameter_mm')
+    missing = sorted(set(missing) | set(variant.inferred_fields))
+    if missing and not args.allow_inferred:
+        emit("plan",kind="roller",status="review_required",pending=missing,
+             source_variant=asdict(variant),cad_executed=False,
+             message="缺少确认尺寸；核对计划后才可显式允许通用默认值")
+        return 3
     try:
         spec = spec_from_variant(variant)
     except RollerSpecError as error:
         emit("error", message=str(error))
         return 1
+    if args.plan_only:
+        emit("plan",kind="roller",plan=asdict(spec),pending=missing,
+             inferred_fields=sorted(variant.inferred_fields),cad_executed=False)
+        return 3 if missing or variant.inferred_fields else 0
     emit(
         "progress",
         message=f"{variant.roller_type} 总长 {spec.overall_length_mm:g}，开始生成…",
     )
     result = generate_roller_part(spec, args.out)
+    verification = None
+    if args.verify_reopen:
+        from part_verification import verify_saved_part
+        verification = verify_saved_part(result.path,expected_dims_mm=[
+            (result.bounds[i+3]-result.bounds[i])*1000 for i in range(3)])
     emit(
         "done",
-        kind="roller",
+        kind="roller", reopen=verification, mechanical_acceptance="unverified",
+        status="reopen_geometry_verified" if verification else "generated_unverified",
+        inferred_fields=missing,dimensions_source="explicitly_allowed_generic_defaults" if missing else "drawing",
         path=str(result.path),
         message=f"滚筒零件已生成：{Path(result.path).name}",
     )
     return 0
+
+
+def run_turned(args: argparse.Namespace) -> int:
+    from turned_part import discover_turned_parts, generate_turned_part
+    from turned_generate import build_turned
+    analysis = analyze_cad_file(args.input)
+    plans = discover_turned_parts(analysis)
+    if args.analyze_only:
+        emit("analysis",kind="turned",parts=[{'index':i,'label':p.label,'stock':p.stock,
+            'length_mm':p.length_mm,'max_radius_mm':p.max_radius_mm} for i,p in enumerate(plans)])
+        return 0
+    if not 0 <= args.variant < len(plans):
+        raise ValueError('车件 --variant 超出范围（从 0 开始）')
+    plan = plans[args.variant]
+    build = build_turned(plan)
+    if args.plan_only:
+        emit("plan",kind="turned",plan=asdict(plan),feature_plan=asdict(build),
+             pending=list(build.warnings),cad_executed=False,threads="cosmetic_or_pending_not_certified")
+        return 3 if build.warnings else 0
+    if not args.out:
+        raise ValueError('车件生成需要 --out 新零件路径')
+    path = generate_turned_part(plan,args.out)
+    verification = None
+    if args.verify_reopen:
+        from part_verification import verify_saved_part
+        verification = verify_saved_part(path,expected_dims_mm=build.expected_dims_mm)
+    emit("done",kind="turned",path=path,reopen=verification,mechanical_acceptance="unverified",
+         status="reopen_geometry_verified" if verification else "generated_unverified",
+         warnings=list(build.warnings),threads="cosmetic_or_pending_not_certified")
+    return 3 if build.warnings or verification is None else 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -243,8 +314,8 @@ def main(argv: list[str] | None = None) -> int:
     # 详细日志落到文件，插件出错时能回看；事件流仍只走标准输出。
     LOGGER.debug("详细日志：%s", configured or log_file_path())
     try:
-        runner = run_sheet if args.mode == "sheet" else run_roller
-        if args.sw_exe is not None and not args.analyze_only:
+        runner = {"sheet":run_sheet,"roller":run_roller,"turned":run_turned}[args.mode]
+        if args.sw_exe is not None and not args.analyze_only and not args.plan_only:
             from sw_owned_launch import owned_solidworks
             from sw_session import run_on_task_sta
             def owned_job():

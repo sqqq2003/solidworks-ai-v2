@@ -2,8 +2,8 @@
   "scope": "portable_simulation_only",
   "platform": "Linux",
   "python": "3.12.14",
-  "tests_run": 351,
-  "passed": 347,
+  "tests_run": 385,
+  "passed": 381,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -55,5 +55,65 @@
     ],
     "cad_executed": false,
     "sw_live": "not_applicable_on_linux"
+  },
+  "whole_project": {
+    "project": "SolidWorks AI V2",
+    "scope": "whole_project",
+    "modules": [
+      {
+        "id": "cad",
+        "state": "implemented",
+        "entry": "src/cad_analyzer.py"
+      },
+      {
+        "id": "sheet",
+        "state": "native_implemented_partial_live",
+        "entry": "src/sw_tool_cli.py --mode sheet"
+      },
+      {
+        "id": "roller",
+        "state": "native_implemented_pending_live",
+        "entry": "src/sw_tool_cli.py --mode roller"
+      },
+      {
+        "id": "turned",
+        "state": "native_implemented_pending_live",
+        "entry": "src/sw_tool_cli.py --mode turned"
+      },
+      {
+        "id": "parametric",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "src.a01_parametric.cli"
+      },
+      {
+        "id": "assembly_mates_motion",
+        "state": "scaffold_pending_native",
+        "entry": "src/a01_next/mate_check.py"
+      },
+      {
+        "id": "native_engineering_drawings",
+        "state": "scaffold_pending_native",
+        "entry": "src/a01_next/drawing_export.py"
+      },
+      {
+        "id": "desktop",
+        "state": "implemented_pending_desktop_test",
+        "entry": "app.py"
+      }
+    ],
+    "mechanical_acceptance": "unverified",
+    "pending_original_feature_contracts": 36
+  },
+  "runtime_capabilities": {
+    "platform": "Linux",
+    "python": "3.12.14",
+    "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "ezdxf_available": true,
+    "tkinter_available": true,
+    "pywin32_available": false,
+    "sw_started": false,
+    "cad_executed": false,
+    "desktop_display_tested": false,
+    "note": "Import availability is not SolidWorks installation or ownership proof."
   }
 }
