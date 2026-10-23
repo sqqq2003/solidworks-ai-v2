@@ -148,3 +148,11 @@
 - 修正不当 GetBox 精度假设，改用类型化 ISurface.PlaneParams；无参数 COM 成员兼容属性/方法。筛面与原生草图/插入点共用精确平面 z；仍排除孔和倾斜/移动面。新增 rejected 原因计数供真实运行定位。
 - 三项新增测试：近似 bbox、属性式 COM、真实倾斜法向。前两项在旧 577109b 函数中均明确失败；新实现通过。Windows UTF-8 全回归 365 ran / 360 passed / 0 failures/errors / 5 skipped，跨进程锁通过；36 pending 合约仍不算通过。
 - 未在本轮直接执行 SolidWorks；新实机证据待现有 Gork/WorkBuddy 执行者补交。0 候选的真实逐项原因和 108/109 是否成功仍待验证，不将本轮模拟当作放行。先仅 step0，仍0候选时停止加深并回传具体 rejected。
+
+
+## P0-CODEX-008：草图坐标矩阵方向
+
+- 基线 67fc46b；最新本机 step0 candidates=2 已恢复，仍2/4、108/109拒绝。零候选回归已解除，未宣称 p248通过。
+- 确认 _transform_to_sketch 使用连续行作输出点积，与 SW 行向量旋转布局相反，且遗漏缩放。修正为旋转列点积、缩放后平移；身份/镜像矩阵掩盖的问题由旋转坐标回归检出。
+- 新增5项测试（含无效输入子测试），旧实现明确失败，新实现通过。共享助手用于折弯、手折参考及孔草图，整轮离线回归370 ran / 365 passed / 0 failures/errors / 5 skipped，跨进程锁通过，36 pending不计通过。
+- 本轮增加 Bend sketch coordinates 原生矩阵及模型/草图端点日志，留在本机诊断。下一次先在正式独占会话核对原生 MathPoint.MultiplyTransform 与输出一致，再测step0；未证明本缺陷是108/109全部根因。客户坐标不得公开提交。

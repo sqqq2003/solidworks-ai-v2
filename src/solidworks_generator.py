@@ -3206,6 +3206,8 @@ def _create_bend_sketch_on_face(
             )
             sketch_start = _transform_to_sketch(transform, model_start)
             sketch_end = _transform_to_sketch(transform, model_end)
+            logger.info("Bend sketch coordinates: bend=%d transform=%s model=%s->%s sketch=%s->%s",
+                        bend_index + 1, tuple(transform), model_start, model_end, sketch_start, sketch_end)
             sketch_manager.CreateLine(
                 sketch_start[0],
                 sketch_start[1],
@@ -3732,16 +3734,22 @@ def _transform_to_sketch(
     transform: tuple[float, ...] | list[float],
     point: tuple[float, float, float],
 ) -> tuple[float, float]:
+    """Apply SW's row-vector rotation, uniform scale, then translation.
+
+    ArrayData stores three rotation rows, translation at 9:12 and scale at
+    12. Using contiguous rows as output dot products transposes the rotation:
+    identity/reflection tests hide that error, a rotated sketch does not.
+    """
+    if len(transform) < 13:
+        raise ValueError("SolidWorks transform requires rotation, translation and scale")
+    values = tuple(float(v) for v in transform[:13])
+    if not all(math.isfinite(v) for v in (*values, *point)) or values[12] == 0:
+        raise ValueError("SolidWorks transform/point is non-finite or singular")
     x, y, z = point
+    scale = values[12]
     return (
-        transform[0] * x
-        + transform[1] * y
-        + transform[2] * z
-        + transform[9],
-        transform[3] * x
-        + transform[4] * y
-        + transform[5] * z
-        + transform[10],
+        scale * (values[0]*x + values[3]*y + values[6]*z) + values[9],
+        scale * (values[1]*x + values[4]*y + values[7]*z) + values[10],
     )
 
 

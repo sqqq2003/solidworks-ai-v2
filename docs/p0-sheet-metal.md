@@ -147,3 +147,12 @@ API 依据：[IFace2.GetClosestPointOn](https://help.solidworks.com/2022/English
 现在经类型化 ISurface.PlaneParams 读法向与米制基点，支持无参数 COM 方法/属性两种绑定；选面和草图两处 z 坐标共用真实平面。孔洞仍用裁剪面最近点核验；不回退面积选面。日志包含 rejected 原因计数。两项新回归在旧实现明确失败，新实现通过；倾斜面仍被拒绝。
 
 实机优先只跑 step0；若仍 0 候选，直接回传 rejected 计数及对应面 PlaneParams/最近点返回或异常类型，先定位真实原生拒绝项，不重复三档加深。只有 candidates 恢复且原生 Insert 失败时才继续原有有界流程。当前修复了可复现代码缺陷，尚未证明哪一项造成该次真实 0 候选，也未宣称 108/109 通过。
+
+
+### 草图坐标变换（P0-CODEX-008）
+
+修正 _transform_to_sketch 对 SW 行向量矩阵的转置误用：输出 x 使用索引0/3/6，y使用1/4/7；旋转结果乘 ArrayData[12]，再加9/10的平移。模型和草图单位均为米。ArrayData不足13项、非有限或零缩放直接拒绝。
+
+[IMathTransform 布局](https://help.solidworks.com/2023/english/api/sldworksapi/SOLIDWORKS.Interop.sldworks~SOLIDWORKS.Interop.sldworks.IMathTransform.html)；[官方模型转草图示例](https://help.solidworks.com/2024/English/api/sldworksapi/Insert_Sketch_Text_and_Hole_Example_CSharp.htm)以 MathPoint.MultiplyTransform 为基准。
+
+下一轮 step0 同步完整源码并核对加载hash。日志 Bend sketch coordinates 提供原始变换和端点：请在同一已证明独占的SW会话中，用GetMathUtility.CreatePoint(model_point).MultiplyTransform(ModelToSketchTransform).ArrayData核验两端，允许误差1e-8 m；若不符立即停止，不继续插入/保存。核对身份和旋转坐标，不用单纯身份变换作为充分证据。记录原生特征返回及错误信息；仍须4/4和保存重开/展开才验收，不再重复加深。新坐标日志只留本机，公开报告需脱敏。
