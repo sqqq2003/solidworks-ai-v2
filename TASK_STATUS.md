@@ -186,3 +186,9 @@
 
 - 路径依赖：新增 scripts/bootstrap_env.py（创建仓库根目录 .venv）与 scripts/run_tests.py（优先 .venv 解释器）；src/project_workbench.py、work/run_cloud_tests.py 将报告 python_executable 归一化为 <repo>/.venv/...，不再写死 D:/工程/滚筒工程/... 路径。
 - 环境相关失败修复：src/sw_api/win32com_backend.py 的 com_available() 增加显式测试钩子 SW_API_FORCE_NO_COM=1；tests/test_a01_parametric.py::CliTests::test_live_flag_is_refused_without_com 改为在子进程 env 中设该变量，确定性地走"无 COM"拒绝路径。全量回归 450 ran / 444 passed / 0 failed / 6 skipped，全绿。
+
+## ISSUE6-WB-001 扩展（离线增值层，仍不实机）
+
+- 新增：机器注册表 data/machines + src/machine_registry.py；材料属性/K 因子查表 src/material_data.py（K 表无生产行，缺值 unresolved 不默认）；估算 src/sheetmetal_estimate.py（estimate_only，费率均为标注假设）；图号分配 src/drawing_numbers.py（单调、journal、不复用）；mate 链预检 src/a01_next/mate_chain.py（数据模型检查，mates_solved=False）；JSON Schema docs/schemas/ + src/schema_validate.py（无第三方依赖）；统一入口 swctl.py；实机冒烟 work/smoke_live_once.py + docs/real-machine-smoke.md（门禁全过才执行，云测试不跑）。
+- CI：.github/workflows/cloud-tests.yml 覆盖框架分支与 PR，增跑离线 demo 并上传证据。
+- 全回归 501 ran / 495 passed / 0 failed / 6 skipped；仍未启动 SolidWorks，sw_live_claimed=false。
