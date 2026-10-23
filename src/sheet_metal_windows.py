@@ -20,9 +20,9 @@ class WindowsSheetMetalPort:
     def generate(self, analysis, plan, part):
         self.guard()
         from bend_allowance import BendAllowanceSpec
-        from solidworks_generator import generate_sheet_metal
+        from solidworks_generator import generate_sheet_metal_with_relief_retries
         p = plan['parameters']
-        result = generate_sheet_metal(analysis, plan['profile_index'], plan['bend_indices'],
+        result = generate_sheet_metal_with_relief_retries(analysis, plan['profile_index'], plan['bend_indices'],
             p['thickness_mm'], p['radius_mm'], p['angle_degrees'], part,
             flip_direction=p['flip_direction'], auto_bend=True, cad_import=False,
             relief_bend_indices=plan['relief_bend_indices'],
@@ -30,6 +30,7 @@ class WindowsSheetMetalPort:
             close_saved_document=True)
         data = asdict(result)
         data['path'] = Path(result.path).name
+        self.completed_bend_count = result.bend_count
         return data
 
     def reopen_inspect(self, part):
@@ -65,7 +66,7 @@ class WindowsSheetMetalPort:
             features = _features(model, module)
             types = [str(_com_read(f, 'GetTypeName2')) for f in features]
             evidence = {'reopened': True, 'rebuilt': rebuilt, 'feature_types': types,
-                'editable': False, 'bend_feature_count': sum(t in {'SM3dBend', 'SketchBend', 'SMEdgeFlange'} for t in types)}
+                'editable': False, 'completed_bend_count': getattr(self, 'completed_bend_count', None), 'bend_feature_count': sum(t in {'SM3dBend', 'SketchBend', 'SMEdgeFlange'} for t in types)}
             for feature, kind in zip(features, types):
                 if kind != 'SheetMetal':
                     continue
@@ -76,7 +77,7 @@ class WindowsSheetMetalPort:
                 try:
                     evidence['thickness_mm'] = float(data.Thickness) * 1000
                     evidence['radius_mm'] = float(data.BendRadius) * 1000
-                    custom = data.GetCustomBendAllowance()
+                    custom = _as_interface(module, data.GetCustomBendAllowance(), 'ICustomBendAllowance')
                     evidence['bend_allowance_type'] = int(custom.Type)
                     evidence['k_factor'] = float(custom.KFactor)
                     from bend_allowance import SW_BEND_ALLOWANCE_K_FACTOR
@@ -84,6 +85,12 @@ class WindowsSheetMetalPort:
                 finally:
                     data.ReleaseSelectionAccess()
                 break
+            try:
+                evidence['geometry_states'] = measure_folded_and_flat(model, module)
+            except Exception as exc:
+                # The caller closes this unsaved inspection document in finally.
+                # Failed restoration must not permit export or acceptance.
+                raise RuntimeError("folded/flat measurement or state restoration failed: " + str(exc)) from exc
             return evidence
         finally:
             try:
@@ -101,3 +108,45 @@ class WindowsSheetMetalPort:
         # Generation/inspection/export close only their owned document in finally.
         # If a lease was poisoned, preserve staging for Windows recovery.
         self.guard()
+
+
+def measure_folded_and_flat(model, module):
+    """Inspect the owned work part in both states, restore suppression, never save.
+
+    Bounding boxes are in model axes, in mm; DXF axes may differ. These are
+    diagnostics, not automatic validation of a dimensional manufacturing datum.
+    """
+    from sw_session import require_model_write
+    from solidworks_generator import _features, _body_bounds, _as_interface, _com_read
+    lease = require_model_write()
+    features = [f for f in _features(model, module) if _com_read(f, 'GetTypeName2') == 'FlatPattern']
+    if len(features) != 1:
+        raise RuntimeError('expected one FlatPattern for geometry measurements')
+    feature = features[0]
+    suppressed = _com_read(feature, 'IsSuppressed')
+    if type(suppressed) is not bool:
+        raise RuntimeError('flat suppression state unavailable')
+    part = _as_interface(module, model, 'IPartDoc')
+
+    def set_flat(flat):
+        require_model_write(lease)
+        model.ClearSelection2(True)
+        if not model.Extension.SelectByID2(feature.Name, 'BODYFEATURE', 0., 0., 0., False, 0, None, 0):
+            raise RuntimeError('cannot select flat feature for measurement')
+        _com_read(model, 'EditUnsuppress2' if flat else 'EditSuppress2')
+        model.ClearSelection2(True)
+        require_model_write(lease)
+        if not _com_read(model, 'EditRebuild3'):
+            raise RuntimeError('geometry measurement rebuild failed')
+        if bool(_com_read(feature, 'IsSuppressed')) == flat:
+            raise RuntimeError('flat suppression did not change')
+
+    try:
+        set_flat(False)
+        folded = [v * 1000 for v in _body_bounds(part, module)]
+        set_flat(True)
+        flat = [v * 1000 for v in _body_bounds(part, module)]
+        return {'status': 'measured', 'units': 'mm', 'folded_bounds': folded,
+                'flat_bounds': flat, 'axes': 'model_axes', 'saved': False}
+    finally:
+        set_flat(not suppressed)

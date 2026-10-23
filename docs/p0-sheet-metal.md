@@ -47,3 +47,40 @@ MockSheetMetalPort 永远只写 *.trace.json，reopened/editable=false，sw_live
 ## 开发期间收到的实机记录
 
 Gork 在 c6e00d8 / b0c4dec 中提交 p190、p209、p243 的 Windows 记录（results/windows/p0_sheetmetal_accept_*.json）：报告 SMBaseFlange、SheetMetal、SM3dBend、FlatPattern，重建和展开 DXF 成功。这些是 Gork 现有本机工具的实机进展，不是本次新适配器的运行结果。记录尚缺 t/R/K 原生读回、源/参数/代码哈希以及确定的关闭后重开链路；本轮新验收门槛继续保留，不因顶层 status=pass 而补写缺失证据。
+
+## Gork K / p248 反馈修复（2026-10-23）
+
+Issue #4/#5 报告：本机旧 CLI 没有 --k-factor，基体法兰及绘制折弯创建时使用 None；事后修改返回 True，但实际 K 保持 0.31。p248 的部分成功被参考草图吞掉，没有进入加深重试。
+
+本次修复：
+
+- 原 `src/sw_tool_cli.py` 增加 --k-factor；传递 BendAllowanceSpec 到实际创建调用。BaseFlange/BaseFlange2 的 CustomBendAllowance 参数与 InsertSheetMetal3dBend 均使用该对象，不在显式请求失败时悄悄回退 None。
+- 对 CreateCustomBendAllowance 的返回接口先转成生成类型库的 ICustomBendAllowance，再写 Type/K/BD/BA。Gork 报告过动态 setter 访问冲突，故没有在云端调用真实 COM，也不承诺类型化之后已消除本机崩溃；需独占工作会话实测。
+- 重建后和保存前，从新的 SheetMetal 定义读取补偿类型与 K/BD/BA；读回仍 0.31 或类型不符则抛错，不保存、不发 success。原生适配器重开后再验证 t/R/K。
+- 全部同草图→分组→逐条尝试结束仍有未折成项时，抛 BendRejectedError，保留 completed_bend_count。放弃本次未保存文档，再用原图重跑 relief_step=1/2（累计 +1.0/+1.5mm）；不叠加修改上一次模型。三次仍失败，旧 CLI 保留明确 degraded/exit3 的平板参考输出；新原生管线拒绝把它发布成通过。
+- 多条折弯可合并成一个 SM3dBend。验收改成“存在原生折弯特征 + 生成器完整完成条数 + 重开重建”，不再错误要求特征数等于折弯线数。该完成条数是生成器记录，仍不是对每个折弯角度的机械测量。
+
+Gork 在仓库克隆的独占工作会话内可使用（旧 CLI --profile **从 1 开始**，不要和新 work/run_sheet_metal.py 的零基索引混用）：
+
+```bat
+py src\sw_tool_cli.py --mode sheet --input <工作副本.dwg> --out <新的独立目录>\p209-k025.SLDPRT --profile 209 --thickness 2.5 --radius 1 --angle 90 --k-factor 0.25
+py src\sw_tool_cli.py --mode sheet --input <工作副本.dwg> --out <另一个新目录>\p209-k050.SLDPRT --profile 209 --thickness 2.5 --radius 1 --angle 90 --k-factor 0.5
+```
+
+检查 done 事件中的 requested_k_factor / k_factor_readback / bend_allowance_verified / relief_step_used。再关闭重开、读取特征值并导出 DXF；区分固定毛坯与固定折后外尺寸，不能仅用 bbox 相同判 K 是否生效。
+
+p248 再测要求记录每轮 attempt、relief_step、实际几何改动及未完成条数。当前真实矩形内孔释放槽样本仍不存在；边缘缺口与孔槽分开记录，不补造实机证据。继续保持 blocked/partial，直到 Windows 重新验证。仓库代码不自动覆盖 D:\工程\钣金导入\程序 的客户程序。
+
+### 同步 Gork 后续证据 b1319a0
+
+p0_sheetmetal_accept_kfactor_fix.json 报告本机补丁已让 K=0.5/0.25 读回匹配，直接 BA=10/1 控制组也读回匹配，但 DXF bbox 均未变化。这说明旧“始终读回 0.31”的阻塞已经在 Gork 本机补丁上解除，尚不能单凭相同 bbox 断定展开引擎忽略补偿。
+
+同一展开毛坯重生成的尺寸基准必须确认。新增工具默认保持 pending_dimension_basis；只有操作者确认固定毛坯时才这样运行：
+
+```bash
+python work/audit_k_factor_evidence.py results/windows/p0_sheetmetal_accept_kfactor_fix.json --thickness 2.5 --radius 1 --angle 90 --basis fixed_blank
+```
+
+该证据审计在 fixed_blank 假设下得到 consistent_fixed_blank_pending_folded_measurements，K 持久化匹配、平料差=0 与假设一致；若输入 fixed_outside_legs 则仍是 mismatch。两种审计均退出 3，不是实机通过。理论 ΔBA≈0.982mm 不能脱离尺寸基准直接要求 DXF bbox 变化。
+
+Windows 新适配器在关闭重开后，会切换 FlatPattern 状态，分别读取折叠和展平实体的模型坐标 bbox（mm），恢复初始抑制状态，不保存；选择/重建/测量/恢复失败会阻止继续导出验收。结果在 reopen.geometry_states。下一轮对两组 K 比较折叠实体、真实展平实体和 DXF 三者，另行记录具体法兰/折弯尺寸；模型轴与 DXF 轴可能不同，不能未经对齐直接按 bbox 宽度相减。

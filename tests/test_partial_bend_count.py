@@ -84,10 +84,10 @@ class PartialBendCountTests(unittest.TestCase):
 
     def test_partial_failure_counts_only_completed(self) -> None:
         # 第二组逐条重试时 3 号仍然折不动：实际只折成 3 条。
-        self.assertEqual(
-            _run((0, 1, 2, 3), failing_groups={(2, 3)}, failing_single={3}),
-            3,
-        )
+        with self.assertRaises(BendRejectedError) as raised:
+            _run((0, 1, 2, 3), failing_groups={(2, 3)}, failing_single={3})
+        self.assertEqual(raised.exception.completed_bend_count, 3)
+        self.assertEqual(raised.exception.bend_indices, (3,))
 
     def test_all_groups_failing_raises(self) -> None:
         with self.assertRaises(BendRejectedError):
@@ -100,3 +100,4 @@ class PartialBendCountTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

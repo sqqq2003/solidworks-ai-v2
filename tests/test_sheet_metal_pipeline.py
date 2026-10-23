@@ -188,7 +188,7 @@ class WindowsBridgeContractTests(unittest.TestCase):
         port = WindowsSheetMetalPort()
         com = SimpleNamespace(CoInitialize=lambda:None, CoUninitialize=lambda:None)
         win32 = SimpleNamespace(client=SimpleNamespace())
-        with patch.object(port, 'guard', return_value=lease), patch.dict(sys.modules, {'pythoncom':com, 'win32com':win32, 'win32com.client':win32.client}), patch('sw_session.require_model_write'), patch('sw_session.close_owned_document') as close, patch('solidworks_generator._connect_task_solidworks', return_value=(app,False)), patch('solidworks_generator.ensure_solidworks_typelib'), patch('solidworks_generator._as_interface', side_effect=lambda module, instance, interface:instance), patch('solidworks_generator._features', return_value=features):
+        with patch.object(port, 'guard', return_value=lease), patch.dict(sys.modules, {'pythoncom':com, 'win32com':win32, 'win32com.client':win32.client}), patch('sw_session.require_model_write'), patch('sw_session.close_owned_document') as close, patch('solidworks_generator._connect_task_solidworks', return_value=(app,False)), patch('solidworks_generator.ensure_solidworks_typelib'), patch('solidworks_generator._as_interface', side_effect=lambda module, instance, interface:instance), patch('solidworks_generator._features', return_value=features), patch('sheet_metal_windows.measure_folded_and_flat', return_value={'status':'mock_only'}):
             report = port.reopen_inspect(Path('part.SLDPRT'))
         self.assertTrue(report['reopened'])
         self.assertTrue(report['editable'])

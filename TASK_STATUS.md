@@ -91,3 +91,15 @@
 - `python examples/sheet_metal_dry_run.py`：synthetic 二维板件→计划→JSON trace 通过；`work/run_sheet_metal.py` 提供本地 CAD 计划/dry-run/Windows live 入口。联调说明见 docs/p0-sheet-metal.md。
 - 当前没有这次验收的真实钣金源样例与 Windows SW 执行环境；首轮真实 SLDPRT/可编辑/保存重开/展开/DXF 测量尚未验收。sw_live_verified=false（本次云端证据），不关闭 #4/#5。
 - 开发期间收到 Gork 新提交 c6e00d8/b0c4dec：p190/p209/p243 报告本机原生钣金特征、重建、展开和 DXF 成功，保留全部原始记录。这些已有实机进展与本次新适配器测试分开；t/R/K 原生读回和明确关闭后重开证据仍待补齐。
+
+## P0-CODEX-002：Gork K 因子与 p248 重试反馈修复
+
+- 基线 b1319a0（含 Gork 后续 K 已读回匹配的证据），完整保留 Gork 原始 blocked/partial 证据。已读取 #4/#5 最新反馈：创建时补偿对象未接线、读回 K=0.31、部分折弯回退吞掉加深重试。
+- 原 sw_tool_cli 新增 --k-factor，经 BendAllowanceSpec 传入 BaseFlange/BaseFlange2 与 InsertSheetMetal3dBend。长度 BD/BA 转 m，K 无量纲；显式补偿无法构造时不静默使用默认值。
+- 创建对象先转为类型库 ICustomBendAllowance；重建后及保存前读回原生补偿类型和值。ModifyDefinition=True 不代表验证通过，K 不匹配不得保存或发成功事件。真实 COM 访问冲突是否解除仍需 Windows 证据。
+- 最终部分折弯改为 BendRejectedError，保留 completed_bend_count，外层关闭本次未保存工作文档后从原图执行有界 +1.0/+1.5mm 重试；耗尽时旧 CLI 明确 degraded/exit3，原生发布管线仍拒绝。
+- Windows 管线接入已有释放槽重试封装；修正多条折弯合并为一个 SM3dBend 的验收，使用完整完成条数及原生特征存在/重开重建，不把一条特征错当只完成一条折弯。
+- 新增 10 项模拟回归，更新旧部分折弯测试为“上抛且保留真实完成数”。`python work/run_cloud_tests.py`：343 ran / 339 passed / 4 skipped / 0 failures / 0 errors，跨进程锁通过；36 pending_features 仍不计通过。
+- 复测命令与读回字段见 docs/p0-sheet-metal.md。真实 p209 的 K 0.25/0.5、p248 加深、矩形内孔释放槽样本仍待本机核对；本轮没有新 SW 实机通过声明，也未覆盖用户 D 盘程序。
+- Gork 在提交期间补交 b1319a0：本机补丁 K 已读回 0.5/0.25，但固定源毛坯 DXF bbox 相同。本轮保留该证据，新增 audit_k_factor_evidence，未确认尺寸基准时 pending；fixed_blank 假设下仅为 consistent_fixed_blank_pending_folded_measurements，不能断言 SW 忽略 K。
+- Windows 重开诊断新增折叠/展平实体 bbox 测量并恢复 FlatPattern 原状态，不保存；任一步失败不得继续导出。等待两组 K 的折叠尺寸/真实展平实体/DXF 对照，不把同 bbox 或公式差当作最终机械结论。

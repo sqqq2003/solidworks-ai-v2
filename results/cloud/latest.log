@@ -123,6 +123,16 @@ test_writes_records_to_file_and_reuses_configuration (test_logging_setup.Configu
 test_falls_back_to_appdata_when_local_app_data_missing (test_logging_setup.LogPathTests.test_falls_back_to_appdata_when_local_app_data_missing) ... ok
 test_falls_back_without_windows_variables (test_logging_setup.LogPathTests.test_falls_back_without_windows_variables) ... ok
 test_log_path_follows_local_app_data (test_logging_setup.LogPathTests.test_log_path_follows_local_app_data) ... ok
+test_allowance_units_bd_ba_and_missing_factory (test_p0_gork_regressions.GorkRegressions.test_allowance_units_bd_ba_and_missing_factory) ... ok
+test_custom_allowance_typed_before_property_writes (test_p0_gork_regressions.GorkRegressions.test_custom_allowance_typed_before_property_writes) ... ok
+test_existing_cli_k_flag_reaches_generator_and_success_gate (test_p0_gork_regressions.GorkRegressions.test_existing_cli_k_flag_reaches_generator_and_success_gate) ... ok
+test_insert_time_base_flange_both_api_versions_receive_custom (test_p0_gork_regressions.GorkRegressions.test_insert_time_base_flange_both_api_versions_receive_custom) ... ok
+test_insert_time_sketched_bend_receives_custom (test_p0_gork_regressions.GorkRegressions.test_insert_time_sketched_bend_receives_custom) ... ok
+test_many_bend_lines_can_be_one_native_feature (test_p0_gork_regressions.GorkRegressions.test_many_bend_lines_can_be_one_native_feature) ... ok
+test_modify_true_but_k_still_031_is_failure (test_p0_gork_regressions.GorkRegressions.test_modify_true_but_k_still_031_is_failure) ... ok
+test_partial_p248_reaches_deepen_steps_before_flat (test_p0_gork_regressions.GorkRegressions.test_partial_p248_reaches_deepen_steps_before_flat) ... ok
+test_k_sticks_equal_flat_needs_dimension_basis (test_p0_gork_regressions.KVariantEvidenceTests.test_k_sticks_equal_flat_needs_dimension_basis) ... ok
+test_native_state_measurement_restores_initial_suppression (test_p0_gork_regressions.KVariantEvidenceTests.test_native_state_measurement_restores_initial_suppression) ... ok
 test_all_bends_succeed_returns_total (test_partial_bend_count.PartialBendCountTests.test_all_bends_succeed_returns_total) ... ok
 test_all_groups_failing_raises (test_partial_bend_count.PartialBendCountTests.test_all_groups_failing_raises) ... ok
 test_one_group_rejected_then_single_retry_succeeds (test_partial_bend_count.PartialBendCountTests.test_one_group_rejected_then_single_retry_succeeds) ... ok
@@ -369,6 +379,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 333 tests in 3.726s
+Ran 343 tests in 3.677s
 
 OK (skipped=4)

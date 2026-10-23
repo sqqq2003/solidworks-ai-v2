@@ -135,7 +135,8 @@ def validate_native(plan, evidence):
     types = set(evidence.get('feature_types', []))
     if not {'SheetMetal', 'FlatPattern', 'SMBaseFlange'} <= types or not evidence.get('editable'):
         raise RuntimeError('native editable sheet-metal feature tree not verified')
-    if plan['bend_indices'] and evidence.get('bend_feature_count', 0) < len(plan['bend_indices']):
+    if plan['bend_indices'] and (evidence.get('bend_feature_count', 0) < 1 or
+            (len(plan['bend_indices']) > 1 and evidence.get('completed_bend_count') != len(plan['bend_indices']))):
         raise RuntimeError('native bend features incomplete; reference sketch is not an automatic bend')
     for key in ('thickness_mm', 'radius_mm', 'k_factor'):
         actual = evidence.get(key)

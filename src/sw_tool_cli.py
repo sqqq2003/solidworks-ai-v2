@@ -12,17 +12,19 @@
     {"event": "done", "kind": "sheet", "path": "...", "message": "..."}
     {"event": "error", "message": "...", "detail": "..."}
 
-返回码：0 成功，1 业务失败（含 error 事件），2 参数错误。
+返回码：0 成功，1 业务失败（含 error 事件），2 参数错误，3 仅退化平板/参考线。
 """
 
 from __future__ import annotations
 
 import argparse
 import logging
+import math
 import json
 import sys
 from pathlib import Path
 
+from bend_allowance import resolve_bend_allowance_spec
 from cad_analyzer import analyze_cad_file
 from logging_setup import configure_logging, log_file_path
 from profile_selection import outermost_containing_profile_index, profile_area
@@ -54,6 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--thickness", type=float, default=1.2, help="钣金：板厚 mm")
     parser.add_argument("--radius", type=float, default=1.2, help="钣金：折弯半径 mm")
     parser.add_argument("--angle", type=float, default=90.0, help="钣金：折弯角度")
+    parser.add_argument("--k-factor", type=float, default=None,
+                        help="钣金：显式 K 因子 0~1，创建时传入并要求原生读回一致")
     parser.add_argument("--flip", action="store_true", help="钣金：反向折弯")
     parser.add_argument(
         "--no-auto-bend",
@@ -148,6 +152,11 @@ def run_sheet(args: argparse.Namespace) -> int:
         message=f"轮廓 #{profile_index + 1}，折弯线 {len(bends)} 条，开始生成钣金…",
     )
 
+    allowance = None
+    if args.k_factor is not None:
+        allowance, _ = resolve_bend_allowance_spec(
+            thickness_mm=args.thickness, radius_mm=args.radius,
+            angle_degrees=args.angle, mode="k_factor", k_factor=args.k_factor)
     result = generate_sheet_metal_with_relief_retries(
         analysis,
         profile_index,
@@ -158,12 +167,23 @@ def run_sheet(args: argparse.Namespace) -> int:
         args.out,
         flip_direction=args.flip,
         auto_bend=args.auto_bend,
+        bend_allowance=allowance,
     )
+    if allowance is not None and (
+        not result.bend_allowance_verified
+        or result.k_factor_readback is None
+        or not math.isclose(result.k_factor_readback, allowance.k_factor, abs_tol=1e-8)
+    ):
+        raise RuntimeError("requested K factor was not verified; refusing success event")
     emit(
         "done",
         kind="sheet",
         status="degraded" if result.auto_bend_abandoned else "passed",
         auto_bend_attempts=result.auto_bend_attempts,
+        requested_k_factor=args.k_factor,
+        k_factor_readback=result.k_factor_readback,
+        bend_allowance_verified=result.bend_allowance_verified,
+        relief_step_used=result.relief_step_used,
         bend_count=result.bend_count,
         path=str(result.path),
         message=f"钣金零件已生成：{Path(result.path).name}",
@@ -230,3 +250,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

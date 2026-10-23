@@ -273,6 +273,7 @@ class BendRejectedError(SolidWorksGenerationError):
         self.bend_indices = bend_indices
         self.relief_step = relief_step
         self.max_relief_steps = max_relief_steps
+        self.completed_bend_count = 0
 
 
 class ComDisconnectedBendError(BendRejectedError):
@@ -479,6 +480,9 @@ class GenerationResult:
     auto_bend_attempts: int = 0
     auto_bend_abandoned: bool = False
     auto_bend_failed_count: int = 0
+    bend_allowance_verified: bool = False
+    k_factor_readback: float | None = None
+    relief_step_used: int = 0
 
 
 @dataclass(frozen=True)
@@ -2446,9 +2450,12 @@ def _try_insert_base_flange(
     thickness_m: float,
     radius_m: float,
     thicken_dir: bool,
+    bend_allowance: BendAllowanceSpec | None = None,
+    module: Any = None,
 ) -> Any | None:
     """尝试 InsertSheetMetalBaseFlange / BaseFlange2。"""
 
+    custom_bend = _build_custom_bend_allowance(feature_manager, bend_allowance, module)
     insert2 = getattr(feature_manager, "InsertSheetMetalBaseFlange2", None)
     if callable(insert2):
         try:
@@ -2462,7 +2469,7 @@ def _try_insert_base_flange(
                 0,
                 0,
                 0,
-                None,
+                custom_bend,
                 True,
                 4,
                 0.001,
@@ -2487,7 +2494,7 @@ def _try_insert_base_flange(
             0,
             0,
             0,
-            None,
+            custom_bend,
             True,
             4,
             0.001,
@@ -2604,18 +2611,22 @@ def _body_bounds(part: Any, module: Any) -> tuple[float, float, float, float, fl
 def _build_custom_bend_allowance(
     feature_manager: Any,
     bend_allowance: BendAllowanceSpec | None,
+    module: Any = None,
 ) -> Any | None:
-    """创建 SolidWorks CustomBendAllowance；单位一律米。"""
+    """创建 SolidWorks CustomBendAllowance；长度用米，K 为无量纲。"""
 
     if bend_allowance is None:
         return None
     creator = getattr(feature_manager, "CreateCustomBendAllowance", None)
     if not callable(creator):
-        logger.warning("当前 SolidWorks 无法 CreateCustomBendAllowance，改用默认折弯表。")
-        return None
+        raise SolidWorksGenerationError("CreateCustomBendAllowance unavailable; refusing default allowance")
     custom = creator()
     if custom is None:
-        return None
+        raise SolidWorksGenerationError("CreateCustomBendAllowance returned no interface")
+    # Use generated typelib ICustomBendAllowance, never a late-bound raw setter.
+    # Gork observed an access violation on a dynamic KFactor property write.
+    if module is not None:
+        custom = _as_interface(module, custom, "ICustomBendAllowance")
     custom.Type = bend_allowance.sw_type
     if bend_allowance.mode == "k_factor":
         custom.KFactor = float(bend_allowance.k_factor)
@@ -2673,6 +2684,8 @@ def _apply_sheet_metal_bend_allowance(
             if not sheet_data.AccessSelections(model, None):
                 continue
             custom = getter()
+            if custom is not None:
+                custom = _as_interface(module, custom, "ICustomBendAllowance")
             if custom is None:
                 sheet_data.ReleaseSelectionAccess()
                 continue
@@ -2703,6 +2716,42 @@ def _apply_sheet_metal_bend_allowance(
             except Exception:  # noqa: BLE001
                 pass
             return
+
+
+def _verify_sheet_metal_bend_allowance(model, module, spec):
+    """Read a fresh native definition; ModifyDefinition=True is not evidence."""
+    if spec is None:
+        return None
+    found = False
+    observed = None
+    for feature in _features(model, module):
+        if feature.GetTypeName2() != "SheetMetal":
+            continue
+        found = True
+        data = _as_interface(module, feature.GetDefinition(), "ISheetMetalFeatureData")
+        if not data.AccessSelections(model, None):
+            raise SolidWorksGenerationError("cannot read persisted sheet-metal bend allowance")
+        try:
+            custom = data.GetCustomBendAllowance()
+            if custom is None:
+                raise SolidWorksGenerationError("persisted CustomBendAllowance is unavailable")
+            custom = _as_interface(module, custom, "ICustomBendAllowance")
+            if int(custom.Type) != spec.sw_type:
+                raise SolidWorksGenerationError("persisted bend allowance mode does not match request")
+            field, wanted = {
+                "k_factor": ("KFactor", spec.k_factor),
+                "bend_deduction": ("BendDeduction", None if spec.bend_deduction_mm is None else spec.bend_deduction_mm / 1000),
+                "bend_allowance": ("BendAllowance", None if spec.bend_allowance_mm is None else spec.bend_allowance_mm / 1000),
+            }[spec.mode]
+            observed = float(getattr(custom, field))
+            if wanted is None or not math.isfinite(observed) or not math.isclose(observed, wanted, rel_tol=1e-8, abs_tol=1e-9):
+                raise SolidWorksGenerationError(
+                    f"persisted {field} mismatch: requested={wanted}, readback={observed}; not saving")
+        finally:
+            data.ReleaseSelectionAccess()
+    if not found:
+        raise SolidWorksGenerationError("SheetMetal feature missing; bend allowance is unverified")
+    return observed
 
 
 def _distance_point_to_segment(
@@ -3151,7 +3200,9 @@ def _create_bend_feature(
         SW_BEND_POSITION_BEND_CENTERLINE,
     )
     flip_candidates = (flip_direction,)
-    allowance_candidates: tuple[Any | None, ...] = (None,)
+    allowance_candidates: tuple[Any | None, ...] = (
+        _build_custom_bend_allowance(feature_manager, bend_allowance, module),
+    )
     pick_candidates = pick_candidates[:2]
 
     radius_m = radius_mm / 1000.0
@@ -3539,30 +3590,12 @@ def _create_bends_with_fallbacks(
             return len(bend_indices)
         if len(failed) >= len(bend_indices):
             raise BendRejectedError(tuple(failed), relief_step=relief_step)
-        logger.warning(
-            "已折成 %d 条，失败 %s 改画手折参考，不再把整件退回",
-            len(bend_indices) - len(failed),
-            tuple(index + 1 for index in failed),
-        )
-        try:
-            _create_bend_reference_sketch(
-                model,
-                part,
-                sketch_manager,
-                extension,
-                module,
-                analysis,
-                tuple(failed),
-                origin,
-                thickness_mm,
-                outer_profile,
-                fixed_face_point,
-            )
-        except Exception:
-            logger.exception("失败折弯的手折参考草图没有画上")
+        # Partial success is still a rejected automatic attempt. Throw away
+        # this unsaved task document before retrying deeper relief from source.
+        error = BendRejectedError(tuple(failed), relief_step=relief_step)
+        error.completed_bend_count = len(bend_indices) - len(failed)
+        raise error
 
-
-    return len(bend_indices) - len(failed)
 
 def _closed_points(profile: Primitive) -> tuple[tuple[float, float], ...]:
     points = list(profile.points)
@@ -3962,6 +3995,7 @@ def _base_flange_from_cad_import(
     rect_relief_count: int,
     thickness_m: float,
     radius_m: float,
+    bend_allowance: BendAllowanceSpec | None = None,
 ) -> Any | None:
     """抽所选件原始图元→临时 DXF→SW 导入草图→基体法兰（内孔随草图一起成形）。"""
 
@@ -4019,7 +4053,7 @@ def _base_flange_from_cad_import(
         if not _select_sketch_contours(model, extension, type_library, sketch):
             break
         candidate = _try_insert_base_flange(
-            feature_manager, thickness_m, radius_m, thicken_dir
+            feature_manager, thickness_m, radius_m, thicken_dir, bend_allowance, type_library
         )
         if candidate is not None:
             logger.info("基体法兰创建成功：CAD 直接导入 加厚方向=%s", thicken_dir)
@@ -4289,6 +4323,7 @@ def generate_sheet_metal(
                     rect_relief_count,
                     thickness_m,
                     radius_m,
+                    bend_allowance,
                 )
             except (BendRejectedError, FileExistsError):
                 raise
@@ -4378,6 +4413,8 @@ def generate_sheet_metal(
                     thickness_m,
                     radius_m,
                     thicken_dir,
+                    bend_allowance,
+                    type_library,
                 )
                 if candidate is not None:
                     base_flange = candidate
@@ -4773,6 +4810,7 @@ def generate_sheet_metal(
                 )
                 raise BendRejectedError(selected_bends, relief_step=relief_step)
             raise SolidWorksGenerationError("SolidWorks 重建钣金模型失败。")
+        allowance_readback = _verify_sheet_metal_bend_allowance(model, type_library, bend_allowance)
         folded_bounds = _body_bounds(part, type_library)
         flat_pattern = next(
             (
@@ -4820,6 +4858,7 @@ def generate_sheet_metal(
         output.parent.mkdir(parents=True, exist_ok=True)
         if output.exists():
             raise FileExistsError(f"输出文件已存在：{output}")
+        allowance_readback = _verify_sheet_metal_bend_allowance(model, type_library, bend_allowance)
         require_model_write(lease)
         save_errors = model.SaveAs3(str(output), 0, 1)
         if save_errors != 0 or not output.is_file() or output.stat().st_size == 0:
@@ -4840,6 +4879,9 @@ def generate_sheet_metal(
             bend_sketch_name=bend_sketch_name,
             bend_sketch_line_count=bend_sketch_line_count,
             cad_imported=cad_imported,
+            bend_allowance_verified=bend_allowance is not None,
+            k_factor_readback=allowance_readback if bend_allowance is not None and bend_allowance.mode == "k_factor" else None,
+            relief_step_used=relief_step,
         )
     except BendRejectedError:
         # 含 ComDisconnectedBendError：原样抛出，供 app 扩大矩形释放槽后重开文档。
@@ -4890,6 +4932,7 @@ def generate_sheet_metal_with_relief_retries(
     relief_bend_indices: Iterable[int] = (), relief_step: int = 0,
     bend_allowance: BendAllowanceSpec | None = None, auto_bend: bool = True,
     cad_import: bool | None = None, progress: Callable[[str], None] | None = None,
+    close_saved_document: bool = False,
 ) -> GenerationResult:
     """Bounded retries; return explicit degraded evidence for a flat fallback.
 
@@ -4902,7 +4945,8 @@ def generate_sheet_metal_with_relief_retries(
     if not 0 <= step <= MAX_RELIEF_STEPS:
         raise ValueError("relief_step outside supported range")
     common = dict(flip_direction=flip_direction, fixed_face_point=fixed_face_point,
-                  bend_allowance=bend_allowance, cad_import=cad_import)
+                  bend_allowance=bend_allowance, cad_import=cad_import,
+                  close_saved_document=close_saved_document)
     args = (analysis, profile_index, selected, thickness_mm, radius_mm,
             angle_degrees, output_path)
     if not auto_bend:
@@ -4921,6 +4965,8 @@ def generate_sheet_metal_with_relief_retries(
                            auto_bend_abandoned=not result.auto_bent)
         except (ComDisconnectedBendError, BendRejectedError) as error:
             failures += 1
+            logger.warning("auto bend rejected attempt=%d relief_step=%d failed=%s completed=%d",
+                attempts, step, error.bend_indices, error.completed_bend_count)
             if isinstance(error, ComDisconnectedBendError) and error.timed_out:
                 break
             step += 1
