@@ -1,0 +1,24 @@
+{
+  "title": "Controlled execution report",
+  "type": "object",
+  "required": ["status", "cad_executed"],
+  "properties": {
+    "status": {"type": "string", "enum": ["mock_dry_run", "refused", "live_executed"]},
+    "cad_executed": {"type": "boolean", "const": false},
+    "backend": {"type": "string"},
+    "destination": {"type": "string"},
+    "trace_path": {"type": "string"},
+    "refusals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["condition", "reason"],
+        "properties": {
+          "condition": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

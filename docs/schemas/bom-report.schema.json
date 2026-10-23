@@ -1,0 +1,31 @@
+{
+  "title": "BOM report",
+  "type": "object",
+  "required": ["module", "status", "backend", "cad_executed", "sw_live", "items", "unresolved"],
+  "properties": {
+    "module": {"type": "string"},
+    "status": {"type": "string"},
+    "backend": {"type": "string", "enum": ["offline_python"]},
+    "cad_executed": {"type": "boolean", "const": false},
+    "sw_live": {"type": "string", "const": "not_applicable_on_linux"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sequence", "name", "quantity", "source"],
+        "properties": {
+          "sequence": {"type": "integer"},
+          "name": {"type": "string"},
+          "quantity": {"type": "integer"},
+          "thickness_mm": {"type": ["number", "null"]},
+          "size_hint": {"type": "string"},
+          "material": {"type": ["string", "null"]},
+          "source": {"type": "string"},
+          "drawing_ref": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "unresolved": {"type": "array"}
+  },
+  "additionalProperties": true
+}

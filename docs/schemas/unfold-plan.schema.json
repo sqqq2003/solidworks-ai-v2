@@ -1,0 +1,29 @@
+{
+  "title": "Sheet-metal unfold plan",
+  "type": "object",
+  "required": ["module", "backend", "status", "cad_executed", "sw_live"],
+  "properties": {
+    "module": {"type": "string"},
+    "backend": {"type": "string", "enum": ["offline_python"]},
+    "status": {"type": "string", "enum": ["planned"]},
+    "cad_executed": {"type": "boolean", "const": false},
+    "sw_live": {"type": "string", "const": "not_applicable_on_linux"},
+    "bend": {
+      "type": "object",
+      "required": ["flat_length_mm", "thickness_mm"],
+      "properties": {
+        "flat_length_mm": {"type": "number"},
+        "thickness_mm": {"type": "number"},
+        "radius_mm": {"type": "number"},
+        "angle_degrees": {"type": "number"},
+        "k_factor": {"type": "number"},
+        "bend_allowance_mm": {"type": "number"},
+        "bend_deduction_mm": {"type": "number"}
+      }
+    },
+    "flat_length_mm": {"type": "number"},
+    "bend_count": {"type": "integer"},
+    "bends": {"type": "array"}
+  },
+  "additionalProperties": true
+}
