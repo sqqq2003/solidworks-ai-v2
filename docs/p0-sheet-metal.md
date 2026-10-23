@@ -122,3 +122,10 @@ p248 的 done 事件新增 bend_attempts，逐轮包含 attempt、relief_step、
 Gork 复测请使用当前提交的完整源码，在独立 C 盘工作副本中运行；不覆盖 D 盘程序，不使用 P0_RETEST_ATTACH。先通过 work/probe_owned_solidworks.py --sw-exe 的独占证明，再使用现有 sw_tool_cli 的 --sw-exe、--profile 248、t=2.5/R=1/90 度，输出到新的空目录。必须记录 `Fixed panel pinned for all bend groups`、每次原生折弯的 pick、bend_attempts、4/4 实际完成数、重建、关闭保存重开和展开验证。
 
 若仍为 2/4，不再把“改动=1”作为释放充分证据：需要失败原生特征错误以及实际槽与失败折弯的对应关系，再区分选择/折弯顺序和槽深不足。flat fallback 仍为 degraded；不得发实机通过。Windows 离线回归建议 `python -X utf8 work/run_cloud_tests.py`，避免系统默认 GBK 误读已有 UTF-8 方程 fixture。
+
+
+### 分组折弯诊断（P0-CODEX-005）
+
+生成结果新增 `bend_group_attempts`；使用释放槽重试入口时，每轮 `bend_attempts` 内也保留该字段。每条记录包含 `sequence`、`bend_indices`、`index_base=0`、`fixed_point_mm`（源图毫米坐标）、`relief_step`、`elapsed_seconds`、`status` 和失败时的 `error_kind`。界面显示编号时加 1。
+
+`created` 仅表示该次特征创建调用成功，仍须核对重建、保存重开、4/4 完成数和展开。固定点记录是请求的锚点，不是已验证的原生面身份。保持现有 Gork 任务，不重复派发；实机工作副本同步后使用原复测步骤。客户坐标应保留在本机诊断中，公开提交前脱敏。

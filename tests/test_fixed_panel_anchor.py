@@ -61,3 +61,38 @@ class FixedPanelAnchorTests(unittest.TestCase):
                         for b in self.bends)
         self.assertEqual(sw._fixed_face_pick_candidates(self.outer, self.bends)[0],
                          sw._fixed_face_pick_candidates(self.outer, reverse)[0])
+
+    def test_group_diagnostics_survive_rejection(self):
+        analysis = DrawingAnalysis(Path('synthetic.dxf'), 'mm', (), self.bends,
+                                   (self.outer, self.hole), (0, 0, 100, 80), 'Model')
+        events = []
+        def reject(*args, **kwargs):
+            raise sw.BendRejectedError(args[7])
+        with patch.object(sw, '_create_bend_feature', side_effect=reject):
+            with self.assertRaises(sw.BendRejectedError) as caught:
+                sw._create_bends_with_fallbacks(
+                    *[MagicMock() for _ in range(6)], analysis, (0, 1, 2, 3),
+                    (0, 0), 2.5, 1, 90, False, None, 0, None, self.outer,
+                    hole_profiles=(self.hole,), group_attempts=events)
+        self.assertEqual(len(events), 7)  # all, two groups, four single bends
+        self.assertEqual(caught.exception.bend_group_attempts, tuple(events))
+        self.assertEqual([e['sequence'] for e in events], list(range(1, 8)))
+        self.assertTrue(all(e['status'] == 'failed' for e in events))
+        self.assertTrue(all(e['error_kind'] == 'BendRejectedError' for e in events))
+        self.assertTrue(all(e['fixed_point_mm'] == events[0]['fixed_point_mm'] for e in events))
+        self.assertTrue(all(e['elapsed_seconds'] >= 0 for e in events))
+
+    def test_group_diagnostics_record_success_without_claiming_acceptance(self):
+        analysis = DrawingAnalysis(Path('synthetic.dxf'), 'mm', (), self.bends,
+                                   (self.outer,), (0, 0, 100, 80), 'Model')
+        events = []
+        with patch.object(sw, '_create_bend_feature'):
+            count = sw._create_bends_with_fallbacks(
+                *[MagicMock() for _ in range(6)], analysis, (0, 1, 2, 3),
+                (0, 0), 2.5, 1, 90, False, None, 0, None, self.outer,
+                group_attempts=events)
+        self.assertEqual(count, 4)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]['status'], 'created')
+        self.assertEqual(events[0]['scope'], 'feature_creation_not_native_acceptance')
+        self.assertEqual(events[0]['index_base'], 0)

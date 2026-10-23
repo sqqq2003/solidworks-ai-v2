@@ -274,6 +274,7 @@ class BendRejectedError(SolidWorksGenerationError):
         self.relief_step = relief_step
         self.max_relief_steps = max_relief_steps
         self.completed_bend_count = 0
+        self.bend_group_attempts: tuple[dict, ...] = ()
 
 
 class ComDisconnectedBendError(BendRejectedError):
@@ -489,6 +490,7 @@ class GenerationResult:
     k_factor_readback: float | None = None
     relief_step_used: int = 0
     bend_attempts: tuple[dict, ...] = ()
+    bend_group_attempts: tuple[dict, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -3502,7 +3504,17 @@ def _partition_bend_groups(
     return groups
 
 
-def _create_bends_with_fallbacks(
+def _create_bends_with_fallbacks(*args, group_attempts=None, **kwargs) -> int:
+    """Preserve group evidence even when the scheduler rejects or disconnects."""
+    events = [] if group_attempts is None else group_attempts
+    try:
+        return _create_bends_with_fallbacks_impl(*args, group_attempts=events, **kwargs)
+    except BendRejectedError as error:
+        error.bend_group_attempts = tuple(dict(event) for event in events)
+        raise
+
+
+def _create_bends_with_fallbacks_impl(
     model: Any,
     part: Any,
     feature_manager: Any,
@@ -3522,6 +3534,7 @@ def _create_bends_with_fallbacks(
     outer_profile: Primitive,
     *,
     hole_profiles: tuple[Primitive, ...] = (),
+    group_attempts: list[dict] | None = None,
 ) -> int:
     """自动折弯总调度：先全部同草图，再平行分组，最后逐条（仍在当前最大平面上）。"""
 
@@ -3549,26 +3562,42 @@ def _create_bends_with_fallbacks(
 
 
     def _attempt(indices: tuple[int, ...]) -> None:
-        _ensure_time("attempt")
-        _create_bend_feature(
-            model,
-            part,
-            feature_manager,
-            sketch_manager,
-            extension,
-            module,
-            analysis,
-            indices,
-            origin,
-            thickness_mm,
-            radius_mm,
-            angle_degrees,
-            flip_direction,
-            fixed_face_point,
-            relief_step,
-            bend_allowance=bend_allowance,
-            outer_profile=outer_profile,
-        )
+        event = dict(sequence=len(group_attempts) + 1 if group_attempts is not None else 1,
+                     bend_indices=list(indices), index_base=0,
+                     fixed_point_mm=list(fixed_face_point), relief_step=relief_step,
+                     status="started", scope="feature_creation_not_native_acceptance")
+        if group_attempts is not None:
+            group_attempts.append(event)
+        started = time.monotonic()
+        try:
+            _ensure_time("attempt")
+            _create_bend_feature(
+                model,
+                part,
+                feature_manager,
+                sketch_manager,
+                extension,
+                module,
+                analysis,
+                indices,
+                origin,
+                thickness_mm,
+                radius_mm,
+                angle_degrees,
+                flip_direction,
+                fixed_face_point,
+                relief_step,
+                bend_allowance=bend_allowance,
+                outer_profile=outer_profile,
+            )
+        except Exception as error:
+            event.update(status="failed", error_kind=type(error).__name__)
+            raise
+        else:
+            event["status"] = "created"
+        finally:
+            event["elapsed_seconds"] = max(0.0, time.monotonic() - started)
+
 
     # 先全部同草图。失败且还没到总时限时，改平行分组，再逐条。
     # 一条坏线不再把其余折弯一起判死。超时仍立刻交给外层回退平板。
@@ -4772,6 +4801,7 @@ def generate_sheet_metal(
                 )
             logger.info("孔/槽切除完成：%d 个轮廓", len(hole_profiles))
 
+        group_attempts: list[dict] = []
         bend_sketch_name = ""
         bend_sketch_line_count = 0
         auto_bent = False
@@ -4814,6 +4844,7 @@ def generate_sheet_metal(
                 bend_allowance,
                 profile,
                 hole_profiles=tuple(hole for hole, _ in hole_profiles),
+                group_attempts=group_attempts,
             )
             auto_bent = completed_bends == len(selected_bends)
 
@@ -4915,8 +4946,11 @@ def generate_sheet_metal(
             bend_allowance_verified=bend_allowance is not None,
             k_factor_readback=allowance_readback if bend_allowance is not None and bend_allowance.mode == "k_factor" else None,
             relief_step_used=relief_step,
+            bend_group_attempts=tuple(group_attempts),
         )
-    except BendRejectedError:
+    except BendRejectedError as error:
+        if not error.bend_group_attempts:
+            error.bend_group_attempts = tuple(locals().get("group_attempts", ()))
         # 含 ComDisconnectedBendError：原样抛出，供 app 扩大矩形释放槽后重开文档。
         raise
     except (SolidWorksGenerationError, ValueError, FileExistsError, SessionOwnershipError):
@@ -4996,7 +5030,8 @@ def generate_sheet_metal_with_relief_retries(
                 relief_bend_indices=relief, relief_step=step, **common)
             trace.append(dict(attempt=attempts, relief_step=step,
                 relief_extra_mm=rect_relief_extra_mm(step), status="completed" if result.auto_bent else "degraded",
-                completed_bend_count=result.bend_count, relief_slot_count=result.relief_slot_count))
+                completed_bend_count=result.bend_count, relief_slot_count=result.relief_slot_count,
+                bend_group_attempts=list(result.bend_group_attempts)))
             return replace(result, auto_bend_attempts=attempts, bend_attempts=tuple(trace),
                            auto_bend_failed_count=max(0, len(selected) - result.bend_count),
                            auto_bend_abandoned=not result.auto_bent)
@@ -5005,7 +5040,8 @@ def generate_sheet_metal_with_relief_retries(
             trace.append(dict(attempt=attempts, relief_step=step,
                 relief_extra_mm=rect_relief_extra_mm(step), status="rejected",
                 failed_bend_indices=list(error.bend_indices), completed_bend_count=error.completed_bend_count,
-                error_kind=type(error).__name__, error=str(error)))
+                error_kind=type(error).__name__, error=str(error),
+                bend_group_attempts=list(error.bend_group_attempts)))
             logger.warning("auto bend rejected attempt=%d relief_step=%d failed=%s completed=%d",
                 attempts, step, error.bend_indices, error.completed_bend_count)
             if isinstance(error, ComDisconnectedBendError) and error.timed_out:
