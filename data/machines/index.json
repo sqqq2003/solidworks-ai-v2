@@ -1,0 +1,28 @@
+{
+  "registry_version": 1,
+  "note": "Machine registry. Each entry points at its own spec file and planner. No OEM-confirmed dimensions are invented here; confirmed values live in per-machine mapping files once they exist and are marked confirmed.",
+  "machines": [
+    {
+      "id": "a01-gt-zx",
+      "machine_id": "A01",
+      "name": "A01 / GT-ZX inclined roller line",
+      "family": "assembly",
+      "spec": "data/machine_spec.json",
+      "planner": "src.a01_parametric.cli",
+      "source_model": "GT-ZX-1300x000x750-001x1.SLDASM",
+      "status": "offline_planning_pending_mapping",
+      "notes": "Candidate mother is the GT-ZX assembly; identity comes from a read-only open on the operator PC, not engineering approval."
+    },
+    {
+      "id": "ql5050px",
+      "machine_id": "QL-5050PX",
+      "name": "QL-5050PX packing machine",
+      "family": "packing",
+      "spec": "data/ql_5050px_spec.json",
+      "planner": "src.ql5050px.cli",
+      "source_model": null,
+      "status": "offline_planning_pending_mapping",
+      "notes": "DWG-only packing machine, independent of the A01/GT-ZX assembly. Envelope 1800x900x1500 is a target placeholder, never promoted."
+    }
+  ]
+}

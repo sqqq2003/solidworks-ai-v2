@@ -28,6 +28,11 @@ data/*
 !data/machine_spec.json
 !data/tasks.json
 !data/ql_5050px_spec.json
+!data/material_properties.json
+!data/k_factor_table.json
+!data/labor_rates.json
+!data/machines/
+!data/machines/**
 legacy/
 backups/
 backup/
