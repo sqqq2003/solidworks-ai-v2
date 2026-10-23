@@ -4,12 +4,12 @@
 
 - 验收副本：`C:\Users\yue\Documents\Qoder\2026-10-24\b2095eb3\solidworks-ai-v2`
 - 分支：`feat/issue6-offline-tests`（基线 `13cc10c`，来自 `origin/feat/issue6-ql5050px-five-modules`）
-- 提交：`3b3013a` 套件与接口修复 → `8244319` 文档 SHA → `ebb09e2` 原生生成校验顺序 → `2f7944c` 验收清单 → 本次 P0 重建提交（`git log -1`）
+- 提交：本分支相对基线 `13cc10c` 的全部本地提交用 `git log --oneline 13cc10c..HEAD` 列出（依次为 issue6 套件、文档、原生生成校验顺序、验收清单、P0 重建、P0 守护测试与本清单修订）
 - 说明：`D:\Qoder\solidworks-ai-v2` 在本会话不可访问，未做任何改动；提交只存在于上述 C 盘副本。
 
 ## 验收步骤
 
-1. 提交与未推送状态（期望 `ahead 5`，且除本次提交外无其他待提交改动）
+1. 提交与未推送状态（期望：领先 `origin/feat/issue6-ql5050px-five-modules`、工作树干净、没有 push 记录）
 
    ```bash
    git status --short --branch
