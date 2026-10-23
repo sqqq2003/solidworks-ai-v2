@@ -1,0 +1,231 @@
+{
+  "machine_id": "QL-5050PX",
+  "revision": "draft-001",
+  "units": "mm",
+  "identity": "QL-5050PX 封箱机（只有 DWG，无原生装配模板）",
+  "identity_note": "QL-5050PX 是一台只有 DWG 的封箱机，与 A01 / GT-ZX-1300x000x750-001x1.SLDASM 不是同一台装配。本配置独立维护，不得照搬 GT-ZX 已确认尺寸。",
+  "independent_of": "A01 / GT-ZX-1300x000x750-001x1.SLDASM",
+  "no_confirmed_dimensions_copied_from": "GT-ZX-1300 及 A01 的任何已确认方程值",
+  "template_identity_confirmed": false,
+  "engineering_approved": false,
+  "native_template": null,
+  "target_envelope_mm": {
+    "length": 1800,
+    "width": 900,
+    "height": 1500
+  },
+  "target_envelope_is_placeholder": true,
+  "target_envelope_note": "1800x900x1500 只是目标占位，不是已确认包络；换成任何数都不代表工程批准。",
+  "carton_passage_mm": null,
+  "parameter_graph": {
+    "length": {
+      "kind": "input",
+      "axis": "length",
+      "depends_on": []
+    },
+    "width": {
+      "kind": "input",
+      "axis": "width",
+      "depends_on": []
+    },
+    "height": {
+      "kind": "input",
+      "axis": "height",
+      "depends_on": []
+    },
+    "front_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "rear_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "left_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "right_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "top_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "bottom_allowance": {
+      "kind": "measured",
+      "value_mm": null,
+      "confirmed": false,
+      "source": null,
+      "depends_on": []
+    },
+    "frame_length": {
+      "kind": "subtract",
+      "depends_on": [
+        "length",
+        "front_allowance",
+        "rear_allowance"
+      ],
+      "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
+    },
+    "frame_width": {
+      "kind": "subtract",
+      "depends_on": [
+        "width",
+        "left_allowance",
+        "right_allowance"
+      ],
+      "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
+    },
+    "column_height": {
+      "kind": "subtract",
+      "depends_on": [
+        "height",
+        "top_allowance",
+        "bottom_allowance"
+      ],
+      "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
+    }
+  },
+  "parametric_graph": {
+    "conveyor_bed_length": {
+      "subsystem": "conveyor",
+      "kind": "copy",
+      "unit": "mm",
+      "depends_on": ["frame_length"],
+      "meaning": "通用规则：输送面候选长度跟随机架内长。不是 QL-5050PX 实测。"
+    },
+    "conveyor_clear_width": {
+      "subsystem": "conveyor",
+      "kind": "copy",
+      "unit": "mm",
+      "depends_on": ["frame_width"],
+      "meaning": "通用规则：输送净宽候选跟随机架内宽。不是 QL-5050PX 实测。"
+    },
+    "passline_height": {
+      "subsystem": "conveyor",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["column_height"],
+      "mapping_id": "QL5050PX.conveyor.passline_height",
+      "meaning": "输送面高度未从真实装配映射。"
+    },
+    "carton_passage_length": {
+      "subsystem": "carton",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_length"],
+      "mapping_id": "QL5050PX.carton.passage_length",
+      "meaning": "纸箱通道长度未从真实装配映射。"
+    },
+    "carton_passage_width": {
+      "subsystem": "carton",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_width"],
+      "mapping_id": "QL5050PX.carton.passage_width",
+      "meaning": "纸箱通道宽度未从真实装配映射。"
+    },
+    "carton_passage_height": {
+      "subsystem": "carton",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["column_height"],
+      "mapping_id": "QL5050PX.carton.passage_height",
+      "meaning": "纸箱通道高度未从真实装配映射。"
+    },
+    "drive_center_along_length": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["conveyor_bed_length"],
+      "mapping_id": "QL5050PX.drive.center_along_length",
+      "meaning": "传动中心沿长度方向的位置未映射。"
+    },
+    "chain_pitch": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["drive_center_along_length"],
+      "mapping_id": "QL5050PX.drive.chain_pitch",
+      "preserve_interface": "齿形、齿距及传动接口",
+      "meaning": "链节距属于保留接口，未映射前不填数。"
+    },
+    "sprocket_teeth": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "count",
+      "depends_on": ["chain_pitch"],
+      "mapping_id": "QL5050PX.drive.sprocket_teeth",
+      "preserve_interface": "齿形、齿距及传动接口",
+      "meaning": "齿数属于保留接口，未映射前不填数。"
+    },
+    "motor_mount_x": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_length"],
+      "mapping_id": "QL5050PX.mount.motor_x",
+      "preserve_interface": "电机、轴承等采购件尺寸",
+      "meaning": "电机安装纵向位置未映射。"
+    },
+    "motor_mount_z": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["column_height"],
+      "mapping_id": "QL5050PX.mount.motor_z",
+      "preserve_interface": "电机、轴承等采购件尺寸",
+      "meaning": "电机安装高度未映射。"
+    },
+    "bearing_mount_span": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_width"],
+      "mapping_id": "QL5050PX.mount.bearing_span",
+      "preserve_interface": "电机、轴承等采购件尺寸",
+      "meaning": "轴承座跨距未映射。"
+    },
+    "sheet_thickness": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_length"],
+      "mapping_id": "QL5050PX.interfaces.sheet_thickness",
+      "preserve_interface": "板厚和螺纹规格（除非有明确工艺变更）",
+      "meaning": "板厚属于保留接口，未映射前不填数。"
+    },
+    "thread_major_diameter": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["sheet_thickness"],
+      "mapping_id": "QL5050PX.interfaces.thread_major_diameter",
+      "preserve_interface": "板厚和螺纹规格（除非有明确工艺变更）",
+      "meaning": "螺纹大径属于保留接口，未映射前不填数。"
+    }
+  },
+  "preserve_interfaces": [
+    "电机、轴承等采购件尺寸",
+    "齿形、齿距及传动接口",
+    "板厚和螺纹规格（除非有明确工艺变更）"
+  ],
+  "part_rules_status": "pending_drawing_review"
+}

@@ -27,6 +27,7 @@ credentials.json
 data/*
 !data/machine_spec.json
 !data/tasks.json
+!data/ql_5050px_spec.json
 legacy/
 backups/
 backup/
