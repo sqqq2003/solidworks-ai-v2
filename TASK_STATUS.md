@@ -170,3 +170,14 @@
 - 装配/配合/干涉/运动、原生工程图仍有骨架/未实现部分；本轮没有伪造这些CAD功能，也没有完成新的Windows整体验收。
 
 源码交接包已独立解压验证：完整回归 385 项，381 通过、4 跳过；离线整项目烟测 5 项均得到预期状态。方程测试使用明确标记的合成夹具，不再要求分发 Windows 原始证据。
+
+## ISSUE6-WB-001：五模块离线框架（不实机）
+
+- 基线 79b95d7，新建分支 wb/issue6-five-modules-framework，7 个提交；origin 不可达，只本地 + patch 到派发输出目录。GitHub Issue #6 原文不可达（疑私有），五模块定义以派发任务文件为准。
+- 模块1 QL-5050PX 独立参数配置：data/ql_5050px_spec.json + src/ql5050px/；不照搬 GT-ZX 已确认尺寸，1800x900x1500 仅目标占位，12 个 pending_mapping 留空，保留接口 preserve_unresolved；复用 a01.py 预检原语与 a01_parametric.constraints。
+- 模块2 SW 受控执行入口 src/sw_api/controlled.py：ExecutionRequest + 显式拒绝条件；mock 复用 dry_run_apply 只写 JSON trace，live 委托既有 apply_live；本轮不连真 SW。
+- 模块3 装配预检 src/a01_next/assembly_precheck.py：简化 DOF 表（非求解器）、运动参数校验、AABB 干涉粗筛、MockMechanicalCheckPort；mate_check.py 未动。
+- 模块4 钣金 src/sheetmetal_unfold.py：展开/释放槽/K 因子复用 bend_allowance 与 solidworks_generator 助手，生成经 sheet_metal_hook 委托，不执行。
+- 模块5 工程图/DXF/BOM src/drawing_bom.py：复用 batch_export/roller_spec/drawing_notes；mock BOM + mock 导出 trace，不写产品文件。
+- 新增 65 项单测（5 个测试文件）+ examples/issue6_framework_demo.py；全回归 450 ran / 443 passed / 1 failed / 6 skipped，跨进程锁通过。唯一失败为既有环境相关项（本机 pywin32 使 com_available 为 True，test_live_flag_is_refused_without_com 期望退出码 2 实得 1），记 KNOWN_ISSUES 未修。
+- 未启动/接管 SolidWorks；sw_live 全部 not_applicable_on_linux；未宣称任何实机验收。
