@@ -1,0 +1,208 @@
+{
+  "issue": 5,
+  "check": "k_factor_unfold_fixed_blank",
+  "generated_at": "2026-10-23T16:25:35+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": "DDD",
+  "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+  "status": "pass",
+  "status_detail": "fixed_blank_confirmed_folded_delta_matches_ba",
+  "geometry_basis": "fixed_blank",
+  "geometry_basis_rationale": "BaseFlange from closed flat-blank sketch + sketched/3d bends. K change keeps flat extent fixed; folded outside dims move.",
+  "source_mother_untouched": true,
+  "source_dwg_work": "QL-5050_sheetmetal_work.dwg (work copy under 钣金导入/临时; mother untouched)",
+  "profile": 209,
+  "parameters": {
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "angle_degrees": 90.0
+  },
+  "theoretical": {
+    "ba_k0p25_mm": 2.552544031041707,
+    "ba_k0p5_mm": 3.5342917352885173,
+    "delta_ba_mm": 0.9817477042468101,
+    "expected_flat_delta_mm_under_fixed_blank": 0.0,
+    "expected_folded_delta_mm_under_fixed_blank": 0.9817477042468101
+  },
+  "session_note": "P0_RETEST_ATTACH=1 shim used (attach interactive SW; ExitApp still gated)",
+  "code_file_sha256": {
+    "sheet_metal_pipeline.py": "e2e82c285d0cd1289d84d3c72fd4637a65db1a684e9c888f2c33a2e141cd67ee",
+    "cad_analyzer.py": "edbd04130b6f60907c73acba5741299ed8bb7fff1fc4ed59761112d4d27d1c2c",
+    "solidworks_generator.py": "2dd5c960f59290aa0c7ddeed3317e80b77058a86d3867643b1ae6b913347318c",
+    "profile_sanitize.py": "5449eecba8758fcff5629640f799547a313ddcf6999ad038da9b6a07d67bf76f",
+    "profile_selection.py": "0c511367015a8de4e24b8b695fb659b73ae9acea154dff1e950e5dc654befd89",
+    "bend_allowance.py": "6a016fa696098ac156b4770b5c04482efce5b80d76acfd8ba53e37fc70ec0d60",
+    "sw_session.py": "690e33c212a06dbc3f271e6efd99e35ec0f8fc81810604ba9fbdba630abc21d2",
+    "k_factor_evidence.py": "ab078f6620a5c1cfd95573f097dc9f1a13870056b550b579634de817cc6be30e"
+  },
+  "code_digest_present_files": "b1e3917bfa6e02b1b590dc8d59b6d9eb3a7e36223b29d0d01b0ed0dbe6e357fa",
+  "variants": [
+    {
+      "k_target": 0.25,
+      "k_read": 0.25,
+      "bend_allowance_verified": true,
+      "k_match": true,
+      "bend_count": 1,
+      "relief_step_used": 0,
+      "auto_bent": true,
+      "generate_ms": 7925.3,
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_unfold_fix\\k0p25\\p209_k0p25.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_unfold_fix\\k0p25\\p209_k0p25_unfold.DXF",
+      "part_bytes": 126167,
+      "dxf_bytes": 24555,
+      "folded_spans": {
+        "bounds_m": [
+          -0.18249785413234992,
+          -0.059999998658900044,
+          -0.037451747704258576,
+          0.21550214586765015,
+          0.059999998658900044,
+          0.0
+        ],
+        "dx_mm": 398.00000000000006,
+        "dy_mm": 119.9999973178001,
+        "dz_mm": 37.45174770425857,
+        "max_extent_mm": 398.00000000000006
+      },
+      "flat_body_spans": {
+        "bounds_m": [
+          -0.21550214586765026,
+          -0.059999998658900044,
+          -0.0025000000000000022,
+          0.21550214586765015,
+          0.059999998658900044,
+          0.0
+        ],
+        "dx_mm": 431.0042917353004,
+        "dy_mm": 119.9999973178001,
+        "dz_mm": 2.500000000000002,
+        "max_extent_mm": 431.0042917353004
+      },
+      "dxf_extents": {
+        "ok": true,
+        "xmin": -75.8021458677,
+        "xmax": 355.2021458677,
+        "ymin": 47.9500013411,
+        "ymax": 167.9499986589,
+        "width_mm": 431.0042917354,
+        "height_mm": 119.9999973178,
+        "max_extent_mm": 431.0042917354,
+        "sum_line_len_mm": 1071.0344658436998,
+        "n_points": 51
+      },
+      "theoretical_ba_mm": 2.552544031041707,
+      "theoretical_bd_mm": 4.447455968958292
+    },
+    {
+      "k_target": 0.5,
+      "k_read": 0.5,
+      "bend_allowance_verified": true,
+      "k_match": true,
+      "bend_count": 1,
+      "relief_step_used": 0,
+      "auto_bent": true,
+      "generate_ms": 7831.9,
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_unfold_fix\\k0p5\\p209_k0p5.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_unfold_fix\\k0p5\\p209_k0p5_unfold.DXF",
+      "part_bytes": 127317,
+      "dxf_bytes": 24554,
+      "folded_spans": {
+        "bounds_m": [
+          -0.18249785413234992,
+          -0.05999999865890007,
+          -0.036470000000011715,
+          0.21550214586765015,
+          0.059999998658900044,
+          0.0
+        ],
+        "dx_mm": 398.00000000000006,
+        "dy_mm": 119.99999731780012,
+        "dz_mm": 36.470000000011716,
+        "max_extent_mm": 398.00000000000006
+      },
+      "flat_body_spans": {
+        "bounds_m": [
+          -0.2155021458676502,
+          -0.059999998658900044,
+          -0.0025000000000000022,
+          0.21550214586765015,
+          0.059999998658900044,
+          0.0
+        ],
+        "dx_mm": 431.00429173530034,
+        "dy_mm": 119.9999973178001,
+        "dz_mm": 2.500000000000002,
+        "max_extent_mm": 431.00429173530034
+      },
+      "dxf_extents": {
+        "ok": true,
+        "xmin": -75.8021458677,
+        "xmax": 355.2021458677,
+        "ymin": 47.9500013411,
+        "ymax": 167.9499986589,
+        "width_mm": 431.0042917354,
+        "height_mm": 119.9999973178,
+        "max_extent_mm": 431.0042917354,
+        "sum_line_len_mm": 1071.0344658436998,
+        "n_points": 51
+      },
+      "theoretical_ba_mm": 3.5342917352885173,
+      "theoretical_bd_mm": 3.465708264711482
+    }
+  ],
+  "compare": {
+    "flat_dxf_max_extent_delta_mm": 0.0,
+    "flat_diagnose": {
+      "geometry_basis": "fixed_blank",
+      "expected_single_bend_delta_mm": 0.0,
+      "observed_delta_mm": 0.0,
+      "native_k_readback": "required",
+      "status": "consistent_with_formula",
+      "sw_live_verified": false
+    },
+    "folded_deltas_mm": {
+      "dx_mm": 0.0,
+      "dy_mm": 2.842170943040401e-14,
+      "dz_mm": -0.9817477042468568,
+      "max_extent_mm": 0.0
+    },
+    "folded_signal_axis": "dz_mm",
+    "observed_folded_delta_mm": -0.9817477042468568,
+    "expected_ba_delta_mm": 0.9817477042468101,
+    "folded_delta_matches_ba": true,
+    "k_match_both": true
+  },
+  "audit_variants": {
+    "status": "consistent_fixed_blank_pending_folded_measurements",
+    "sw_live_verified": false,
+    "native_k_persistence": "matched_in_supplied_evidence",
+    "geometry_basis": "fixed_blank",
+    "flat_comparison": {
+      "geometry_basis": "fixed_blank",
+      "expected_single_bend_delta_mm": 0.0,
+      "observed_delta_mm": 0.0,
+      "native_k_readback": "required",
+      "status": "consistent_with_formula",
+      "sw_live_verified": false
+    },
+    "required_next_evidence": [
+      "folded_body_dimensions_for_each_K",
+      "unsuppressed_flat_body_dimensions_for_each_K",
+      "native_bend_allowance_readback_after_reopen",
+      "source_parameter_and_code_hashes"
+    ],
+    "note": "equal DXF bounding boxes alone do not establish that SolidWorks ignored K."
+  },
+  "honest_verdict": "geometry_basis=fixed_blank. Flat DXF Delta=0.0 (expected 0) status=consistent_with_formula. Folded dz_mm Delta=-0.9817477042468568 vs BA Delta=0.9817477042468101 match=True. K readback matched both=True. Equal unfold DXF boxes are NOT a defect under fixed_blank.",
+  "next_step": [
+    "Treat unfold DXF Delta=0 as expected; do not chase ExportFlatPatternView for K-driven blank growth",
+    "Optional: emit folded_bounds on CLI done event for regression gates",
+    "Relief-slot depth remains secondary / separate"
+  ],
+  "patched_files_this_turn": [
+    "D:\\工程\\钣金导入\\程序\\k_factor_evidence.py",
+    "D:\\工程\\钣金导入\\程序\\sheet_metal_pipeline.py"
+  ],
+  "backup_dir": "D:\\工程\\钣金导入\\备份\\p0_unfold_fix_20261023_162233",
+  "note_code_hash": "sheet_metal_windows.py missing locally; code_hash() skipped; hashed present files only"
+}

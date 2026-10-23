@@ -1,6 +1,15 @@
-"""Separate native K persistence from flat-length dimensional assumptions."""
+"""Separate native K persistence from flat-length dimensional assumptions.
+
+PIPELINE_GEOMETRY_BASIS is fixed_blank: BaseFlange comes from a closed
+flat-blank sketch plus sketched/3D bends. Under fixed_blank, flat and DXF
+extent delta across K is expected to be 0. Custom bend allowance's
+geometric effect is measured on folded outside dimensions.
+"""
 import math
 from sheet_metal_pipeline import diagnose_k_change
+
+# Flat/DXF extent Δ=0 across K is expected. Measure CBA on folded outside dims.
+PIPELINE_GEOMETRY_BASIS = "fixed_blank"
 
 
 def audit_variants(payload, *, geometry_basis=None, thickness_mm=2.5, radius_mm=1, angle_degrees=90):
@@ -34,6 +43,7 @@ def audit_variants(payload, *, geometry_basis=None, thickness_mm=2.5, radius_mm=
         geometry_basis=geometry_basis, old_flat_mm=lengths[0], new_flat_mm=lengths[1])
     result['flat_comparison'] = comparison
     # Formula consistency is not acceptance of native geometry or exported parts.
+    # fixed_blank expects flat/DXF Δ=0; folded outside dims carry the CBA effect.
     result['status'] = 'consistent_fixed_blank_pending_folded_measurements' if (
-        geometry_basis == 'fixed_blank' and comparison['status'] == 'consistent_with_formula') else 'review_required'
+        geometry_basis == PIPELINE_GEOMETRY_BASIS and comparison['status'] == 'consistent_with_formula') else 'review_required'
     return result
