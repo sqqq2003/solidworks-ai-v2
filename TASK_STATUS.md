@@ -166,3 +166,13 @@
 - 修复 7 项跨模块/边界缺陷：映射模板非法单位、抑制配合删除有效连通边、BOM 空配置排序异常、负值 `left_drive_x` 被拒、bool 间隙、未知导出类型 `KeyError`、`pending_mapping` 混入目标包络。另有 Windows COM 环境下旧测试的平台假设修正。
 - 未执行任何 SolidWorks 实机操作；`solidworks_live_verified=false`。Windows 驱动、原生钣金/工程图导出、OEM 映射和 p248 闭环仍待 Gork 证据。
 - 测试矩阵、拒绝条件、skip/pending 与回滚说明见 `docs/issue6-offline-tests.md`。
+
+
+## ISSUE6-OFFLINE-002：提交树复现与 CI 版本兼容核对
+
+- 纯净克隆 `ebb09e2` 复跑全量：448 ran / 441 passed / 0 failures / 0 errors / 7 skipped，跑出的 `results/cloud/latest.json` 与提交版本逐字节一致，证明提交树不依赖本机残留。
+- `ast.parse(feature_version=(3,11)/(3,12))` 扫描 114 个 `.py`，0 处语法不兼容；本机 `ezdxf` 与 `requirements-cloud.txt` 同为 `1.4.4`。本机只有 Python 3.14.7，`uv python install 3.11/3.12` 无网络响应，**未在 3.11/3.12 实跑**，版本证据仍待 CI。
+- 修正 `sheet_metal.generate_native()` 校验顺序：参数拒绝（已存在文件、错误后缀、重复 `output_path`）先于平台拒绝，Linux CI 原先跳过的 2 项转为实跑；所有拒绝条件保留，Windows 结果不变。
+- 以进程内 `sys.platform` 补丁模拟 Linux 分支，确认合法路径仍抛 `RuntimeError("requires Windows")`、非法参数抛 `ValueError`；标注为模拟，不计 Linux 实机证据。
+- CI 仅在 push 到 `dev/cloud-ai` 或手动 `workflow_dispatch` 时触发；本分支未 push，需要有推送权限者手动触发一次。
+- 新增 `docs/issue6-acceptance-checklist.md`：10 分钟验收步骤、期望输出、不接受的表述、回滚方式。未执行任何 SolidWorks 实机操作，`solidworks_live_verified=false`。
