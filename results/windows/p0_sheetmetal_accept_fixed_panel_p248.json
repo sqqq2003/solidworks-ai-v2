@@ -1,0 +1,311 @@
+{
+  "generated_at": "2026-10-23T17:20:06.863607+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": {
+    "label": "DDD",
+    "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e"
+  },
+  "crosswalk_task": "xi3wwg",
+  "tier": "fixed_panel_pin_retest",
+  "profile": 248,
+  "params": {
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "angle_deg": 90.0
+  },
+  "commit": "4b0a98611c92e41e8d73543ffa64a73093c05ccd",
+  "work_copy": "C:\\sw-ai-v2-work",
+  "output_dir": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258",
+  "probe": {
+    "status": "session_verified",
+    "cad_executed": false,
+    "session": {
+      "ownership": "spawned_pid_and_live_handle",
+      "pid": 36732,
+      "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+      "attached_existing": false,
+      "native_verification": "session_only_not_cad_acceptance",
+      "cleanup_status": "exit_requested",
+      "cleanup_error": null
+    }
+  },
+  "probe_ok": true,
+  "input_dxf": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\QL-5050_sheetmetal_work.dxf",
+  "source_dwg_work": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\\u4e34\u65f6\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+  "mother_cad_untouched": true,
+  "d_program_untouched": true,
+  "no_P0_RETEST_ATTACH": true,
+  "status": "partial_deepened_then_flat",
+  "pass": false,
+  "reasons": [
+    "Fixed panel pinned for all bend groups logged every relief step with identical xy",
+    "106/107 native insert pick identical to pinned xy each step",
+    "108/109 still BendRejected after relief_step 0/1/2",
+    "rect relief expand changed=1 at step1 (+1.0) and step2 (+1.5); changed=1 NOT treated as sufficient",
+    "flat+hand-ref fallback saved; no 4/4 so NOT pass",
+    "rebuild/reopen/unfold-of-folded N/A (never 4/4)"
+  ],
+  "bend_timeline": [
+    {
+      "attempt": 1,
+      "relief_step": 0,
+      "extra_mm": 0.0,
+      "completed": 2,
+      "failed_1based": [
+        108,
+        109
+      ],
+      "outcome": "BendRejected",
+      "fixed_panel_xy": "(275.4327977756461, 5595.010852622654)",
+      "success_pick": "(275.433,5595.011)"
+    },
+    {
+      "attempt": 2,
+      "relief_step": 1,
+      "extra_mm": 1.0,
+      "notches_changed": 1,
+      "completed": 2,
+      "failed_1based": [
+        108,
+        109
+      ],
+      "outcome": "BendRejected",
+      "fixed_panel_xy": "(275.4327977756461, 5595.010852622654)",
+      "success_pick": "(275.433,5595.011)"
+    },
+    {
+      "attempt": 3,
+      "relief_step": 2,
+      "extra_mm": 1.5,
+      "notches_changed": 1,
+      "completed": 2,
+      "failed_1based": [
+        108,
+        109
+      ],
+      "outcome": "BendRejected",
+      "fixed_panel_xy": "(275.4327977756461, 5595.010852622654)",
+      "success_pick": "(275.433,5595.011)"
+    },
+    {
+      "attempt": "flat_fallback",
+      "auto_bend": false,
+      "sketch": "hand_fold_ref",
+      "lines": 4,
+      "outcome": "saved_flat",
+      "part_bytes": 106109
+    }
+  ],
+  "fixed_panel": {
+    "log_phrase": "Fixed panel pinned for all bend groups",
+    "seen_all_steps": true,
+    "xy": "(275.4327977756461, 5595.010852622654)",
+    "unique_xy_count": 1,
+    "native_success_picks": [
+      "275.433,5595.011",
+      "275.433,5595.011",
+      "275.433,5595.011"
+    ],
+    "picks_match_pin": true
+  },
+  "failure_signature": {
+    "failed_bends_1based": [
+      108,
+      109
+    ],
+    "pattern": "all4_same_sketch_fail -> parallel_group 106/107 succeed with pinned pick -> 108 alone fail face0/1 -> 109 alone fail face0/1 -> BendRejected",
+    "selection_point": "pinned material face xy=(275.433,5595.011) used for successful 106/107; 108/109 InsertSheetMetal3dBend null on face0 and face1",
+    "order": "106+107 first (parallel group), then 108, then 109",
+    "relief_geometry_note": "edge notches deepened changed=1 each positive step; do not equate changed=1 with sufficient clearance for 108/109"
+  },
+  "attempts": [
+    {
+      "generated_at": "2026-10-23T17:16:55.830670+08:00",
+      "timezone": "Asia/Shanghai",
+      "step": 0,
+      "relief_extra_mm": 0.0,
+      "profile_1based": 248,
+      "bends_1based": [
+        106,
+        107,
+        108,
+        109
+      ],
+      "auto_bend": true,
+      "commit": "4b0a98611c92e41e8d73543ffa64a73093c05ccd",
+      "sw_exe": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+      "input": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\QL-5050_sheetmetal_work.dxf",
+      "part": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\attempts\\p248_step0.SLDPRT",
+      "session": {
+        "ownership": "spawned_pid_and_live_handle",
+        "pid": 46648,
+        "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+        "attached_existing": false,
+        "native_verification": "session_only_not_cad_acceptance",
+        "cleanup_status": "not_attempted",
+        "cleanup_error": null
+      },
+      "status": "rejected",
+      "error_kind": "BendRejectedError",
+      "error": "SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u53ef\u9884\u89c8\u5efa\u8bae\u7684\u91ca\u653e\u69fd\u4f4d\u7f6e\uff0c\u5e76\u786e\u8ba4\u81ea\u52a8\u9010\u7ea7\u6269\u5927\u540e\u91cd\u8bd5\u3002",
+      "failed_bends_raw": [
+        107,
+        108
+      ],
+      "failed_bends_1based": [
+        108,
+        109
+      ],
+      "completed_bend_count": 2,
+      "elapsed_ms": 31470,
+      "part_bytes": 0,
+      "log_scrape": {
+        "fixed_panel_lines": [
+          "2026-10-23 17:17:09,637 INFO [solidworks_generator] Fixed panel pinned for all bend groups: xy=(275.4327977756461, 5595.010852622654) bends=(106, 107, 108, 109)"
+        ],
+        "success_lines": [
+          "2026-10-23 17:17:15,743 INFO [solidworks_generator] \u81ea\u52a8\u6298\u5f2f\u6210\u529f\uff1abends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)"
+        ],
+        "pick_lines": [
+          "2026-10-23 17:17:15,743 INFO [solidworks_generator] \u81ea\u52a8\u6298\u5f2f\u6210\u529f\uff1abends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)"
+        ],
+        "relief_lines": [],
+        "reject_lines": [
+          "solidworks_generator.BendRejectedError: SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 106, 107, 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u53ef\u9884\u89c8\u5efa\u8bae\u7684\u91ca\u653e\u69fd\u4f4d\u7f6e\uff0c\u5e76\u786e\u8ba4\u81ea\u52a8\u9010\u7ea7\u6269\u5927\u540e\u91cd\u8bd5\u3002",
+          "solidworks_generator.BendRejectedError: SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u53ef\u9884\u89c8\u5efa\u8bae\u7684\u91ca\u653e\u69fd\u4f4d\u7f6e\uff0c\u5e76\u786e\u8ba4\u81ea\u52a8\u9010\u7ea7\u6269\u5927\u540e\u91cd\u8bd5\u3002"
+        ]
+      }
+    },
+    {
+      "generated_at": "2026-10-23T17:17:33.629956+08:00",
+      "timezone": "Asia/Shanghai",
+      "step": 1,
+      "relief_extra_mm": 1.0,
+      "profile_1based": 248,
+      "bends_1based": [
+        106,
+        107,
+        108,
+        109
+      ],
+      "auto_bend": true,
+      "commit": "4b0a98611c92e41e8d73543ffa64a73093c05ccd",
+      "sw_exe": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+      "input": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\QL-5050_sheetmetal_work.dxf",
+      "part": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\attempts\\p248_step1.SLDPRT",
+      "session": {
+        "ownership": "spawned_pid_and_live_handle",
+        "pid": 51104,
+        "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+        "attached_existing": false,
+        "native_verification": "session_only_not_cad_acceptance",
+        "cleanup_status": "not_attempted",
+        "cleanup_error": null
+      },
+      "status": "rejected",
+      "error_kind": "BendRejectedError",
+      "error": "SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u5df2\u5c1d\u8bd5\u6269\u5927\u91ca\u653e\u69fd 1 \u6b21\u3002\u53ef\u9884\u89c8\u5efa\u8bae\u7684\u91ca\u653e\u69fd\u4f4d\u7f6e\uff0c\u5e76\u786e\u8ba4\u81ea\u52a8\u9010\u7ea7\u6269\u5927\u540e\u91cd\u8bd5\u3002",
+      "failed_bends_raw": [
+        107,
+        108
+      ],
+      "failed_bends_1based": [
+        108,
+        109
+      ],
+      "completed_bend_count": 2,
+      "elapsed_ms": 30791,
+      "part_bytes": 0,
+      "log_scrape": {
+        "fixed_panel_lines": [
+          "2026-10-23 17:17:47,461 INFO [solidworks_generator] Fixed panel pinned for all bend groups: xy=(275.4327977756461, 5595.010852622654) bends=(106, 107, 108, 109)"
+        ],
+        "success_lines": [
+          "2026-10-23 17:17:53,891 INFO [solidworks_generator] \u81ea\u52a8\u6298\u5f2f\u6210\u529f\uff1abends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)"
+        ],
+        "pick_lines": [
+          "2026-10-23 17:17:53,891 INFO [solidworks_generator] \u81ea\u52a8\u6298\u5f2f\u6210\u529f\uff1abends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)"
+        ],
+        "relief_lines": [
+          "2026-10-23 17:17:38,254 INFO [solidworks_generator] \u77e9\u5f62\u91ca\u653e\u69fd\u6269\u5927\uff1a\u7ea7\u522b=1 \u8fb9\u957f\u5404+1.0mm \u6539\u52a8=1"
+        ],
+        "reject_lines": [
+          "solidworks_generator.BendRejectedError: SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 106, 107, 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u5df2\u5c1d\u8bd5\u6269\u5927\u91ca\u653e\u69fd 1 \u6b21\u3002\u53ef\u9884\u89c8\u5efa\u8bae\u7684\u91ca\u653e\u69fd\u4f4d\u7f6e\uff0c\u5e76\u786e\u8ba4\u81ea\u52a8\u9010\u7ea7\u6269\u5927\u540e\u91cd\u8bd5\u3002",
+          "solidworks_generator.BendRejectedError: SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u5df2\u5c1d\u8bd5\u6269\u5927\u91ca\u653e\u69fd 1 \u6b21\u3002\u53ef\u9884\u89c8\u5efa\u8bae\u7684\u91ca\u653e\u69fd\u4f4d\u7f6e\uff0c\u5e76\u786e\u8ba4\u81ea\u52a8\u9010\u7ea7\u6269\u5927\u540e\u91cd\u8bd5\u3002"
+        ]
+      }
+    },
+    {
+      "generated_at": "2026-10-23T17:18:10.889615+08:00",
+      "timezone": "Asia/Shanghai",
+      "step": 2,
+      "relief_extra_mm": 1.5,
+      "profile_1based": 248,
+      "bends_1based": [
+        106,
+        107,
+        108,
+        109
+      ],
+      "auto_bend": true,
+      "commit": "4b0a98611c92e41e8d73543ffa64a73093c05ccd",
+      "sw_exe": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+      "input": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\QL-5050_sheetmetal_work.dxf",
+      "part": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\attempts\\p248_step2.SLDPRT",
+      "session": {
+        "ownership": "spawned_pid_and_live_handle",
+        "pid": 69348,
+        "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+        "attached_existing": false,
+        "native_verification": "session_only_not_cad_acceptance",
+        "cleanup_status": "not_attempted",
+        "cleanup_error": null
+      },
+      "status": "rejected",
+      "error_kind": "BendRejectedError",
+      "error": "SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u5df2\u5c1d\u8bd5\u6269\u5927\u91ca\u653e\u69fd 2 \u6b21\u3002\u5df2\u8fbe\u5230\u81ea\u52a8\u5c1d\u8bd5\u4e0a\u9650\uff0c\u8bf7\u4eba\u5de5\u68c0\u67e5\u91ca\u653e\u69fd\u548c\u6298\u5f2f\u7ebf\u3002",
+      "failed_bends_raw": [
+        107,
+        108
+      ],
+      "failed_bends_1based": [
+        108,
+        109
+      ],
+      "completed_bend_count": 2,
+      "elapsed_ms": 31457,
+      "part_bytes": 0,
+      "log_scrape": {
+        "fixed_panel_lines": [
+          "2026-10-23 17:18:24,732 INFO [solidworks_generator] Fixed panel pinned for all bend groups: xy=(275.4327977756461, 5595.010852622654) bends=(106, 107, 108, 109)"
+        ],
+        "success_lines": [
+          "2026-10-23 17:18:30,880 INFO [solidworks_generator] \u81ea\u52a8\u6298\u5f2f\u6210\u529f\uff1abends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)"
+        ],
+        "pick_lines": [
+          "2026-10-23 17:18:30,880 INFO [solidworks_generator] \u81ea\u52a8\u6298\u5f2f\u6210\u529f\uff1abends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)"
+        ],
+        "relief_lines": [
+          "2026-10-23 17:18:15,772 INFO [solidworks_generator] \u77e9\u5f62\u91ca\u653e\u69fd\u6269\u5927\uff1a\u7ea7\u522b=2 \u8fb9\u957f\u5404+1.5mm \u6539\u52a8=1"
+        ],
+        "reject_lines": [
+          "solidworks_generator.BendRejectedError: SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 106, 107, 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u5df2\u5c1d\u8bd5\u6269\u5927\u91ca\u653e\u69fd 2 \u6b21\u3002\u5df2\u8fbe\u5230\u81ea\u52a8\u5c1d\u8bd5\u4e0a\u9650\uff0c\u8bf7\u4eba\u5de5\u68c0\u67e5\u91ca\u653e\u69fd\u548c\u6298\u5f2f\u7ebf\u3002",
+          "solidworks_generator.BendRejectedError: SolidWorks \u62d2\u7edd\u521b\u5efa\u7b2c 108, 109 \u6761\u6298\u5f2f\u7279\u5f81\u3002\u53ef\u80fd\u539f\u56e0\u5305\u62ec\u6298\u5f2f\u4ea4\u4f1a\u5904\u91ca\u653e\u69fd\u4e0d\u8db3\u3001\u6298\u5f2f\u7ebf\u76f8\u4ea4\uff0c\u6216\u6298\u5f2f\u7ebf\u672a\u7a7f\u8fc7\u5f53\u524d\u5e73\u9762\u533a\u57df\u3002\u5df2\u5c1d\u8bd5\u6269\u5927\u91ca\u653e\u69fd 2 \u6b21\u3002\u5df2\u8fbe\u5230\u81ea\u52a8\u5c1d\u8bd5\u4e0a\u9650\uff0c\u8bf7\u4eba\u5de5\u68c0\u67e5\u91ca\u653e\u69fd\u548c\u6298\u5f2f\u7ebf\u3002"
+        ]
+      }
+    }
+  ],
+  "flat_fallback": {
+    "status": "saved_flat_hand_ref",
+    "auto_bend": false,
+    "part_path": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\p0_fixed_panel_retest_20261023_171258\\attempts\\p248_flat.SLDPRT",
+    "part_bytes": 106109,
+    "part_mtime": "2026-10-23T17:19:04.134542+08:00",
+    "hand_ref_sketch": "bendline_hand_ref",
+    "unfold_verify_logged": true,
+    "exit_com_glitch_after_save": true,
+    "note": "Flat part saved; owned-session exit validate hit dead COM after save (part kept)."
+  },
+  "cli_same_process_note": "stock sw_tool_cli --sw-exe died on relief reconnect (COM disconnect after BendRejected CoUninitialize); retest used one owned process per relief step from C work copy",
+  "honest_summary": "Fixed-panel pin works (same xy every group/step; 106/107 pick matches). 108/109 still fail through relief 0/1/2 (+0/+1.0/+1.5, changed=1). status=partial_deepened_then_flat \u2014 NOT pass."
+}

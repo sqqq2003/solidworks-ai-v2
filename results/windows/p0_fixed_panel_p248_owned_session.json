@@ -1,0 +1,13 @@
+{
+  "status": "session_verified",
+  "cad_executed": false,
+  "session": {
+    "ownership": "spawned_pid_and_live_handle",
+    "pid": 36732,
+    "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+    "attached_existing": false,
+    "native_verification": "session_only_not_cad_acceptance",
+    "cleanup_status": "exit_requested",
+    "cleanup_error": null
+  }
+}
