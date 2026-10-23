@@ -15,6 +15,7 @@ drawing product file is produced and sw_live is never claimed.
 from __future__ import annotations
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -182,6 +183,10 @@ def module_5(plan: dict) -> dict:
 
 
 def main() -> int:
+    # Make the demo repeatable: the mock dry-run and export refuse existing
+    # destinations, so clear the previous run's synthetic outputs first.
+    if OUT.exists():
+        shutil.rmtree(OUT)
     OUT.mkdir(parents=True, exist_ok=True)
     plan = module_1()
     module_2(plan)
