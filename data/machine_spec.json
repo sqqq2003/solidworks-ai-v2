@@ -98,6 +98,126 @@
       "meaning": "候选尺寸链，需图纸核对；不代表已批准的零件尺寸"
     }
   },
+  "parametric_graph": {
+    "conveyor_bed_length": {
+      "subsystem": "conveyor",
+      "kind": "copy",
+      "unit": "mm",
+      "depends_on": ["frame_length"],
+      "meaning": "通用规则：输送面候选长度跟随机架内长。不是 A01 实测滚筒布置。"
+    },
+    "conveyor_clear_width": {
+      "subsystem": "conveyor",
+      "kind": "copy",
+      "unit": "mm",
+      "depends_on": ["frame_width"],
+      "meaning": "通用规则：输送净宽候选跟随机架内宽。不是 A01 实测。"
+    },
+    "passline_height": {
+      "subsystem": "conveyor",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["column_height"],
+      "mapping_id": "A01.conveyor.passline_height",
+      "meaning": "输送面高度未映射。不把立柱高写成实测值。"
+    },
+    "roller_pitch": {
+      "subsystem": "conveyor",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["conveyor_bed_length"],
+      "mapping_id": "A01.conveyor.roller_pitch",
+      "meaning": "滚筒节距未从真实装配映射。"
+    },
+    "roller_count": {
+      "subsystem": "conveyor",
+      "kind": "pending_mapping",
+      "unit": "count",
+      "depends_on": ["roller_pitch"],
+      "mapping_id": "A01.conveyor.roller_count",
+      "meaning": "滚筒数量未映射。不由节距反推。"
+    },
+    "drive_center_along_length": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["conveyor_bed_length"],
+      "mapping_id": "A01.drive.center_along_length",
+      "meaning": "传动中心沿长度方向的位置未映射。"
+    },
+    "chain_pitch": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["drive_center_along_length"],
+      "mapping_id": "A01.drive.chain_pitch",
+      "preserve_interface": "齿形、齿距及传动接口",
+      "meaning": "链节距属于保留接口，未映射前不填数。"
+    },
+    "sprocket_teeth": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "count",
+      "depends_on": ["chain_pitch"],
+      "mapping_id": "A01.drive.sprocket_teeth",
+      "preserve_interface": "齿形、齿距及传动接口",
+      "meaning": "齿数属于保留接口，未映射前不填数。"
+    },
+    "bearing_journal": {
+      "subsystem": "drive",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_width"],
+      "mapping_id": "A01.drive.bearing_journal",
+      "preserve_interface": "轴承配合与轴颈接口",
+      "meaning": "轴颈直径属于保留接口，未映射前不填数。"
+    },
+    "motor_mount_x": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["drive_center_along_length", "frame_length"],
+      "mapping_id": "A01.mount.motor_x",
+      "preserve_interface": "电机、轴承等采购件尺寸",
+      "meaning": "电机安装纵向位置未映射。"
+    },
+    "motor_mount_z": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["column_height"],
+      "mapping_id": "A01.mount.motor_z",
+      "preserve_interface": "电机、轴承等采购件尺寸",
+      "meaning": "电机安装高度未映射。"
+    },
+    "bearing_mount_span": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_width", "bearing_journal"],
+      "mapping_id": "A01.mount.bearing_span",
+      "preserve_interface": "轴承配合与轴颈接口",
+      "meaning": "轴承座跨距未映射。"
+    },
+    "sheet_thickness": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["frame_length"],
+      "mapping_id": "A01.interfaces.sheet_thickness",
+      "preserve_interface": "板厚和螺纹规格（除非有明确工艺变更）",
+      "meaning": "板厚属于保留接口，未映射前不填数。"
+    },
+    "thread_major_diameter": {
+      "subsystem": "mount",
+      "kind": "pending_mapping",
+      "unit": "mm",
+      "depends_on": ["sheet_thickness"],
+      "mapping_id": "A01.interfaces.thread_major_diameter",
+      "preserve_interface": "板厚和螺纹规格（除非有明确工艺变更）",
+      "meaning": "螺纹大径属于保留接口，未映射前不填数。"
+    }
+  },
   "preserve_interfaces": [
     "电机、轴承等采购件尺寸",
     "轴承配合与轴颈接口",

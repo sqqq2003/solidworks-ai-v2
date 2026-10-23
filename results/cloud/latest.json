@@ -1,9 +1,9 @@
 {
   "scope": "portable_simulation_only",
-  "platform": "Windows",
-  "python": "3.14.7",
-  "tests_run": 281,
-  "passed": 277,
+  "platform": "Linux",
+  "python": "3.12.3",
+  "tests_run": 298,
+  "passed": 294,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -25,10 +25,35 @@
     }
   ],
   "pending_feature_cases": {
+    "test_turned_part.py": 22,
     "test_border_relief_notch.py": 9,
-    "test_spur_segments.py": 5,
-    "test_turned_part.py": 22
+    "test_spur_segments.py": 5
   },
   "cross_process_lock_passed": true,
-  "solidworks_live_verified": false
+  "solidworks_live_verified": false,
+  "sw_live": "not_applicable_on_linux",
+  "a01_parametric": {
+    "status": "review_required",
+    "envelope_mm": {
+      "length": 1800.0,
+      "width": 900.0,
+      "height": 1500.0
+    },
+    "pending_mapping": [
+      "A01.conveyor.passline_height",
+      "A01.conveyor.roller_pitch",
+      "A01.conveyor.roller_count",
+      "A01.drive.center_along_length",
+      "A01.drive.chain_pitch",
+      "A01.drive.sprocket_teeth",
+      "A01.drive.bearing_journal",
+      "A01.mount.motor_x",
+      "A01.mount.motor_z",
+      "A01.mount.bearing_span",
+      "A01.interfaces.sheet_thickness",
+      "A01.interfaces.thread_major_diameter"
+    ],
+    "cad_executed": false,
+    "sw_live": "not_applicable_on_linux"
+  }
 }

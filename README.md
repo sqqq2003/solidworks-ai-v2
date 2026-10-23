@@ -15,7 +15,13 @@ python -m unittest discover -s tests -v
 
 日志在 `results/cloud/`。`sw_live` 在 Linux 上记为 `not_applicable_on_linux`。
 
-云端包里没有 `a01.py`、`engineering_controls.py` 和 `results/cursor/baseline/src`。对应测试会跳过并写明原因，会话安全用例仍会执行。
+## A01 参数化 dry-run
+
+```bash
+python -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --dry-run
+```
+
+说明在 `docs/a01-parametric.md`。这是模拟尺寸计划，不是 SolidWorks 实机改型。
 
 ## 布局
 

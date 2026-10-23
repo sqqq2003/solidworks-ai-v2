@@ -21,11 +21,25 @@ probe = subprocess.run([sys.executable, 'work/probe_writer_lock.py'], capture_ou
 pending = {}
 for path in (ROOT / 'tests/pending_features').glob('test_*.py'):
     pending[path.name] = sum(isinstance(node, ast.FunctionDef) and node.name.startswith('test_') for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))))
+a01_parametric = {"status": "not_run"}
+try:
+    from src.a01_parametric.solver import solve_spec
+    parametric_plan = solve_spec()
+    a01_parametric = {
+        "status": parametric_plan["status"],
+        "envelope_mm": parametric_plan["target_envelope_mm"],
+        "pending_mapping": [row["mapping_id"] for row in parametric_plan["pending_mapping"]],
+        "cad_executed": False,
+        "sw_live": "not_applicable_on_linux",
+    }
+except Exception as exc:  # reported, not hidden
+    a01_parametric = {"status": "failed", "error": str(exc), "sw_live": "not_applicable_on_linux"}
 report = dict(scope='portable_simulation_only', platform=platform.system(), python=platform.python_version(),
               tests_run=result.testsRun, passed=result.testsRun-len(result.errors)-len(result.failures)-len(result.skipped),
               failures=len(result.failures), errors=len(result.errors), skipped=[dict(test=str(test), reason=reason) for test, reason in result.skipped],
               pending_feature_cases=pending, cross_process_lock_passed=probe.returncode == 0,
-              solidworks_live_verified=False)
+              solidworks_live_verified=False, sw_live='not_applicable_on_linux',
+              a01_parametric=a01_parametric)
 (output / 'latest.json').write_text(json.dumps(report, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
 print(json.dumps(report, indent=2, ensure_ascii=True))
 if not result.wasSuccessful():

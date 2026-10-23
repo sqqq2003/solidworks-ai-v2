@@ -1,3 +1,17 @@
+test_drawing_skeleton_writes_no_files (test_a01_next_track.NextTrackTests.test_drawing_skeleton_writes_no_files) ... ok
+test_mate_check_stays_unsolved (test_a01_next_track.NextTrackTests.test_mate_check_stays_unsolved) ... ok
+test_sheet_metal_hook_delegates_without_a_second_generator (test_a01_next_track.NextTrackTests.test_sheet_metal_hook_delegates_without_a_second_generator) ... ok
+test_dry_run_cli_emits_plan (test_a01_parametric.CliTests.test_dry_run_cli_emits_plan) ... ok
+test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com) ... ok
+test_cycle_is_rejected (test_a01_parametric.SolverTests.test_cycle_is_rejected) ... ok
+test_default_envelope_keeps_unconfirmed_measured_empty (test_a01_parametric.SolverTests.test_default_envelope_keeps_unconfirmed_measured_empty) ... ok
+test_dependency_order_follows_frame_conveyor_drive_mount (test_a01_parametric.SolverTests.test_dependency_order_follows_frame_conveyor_drive_mount) ... ok
+test_existing_preflight_still_reviews_real_spec (test_a01_parametric.SolverTests.test_existing_preflight_still_reviews_real_spec) ... ok
+test_non_mm_spec_and_non_positive_envelope_rejected (test_a01_parametric.SolverTests.test_non_mm_spec_and_non_positive_envelope_rejected) ... ok
+test_plan_json_is_deterministic (test_a01_parametric.SolverTests.test_plan_json_is_deterministic) ... ok
+test_preserved_interface_cannot_be_overwritten (test_a01_parametric.SolverTests.test_preserved_interface_cannot_be_overwritten) ... ok
+test_register_lists_pending_mapping_without_approval (test_a01_parametric.SolverTests.test_register_lists_pending_mapping_without_approval) ... ok
+test_simulated_fixture_resolves_only_the_allowance_chain (test_a01_parametric.SolverTests.test_simulated_fixture_resolves_only_the_allowance_chain) ... ok
 test_two_outers_with_own_bends (test_batch_export.DiscoverSheetPartsTests.test_two_outers_with_own_bends) ... ok
 test_flat_length_uses_deduction (test_bend_allowance.BendAllowanceTests.test_flat_length_uses_deduction) ... ok
 test_k_factor_round_trip_from_deduction (test_bend_allowance.BendAllowanceTests.test_k_factor_round_trip_from_deduction) ... ok
@@ -268,6 +282,9 @@ test_rejects_multiple_or_open_solidworks_contours (test_solidworks_generator.Ske
 test_restores_add_to_database_mode_when_sketch_creation_fails (test_solidworks_generator.SketchCurveTests.test_restores_add_to_database_mode_when_sketch_creation_fails) ... ok
 test_uses_clockwise_direction_for_reversed_arc (test_solidworks_generator.SketchCurveTests.test_uses_clockwise_direction_for_reversed_arc) ... ok
 test_uses_native_solidworks_arc_for_exact_curve_segment (test_solidworks_generator.SketchCurveTests.test_uses_native_solidworks_arc_for_exact_curve_segment) ... ok
+test_dry_run_skips_unresolved_and_writes_json_only (test_sw_api_adapter.MockAdapterTests.test_dry_run_skips_unresolved_and_writes_json_only) ... ok
+test_same_path_and_cad_suffix_are_refused (test_sw_api_adapter.MockAdapterTests.test_same_path_and_cad_suffix_are_refused) ... ok
+test_win32_backend_does_not_import_com_at_import (test_sw_api_adapter.MockAdapterTests.test_win32_backend_does_not_import_com_at_import) ... ok
 test_attached_user_session_cannot_be_torn_down (test_sw_session_safety.SessionSafetyTests.test_attached_user_session_cannot_be_torn_down) ... ok
 test_automation_mode_requires_exclusive_proof (test_sw_session_safety.SessionSafetyTests.test_automation_mode_requires_exclusive_proof) ... ok
 test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources) ... skipped 'results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test'
@@ -317,6 +334,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 281 tests in 8.420s
+Ran 298 tests in 3.252s
 
 OK (skipped=4)
