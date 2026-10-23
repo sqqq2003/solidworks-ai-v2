@@ -1,0 +1,133 @@
+{
+  "issue": 5,
+  "title": "P0 relief deepen BendRejected -> +1/+0.5",
+  "generated_at": "2026-10-23T16:34:43.613123+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": {
+    "label": "DDD",
+    "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e"
+  },
+  "tier": "relief_deepen",
+  "profile": 248,
+  "status": "partial_deepened_then_flat",
+  "reasons": [
+    "auto_bend_attempts=3",
+    "relief_step_used=0",
+    "bend_count=0/4",
+    "auto_bent=False",
+    "auto_bend_abandoned=True",
+    "deepen_exhausted_then_flat_fallback"
+  ],
+  "params": {
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "angle_deg": 90.0
+  },
+  "expected_bend_count": 4,
+  "bend_indices_1based": [
+    106,
+    107,
+    108,
+    109
+  ],
+  "deepen_triggered": true,
+  "hand_ref_bypass_seen": false,
+  "log_markers": {
+    "partial_raise_log": true,
+    "auto_bend_rejected_log": true,
+    "relief_expand_log": true,
+    "same_sketch_split_log": true,
+    "hand_ref_bypass_log": false,
+    "flat_fallback_progress": false,
+    "relief_expand_lines": [
+      "矩形释放槽扩大：级别=1 边长各+1.0mm 改动=1",
+      "矩形释放槽扩大：级别=2 边长各+1.5mm 改动=1"
+    ]
+  },
+  "relief_steps_seen_in_log": [
+    0,
+    0,
+    1,
+    1,
+    2,
+    2
+  ],
+  "attempts_seen_in_log": [
+    1,
+    2,
+    3
+  ],
+  "extra_mm_for_positive_steps": [
+    1.0,
+    1.5
+  ],
+  "schedule_note": "step1=+1.0mm cumulative; step2=+1.5mm cumulative (first 1.0 then +0.5)",
+  "elapsed_ms": 73081,
+  "error": null,
+  "part_path": "钣金导入/导出\\p0_relief_deepen\\01x1_2.5mm_p248.SLDPRT",
+  "part_bytes": 105280,
+  "dxf_ok": true,
+  "dxf_bytes": 25865,
+  "dxf_path": "钣金导入/导出\\p0_relief_deepen\\01x1_2.5mm_p248_unfold.DXF",
+  "source_dwg_work": "钣金导入/临时\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+  "source_mother_untouched": true,
+  "log_path": "钣金导入/导出\\p0_relief_deepen\\p248_deepen_run.log",
+  "code_change": {
+    "file": "solidworks_generator.py",
+    "note": "partial bend failure raises BendRejected (no 手折参考 bypass); log announces deepen retry",
+    "test": "tests/test_partial_bend_count.py expects BendRejected + completed_bend_count",
+    "backup": "钣金导入/备份\\p0_relief_deepen_20261023_163139"
+  },
+  "result": {
+    "bend_count": 0,
+    "auto_bent": false,
+    "auto_bend_attempts": 3,
+    "auto_bend_failed_count": 4,
+    "auto_bend_abandoned": true,
+    "relief_step_used": 0,
+    "relief_slot_count": 0,
+    "bend_sketch_name": "折弯线_手折参考",
+    "bend_sketch_line_count": 4,
+    "path": "钣金导入/导出\\p0_relief_deepen\\01x1_2.5mm_p248.SLDPRT"
+  },
+  "deepen_timeline": [
+    {
+      "attempt": 1,
+      "relief_step": 0,
+      "extra_mm": 0.0,
+      "completed_bends": 2,
+      "failed_1based_display": [
+        108,
+        109
+      ],
+      "outcome": "BendRejected"
+    },
+    {
+      "attempt": 2,
+      "relief_step": 1,
+      "extra_mm": 1.0,
+      "notches_changed": 1,
+      "completed_bends": 2,
+      "outcome": "BendRejected"
+    },
+    {
+      "attempt": 3,
+      "relief_step": 2,
+      "extra_mm": 1.5,
+      "notches_changed": 1,
+      "completed_bends": 2,
+      "outcome": "BendRejected"
+    },
+    {
+      "attempt": "flat_fallback",
+      "auto_bend": false,
+      "sketch": "hand_fold_ref",
+      "lines": 4,
+      "outcome": "saved_flat"
+    }
+  ],
+  "honest_summary": "Deepen path exercised on live SW: partial fail raises BendRejected (no hand-ref bypass); retries log notch expand +1.0mm then +1.5mm cumulative with changed=1 each; bends 108/109 still fail after MAX_RELIEF_STEPS; flat+hand-ref fallback. status=partial_deepened_then_flat — NOT pass: deepen chain works, remaining bends not fixed.",
+  "BendRejected": true,
+  "invented_slots": false,
+  "note": "Sanitized for repo; no customer CAD binaries."
+}
