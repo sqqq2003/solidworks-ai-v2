@@ -1,0 +1,19 @@
+{
+  "table_version": 1,
+  "note": "Planning assumptions for offline estimates. NOT a quote: every value is confirmed=false until the shop replaces it. The estimate module carries these into its assumptions list and marks its output estimate_only.",
+  "bend_minutes_per_bend": {
+    "value": 1.5,
+    "confirmed": false,
+    "source": "planning assumption placeholder; replace with shop rate"
+  },
+  "handling_minutes_per_piece": {
+    "value": 3.0,
+    "confirmed": false,
+    "source": "planning assumption placeholder; replace with shop rate"
+  },
+  "material_waste_factor": {
+    "value": 1.1,
+    "confirmed": false,
+    "source": "planning assumption placeholder; nesting waste allowance"
+  }
+}
