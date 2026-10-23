@@ -1,15 +1,15 @@
-# Issue #2 评论草稿
+# Issue #2 评论
 
-不要用这段文字关闭 issue。#2 仍打开。配合、干涉、运动和 Pack and Go 都还没做。
+不要用这段文字关闭 issue。#2 仍打开。配合、干涉、运动和 Pack and Go 都还没做。状态是 `sw_live_envelope_verified`，不是全面改型完成。
 
 ---
 
-GORK-A01-005 部分实机证据已记在 `dev/cloud-ai`（PR #1），只有文档和 JSON，没有客户 CAD。
+GORK-A01-005：包络方程已在用户电脑核实，证据在 `dev/cloud-ai`（PR #1）。只有文档和 JSON，没有客户 CAD。
 
-- 母体是 `GT-ZX-1300x000x750-001x1.SLDASM`（SW Premium 2025 SP1.2 / 33.1.2），不是 QL-5050PX。只读看到 13 个方程，未保存关闭。
-- 用 `D:\工程\改机工具\apply_variant.py` 把 Length/Width/Height/FootHeight 改到 1800/900/1500/50，SaveAs 到 `C:\Users\yue\A01-live-work\A01-1800x900x1500.SLDASM`，母体恢复 1300/600/750，退出码 0。
-- 重建对话框由操作者点了「全部忽略」。不把配合、干涉、运动写成已验收。工作副本仍与母体共享零件。
-- DeckHeight 只对应 `passline_height` 这个名字。方程正文没有随云端附件到达，所以没有把毫米值写成 confirmed。
-- 其余 OEM 尺寸仍 pending。Linux `work/run_cloud_tests.py` 不是这次实机的结论。
+- 状态 `sw_live_envelope_verified`。母体 GT-ZX-1300（不是 QL-5050），磁盘基准 Length/Width/Height/FootHeight = 1300/600/750/50，原工程未覆盖。SW Premium 2025 SP1.2 / Rev 33.1.2。
+- 工作副本 `C:\Users\yue\A01-live-work\A01-1800x900x1500-v2.SLDASM`。EquationMgr.Value 读回 Length=1800 Width=900 Height=1500，envelope_match=true。
+- 方程写入：Equation PROPERTYPUT 在这台 SW2025 上是 no-op。有效做法是 Delete(index) 后 Add2(same_index, equation, solve=False)。Delete 后 Add(-1) 会丢变量。本机 `D:\工程\改机工具\apply_variant.py` 的补丁没有合进本仓库。
+- 未宣称：配合 / 干涉 / 运动、DeckHeight 与 RollerLong 的 Value()（读回 -50 / 100，方程文本正确）、Pack and Go、10 个 pending_mapping。
+- Linux 云端测试仍是 `sw_live=not_applicable_on_linux`，不是这次实机结论。
 
-证据：`docs/a01-windows-live.md`，`results/windows/`。
+证据：`docs/a01-windows-live.md`，`results/windows/live_reshape_verified.json`。

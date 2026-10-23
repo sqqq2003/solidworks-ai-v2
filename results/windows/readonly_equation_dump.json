@@ -1,16 +1,90 @@
 {
-  "task_id": "GORK-A01-005",
-  "source": "operator_report",
-  "raw_attachment_copied": false,
-  "reason": "Cloud agent uploads/ did not contain readonly_equation_dump.json. Equation text is omitted instead of reconstructed.",
-  "sw_product": "SOLIDWORKS Premium 2025 SP1.2",
-  "sw_revision": "33.1.2",
-  "assembly_file_name": "GT-ZX-1300x000x750-001x1.SLDASM",
-  "assembly_directory": "D:\\工程\\滚筒工程\\...\\斜滚筒线-1300x000x750-方向A\\装配图\\",
-  "path_note": "The operator wrote an ellipsis in the directory. The missing middle is not filled in.",
-  "open_mode": "read_only",
+  "task": "GORK-A01-005",
+  "mode": "sw_live_readonly",
+  "mother": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\斜滚筒线-1300x000x750-方向A\\装配图\\GT-ZX-1300x000x750-001x1.SLDASM",
+  "equations": [
+    {
+      "index": 0,
+      "equation": "\"Width\"= 600mm",
+      "value": 600.0,
+      "global_variable": true
+    },
+    {
+      "index": 1,
+      "equation": "\"Height\"= 750mm",
+      "value": 750.0,
+      "global_variable": true
+    },
+    {
+      "index": 2,
+      "equation": "\"Beam692Extra\"= 92mm",
+      "value": 92.0,
+      "global_variable": true
+    },
+    {
+      "index": 3,
+      "equation": "\"FootHeight\"= 50mm",
+      "value": 50.0,
+      "global_variable": true
+    },
+    {
+      "index": 4,
+      "equation": "\"DeckHeight\"= \"Height\" - \"FootHeight\"",
+      "value": 700.0,
+      "global_variable": true
+    },
+    {
+      "index": 5,
+      "equation": "\"ColumnExtra\"= 135mm",
+      "value": 135.0,
+      "global_variable": true
+    },
+    {
+      "index": 6,
+      "equation": "\"D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part\" = \"Length\"",
+      "value": 0.0,
+      "global_variable": false
+    },
+    {
+      "index": 7,
+      "equation": "\"SheetTrim\"= 4mm",
+      "value": 4.0,
+      "global_variable": true
+    },
+    {
+      "index": 8,
+      "equation": "\"D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part\" = \"Length\" - \"SheetTrim\"",
+      "value": 0.0,
+      "global_variable": false
+    },
+    {
+      "index": 9,
+      "equation": "\"Beam682Extra\"= 82mm",
+      "value": 82.0,
+      "global_variable": true
+    },
+    {
+      "index": 10,
+      "equation": "\"RollerLong\"= \"Width\" + \"RollerLongExtra\"",
+      "value": 700.0,
+      "global_variable": true
+    },
+    {
+      "index": 11,
+      "equation": "\"RollerLongExtra\"= 100mm",
+      "value": 100.0,
+      "global_variable": true
+    },
+    {
+      "index": 12,
+      "equation": "\"Length\"= 1300mm",
+      "value": 1300.0,
+      "global_variable": true
+    }
+  ],
+  "saved": false,
+  "sw_version": "33.1.2",
+  "doc_title": "GT-ZX-1300x000x750-001x1.SLDASM",
   "equation_count": 13,
-  "closed_without_save": true,
-  "equations": null,
-  "not_the_mother": "QL-5050PX is a case sealer with DWG only, not this assembly."
+  "closed_without_save": true
 }

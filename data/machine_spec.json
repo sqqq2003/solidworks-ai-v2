@@ -9,11 +9,18 @@
   "native_template": {
     "identity": "GT-ZX-1300",
     "file_name": "GT-ZX-1300x000x750-001x1.SLDASM",
-    "directory_note": "D:\\工程\\滚筒工程\\...\\斜滚筒线-1300x000x750-方向A\\装配图\\",
+    "directory_note": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\斜滚筒线-1300x000x750-方向A\\装配图\\",
     "sw_product": "SOLIDWORKS Premium 2025 SP1.2",
     "sw_revision": "33.1.2",
     "pack_and_go": false,
-    "note": "只读打开见 13 个方程，关闭时未保存。中间目录未在云端附件里展开，不补全。Pack and Go 未做，工作副本仍与母体共享零件。"
+    "disk_baseline_mm": {
+      "Length": 1300,
+      "Width": 600,
+      "Height": 750,
+      "FootHeight": 50
+    },
+    "work_copy": "C:\\Users\\yue\\A01-live-work\\A01-1800x900x1500-v2.SLDASM",
+    "note": "只读打开见 13 个方程，关闭时未保存。磁盘基准 Length/Width/Height/FootHeight 为 1300/600/750/50，原工程未覆盖。工作副本上 Length/Width/Height 的 Value 读回为 1800/900/1500。Pack and Go 未做，工作副本仍与母体共享零件。"
   },
   "target_envelope_mm": {
     "length": 1800,
@@ -129,7 +136,7 @@
       "depends_on": ["column_height"],
       "mapping_id": "A01.conveyor.passline_height",
       "equation_name": "DeckHeight",
-      "meaning": "方程名 DeckHeight 对应该参数。毫米值未写入本规格，求解器仍保持 pending，不把立柱高写成实测。"
+      "meaning": "方程名 DeckHeight 对应该参数，方程文本是 Height - FootHeight。求解器仍保持 pending。工作副本上 EquationMgr.Value() 读回异常，不当成已解算毫米值。"
     },
     "roller_pitch": {
       "subsystem": "conveyor",

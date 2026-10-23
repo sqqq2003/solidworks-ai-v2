@@ -70,8 +70,50 @@ def apply_live(
 # Windows transaction drivers must check OpenDoc6 and SaveAs3 error codes.
 
 
+def _mm_literal(value: float) -> str:
+    number = float(value)
+    if number != number or number in (float("inf"), float("-inf")):
+        raise ValueError("equation value must be finite")
+    if number.is_integer():
+        return str(int(number))
+    return format(number, "g")
+
+
+def _replace_equation_at_index(manager, index: int, equation: str) -> None:
+    """Rewrite one equation with Delete(index) then Add2 at that same index.
+
+    On SolidWorks Premium 2025 SP1.2 / Rev 33.1.2, PROPERTYPUT of
+    ``EquationMgr.Equation(index, text)`` does not change the stored equation.
+    The write that read back on the operator work copy is ``Delete(index)``
+    then ``Add2(index, equation, False)``.
+
+    After Delete, ``Add(-1)`` or ``Add3(-1)`` returns -1 and drops the name
+    while other equations still reference it. Do not append.
+
+    A failed rewrite leaves that document dirty. Closing it without saving
+    restores the on-disk file. This helper is not the operator script
+    ``apply_variant.py``; that PC-only ``_equation_put`` patch is not in this
+    repository, and ``apply_live`` does not call this function.
+    """
+
+    manager.Delete(index)
+    added = int(manager.Add2(index, equation, False))
+    if added < 0:
+        raise RuntimeError(
+            "Add2 returned -1 at index "
+            + str(index)
+            + ". The name may be gone while dependents still reference it. "
+            + "Discard the unsaved document so the on-disk file stays unchanged."
+        )
+
+
 def _assign_existing_equations(model, variables: dict[str, float]) -> None:
-    """Update equations that already exist. Do not create new OEM equations."""
+    """Rewrite existing numeric globals. Do not create new OEM equations.
+
+    Unused by ``apply_live``. Numeric text matches the GT-ZX global form
+    ``"Name"= <number>mm`` from the read-only dump. Formula equations such as
+    DeckHeight are left alone; their ``Value()`` readback is not a solved dimension.
+    """
 
     manager = model.GetEquationMgr()
     count = int(manager.GetCount())
@@ -87,6 +129,8 @@ def _assign_existing_equations(model, variables: dict[str, float]) -> None:
             "work copy has no equation for: " + ", ".join(missing)
             + ". Refusing to invent global variables."
         )
-    for name, value in variables.items():
-        manager.Equation(index_by_name[name], f'"{name}"={value}')
+    # Each Delete+Add2 pair puts the row back, so later indexes stay valid.
+    for name in sorted(variables, key=lambda item: index_by_name[item]):
+        index = index_by_name[name]
+        _replace_equation_at_index(manager, index, f'"{name}"= {_mm_literal(variables[name])}mm')
 

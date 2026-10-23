@@ -57,15 +57,14 @@
 - 禁用旧方程直写 live 路径。Windows 驱动需按 docs/a01-parametric.md 实现并绑定源模型后，以 apply_live Python API 接入。当前 CLI live 不具备实机执行条件。
 - `python work/run_cloud_tests.py`：309 ran / 305 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过；新增 11 项测试（含多阶段故障注入子测试）。跳过原因仍为 DWG/LibreDWG/原始基线文件缺失。36 pending_features 不计通过。
 - `python -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --dry-run --mapping-template runtime/a01-mapping.json` 可运行；12 项未知 OEM 映射保留，机械检查 unverified，cad_release_approved=false。
-- 等待 Gork 的真实映射及 Windows 驱动/重建/保存重开读回/失败恢复/机械检查证据。无任何 SolidWorks 实机通过声明。
+- 等待 Gork 的真实映射及 Windows 驱动/重建/保存重开读回/失败恢复/机械检查证据。本节写下时还没有 SolidWorks 实机通过声明。其后只增加了包络方程读回，见下一节，不是全面改型完成。
 
 ## GORK-A01-005
 
-- 状态：**sw_live 部分**。用户电脑（DDD）上完成包络改写、SaveAs 工作副本、母体恢复。不是配合/干涉/运动验收，也不是 Linux 云端测试的结论。
-- 母体：`GT-ZX-1300x000x750-001x1.SLDASM`（`D:\工程\滚筒工程\...\斜滚筒线-1300x000x750-方向A\装配图\`）。SW Premium 2025 SP1.2 / 33.1.2。只读 13 个方程，关闭未保存。QL-5050PX 不是这台装配。
-- 工具：`D:\工程\改机工具\apply_variant.py`。目标 Length=1800 Width=900 Height=1500 FootHeight=50。SaveAs `C:\Users\yue\A01-live-work\A01-1800x900x1500.SLDASM`。母体恢复 1300/600/750。退出码 0。
-- 重建弹出 SOLIDWORKS 对话框，操作者点了「全部忽略」。工作副本仍与母体共享零件，Pack and Go 未做。
-- 映射：DeckHeight 对应 `passline_height`（名字，unconfirmed）。Length/Width/Height 只记下方程名和操作者报告的母体恢复值。毫米级 confirmed 映射没有写入，因为云端 uploads 里没有方程正文。其余 OEM 项仍 pending。见 `results/windows/a01_parameter_mapping.json`。
-- 仍 pending：滚筒节距与数量、传动中心、链节距、齿数、轴颈、电机安装、轴承跨距、板厚、螺纹大径，以及未确认的余量。
-- 仓库不包含 SLDASM/SLDPRT。说明：`docs/a01-windows-live.md`。Issue #2 评论草稿在 `docs/github-issue-2-comment.md`，issue 不关闭。
-- Linux 复核：`python work/run_cloud_tests.py` → 309 ran / 305 passed / 0 failures / 0 errors / 4 skipped。`results/cloud/latest.json` 的 `sw_live` 仍是 `not_applicable_on_linux`。这次模拟通过不是上面的 Windows 部分实机。
+- 状态：**sw_live_envelope_verified**。用户电脑（SW Premium 2025 SP1.2 / Rev 33.1.2）核实了工作副本上包络全局变量 Length/Width/Height 的方程文本和 `EquationMgr.Value` 读回。不是全面改型完成，不是配合/干涉/运动验收，也不是 Linux 云端测试的结论。
+- 母体：`GT-ZX-1300x000x750-001x1.SLDASM`，目录 `D:\工程\滚筒工程\滚筒\斜\斜滚筒线（120W电机） 标准\斜滚筒线-1300x000x750-方向A\装配图\`。不是 QL-5050。磁盘基准 Length=1300、Width=600、Height=750、FootHeight=50。原工程未覆盖。只读 13 个方程，关闭未保存。正文在 `results/windows/readonly_equation_dump.json`。
+- 工作副本：`C:\Users\yue\A01-live-work\A01-1800x900x1500-v2.SLDASM`。`EquationMgr.Value` 读回 Length=1800、Width=900、Height=1500（`envelope_match=true`），FootHeight=50。证据：`results/windows/live_reshape_verified.json`、`results/windows/live_reshape_summary.json`、`results/windows/a01_parameter_mapping.json`。
+- 方程写入：本机 `Equation` PROPERTYPUT 为 no-op。有效做法是 `Delete(index)` 后 `Add2(same_index, equation, solve=False)`。Delete 之后若仍有引用，`Add(-1)` / `Add3(-1)` 返回 -1 且变量丢失。脏会话 Close 不存盘可从磁盘恢复。用户电脑上 `D:\工程\改机工具\apply_variant.py` 的 `_equation_put` 已有该回退；该补丁不在本仓库，本提交没有把它合进客户路径。仓库适配器只在未接入的助手函数里记下同一写法，`apply_live` 仍要求 schema v1 映射和事务驱动。
+- 未宣称：配合 / 干涉 / 运动未单独认证。DeckHeight、RollerLong 的 `Value()` 在工作副本上读回 -50 / 100，方程文本正确，不当成尺寸已解算。工作副本仍引用母体零件，归档需 Pack and Go。10 个 pending_mapping 仍 pending（传动、滚筒间距等）。板厚 2.0 只是零件名推断，`production_approved=false`，未写入求解器。
+- 仓库不包含 SLDASM/SLDPRT。说明：`docs/a01-windows-live.md`、`docs/a01-parametric.md`。Issue #2 不关闭。
+- Linux 模拟与这次实机分开。`results/cloud/latest.json` 的 `sw_live` 仍是 `not_applicable_on_linux`。云端测试通过不是 `sw_live_envelope_verified`。

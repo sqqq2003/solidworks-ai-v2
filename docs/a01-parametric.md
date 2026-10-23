@@ -1,6 +1,15 @@
 # A01 参数化改型（GORK-A01-004）
 
-云端这条链路只做模拟。它读取 `data/machine_spec.json`，沿用 `a01.py` 的预检，算出派生尺寸，再用假的 SolidWorks 适配器写下一次要改的变量。`sw_live=not_applicable_on_linux`。不要把这次结果写成实机通过。
+云端这条链路只做模拟。它读取 `data/machine_spec.json`，沿用 `a01.py` 的预检，算出派生尺寸，再用假的 SolidWorks 适配器写下一次要改的变量。Linux 上 `sw_live=not_applicable_on_linux`。不要把云端结果写成实机通过。
+
+实机和模拟分开记：
+
+| 范围 | 状态 | 含义 |
+| --- | --- | --- |
+| Linux / `work/run_cloud_tests.py` / `--dry-run` | `simulated` | 没有打开 SolidWorks。`results/cloud/latest.json` 的 `sw_live` 仍是 `not_applicable_on_linux`。 |
+| 用户电脑工作副本上的包络全局变量 | `sw_live_envelope_verified` | 只核实 Length/Width/Height 的方程文本和 `EquationMgr.Value` 读回。不是全面改型完成。 |
+
+`sw_live_envelope_verified` 的工作副本是 `C:\Users\yue\A01-live-work\A01-1800x900x1500-v2.SLDASM`。母体 `GT-ZX-1300x000x750-001x1.SLDASM` 的磁盘基准仍是 Length=1300、Width=600、Height=750、FootHeight=50，原工程未覆盖。配合、干涉、运动没有单独认证。细节在 `docs/a01-windows-live.md`。
 
 目标包络默认 **1800 × 900 × 1500 mm**。未确认的实测余量和未映射的真实零件尺寸保持空，不会填 OEM 数。
 
@@ -50,7 +59,15 @@ py -3.12 -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --liv
 
 装配配合、钣金生成和工程图导出目前只是下一轨骨架：配合检查不求解，钣金只指向已有的 `solidworks_generator.generate_sheet_metal`，绘图不写 DXF/DWG/SLDDRW。
 
-2026-10-23 用户电脑上的一次部分改型记在 `docs/a01-windows-live.md`。那次用的是 `apply_variant.py`，不是上面的 `--live`。它只说明包络改写、SaveAs 和母体恢复；配合、干涉、运动未验收。
+2026-10-23 用户电脑上的包络方程核实记在 `docs/a01-windows-live.md`，状态是 `sw_live_envelope_verified`。那次用的是本机 `D:\工程\改机工具\apply_variant.py`，不是上面的 `--live`，也不是本仓库里的事务驱动。核实范围只有工作副本 `A01-1800x900x1500-v2.SLDASM` 上 Length=1800、Width=900、Height=1500 的读回。配合、干涉、运动未验收。
+
+方程写入（SW Premium 2025 SP1.2 / Rev 33.1.2，操作者本机核实）：
+
+- `EquationMgr.Equation` 的 PROPERTYPUT 不改方程，读回仍是旧文本。
+- 有效写法是 `Delete(index)`，然后 `Add2(same_index, equation, solve=False)`。
+- Delete 之后若别的方程还引用这个名字，`Add(-1)` 或 `Add3(-1)` 返回 -1，变量会丢。不要追加到 -1。
+- 写坏的脏会话用 Close 且不存盘，可以从磁盘上的母体恢复。
+- 本机 `apply_variant.py` 的 `_equation_put` 已有 Delete+Add2 回退。那个补丁只在用户电脑上，没有合进本仓库，也不要把它当成客户路径里的改机工具。
 
 
 ## CODEX-A01-005：映射与事务接口
@@ -73,5 +90,7 @@ python -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --dry-r
 - 不结束未知 SolidWorks 进程。超时或失去租约后的恢复必须等待本机会话恢复，不在第二个线程继续 COM 写入。
 
 旧的“仅写方程并 SaveAs”路径已禁用。CLI `--live` 暂不接受驱动，Windows 有 COM 时会明确拒绝缺少映射/事务驱动的调用；上面的旧实机 CLI 示例只保留历史上下文，不能用于当前适配器验收。驱动与映射接好后由 Windows 集成入口调用 Python API。
+
+`src/sw_api/win32com_backend.py` 里未接入的 `_assign_existing_equations` 只记下本机已核实的写法：不要对 `Equation` 做 PROPERTYPUT；用 `Delete(index)` 再 `Add2` 到同一索引，`solve=False`。`apply_live` 不调用它。这不是把 `D:\工程\改机工具\apply_variant.py` 合进本仓库。公式方程（DeckHeight、RollerLong）的 `Value()` 在工作副本上读回异常（-50 / 100），方程文本正确，不能当作尺寸已解算。schema v1 的 confirmed 仍要求 document、configuration、feature、dimension、source 和 allowed_range；这次实机 JSON 不是那套 confirmed 行。
 
 待 Gork：真实模型/配置/特征与尺寸标识、来源与允许范围、固定/采购件分类，以及重建、保存重开读回、失败恢复和机械检查证据。Linux 模拟不代表 Windows 驱动已实现或已通过。
