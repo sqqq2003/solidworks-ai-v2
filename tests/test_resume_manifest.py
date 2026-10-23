@@ -106,3 +106,39 @@ class ResumeManifestTests(unittest.TestCase):
             self.assertFalse(third.skipped)
             self.assertNotEqual(first.path, third.path)
             self.assertEqual(create.call_count, 2)
+
+    def test_batch_invalidates_edited_profiles_and_bend_lines(self):
+        from dataclasses import replace
+        import batch_export as batch
+        from cad_analyzer import DrawingAnalysis, Primitive
+        from solidworks_generator import GenerationResult
+        base = DrawingAnalysis(self.source, 'mm', (), (), (), (0, 0, 1, 1), 'Model')
+        job = batch.SheetPartJob(0, (), 1, 'synthetic')
+        def generate(*args, **kwargs):
+            path = Path(args[6]); path.write_bytes(b'synthetic')
+            return GenerationResult(path, 0, 0, 0, (0,)*6, (0,)*6)
+        changed = Primitive(((0, 0), (2, 0), (2, 2), (0, 0)), True, False, '0', 'LINE_LOOP')
+        with patch.object(batch, '_recycle_solidworks_if_heavy'), patch.object(batch, 'generate_sheet_metal_with_relief_retries', side_effect=generate) as create:
+            for field in ('profiles', 'bend_lines'):
+                with self.subTest(field=field):
+                    def run(analysis):
+                        return batch._export_jobs(analysis, [(1, job)], self.root, 2, 1, 90, False, None, False, None, True)[0]
+                    run(base)
+                    self.assertTrue(run(base).skipped)
+                    self.assertFalse(run(replace(base, **{field: (changed,)})).skipped)
+
+    def test_resume_callback_error_does_not_abort_batch(self):
+        import batch_export as batch
+        from cad_analyzer import DrawingAnalysis
+        from solidworks_generator import GenerationResult
+        analysis = DrawingAnalysis(self.source, 'mm', (), (), (), (0, 0, 1, 1), 'Model')
+        job = batch.SheetPartJob(0, (), 1, 'synthetic')
+        def generate(*args, **kwargs):
+            path = Path(args[6]); path.write_bytes(b'synthetic')
+            return GenerationResult(path, 0, 0, 0, (0,)*6, (0,)*6)
+        def broken_callback(item):
+            raise RuntimeError('synthetic observer failure')
+        with patch.object(batch, '_recycle_solidworks_if_heavy'), patch.object(batch, 'generate_sheet_metal_with_relief_retries', side_effect=generate):
+            batch._export_jobs(analysis, [(1, job)], self.root, 2, 1, 90, False, None, False, None, True)
+            result = batch._export_jobs(analysis, [(1, job)], self.root, 2, 1, 90, False, None, False, None, True, broken_callback)
+            self.assertTrue(result[0].skipped)

@@ -133,6 +133,7 @@ test_radius_grows_with_step (test_relief_cutouts.ReliefCutoutTests.test_radius_g
 test_step_zero_no_circle_preopen (test_relief_cutouts.ReliefCutoutTests.test_step_zero_no_circle_preopen) ... ok
 test_four_corner_notches_medium_part (test_relief_notch_preserve.CornerReliefNotchPreserveTests.test_four_corner_notches_medium_part) ... ok
 test_small_notch_on_large_part_not_diagonally_cut (test_relief_notch_preserve.CornerReliefNotchPreserveTests.test_small_notch_on_large_part_not_diagonally_cut) ... ok
+test_batch_invalidates_edited_profiles_and_bend_lines (test_resume_manifest.ResumeManifestTests.test_batch_invalidates_edited_profiles_and_bend_lines) ... ok
 test_batch_resumes_verified_artifact_and_rebuilds_changed_parameters (test_resume_manifest.ResumeManifestTests.test_batch_resumes_verified_artifact_and_rebuilds_changed_parameters) ... ok
 test_degraded_output_cannot_resume_as_success (test_resume_manifest.ResumeManifestTests.test_degraded_output_cannot_resume_as_success) ... ok
 test_malformed_and_traversal_records_are_refused (test_resume_manifest.ResumeManifestTests.test_malformed_and_traversal_records_are_refused) ... ok
@@ -140,6 +141,7 @@ test_matching_completed_artifact_can_resume (test_resume_manifest.ResumeManifest
 test_missing_source_disables_resume (test_resume_manifest.ResumeManifestTests.test_missing_source_disables_resume) ... ok
 test_nonempty_file_alone_is_not_evidence (test_resume_manifest.ResumeManifestTests.test_nonempty_file_alone_is_not_evidence) ... ok
 test_output_corruption_prevents_resume (test_resume_manifest.ResumeManifestTests.test_output_corruption_prevents_resume) ... ok
+test_resume_callback_error_does_not_abort_batch (test_resume_manifest.ResumeManifestTests.test_resume_callback_error_does_not_abort_batch) ... ok
 test_source_parameter_and_code_changes_invalidate (test_resume_manifest.ResumeManifestTests.test_source_parameter_and_code_changes_invalidate) ... ok
 test_unique_output_path_is_preserved_without_overwrite (test_resume_manifest.ResumeManifestTests.test_unique_output_path_is_preserved_without_overwrite) ... ok
 test_pure_roller_drawing_still_detected (test_roller_drawing.RollerDrawingDetectionTests.test_pure_roller_drawing_still_detected) ... ok
@@ -315,6 +317,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 279 tests in 7.608s
+Ran 281 tests in 8.420s
 
 OK (skipped=4)

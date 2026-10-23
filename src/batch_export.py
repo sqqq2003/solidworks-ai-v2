@@ -307,6 +307,8 @@ def _export_jobs(
             angle_degrees=angle_degrees, flip_direction=flip_direction,
             bend_allowance=asdict(bend_allowance) if bend_allowance else None,
             auto_bend=auto_bend, primitives=[asdict(p) for p in analysis.primitives],
+            profiles=[asdict(p) for p in analysis.profiles],
+            bend_lines=[asdict(p) for p in analysis.bend_lines],
         ), Path(__file__).resolve().parent)
         existing = verified_output(canonical, resume_key) if skip_existing else None
         if existing is not None:
@@ -319,7 +321,10 @@ def _export_jobs(
                 progress(f"{job.label} 已存在，跳过")
             results.append(item)
             if on_result:
-                on_result(item)
+                try:
+                    on_result(item)
+                except Exception:
+                    logger.exception("on_result callback failed for resumed artifact")
             continue
         try:
             _recycle_solidworks_if_heavy(progress)

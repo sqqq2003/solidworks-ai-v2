@@ -2,8 +2,8 @@
   "scope": "portable_simulation_only",
   "platform": "Windows",
   "python": "3.14.7",
-  "tests_run": 279,
-  "passed": 275,
+  "tests_run": 281,
+  "passed": 277,
   "failures": 0,
   "errors": 0,
   "skipped": [
