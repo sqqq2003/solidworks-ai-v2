@@ -19,6 +19,7 @@ python examples/ql5050px_batch.py --output <新目录>
 ## 本机结果（Windows 10 / Python 3.14.7）
 
 - 全量：**448 ran / 441 passed / 0 failures / 0 errors / 7 skipped**，跨进程写锁通过。
+- 本文之后的 P0 重建（见 `TASK_STATUS.md` 的 `P0-QODER-001`）把 14 项 pending 合约移入回归，仓库全量变为 **462 ran / 455 passed / 0 failures / 0 errors / 7 skipped**，pending 剩 22 项；本文件其余数字仍指本轮 issue6 提交当时的状态。
 - 新增 QL-5050PX：**77 项，全部通过**（其中 1 项按平台跳过）。
 - `solidworks_live_verified=false`；`sw_live=not_applicable_on_linux` 语义不变。
 - 纯净克隆复跑 `ebb09e2`：结果与提交的 `results/cloud/latest.json` 逐字节一致，提交树自身可复现。

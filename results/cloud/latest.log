@@ -24,6 +24,15 @@ test_normal_reject_expands_then_flat (test_bend_hang_fallback.ReliefRetryHangTes
 test_progress_reports_each_attempt (test_bend_hang_fallback.ReliefRetryHangTests.test_progress_reports_each_attempt) ... ok
 test_second_attempt_success_reports_attempt_count (test_bend_hang_fallback.ReliefRetryHangTests.test_second_attempt_success_reports_attempt_count) ... ok
 test_timed_out_falls_back_to_flat (test_bend_hang_fallback.ReliefRetryHangTests.test_timed_out_falls_back_to_flat) ... ok
+test_border_hole_becomes_notch (test_border_relief_notch.BorderHoleToNotchTests.test_border_hole_becomes_notch) ... ok
+test_expansion_converts_border_hole_and_drops_it (test_border_relief_notch.BorderHoleToNotchTests.test_expansion_converts_border_hole_and_drops_it) ... ok
+test_interior_hole_not_converted (test_border_relief_notch.BorderHoleToNotchTests.test_interior_hole_not_converted) ... ok
+test_notch_grows_with_extra (test_border_relief_notch.BorderHoleToNotchTests.test_notch_grows_with_extra) ... ok
+test_partial_edge_touch_is_kept_as_hole (test_border_relief_notch.BorderHoleToNotchTests.test_partial_edge_touch_is_kept_as_hole) ... ok
+test_gap_to_border_is_stretched_into_notch (test_border_relief_notch.NearBorderHoleTests.test_gap_to_border_is_stretched_into_notch) ... ok
+test_intersection_in_panel_interior_still_adds_hole (test_border_relief_notch.NearBorderIntersectionTests.test_intersection_in_panel_interior_still_adds_hole) ... ok
+test_intersection_near_border_cuts_notch (test_border_relief_notch.NearBorderIntersectionTests.test_intersection_near_border_cuts_notch) ... ok
+test_border_notch_deepens_toward_panel (test_border_relief_notch.NotchDirectionTests.test_border_notch_deepens_toward_panel) ... ok
 test_analyze_cad_file_converts_dwg_and_keeps_source_path (test_cad_analyzer.AnalyzeCadTests.test_analyze_cad_file_converts_dwg_and_keeps_source_path) ... ok
 test_analyze_cad_file_rejects_unsupported_extension (test_cad_analyzer.AnalyzeCadTests.test_analyze_cad_file_rejects_unsupported_extension) ... ok
 test_arc_bounds_include_exact_cardinal_extreme (test_cad_analyzer.AnalyzeCadTests.test_arc_bounds_include_exact_cardinal_extreme) ... ok
@@ -413,6 +422,11 @@ test_rejects_multiple_or_open_solidworks_contours (test_solidworks_generator.Ske
 test_restores_add_to_database_mode_when_sketch_creation_fails (test_solidworks_generator.SketchCurveTests.test_restores_add_to_database_mode_when_sketch_creation_fails) ... ok
 test_uses_clockwise_direction_for_reversed_arc (test_solidworks_generator.SketchCurveTests.test_uses_clockwise_direction_for_reversed_arc) ... ok
 test_uses_native_solidworks_arc_for_exact_curve_segment (test_solidworks_generator.SketchCurveTests.test_uses_native_solidworks_arc_for_exact_curve_segment) ... ok
+test_arrow_head_triangle_is_artifact (test_spur_segments.ArtifactLoopTests.test_arrow_head_triangle_is_artifact) ... ok
+test_small_but_real_hole_is_kept (test_spur_segments.ArtifactLoopTests.test_small_but_real_hole_is_kept) ... ok
+test_three_mm_square_is_kept (test_spur_segments.ArtifactLoopTests.test_three_mm_square_is_kept) ... ok
+test_out_and_back_pair_is_removed (test_spur_segments.SpurSegmentTests.test_out_and_back_pair_is_removed) ... ok
+test_remaining_segments_stay_connected (test_spur_segments.SpurSegmentTests.test_remaining_segments_stay_connected) ... ok
 test_dry_run_skips_unresolved_and_writes_json_only (test_sw_api_adapter.MockAdapterTests.test_dry_run_skips_unresolved_and_writes_json_only) ... ok
 test_same_path_and_cad_suffix_are_refused (test_sw_api_adapter.MockAdapterTests.test_same_path_and_cad_suffix_are_refused) ... ok
 test_win32_backend_does_not_import_com_at_import (test_sw_api_adapter.MockAdapterTests.test_win32_backend_does_not_import_com_at_import) ... ok
@@ -484,6 +498,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 448 tests in 10.986s
+Ran 462 tests in 10.909s
 
 OK (skipped=7)

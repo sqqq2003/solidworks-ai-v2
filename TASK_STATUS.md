@@ -176,3 +176,13 @@
 - 以进程内 `sys.platform` 补丁模拟 Linux 分支，确认合法路径仍抛 `RuntimeError("requires Windows")`、非法参数抛 `ValueError`；标注为模拟，不计 Linux 实机证据。
 - CI 仅在 push 到 `dev/cloud-ai` 或手动 `workflow_dispatch` 时触发；本分支未 push，需要有推送权限者手动触发一次。
 - 新增 `docs/issue6-acceptance-checklist.md`：10 分钟验收步骤、期望输出、不接受的表述、回滚方式。未执行任何 SolidWorks 实机操作，`solidworks_live_verified=false`。
+
+
+## P0-QODER-001：重建图纸残留与贴边缺口两个缺失接口
+
+- 起因：`tests/pending_features/` 三个文件都因导入引导层级写错（子目录里用了 `parents[1]/src`，应为 `parents[2]/src`）而在 import 阶段就失败，"算法缺失"的结论因此被掩盖。修正层级后暴露真实缺口。
+- 按 `src/CHANGELOG.md` 记录的既有语义重建两个上传快照里缺失的函数：`solidworks_generator._is_drawing_artifact_loop()`（闭环最大边 ≤2 mm 且面积 ≤0.6 mm² 判为标注残留；Φ2 孔 3.14 mm²、3×3 方孔最大边 3 mm 均不受影响）与 `convert_border_hole_to_notch()`（贴边矩形槽孔转外轮廓缺口，三边直角不斜切；≤0.75 mm 细缝先拉到板边；搭边覆盖 <80% 保持为孔；口部沿板边加宽后 clamp 在外边端点内）。
+- 接线：孔列表装配处跳过标注残留并写 warning（与 CHANGELOG 记载一致）；`apply_rectangular_relief_expansion()` 先转贴边缺口再考虑板内扩槽并删除该孔；`ensure_intersection_reliefs()` 在交汇点距板边 ≤2 mm 时从板边伸进材料开缺口（深度=到边距离+本级增量，宽度=另一轴增量），找不到可贴直角边才退回板内孔。
+- 结果：`test_spur_segments.py` 5 项、`test_border_relief_notch.py` 9 项全部通过，已从 `tests/pending_features/` 移入 `tests/` 计入回归。全量 **462 ran / 455 passed / 0 failures / 0 errors / 7 skipped**，跨进程锁通过；pending 由 36 项降为 **22 项**。
+- 仍未实现：`test_turned_part.py` 22 项需要 `cad_analyzer.DrawingDimension`、`DrawingAnalysis.dimensions`（当前不读 DIMENSION 实体）以及 `turned_part._axial_lengths` / `_radius_ladder`。这是车件轨道的功能开发，本轮不猜测实现，保留为 pending，不计通过。
+- 边界：标注残留跳过接在生成路径（COM 段）里，离线只覆盖了判定函数本身与扩槽/交汇接线，**该跳过未经 SolidWorks 实机验证**；本轮未运行 COM、未生成 SLDPRT、未接触客户 CAD，`solidworks_live_verified=false`。
