@@ -106,6 +106,16 @@ test_revision_or_configuration_change_invalidates_reference (test_engineering_co
 test_source_without_hash_is_not_traceable (test_engineering_controls.EngineeringControlTests.test_source_without_hash_is_not_traceable) ... ok
 test_unmeasured_or_nonfinite_value_is_refused (test_engineering_controls.EngineeringControlTests.test_unmeasured_or_nonfinite_value_is_refused) ... ok
 test_user_requested_target_is_not_engineering_approval (test_engineering_controls.EngineeringControlTests.test_user_requested_target_is_not_engineering_approval) ... ok
+test_actual_dump_identifies_forward_refs_and_unverified_geometry (test_equation_health.EquationHealthTests.test_actual_dump_identifies_forward_refs_and_unverified_geometry) ... ok
+test_all_values_validated_before_delete_and_formula_preserved (test_equation_health.EquationHealthTests.test_all_values_validated_before_delete_and_formula_preserved) ... ok
+test_cycle_unknown_and_code_are_pending (test_equation_health.EquationHealthTests.test_cycle_unknown_and_code_are_pending) ... ok
+test_delete_failure_and_bad_add_are_not_success (test_equation_health.EquationHealthTests.test_delete_failure_and_bad_add_are_not_success) ... ok
+test_live_failure_reproduced_without_claiming_geometry (test_equation_health.EquationHealthTests.test_live_failure_reproduced_without_claiming_geometry) ... ok
+test_matching_globals_with_stale_dimension_not_verified (test_equation_health.EquationHealthTests.test_matching_globals_with_stale_dimension_not_verified) ... ok
+test_native_solver_error_blocks_even_matching_values (test_equation_health.EquationHealthTests.test_native_solver_error_blocks_even_matching_values) ... ok
+test_owned_explicit_solve_checks_actual_dimensions (test_equation_health.EquationHealthTests.test_owned_explicit_solve_checks_actual_dimensions) ... ok
+test_shared_parts_block_before_writes (test_equation_health.EquationHealthTests.test_shared_parts_block_before_writes) ... ok
+test_unknown_dependency_inventory_refused (test_equation_health.EquationHealthTests.test_unknown_dependency_inventory_refused) ... ok
 test_falls_back_to_second_candidate_when_user_directory_is_blocked (test_logging_setup.ConfigureLoggingTests.test_falls_back_to_second_candidate_when_user_directory_is_blocked) ... ok
 test_reconfigures_when_log_directory_changes (test_logging_setup.ConfigureLoggingTests.test_reconfigures_when_log_directory_changes) ... ok
 test_returns_none_when_no_candidate_is_writable (test_logging_setup.ConfigureLoggingTests.test_returns_none_when_no_candidate_is_writable) ... ok
@@ -345,6 +355,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 309 tests in 3.285s
+Ran 319 tests in 3.598s
 
 OK (skipped=4)

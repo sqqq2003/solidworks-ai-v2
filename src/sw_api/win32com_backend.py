@@ -76,7 +76,7 @@ def _mm_literal(value: float) -> str:
         raise ValueError("equation value must be finite")
     if number.is_integer():
         return str(int(number))
-    return format(number, "g")
+    return format(number, ".17g")
 
 
 def _replace_equation_at_index(manager, index: int, equation: str) -> None:
@@ -96,15 +96,21 @@ def _replace_equation_at_index(manager, index: int, equation: str) -> None:
     repository, and ``apply_live`` does not call this function.
     """
 
-    manager.Delete(index)
+    count = int(manager.GetCount())
+    original = str(manager.Equation(index))
+    if not manager.Delete(index):
+        raise RuntimeError("Delete failed; refusing Add2")
     added = int(manager.Add2(index, equation, False))
-    if added < 0:
+    if added != index or int(manager.GetCount()) != count:
         raise RuntimeError(
             "Add2 returned -1 at index "
             + str(index)
             + ". The name may be gone while dependents still reference it. "
             + "Discard the unsaved document so the on-disk file stays unchanged."
         )
+
+    if str(manager.Equation(index)).replace(" ", "") != equation.replace(" ", ""):
+        raise RuntimeError("equation text readback mismatch; discard unsaved work copy")
 
 
 def _assign_existing_equations(model, variables: dict[str, float]) -> None:
@@ -129,8 +135,19 @@ def _assign_existing_equations(model, variables: dict[str, float]) -> None:
             "work copy has no equation for: " + ", ".join(missing)
             + ". Refusing to invent global variables."
         )
+    # Validate all updates before the first destructive Delete.
+    import re
+    literals = {}
+    for name, value in variables.items():
+        if isinstance(value, bool):
+            raise ValueError("boolean is not a dimension")
+        literal = _mm_literal(value)
+        existing = str(manager.Equation(index_by_name[name]))
+        if "@" in name or not re.fullmatch(r'\s*"[^"]+"\s*=\s*[-+]?\d+(?:\.\d*)?\s*mm\s*', existing):
+            raise ValueError("only existing numeric mm globals may be updated")
+        literals[name] = literal
     # Each Delete+Add2 pair puts the row back, so later indexes stay valid.
     for name in sorted(variables, key=lambda item: index_by_name[item]):
         index = index_by_name[name]
-        _replace_equation_at_index(manager, index, f'"{name}"= {_mm_literal(variables[name])}mm')
+        _replace_equation_at_index(manager, index, f'"{name}"= {literals[name]}mm')
 

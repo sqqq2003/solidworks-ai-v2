@@ -1,9 +1,9 @@
 {
   "scope": "portable_simulation_only",
   "platform": "Linux",
-  "python": "3.12.3",
-  "tests_run": 309,
-  "passed": 305,
+  "python": "3.12.14",
+  "tests_run": 319,
+  "passed": 315,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -25,8 +25,8 @@
     }
   ],
   "pending_feature_cases": {
-    "test_turned_part.py": 22,
     "test_border_relief_notch.py": 9,
+    "test_turned_part.py": 22,
     "test_spur_segments.py": 5
   },
   "cross_process_lock_passed": true,
