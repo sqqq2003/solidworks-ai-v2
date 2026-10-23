@@ -52,14 +52,15 @@ def generate_native(analysis, output_path, *, generator_options):
     """
     import sys
     from pathlib import Path
-    if sys.platform != "win32":
-        raise RuntimeError("native sheet generation requires Windows")
     output = Path(output_path).resolve()
     if output.exists() or output.suffix.lower() != ".sldprt":
         raise ValueError("new SLDPRT work output required")
-    from solidworks_generator import generate_sheet_metal
     if "output_path" in generator_options:
         raise ValueError("output_path must be supplied only as output_path argument")
+    # Argument refusals come first so they are testable without a Windows worker.
+    if sys.platform != "win32":
+        raise RuntimeError("native sheet generation requires Windows")
+    from solidworks_generator import generate_sheet_metal
     return generate_sheet_metal(analysis=analysis, output_path=output, **generator_options)
 
 

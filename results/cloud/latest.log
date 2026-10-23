@@ -237,7 +237,7 @@ test_three_leg_strip_line_and_slot_order (test_ql5050px_sheet_metal.DevelopmentT
 test_two_leg_strip_geometry (test_ql5050px_sheet_metal.DevelopmentTests.test_two_leg_strip_geometry) ... ok
 test_output_path_cannot_be_passed_twice (test_ql5050px_sheet_metal.NativeGenerationTests.test_output_path_cannot_be_passed_twice) ... ok
 test_refuses_existing_or_wrong_output (test_ql5050px_sheet_metal.NativeGenerationTests.test_refuses_existing_or_wrong_output) ... ok
-test_refuses_off_windows (test_ql5050px_sheet_metal.NativeGenerationTests.test_refuses_off_windows) ... skipped 'Windows branch covered by path refusal'
+test_refuses_off_windows (test_ql5050px_sheet_metal.NativeGenerationTests.test_refuses_off_windows) ... skipped 'Windows has the native generator; refusal covered off-Windows'
 test_rectangular_step_on_a_continuous_edge_stays_outer (test_rect_relief_expand.OuterContourStepTests.test_rectangular_step_on_a_continuous_edge_stays_outer)
 台阶口开在长边中部时，仍是外轮廓，不当成没接上的线。 ... ok
 test_apply_step1_then_half_millimetre_on_panel_side (test_rect_relief_expand.RectReliefExpandTests.test_apply_step1_then_half_millimetre_on_panel_side) ... ok
@@ -484,6 +484,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 448 tests in 13.740s
+Ran 448 tests in 10.986s
 
 OK (skipped=7)

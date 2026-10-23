@@ -13,7 +13,7 @@
     },
     {
       "test": "test_refuses_off_windows (test_ql5050px_sheet_metal.NativeGenerationTests.test_refuses_off_windows)",
-      "reason": "Windows branch covered by path refusal"
+      "reason": "Windows has the native generator; refusal covered off-Windows"
     },
     {
       "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",

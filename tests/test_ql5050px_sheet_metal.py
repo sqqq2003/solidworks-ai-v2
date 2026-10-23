@@ -117,13 +117,12 @@ class BlankDxfTests(unittest.TestCase):
 class NativeGenerationTests(unittest.TestCase):
     def test_refuses_off_windows(self):
         if sys.platform == "win32":
-            self.skipTest("Windows branch covered by path refusal")
-        with self.assertRaisesRegex(RuntimeError, "requires Windows"):
-            generate_native(object(), "part.sldprt", generator_options={})
+            self.skipTest("Windows has the native generator; refusal covered off-Windows")
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaisesRegex(RuntimeError, "requires Windows"):
+                generate_native(object(), Path(folder) / "part.sldprt", generator_options={})
 
     def test_refuses_existing_or_wrong_output(self):
-        if sys.platform != "win32":
-            self.skipTest("Windows-only path validation")
         with tempfile.TemporaryDirectory() as folder:
             existing = Path(folder) / "part.sldprt"
             existing.write_text("occupied", encoding="ascii")
@@ -131,10 +130,9 @@ class NativeGenerationTests(unittest.TestCase):
                 generate_native(object(), existing, generator_options={})
             with self.assertRaisesRegex(ValueError, "new SLDPRT"):
                 generate_native(object(), Path(folder) / "part.step", generator_options={})
+            self.assertEqual(existing.read_text(encoding="ascii"), "occupied")
 
     def test_output_path_cannot_be_passed_twice(self):
-        if sys.platform != "win32":
-            self.skipTest("Windows-only generator import guard")
         with tempfile.TemporaryDirectory() as folder:
             with self.assertRaisesRegex(ValueError, "output_path"):
                 generate_native(object(), Path(folder) / "part.sldprt",
