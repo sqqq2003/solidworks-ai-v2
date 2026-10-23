@@ -102,10 +102,10 @@ class FixedPanelAnchorTests(unittest.TestCase):
         # Area order is two folded wings first, then the unchanged central skins.
         wing = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, 0, .08))
         top = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, .08, 0),
-                              GetSurface=lambda: SimpleNamespace(IsPlane=lambda: True),
+                              GetSurface=lambda: SimpleNamespace(IsPlane=lambda: True, PlaneParams=(0,0,1,0,0,0)),
                               GetClosestPointOn=lambda x,y,z: (x,y,z,0,0))
         bottom = SimpleNamespace(GetBox=lambda: (0, 0, -.0025, .1, .08, -.0025),
-                                 GetSurface=top.GetSurface,
+                                 GetSurface=lambda: SimpleNamespace(IsPlane=lambda:True, PlaneParams=(0,0,-1,0,0,-.0025)),
                                  GetClosestPointOn=top.GetClosestPointOn)
         candidates = sw._fixed_panel_faces([wing, wing, top, bottom], (50, 40), (0, 0), 2.5)
         self.assertEqual(candidates, [top, bottom])
@@ -113,7 +113,7 @@ class FixedPanelAnchorTests(unittest.TestCase):
     def test_face_bbox_alone_does_not_prove_anchor_membership(self):
         from types import SimpleNamespace
         face = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, .08, 0),
-                               GetSurface=lambda: SimpleNamespace(IsPlane=lambda: True),
+                               GetSurface=lambda: SimpleNamespace(IsPlane=lambda: True, PlaneParams=(0,0,1,0,0,0)),
                                GetClosestPointOn=lambda x,y,z: (x+.005,y,z,0,0))
         self.assertEqual(sw._fixed_panel_faces([face], (50, 40), (0, 0), 2.5), [])
 
@@ -126,11 +126,12 @@ class FixedPanelAnchorTests(unittest.TestCase):
         from types import SimpleNamespace
         wing = SimpleNamespace(GetBox=lambda:(0,0,0,.1,0,.08))
         central = SimpleNamespace(GetBox=lambda:(0,0,0,.1,.08,0),
-            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True),
+            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True, PlaneParams=(0,0,1,0,0,0)),
             GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
         analysis = SimpleNamespace(profiles=(self.outer,), bend_lines=self.bends)
         sketch = SimpleNamespace(Name='synthetic-bend')
-        with patch.object(sw, '_planar_faces_by_area', return_value=[wing,wing,central]), \
+        with patch.object(sw, '_as_interface', side_effect=lambda module,obj,name:obj), \
+             patch.object(sw, '_planar_faces_by_area', return_value=[wing,wing,central]), \
              patch.object(sw, '_create_bend_sketch_on_face', return_value=(sketch,None)) as create, \
              patch.object(sw, '_try_insert_sheet_metal_bend', return_value=True), \
              patch.object(sw, '_build_custom_bend_allowance', return_value=None), \
@@ -139,3 +140,27 @@ class FixedPanelAnchorTests(unittest.TestCase):
                 (2,3), (0,0), 2.5, 1, 90, False, fixed_face_point=(50,40),
                 outer_profile=self.outer)
         self.assertIs(create.call_args.args[9], central)
+
+    def test_approximate_bbox_cannot_reject_exact_fixed_plane(self):
+        from types import SimpleNamespace
+        # SW documents GetBox as approximate, even for a planar face.
+        face = SimpleNamespace(GetBox=lambda: (-.001,-.001,-.0001,.101,.081,.0001),
+            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True, PlaneParams=(0,0,1,0,0,0)),
+            GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
+        self.assertEqual(sw._fixed_panel_faces([face], (50,40), (0,0), 2.5), [face])
+
+    def test_dynamic_com_property_plane_is_supported(self):
+        from types import SimpleNamespace
+        # Late-bound COM can return zero-argument members as property values.
+        face = SimpleNamespace(GetSurface=SimpleNamespace(IsPlane=True,
+            PlaneParams=(0,0,-1,0,0,-.0025)),
+            GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
+        self.assertEqual(sw._fixed_panel_faces([face], (50,40), (0,0), 2.5), [face])
+        self.assertEqual(sw._fixed_panel_plane_z(face), -.0025)
+
+    def test_exact_plane_normal_rejects_folded_face_even_with_flat_bbox(self):
+        from types import SimpleNamespace
+        face = SimpleNamespace(GetBox=lambda:(0,0,0,.1,.08,0),
+            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True, PlaneParams=(0,1,0,0,0,0)),
+            GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
+        self.assertEqual(sw._fixed_panel_faces([face], (50,40), (0,0), 2.5), [])

@@ -140,3 +140,11 @@
 - 新增固定面核验：候选须是原始 XY 固定板位置的平面，IFace2.GetClosestPointOn 必须匹配锚点；筛掉倾斜/折起/孔洞/未知面。先筛选再取两张板皮，不扩大槽、不改变折弯方向/位置、不放松所有权。
 - 新增 4 项 synthetic 检查；Windows UTF-8 全量 362 ran / 357 passed / 0 failures/errors / 5 skipped，跨进程锁通过。36 pending 合约仍未计通过，未执行新的 SW 实机测试。
 - 实机后续：记录 Fixed panel face verification 的候选数，核对两组面确为固定板；若仍失败返回原生特征错误、草图平面及槽交会几何。旧日志中的退出 COM 断连单列为未解决，未擅自归因 CoUninitialize。
+
+
+## P0-CODEX-007：修正 577109b 的 0 候选回归
+
+- 本机 WorkBuddy 证据目录 wb_p248_577109b_20261023_180236：0/4，Fixed panel candidates=0；明确承认上一版回归，保留原日志。
+- 修正不当 GetBox 精度假设，改用类型化 ISurface.PlaneParams；无参数 COM 成员兼容属性/方法。筛面与原生草图/插入点共用精确平面 z；仍排除孔和倾斜/移动面。新增 rejected 原因计数供真实运行定位。
+- 三项新增测试：近似 bbox、属性式 COM、真实倾斜法向。前两项在旧 577109b 函数中均明确失败；新实现通过。Windows UTF-8 全回归 365 ran / 360 passed / 0 failures/errors / 5 skipped，跨进程锁通过；36 pending 合约仍不算通过。
+- 未在本轮直接执行 SolidWorks；新实机证据待现有 Gork/WorkBuddy 执行者补交。0 候选的真实逐项原因和 108/109 是否成功仍待验证，不将本轮模拟当作放行。先仅 step0，仍0候选时停止加深并回传具体 rejected。

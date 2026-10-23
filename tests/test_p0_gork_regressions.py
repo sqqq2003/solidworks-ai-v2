@@ -55,11 +55,11 @@ class GorkRegressions(unittest.TestCase):
         bend = Primitive(((50,0),(50,80)), False, True, 'BEND','LINE')
         analysis = SimpleNamespace(profiles=(outer,), bend_lines=(bend,))
         face = SimpleNamespace(GetBox=lambda:(0,0,0,.1,.08,0),
-            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True),
+            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True, PlaneParams=(0,0,1,0,0,0)),
             GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
         sketch = SimpleNamespace(Name='bend-sketch')
         custom = object()
-        with patch('solidworks_generator._planar_faces_by_area', return_value=[face]), patch('solidworks_generator._fixed_face_pick_candidates', return_value=[(10,10)]), patch('solidworks_generator._create_bend_sketch_on_face', return_value=(sketch,None)), patch('solidworks_generator._build_custom_bend_allowance', return_value=custom), patch('solidworks_generator._try_insert_sheet_metal_bend', return_value=True) as insert, patch('solidworks_generator._auto_bend_deadline', None):
+        with patch('solidworks_generator._as_interface', side_effect=lambda module,obj,name:obj), patch('solidworks_generator._planar_faces_by_area', return_value=[face]), patch('solidworks_generator._fixed_face_pick_candidates', return_value=[(10,10)]), patch('solidworks_generator._create_bend_sketch_on_face', return_value=(sketch,None)), patch('solidworks_generator._build_custom_bend_allowance', return_value=custom), patch('solidworks_generator._try_insert_sheet_metal_bend', return_value=True) as insert, patch('solidworks_generator._auto_bend_deadline', None):
             _create_bend_feature(MagicMock(),MagicMock(),MagicMock(),MagicMock(),MagicMock(),MagicMock(),
                 analysis,(0,),(0,0),2.5,1,90,False,bend_allowance=BendAllowanceSpec('k_factor', .25),outer_profile=outer)
         self.assertIs(insert.call_args.args[-1], custom)

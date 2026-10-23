@@ -138,3 +138,12 @@ Gork 复测请使用当前提交的完整源码，在独立 C 盘工作副本中
 API 依据：[IFace2.GetClosestPointOn](https://help.solidworks.com/2022/English/api/sldworksapi/SolidWorks.Interop.sldworks~SolidWorks.Interop.sldworks.IFace2~GetClosestPointOn.html)。1e-7 m 是计算核验容差，不是制造间隙。当前生成器固定板保持原 XY 平面；不支持的移动固定板应阻断，不猜测变换。
 
 复测保持 t/R/角度、槽加深上限及独占启动步骤。收集 Fixed panel face verification 候选数以及 bend_group_attempts。候选为 0 时先检查原生面几何绑定；不要恢复面积回退。仍须 4/4、重建、保存关闭重开和展开均通过才可验收。
+
+
+### 0 候选回归修正（P0-CODEX-007，取代上一节的包围盒判平面）
+
+577109b 的 Windows 复测回退为 0/4：所有组均 candidates=0。该版用近似 GetBox 差值判定平面是错误的精度假设；[官方文档](https://help.solidworks.com/2021/english/api/sldworksapi/SOLIDWORKS.Interop.sldworks~SOLIDWORKS.Interop.sldworks.IFace2~GetBox.html) 明确禁止将其用于精确比较/计算。
+
+现在经类型化 ISurface.PlaneParams 读法向与米制基点，支持无参数 COM 方法/属性两种绑定；选面和草图两处 z 坐标共用真实平面。孔洞仍用裁剪面最近点核验；不回退面积选面。日志包含 rejected 原因计数。两项新回归在旧实现明确失败，新实现通过；倾斜面仍被拒绝。
+
+实机优先只跑 step0；若仍 0 候选，直接回传 rejected 计数及对应面 PlaneParams/最近点返回或异常类型，先定位真实原生拒绝项，不重复三档加深。只有 candidates 恢复且原生 Insert 失败时才继续原有有界流程。当前修复了可复现代码缺陷，尚未证明哪一项造成该次真实 0 候选，也未宣称 108/109 通过。

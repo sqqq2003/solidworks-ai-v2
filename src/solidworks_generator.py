@@ -2926,44 +2926,51 @@ def _planar_faces_by_area(part: Any, module: Any) -> list[Any]:
     return planar
 
 
+def _fixed_panel_plane_z(face: Any, module: Any = None) -> float:
+    """Read exact planar geometry; GetBox is approximate, not a plane equation."""
+    surface = _com_read(face, "GetSurface")
+    if module is not None:
+        surface = _as_interface(module, surface, "ISurface")
+    if surface is None or not bool(_com_read(surface, "IsPlane")):
+        raise ValueError("not_planar")
+    plane = tuple(float(v) for v in _com_read(surface, "PlaneParams"))
+    if len(plane) != 6 or not all(math.isfinite(v) for v in plane):
+        raise ValueError("invalid_plane_parameters")
+    nx, ny, nz, _, _, z = plane
+    norm = math.sqrt(nx*nx + ny*ny + nz*nz)
+    if norm <= 1e-12 or math.hypot(nx, ny) / norm > 1e-8:
+        raise ValueError("not_fixed_xy_plane")
+    return z
+
+
 def _fixed_panel_faces(
     faces: Iterable[Any], anchor_mm: tuple[float, float],
-    origin_mm: tuple[float, float], thickness_mm: float,
+    origin_mm: tuple[float, float], thickness_mm: float, *, module: Any = None,
 ) -> list[Any]:
-    """Resolve the unchanged XY panel geometrically, never by area rank alone.
-
-    GetClosestPointOn is evaluated on IFace2 (trimmed face), not its infinite
-    surface. In this generator the fixed blank stays in XY at z=0 or +/-t.
-    Unknown/stale face geometry is refused; a COM disconnect must propagate.
-    """
+    """Verify the unchanged fixed panel using exact plane + trimmed-face query."""
     x, y = ((anchor_mm[i] - origin_mm[i]) / 1000.0 for i in (0, 1))
     thickness_m = thickness_mm / 1000.0
-    tolerance = 1e-7  # model metres: 0.0001 mm; not a production clearance
+    tolerance = 1e-7  # metres; numerical tolerance, never manufacturing clearance
     accepted = []
+    rejected: dict[str, int] = {}
     for face in faces:
         try:
-            box = tuple(float(v) for v in face.GetBox())
-            if len(box) != 6 or not all(math.isfinite(v) for v in box):
-                continue
-            if abs(box[5] - box[2]) > tolerance:
-                continue  # folded/tilted flange: original XY cannot map here
-            z = (box[2] + box[5]) / 2
+            z = _fixed_panel_plane_z(face, module)
             if min(abs(z), abs(z-thickness_m), abs(z+thickness_m)) > tolerance:
-                continue
-            surface = face.GetSurface()
-            if surface is None or not bool(surface.IsPlane()):
-                continue
+                raise ValueError("not_fixed_blank_level")
             closest = tuple(float(v) for v in face.GetClosestPointOn(x, y, z))
             if len(closest) < 3 or not all(math.isfinite(v) for v in closest[:3]):
-                continue
+                raise ValueError("invalid_closest_point")
             if math.dist((x, y, z), closest[:3]) > tolerance:
-                continue  # bounding box may contain a hole or another panel
+                raise ValueError("anchor_outside_trimmed_face")
             accepted.append(face)
         except Exception as error:
             if _is_com_disconnect_error(error):
                 raise
-            logger.debug("Fixed panel face geometry unavailable: %s", type(error).__name__)
-    logger.info("Fixed panel face verification: candidates=%d", len(accepted))
+            reason = str(error) if isinstance(error, ValueError) else type(error).__name__
+            rejected[reason] = rejected.get(reason, 0) + 1
+    logger.info("Fixed panel face verification: candidates=%d rejected=%s",
+                len(accepted), rejected)
     return accepted
 
 
@@ -3140,8 +3147,7 @@ def _create_bend_sketch_on_face(
 ) -> tuple[Any, tuple[float, float, float]] | None:
     """在指定平面上画折弯特征草图。线会穿出板边，识别长度不在这里改。"""
 
-    face_box = sketch_face.GetBox()
-    face_z = (face_box[2] + face_box[5]) / 2.0
+    face_z = _fixed_panel_plane_z(sketch_face, module)
     pick_point = (
         (seed_xy[0] - origin[0]) / 1000.0,
         (seed_xy[1] - origin[1]) / 1000.0,
@@ -3259,7 +3265,7 @@ def _create_bend_feature(
     )
 
     planar_faces = _fixed_panel_faces(
-        _planar_faces_by_area(part, module), pick_candidates[0], origin, thickness_mm)
+        _planar_faces_by_area(part, module), pick_candidates[0], origin, thickness_mm, module=module)
     if not planar_faces:
         raise BendRejectedError(bend_indices, relief_step=relief_step)
 
@@ -3337,8 +3343,7 @@ def _create_bend_feature(
             )
             continue
         try:
-            face_box = sketch_face.GetBox()
-            face_z = (face_box[2] + face_box[5]) / 2.0
+            face_z = _fixed_panel_plane_z(sketch_face, module)
         except Exception as error:  # noqa: BLE001
             logger.warning("读取折弯草图面失败：%s", error)
             _delete_model_item(model, cached_sketch_name, "SKETCH")
