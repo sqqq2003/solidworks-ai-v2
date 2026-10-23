@@ -1,10 +1,10 @@
 {
   "scope": "portable_simulation_only",
-  "platform": "Linux",
-  "python": "3.12.14",
-  "tests_run": 385,
-  "passed": 381,
-  "failures": 0,
+  "platform": "Windows",
+  "python": "3.14.7",
+  "tests_run": 450,
+  "passed": 443,
+  "failures": 1,
   "errors": 0,
   "skipped": [
     {
@@ -20,14 +20,22 @@
       "reason": "Drawing1_e7b7.dwg 未上传"
     },
     {
+      "test": "test_live_request_never_touches_com_on_linux (test_sw_controlled.ControlledExecutionTests.test_live_request_never_touches_com_on_linux)",
+      "reason": "COM probe is expected on Windows"
+    },
+    {
       "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
       "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    },
+    {
+      "test": "test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux)",
+      "reason": "Linux refusal test"
     }
   ],
   "pending_feature_cases": {
     "test_border_relief_notch.py": 9,
-    "test_turned_part.py": 22,
-    "test_spur_segments.py": 5
+    "test_spur_segments.py": 5,
+    "test_turned_part.py": 22
   },
   "cross_process_lock_passed": true,
   "solidworks_live_verified": false,
@@ -105,12 +113,12 @@
     "pending_original_feature_contracts": 36
   },
   "runtime_capabilities": {
-    "platform": "Linux",
-    "python": "3.12.14",
-    "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "platform": "Windows",
+    "python": "3.14.7",
+    "python_executable": "D:\\工程\\滚筒工程\\机械的学习\\最早\\python\\.venv\\Scripts\\python.exe",
     "ezdxf_available": true,
     "tkinter_available": true,
-    "pywin32_available": false,
+    "pywin32_available": true,
     "sw_started": false,
     "cad_executed": false,
     "desktop_display_tested": false,

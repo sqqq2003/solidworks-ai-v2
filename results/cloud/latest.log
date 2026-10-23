@@ -2,7 +2,7 @@ test_drawing_skeleton_writes_no_files (test_a01_next_track.NextTrackTests.test_d
 test_mate_check_stays_unsolved (test_a01_next_track.NextTrackTests.test_mate_check_stays_unsolved) ... ok
 test_sheet_metal_hook_delegates_without_a_second_generator (test_a01_next_track.NextTrackTests.test_sheet_metal_hook_delegates_without_a_second_generator) ... ok
 test_dry_run_cli_emits_plan (test_a01_parametric.CliTests.test_dry_run_cli_emits_plan) ... ok
-test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com) ... ok
+test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com) ... FAIL
 test_cycle_is_rejected (test_a01_parametric.SolverTests.test_cycle_is_rejected) ... ok
 test_default_envelope_keeps_unconfirmed_measured_empty (test_a01_parametric.SolverTests.test_default_envelope_keeps_unconfirmed_measured_empty) ... ok
 test_dependency_order_follows_frame_conveyor_drive_mount (test_a01_parametric.SolverTests.test_dependency_order_follows_frame_conveyor_drive_mount) ... ok
@@ -12,6 +12,21 @@ test_plan_json_is_deterministic (test_a01_parametric.SolverTests.test_plan_json_
 test_preserved_interface_cannot_be_overwritten (test_a01_parametric.SolverTests.test_preserved_interface_cannot_be_overwritten) ... ok
 test_register_lists_pending_mapping_without_approval (test_a01_parametric.SolverTests.test_register_lists_pending_mapping_without_approval) ... ok
 test_simulated_fixture_resolves_only_the_allowance_chain (test_a01_parametric.SolverTests.test_simulated_fixture_resolves_only_the_allowance_chain) ... ok
+test_grounded_component_is_reported (test_assembly_precheck.DofReportTests.test_grounded_component_is_reported) ... ok
+test_invalid_components_rejected (test_assembly_precheck.DofReportTests.test_invalid_components_rejected) ... ok
+test_lock_fixes_the_assembly (test_assembly_precheck.DofReportTests.test_lock_fixes_the_assembly) ... ok
+test_redundant_mate_is_flagged_not_negative (test_assembly_precheck.DofReportTests.test_redundant_mate_is_flagged_not_negative) ... ok
+test_single_revolute_leaves_one_rotation (test_assembly_precheck.DofReportTests.test_single_revolute_leaves_one_rotation) ... ok
+test_unknown_mate_type_is_rejected (test_assembly_precheck.DofReportTests.test_unknown_mate_type_is_rejected) ... ok
+test_unmodeled_mate_type_is_flagged (test_assembly_precheck.DofReportTests.test_unmodeled_mate_type_is_flagged) ... ok
+test_clear_and_touching_boxes (test_assembly_precheck.InterferenceCheckTests.test_clear_and_touching_boxes) ... ok
+test_invalid_bounds_rejected (test_assembly_precheck.InterferenceCheckTests.test_invalid_bounds_rejected) ... ok
+test_overlapping_boxes_are_reported (test_assembly_precheck.InterferenceCheckTests.test_overlapping_boxes_are_reported) ... ok
+test_single_part_rejected (test_assembly_precheck.InterferenceCheckTests.test_single_part_rejected) ... ok
+test_port_answers_with_mock_reports (test_assembly_precheck.MockMechanicalCheckPortTests.test_port_answers_with_mock_reports) ... ok
+test_invalid_sweep_rejected (test_assembly_precheck.MotionCheckTests.test_invalid_sweep_rejected) ... ok
+test_motion_parameters_only (test_assembly_precheck.MotionCheckTests.test_motion_parameters_only) ... ok
+test_no_free_dof_message (test_assembly_precheck.MotionCheckTests.test_no_free_dof_message) ... ok
 test_two_outers_with_own_bends (test_batch_export.DiscoverSheetPartsTests.test_two_outers_with_own_bends) ... ok
 test_flat_length_uses_deduction (test_bend_allowance.BendAllowanceTests.test_flat_length_uses_deduction) ... ok
 test_k_factor_round_trip_from_deduction (test_bend_allowance.BendAllowanceTests.test_k_factor_round_trip_from_deduction) ... ok
@@ -76,6 +91,21 @@ test_wrapped_cause (test_com_disconnect_relief.ComDisconnectDetectTests.test_wra
 test_select_by_id_disconnect_raises (test_com_disconnect_relief.SelectBendSketchComTests.test_select_by_id_disconnect_raises) ... ok
 test_select_by_id_other_error_returns_false (test_com_disconnect_relief.SelectBendSketchComTests.test_select_by_id_other_error_returns_false) ... ok
 test_disconnect_from_select_propagates (test_com_disconnect_relief.TryInsertComTests.test_disconnect_from_select_propagates) ... ok
+test_csv_rows_and_file (test_drawing_bom.BomCsvTests.test_csv_rows_and_file) ... ok
+test_mock_bom_for_missing_model (test_drawing_bom.BomFromParametricPlanTests.test_mock_bom_for_missing_model) ... ok
+test_interface_default_is_labeled (test_drawing_bom.BomFromSheetJobsTests.test_interface_default_is_labeled) ... ok
+test_material_and_drawing_ref_are_carried (test_drawing_bom.BomFromSheetJobsTests.test_material_and_drawing_ref_are_carried) ... ok
+test_missing_thickness_stays_unresolved (test_drawing_bom.BomFromSheetJobsTests.test_missing_thickness_stays_unresolved) ... ok
+test_rows_reuse_batch_export_naming (test_drawing_bom.BomFromSheetJobsTests.test_rows_reuse_batch_export_naming) ... ok
+test_missing_dimensions_stay_unresolved (test_drawing_bom.BomFromVariantsTests.test_missing_dimensions_stay_unresolved) ... ok
+test_roller_rows_reuse_roller_spec (test_drawing_bom.BomFromVariantsTests.test_roller_rows_reuse_roller_spec) ... ok
+test_hints_for_dwg_return_empty (test_drawing_bom.DrawingHintsTests.test_hints_for_dwg_return_empty) ... ok
+test_hints_from_synthetic_dxf (test_drawing_bom.DrawingHintsTests.test_hints_from_synthetic_dxf) ... ok
+test_existing_destination_is_not_overwritten (test_drawing_bom.ExportPlanTests.test_existing_destination_is_not_overwritten) ... ok
+test_live_backend_is_refused_offline (test_drawing_bom.ExportPlanTests.test_live_backend_is_refused_offline) ... ok
+test_mock_refuses_drawing_product_suffix (test_drawing_bom.ExportPlanTests.test_mock_refuses_drawing_product_suffix) ... ok
+test_mock_trace_is_written_for_json (test_drawing_bom.ExportPlanTests.test_mock_trace_is_written_for_json) ... ok
+test_unknown_format_is_refused (test_drawing_bom.ExportPlanTests.test_unknown_format_is_refused) ... ok
 test_broken_file_returns_empty (test_drawing_notes.HintFileTests.test_broken_file_returns_empty) ... ok
 test_non_dxf_returns_empty (test_drawing_notes.HintFileTests.test_non_dxf_returns_empty) ... ok
 test_reads_from_block_definition (test_drawing_notes.HintFileTests.test_reads_from_block_definition)
@@ -175,6 +205,21 @@ test_turned_plan_entry_never_calls_native_generation (test_project_workbench.Pro
 test_nonempty_file_does_not_override_native_save_error (test_project_workbench.SavedPartContractTests.test_nonempty_file_does_not_override_native_save_error) ... ok
 test_parameter_register_export_preserves_unknown_values (test_project_workbench.SavedPartContractTests.test_parameter_register_export_preserves_unknown_values) ... ok
 test_reopen_checks_dimensions_and_closes_document_on_failure (test_project_workbench.SavedPartContractTests.test_reopen_checks_dimensions_and_closes_document_on_failure) ... ok
+test_default_spec_is_independent_and_placeholder_only (test_ql5050px.Ql5050pxConfigTests.test_default_spec_is_independent_and_placeholder_only) ... ok
+test_placeholder_flag_cannot_be_dropped (test_ql5050px.Ql5050pxConfigTests.test_placeholder_flag_cannot_be_dropped) ... ok
+test_with_envelope_moves_placeholder_only (test_ql5050px.Ql5050pxConfigTests.test_with_envelope_moves_placeholder_only) ... ok
+test_with_envelope_rejects_non_positive (test_ql5050px.Ql5050pxConfigTests.test_with_envelope_rejects_non_positive) ... ok
+test_documented_edges_match_spec (test_ql5050px.Ql5050pxGraphTests.test_documented_edges_match_spec) ... ok
+test_edge_drift_is_rejected (test_ql5050px.Ql5050pxGraphTests.test_edge_drift_is_rejected) ... ok
+test_unknown_node_is_rejected (test_ql5050px.Ql5050pxGraphTests.test_unknown_node_is_rejected) ... ok
+test_all_oem_dimensions_stay_pending (test_ql5050px.Ql5050pxSolverTests.test_all_oem_dimensions_stay_pending) ... ok
+test_cli_returns_review_required_exit_code (test_ql5050px.Ql5050pxSolverTests.test_cli_returns_review_required_exit_code) ... ok
+test_cli_writes_out_file (test_ql5050px.Ql5050pxSolverTests.test_cli_writes_out_file) ... ok
+test_copy_edges_resolve_when_frame_resolves (test_ql5050px.Ql5050pxSolverTests.test_copy_edges_resolve_when_frame_resolves) ... ok
+test_plan_stays_review_required_and_offline (test_ql5050px.Ql5050pxSolverTests.test_plan_stays_review_required_and_offline) ... ok
+test_preserved_interfaces_are_never_overwritten (test_ql5050px.Ql5050pxSolverTests.test_preserved_interfaces_are_never_overwritten) ... ok
+test_unconfirmed_measured_override_is_ignored (test_ql5050px.Ql5050pxSolverTests.test_unconfirmed_measured_override_is_ignored) ... ok
+test_unresolved_reasons_are_relabeled_for_ql5050px (test_ql5050px.Ql5050pxSolverTests.test_unresolved_reasons_are_relabeled_for_ql5050px) ... ok
 test_rectangular_step_on_a_continuous_edge_stays_outer (test_rect_relief_expand.OuterContourStepTests.test_rectangular_step_on_a_continuous_edge_stays_outer)
 台阶口开在长边中部时，仍是外轮廓，不当成没接上的线。 ... ok
 test_apply_step1_then_half_millimetre_on_panel_side (test_rect_relief_expand.RectReliefExpandTests.test_apply_step1_then_half_millimetre_on_panel_side) ... ok
@@ -319,6 +364,17 @@ test_recovery_failure_is_explicit (test_sheet_metal_pipeline.PipelineTests.test_
 test_source_geometry_and_plan_edits_invalidate (test_sheet_metal_pipeline.PipelineTests.test_source_geometry_and_plan_edits_invalidate) ... ok
 test_import_is_lazy_and_linux_execution_refused (test_sheet_metal_pipeline.WindowsBridgeContractTests.test_import_is_lazy_and_linux_execution_refused) ... ok
 test_native_reopen_reads_definition_and_closes_owned_document (test_sheet_metal_pipeline.WindowsBridgeContractTests.test_native_reopen_reads_definition_and_closes_owned_document) ... ok
+test_request_describes_existing_generator_without_calling_it (test_sheetmetal_unfold.GenerationRequestTests.test_request_describes_existing_generator_without_calling_it) ... ok
+test_request_records_analysis_supplier (test_sheetmetal_unfold.GenerationRequestTests.test_request_records_analysis_supplier) ... ok
+test_k_factor_options_come_from_bend_allowance (test_sheetmetal_unfold.ReliefPlanTests.test_k_factor_options_come_from_bend_allowance) ... ok
+test_relief_expansion_steps (test_sheetmetal_unfold.ReliefPlanTests.test_relief_expansion_steps) ... ok
+test_relief_sizes_follow_craft_rules (test_sheetmetal_unfold.ReliefPlanTests.test_relief_sizes_follow_craft_rules) ... ok
+test_relief_step_out_of_range_rejected (test_sheetmetal_unfold.ReliefPlanTests.test_relief_step_out_of_range_rejected) ... ok
+test_bend_allowance_spec_matches_sw_enum (test_sheetmetal_unfold.UnfoldPlanTests.test_bend_allowance_spec_matches_sw_enum) ... ok
+test_deduction_mode_uses_shop_number (test_sheetmetal_unfold.UnfoldPlanTests.test_deduction_mode_uses_shop_number) ... ok
+test_invalid_inputs_rejected (test_sheetmetal_unfold.UnfoldPlanTests.test_invalid_inputs_rejected) ... ok
+test_known_numbers_for_2_5mm_1r_90deg (test_sheetmetal_unfold.UnfoldPlanTests.test_known_numbers_for_2_5mm_1r_90deg) ... ok
+test_unfold_chain_sums_deductions (test_sheetmetal_unfold.UnfoldPlanTests.test_unfold_chain_sums_deductions) ... ok
 test_identity_and_translation_stay_compatible (test_sketch_transform.SketchTransformTests.test_identity_and_translation_stay_compatible) ... ok
 test_invalid_transform_is_refused_before_sketch_write (test_sketch_transform.SketchTransformTests.test_invalid_transform_is_refused_before_sketch_write) ... ok
 test_non_xy_model_point_maps_to_sketch_origin (test_sketch_transform.SketchTransformTests.test_non_xy_model_point_maps_to_sketch_origin) ... ok
@@ -353,6 +409,15 @@ test_uses_native_solidworks_arc_for_exact_curve_segment (test_solidworks_generat
 test_dry_run_skips_unresolved_and_writes_json_only (test_sw_api_adapter.MockAdapterTests.test_dry_run_skips_unresolved_and_writes_json_only) ... ok
 test_same_path_and_cad_suffix_are_refused (test_sw_api_adapter.MockAdapterTests.test_same_path_and_cad_suffix_are_refused) ... ok
 test_win32_backend_does_not_import_com_at_import (test_sw_api_adapter.MockAdapterTests.test_win32_backend_does_not_import_com_at_import) ... ok
+test_clean_mock_request_has_no_refusals (test_sw_controlled.ControlledExecutionTests.test_clean_mock_request_has_no_refusals) ... ok
+test_live_request_keeps_work_copy_rules (test_sw_controlled.ControlledExecutionTests.test_live_request_keeps_work_copy_rules) ... ok
+test_live_request_never_touches_com_on_linux (test_sw_controlled.ControlledExecutionTests.test_live_request_never_touches_com_on_linux) ... skipped 'COM probe is expected on Windows'
+test_live_request_refusals_are_explicit (test_sw_controlled.ControlledExecutionTests.test_live_request_refusals_are_explicit) ... ok
+test_mock_dry_run_writes_trace_only (test_sw_controlled.ControlledExecutionTests.test_mock_dry_run_writes_trace_only) ... ok
+test_mock_refuses_cad_product_suffix (test_sw_controlled.ControlledExecutionTests.test_mock_refuses_cad_product_suffix) ... ok
+test_mock_requires_json_trace_suffix (test_sw_controlled.ControlledExecutionTests.test_mock_requires_json_trace_suffix) ... ok
+test_refuses_existing_destination (test_sw_controlled.ControlledExecutionTests.test_refuses_existing_destination) ... ok
+test_refuses_source_alias (test_sw_controlled.ControlledExecutionTests.test_refuses_source_alias) ... ok
 test_forwarded_or_exited_process_refused (test_sw_owned_launch.OwnedLaunchTests.test_forwarded_or_exited_process_refused) ... ok
 test_inventory_property_binding_and_phantom_count (test_sw_owned_launch.OwnedLaunchTests.test_inventory_property_binding_and_phantom_count) ... ok
 test_keepalive_prevents_intermediate_exit (test_sw_owned_launch.OwnedLaunchTests.test_keepalive_prevents_intermediate_exit) ... ok
@@ -390,7 +455,7 @@ test_recovery_failure_is_explicit (test_sw_transaction.TransactionTests.test_rec
 test_schema_rejects_duplicates_and_incomplete_confirmation (test_sw_transaction.TransactionTests.test_schema_rejects_duplicates_and_incomplete_confirmation) ... ok
 test_single_writer_and_existing_output (test_sw_transaction.TransactionTests.test_single_writer_and_existing_output) ... ok
 test_unknown_protected_and_pending_mappings (test_sw_transaction.TransactionTests.test_unknown_protected_and_pending_mappings) ... ok
-test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux) ... ok
+test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux) ... skipped 'Linux refusal test'
 test_load_accepts_utf8_bom (test_user_settings.UserSettingsTests.test_load_accepts_utf8_bom)
 记事本 / PowerShell 写出的 JSON 带 BOM，必须照样能读。 ... ok
 test_load_ignores_non_dict_payload (test_user_settings.UserSettingsTests.test_load_ignores_non_dict_payload) ... ok
@@ -420,7 +485,17 @@ test_disconnected_session_cannot_exit (test_review_session_boundaries.SessionBou
 test_lease_cannot_exit_different_application (test_review_session_boundaries.SessionBoundaryReview.test_lease_cannot_exit_different_application) ... ok
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
+======================================================================
+FAIL: test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com)
 ----------------------------------------------------------------------
-Ran 385 tests in 3.817s
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\tests\test_a01_parametric.py", line 179, in test_live_flag_is_refused_without_com
+    self.assertEqual(completed.returncode, 2, completed.stdout)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 2 : {"status": "failed", "error": "Live writes require confirmed mappings and a Windows transaction driver; legacy equation-only writes are disabled", "sw_live": "not_applicable_on_linux"}
 
-OK (skipped=4)
+
+----------------------------------------------------------------------
+Ran 450 tests in 13.695s
+
+FAILED (failures=1, skipped=6)
