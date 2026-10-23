@@ -304,6 +304,17 @@ test_turned_part_and_dwg_import_refuse_without_exclusive_session (test_sw_sessio
 test_unproven_inline_timeout_does_not_touch_com (test_sw_session_safety.SessionSafetyTests.test_unproven_inline_timeout_does_not_touch_com) ... ok
 test_watchdog_returns_without_killing_or_calling_com (test_sw_session_safety.SessionSafetyTests.test_watchdog_returns_without_killing_or_calling_com) ... ok
 test_wrong_image_or_foreign_doc_blocks_exclusive_kill (test_sw_session_safety.SessionSafetyTests.test_wrong_image_or_foreign_doc_blocks_exclusive_kill) ... ok
+test_1800_envelope_persist_reopen_idempotency (test_sw_transaction.TransactionTests.test_1800_envelope_persist_reopen_idempotency) ... ok
+test_bad_readback_after_reopen_restores (test_sw_transaction.TransactionTests.test_bad_readback_after_reopen_restores) ... ok
+test_each_mutation_failure_restores_state_and_output (test_sw_transaction.TransactionTests.test_each_mutation_failure_restores_state_and_output) ... ok
+test_invalid_units_and_numbers_refused (test_sw_transaction.TransactionTests.test_invalid_units_and_numbers_refused) ... ok
+test_range_or_missing_target_never_writes (test_sw_transaction.TransactionTests.test_range_or_missing_target_never_writes) ... ok
+test_rebuild_readback_and_stale_plan_fail_closed (test_sw_transaction.TransactionTests.test_rebuild_readback_and_stale_plan_fail_closed) ... ok
+test_recovery_failure_is_explicit (test_sw_transaction.TransactionTests.test_recovery_failure_is_explicit) ... ok
+test_schema_rejects_duplicates_and_incomplete_confirmation (test_sw_transaction.TransactionTests.test_schema_rejects_duplicates_and_incomplete_confirmation) ... ok
+test_single_writer_and_existing_output (test_sw_transaction.TransactionTests.test_single_writer_and_existing_output) ... ok
+test_unknown_protected_and_pending_mappings (test_sw_transaction.TransactionTests.test_unknown_protected_and_pending_mappings) ... ok
+test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux) ... ok
 test_load_accepts_utf8_bom (test_user_settings.UserSettingsTests.test_load_accepts_utf8_bom)
 记事本 / PowerShell 写出的 JSON 带 BOM，必须照样能读。 ... ok
 test_load_ignores_non_dict_payload (test_user_settings.UserSettingsTests.test_load_ignores_non_dict_payload) ... ok
@@ -334,6 +345,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 298 tests in 3.252s
+Ran 309 tests in 3.475s
 
 OK (skipped=4)

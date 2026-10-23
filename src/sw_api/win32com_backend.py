@@ -43,6 +43,8 @@ def apply_live(
     destination: Path,
     *,
     timeout: float = 120.0,
+    mapping_payload: dict | None = None,
+    driver=None,
 ) -> dict:
     """Save a work copy and push resolved variables. Never overwrite ``source``."""
 
@@ -53,44 +55,19 @@ def apply_live(
         raise ValueError("live SaveAs copy must use a .SLDASM work-copy path")
     if not com_available():
         raise RuntimeError("SolidWorks COM is unavailable. sw_live=not_applicable_on_linux")
-    variables = assignments_from_plan(plan)
+    if mapping_payload is None or driver is None:
+        raise RuntimeError("Live writes require confirmed mappings and a Windows transaction driver; legacy equation-only writes are disabled")
+    from .transaction import execute
+    from .windows_execution import WindowsExecutionPort
     sw_session = _import_sw_session()
 
-    def job():
-        # Import here as well so a caller who skips com_available still stays lazy.
-        import pythoncom
-        import win32com.client
+    def transaction_job():
+        return execute(plan, mapping_payload, WindowsExecutionPort(driver), str(destination))
 
-        from solidworks_generator import _connect_task_solidworks
+    return sw_session.run_on_task_sta(transaction_job, timeout=timeout, task_name="a01-transaction-copy")
 
-        sw_session.require_model_write()
-        lease = sw_session.current_lease()
-        app, _created = _connect_task_solidworks(lease, win32com, pythoncom)
-        sw_session.require_model_write(lease)
-        errors = win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
-        warnings = win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
-        model = app.OpenDoc6(
-            str(source),
-            SW_DOC_ASSEMBLY,
-            SW_OPEN_SILENT | SW_OPEN_READONLY,
-            "",
-            errors,
-            warnings,
-        )
-        if model is None:
-            raise RuntimeError(f"OpenDoc6 failed for the work copy; errors={int(errors.value)}")
-        _assign_existing_equations(model, variables)
-        save_errors = model.SaveAs3(str(destination), 0, 1)
-        return {
-            "backend": "win32com",
-            "sw_live": "attempted_on_windows",
-            "save_errors": int(save_errors),
-            "save_as": str(destination),
-            "original_overwritten": False,
-            "variables_set": sorted(variables),
-        }
 
-    return sw_session.run_on_task_sta(job, timeout=timeout, task_name="a01-saveas-copy")
+# Windows transaction drivers must check OpenDoc6 and SaveAs3 error codes.
 
 
 def _assign_existing_equations(model, variables: dict[str, float]) -> None:
@@ -112,3 +89,4 @@ def _assign_existing_equations(model, variables: dict[str, float]) -> None:
         )
     for name, value in variables.items():
         manager.Equation(index_by_name[name], f'"{name}"={value}')
+

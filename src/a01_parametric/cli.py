@@ -28,6 +28,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--width", type=float, default=DEFAULT_ENVELOPE_MM["width"])
     parser.add_argument("--height", type=float, default=DEFAULT_ENVELOPE_MM["height"])
     parser.add_argument("--spec", type=Path, default=None)
+    parser.add_argument("--mapping-template", type=Path, default=None, help="Export pending real-model mapping JSON; does not confirm any OEM value")
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--live", action="store_true", help="Windows only. SaveAs a work copy; never overwrite the source.")
@@ -49,6 +50,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     try:
         plan = solve_spec(args.spec, length=args.length, width=args.width, height=args.height)
+        if args.mapping_template is not None:
+            from src.sw_api.mapping import mapping_template
+            args.mapping_template.parent.mkdir(parents=True, exist_ok=True)
+            args.mapping_template.write_text(json.dumps(mapping_template(plan), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         report: dict = {
             "plan": plan,
             "dry_run": None,
@@ -88,3 +93,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
