@@ -54,7 +54,9 @@ class GorkRegressions(unittest.TestCase):
         outer = Primitive(((0,0),(100,0),(100,80),(0,80),(0,0)), True, False, '0','LWPOLYLINE')
         bend = Primitive(((50,0),(50,80)), False, True, 'BEND','LINE')
         analysis = SimpleNamespace(profiles=(outer,), bend_lines=(bend,))
-        face = SimpleNamespace(GetBox=lambda:(0,0,0,.1,.08,0))
+        face = SimpleNamespace(GetBox=lambda:(0,0,0,.1,.08,0),
+            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True),
+            GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
         sketch = SimpleNamespace(Name='bend-sketch')
         custom = object()
         with patch('solidworks_generator._planar_faces_by_area', return_value=[face]), patch('solidworks_generator._fixed_face_pick_candidates', return_value=[(10,10)]), patch('solidworks_generator._create_bend_sketch_on_face', return_value=(sketch,None)), patch('solidworks_generator._build_custom_bend_allowance', return_value=custom), patch('solidworks_generator._try_insert_sheet_metal_bend', return_value=True) as insert, patch('solidworks_generator._auto_bend_deadline', None):
@@ -148,3 +150,4 @@ class KVariantEvidenceTests(unittest.TestCase):
         self.assertTrue(state['suppressed'])
         self.assertEqual(result['folded_bounds'][3],100)
         self.assertEqual(result['flat_bounds'][3],120)
+

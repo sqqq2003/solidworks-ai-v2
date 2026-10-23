@@ -129,3 +129,12 @@ Gork 复测请使用当前提交的完整源码，在独立 C 盘工作副本中
 生成结果新增 `bend_group_attempts`；使用释放槽重试入口时，每轮 `bend_attempts` 内也保留该字段。每条记录包含 `sequence`、`bend_indices`、`index_base=0`、`fixed_point_mm`（源图毫米坐标）、`relief_step`、`elapsed_seconds`、`status` 和失败时的 `error_kind`。界面显示编号时加 1。
 
 `created` 仅表示该次特征创建调用成功，仍须核对重建、保存重开、4/4 完成数和展开。固定点记录是请求的锚点，不是已验证的原生面身份。保持现有 Gork 任务，不重复派发；实机工作副本同步后使用原复测步骤。客户坐标应保留在本机诊断中，公开提交前脱敏。
+
+
+### 固定面筛选（P0-CODEX-006）
+
+锁定源图 XY 锚点后，仍需证明候选原生面属于固定板。现先筛选原 XY 固定板位置的平面（z=0 或正负板厚），再用 IFace2.GetClosestPointOn 对锚点做裁剪面内核验，最后从有效面中最多尝试两张板皮。面积大的折起翼板不再挤掉中央板面。无法读取几何时拒绝该面；COM 断连上抛，不重连未知实例。
+
+API 依据：[IFace2.GetClosestPointOn](https://help.solidworks.com/2022/English/api/sldworksapi/SolidWorks.Interop.sldworks~SolidWorks.Interop.sldworks.IFace2~GetClosestPointOn.html)。1e-7 m 是计算核验容差，不是制造间隙。当前生成器固定板保持原 XY 平面；不支持的移动固定板应阻断，不猜测变换。
+
+复测保持 t/R/角度、槽加深上限及独占启动步骤。收集 Fixed panel face verification 候选数以及 bend_group_attempts。候选为 0 时先检查原生面几何绑定；不要恢复面积回退。仍须 4/4、重建、保存关闭重开和展开均通过才可验收。

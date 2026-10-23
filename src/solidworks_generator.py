@@ -2926,6 +2926,47 @@ def _planar_faces_by_area(part: Any, module: Any) -> list[Any]:
     return planar
 
 
+def _fixed_panel_faces(
+    faces: Iterable[Any], anchor_mm: tuple[float, float],
+    origin_mm: tuple[float, float], thickness_mm: float,
+) -> list[Any]:
+    """Resolve the unchanged XY panel geometrically, never by area rank alone.
+
+    GetClosestPointOn is evaluated on IFace2 (trimmed face), not its infinite
+    surface. In this generator the fixed blank stays in XY at z=0 or +/-t.
+    Unknown/stale face geometry is refused; a COM disconnect must propagate.
+    """
+    x, y = ((anchor_mm[i] - origin_mm[i]) / 1000.0 for i in (0, 1))
+    thickness_m = thickness_mm / 1000.0
+    tolerance = 1e-7  # model metres: 0.0001 mm; not a production clearance
+    accepted = []
+    for face in faces:
+        try:
+            box = tuple(float(v) for v in face.GetBox())
+            if len(box) != 6 or not all(math.isfinite(v) for v in box):
+                continue
+            if abs(box[5] - box[2]) > tolerance:
+                continue  # folded/tilted flange: original XY cannot map here
+            z = (box[2] + box[5]) / 2
+            if min(abs(z), abs(z-thickness_m), abs(z+thickness_m)) > tolerance:
+                continue
+            surface = face.GetSurface()
+            if surface is None or not bool(surface.IsPlane()):
+                continue
+            closest = tuple(float(v) for v in face.GetClosestPointOn(x, y, z))
+            if len(closest) < 3 or not all(math.isfinite(v) for v in closest[:3]):
+                continue
+            if math.dist((x, y, z), closest[:3]) > tolerance:
+                continue  # bounding box may contain a hole or another panel
+            accepted.append(face)
+        except Exception as error:
+            if _is_com_disconnect_error(error):
+                raise
+            logger.debug("Fixed panel face geometry unavailable: %s", type(error).__name__)
+    logger.info("Fixed panel face verification: candidates=%d", len(accepted))
+    return accepted
+
+
 def _delete_model_item(model: Any, name: str, item_type: str) -> None:
     try:
         model.ClearSelection2(True)
@@ -3217,9 +3258,10 @@ def _create_bend_feature(
         outer_profile, bend_primitives, preferred=fixed_face_point
     )
 
-    planar_faces = _planar_faces_by_area(part, module)
+    planar_faces = _fixed_panel_faces(
+        _planar_faces_by_area(part, module), pick_candidates[0], origin, thickness_mm)
     if not planar_faces:
-        raise SolidWorksGenerationError("钣金实体上没有可用平面作为折弯草图面。")
+        raise BendRejectedError(bend_indices, relief_step=relief_step)
 
     # 写死：折弯位置仅 BendCenterline=1，禁止再试其它 BendPos。
     position_candidates = (
@@ -3244,6 +3286,7 @@ def _create_bend_feature(
     def _bend_time_up() -> bool:
         return time.monotonic() >= deadline
 
+    # Only verified fixed-panel skins, not the largest folded flanges.
     # At most 2 faces; each sketch once; few insert tries.
     for face_index, sketch_face in enumerate(planar_faces[:2]):
         if _bend_time_up():

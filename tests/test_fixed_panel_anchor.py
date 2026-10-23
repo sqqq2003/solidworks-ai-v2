@@ -96,3 +96,46 @@ class FixedPanelAnchorTests(unittest.TestCase):
         self.assertEqual(events[0]['status'], 'created')
         self.assertEqual(events[0]['scope'], 'feature_creation_not_native_acceptance')
         self.assertEqual(events[0]['index_base'], 0)
+
+    def test_fixed_panel_face_survives_larger_folded_wings(self):
+        from types import SimpleNamespace
+        # Area order is two folded wings first, then the unchanged central skins.
+        wing = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, 0, .08))
+        top = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, .08, 0),
+                              GetSurface=lambda: SimpleNamespace(IsPlane=lambda: True),
+                              GetClosestPointOn=lambda x,y,z: (x,y,z,0,0))
+        bottom = SimpleNamespace(GetBox=lambda: (0, 0, -.0025, .1, .08, -.0025),
+                                 GetSurface=top.GetSurface,
+                                 GetClosestPointOn=top.GetClosestPointOn)
+        candidates = sw._fixed_panel_faces([wing, wing, top, bottom], (50, 40), (0, 0), 2.5)
+        self.assertEqual(candidates, [top, bottom])
+
+    def test_face_bbox_alone_does_not_prove_anchor_membership(self):
+        from types import SimpleNamespace
+        face = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, .08, 0),
+                               GetSurface=lambda: SimpleNamespace(IsPlane=lambda: True),
+                               GetClosestPointOn=lambda x,y,z: (x+.005,y,z,0,0))
+        self.assertEqual(sw._fixed_panel_faces([face], (50, 40), (0, 0), 2.5), [])
+
+    def test_unavailable_face_geometry_fails_closed(self):
+        from types import SimpleNamespace
+        face = SimpleNamespace(GetBox=lambda: (0, 0, 0, .1, .08, 0))
+        self.assertEqual(sw._fixed_panel_faces([face], (50,40), (0,0), 2.5), [])
+
+    def test_feature_scheduler_uses_central_face_even_when_area_rank_is_third(self):
+        from types import SimpleNamespace
+        wing = SimpleNamespace(GetBox=lambda:(0,0,0,.1,0,.08))
+        central = SimpleNamespace(GetBox=lambda:(0,0,0,.1,.08,0),
+            GetSurface=lambda:SimpleNamespace(IsPlane=lambda:True),
+            GetClosestPointOn=lambda x,y,z:(x,y,z,0,0))
+        analysis = SimpleNamespace(profiles=(self.outer,), bend_lines=self.bends)
+        sketch = SimpleNamespace(Name='synthetic-bend')
+        with patch.object(sw, '_planar_faces_by_area', return_value=[wing,wing,central]), \
+             patch.object(sw, '_create_bend_sketch_on_face', return_value=(sketch,None)) as create, \
+             patch.object(sw, '_try_insert_sheet_metal_bend', return_value=True), \
+             patch.object(sw, '_build_custom_bend_allowance', return_value=None), \
+             patch.object(sw, '_auto_bend_deadline', None):
+            sw._create_bend_feature(*[MagicMock() for _ in range(6)], analysis,
+                (2,3), (0,0), 2.5, 1, 90, False, fixed_face_point=(50,40),
+                outer_profile=self.outer)
+        self.assertIs(create.call_args.args[9], central)
