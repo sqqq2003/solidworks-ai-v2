@@ -16,7 +16,7 @@
    git log --oneline -4
    ```
 
-2. 全量回归（期望 `462 ran / 455 passed / 0 failures / 0 errors / 7 skipped`，`cross_process_lock_passed=true`，`solidworks_live_verified=false`，`pending_feature_cases` 只剩 `test_turned_part.py: 22`）
+2. 全量回归（期望 `473 ran / 466 passed / 0 failures / 0 errors / 7 skipped`，`cross_process_lock_passed=true`，`solidworks_live_verified=false`，`pending_feature_cases` 只剩 `test_turned_part.py: 22`）
 
    ```bash
    python -X utf8 work/run_cloud_tests.py
@@ -64,7 +64,8 @@
 - `tests/pending_features/` 三个文件原先都因导入引导层级写错（子目录里用 `parents[1]/src`，应为 `parents[2]/src`）在 import 阶段就失败，把"算法缺失"的真实缺口盖住了。已修正层级。
 - 按 `src/CHANGELOG.md` 记录的既有语义重建两个上传快照缺失的函数：`_is_drawing_artifact_loop()`（闭环最大边 ≤2 mm 且面积 ≤0.6 mm² 判为标注残留）与 `convert_border_hole_to_notch()`（贴边矩形槽孔转外轮廓缺口，三边直角、≤0.75 mm 细缝先拉到板边、搭边 <80% 保持为孔、口部 clamp 在边端点内）。
 - 接线三处：孔列表装配跳过标注残留并写 warning；`apply_rectangular_relief_expansion()` 先转缺口再考虑板内扩槽并删除该孔；`ensure_intersection_reliefs()` 在交汇点距板边 ≤2 mm 时从板边开缺口，找不到可贴直角边才退回板内孔。
-- `test_spur_segments.py`（5 项）与 `test_border_relief_notch.py`（9 项）全部通过，已移入 `tests/` 计入回归；全量由 448/441 变为 **462/455**，pending 由 36 项降为 **22 项**。
+- `test_spur_segments.py`（5 项）与 `test_border_relief_notch.py`（9 项）全部通过，已移入 `tests/` 计入回归；pending 由 36 项降为 **22 项**。
+- 另加 `tests/test_border_notch_reconstruction.py` 11 项守护测试，钉住重建时自行决定的边界：顺/逆时针外环、口部 clamp、角部孔按“贴合更长的边”落槽、60×60 大贴边开口不转缺口、交汇点距板边 >2 mm 仍走板内孔、负 `grow` 拒绝、标注残留判定的开环/细长/微小圆边界。全量因此为 **473 ran / 466 passed / 0 failures / 0 errors / 7 skipped**。
 - 未做：`test_turned_part.py` 22 项需要 `cad_analyzer.DrawingDimension`、`DrawingAnalysis.dimensions`（当前不读 DIMENSION 实体）与 `turned_part._axial_lengths` / `_radius_ladder`。属车件轨道功能开发，本轮不猜测实现，保留 pending。
 - **注意**：标注残留跳过接在生成路径的 COM 段里，离线只覆盖判定函数与扩槽/交汇接线，该跳过本身未经 SolidWorks 实机验证。
 

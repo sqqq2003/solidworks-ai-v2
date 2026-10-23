@@ -2090,7 +2090,7 @@ def convert_border_hole_to_notch(
         (bounds[2], bounds[3]),
         (bounds[0], bounds[3]),
     )
-    best: tuple[float, int, float, float, float] | None = None
+    best: tuple[tuple[float, float], int, float, float, float] | None = None
     for edge_index, start, u, normal, length in _border_edge_candidates(outer):
         across = tuple(
             (point[0] - start[0]) * normal[0] + (point[1] - start[1]) * normal[1]
@@ -2113,8 +2113,10 @@ def convert_border_hole_to_notch(
         depth = max(across) + grow
         if depth <= 1e-9:
             continue
+        # 角部孔会同时贴两条边：先比搭边比例，再比实际贴合长度（缺口开在
+        # 孔真正沿着走的那条边上），仍相同则按轮廓边顺序，保证结果确定。
         candidate = (
-            overlap / span,
+            (overlap / span, overlap),
             edge_index,
             min(along) - grow / 2.0,
             max(along) + grow / 2.0,
@@ -2124,7 +2126,7 @@ def convert_border_hole_to_notch(
             best = candidate
     if best is None:
         return None
-    _coverage, edge_index, mouth_start, mouth_end, depth = best
+    _rank, edge_index, mouth_start, mouth_end, depth = best
     notch = _cut_border_notch(outer, edge_index, mouth_start, mouth_end, depth)
     return None if notch.points == outer.points else notch
 

@@ -24,6 +24,17 @@ test_normal_reject_expands_then_flat (test_bend_hang_fallback.ReliefRetryHangTes
 test_progress_reports_each_attempt (test_bend_hang_fallback.ReliefRetryHangTests.test_progress_reports_each_attempt) ... ok
 test_second_attempt_success_reports_attempt_count (test_bend_hang_fallback.ReliefRetryHangTests.test_second_attempt_success_reports_attempt_count) ... ok
 test_timed_out_falls_back_to_flat (test_bend_hang_fallback.ReliefRetryHangTests.test_timed_out_falls_back_to_flat) ... ok
+test_long_thin_residue_is_not_an_artifact_loop (test_border_notch_reconstruction.ArtifactPredicateEdgeTests.test_long_thin_residue_is_not_an_artifact_loop) ... ok
+test_open_or_degenerate_loops_are_not_artifacts (test_border_notch_reconstruction.ArtifactPredicateEdgeTests.test_open_or_degenerate_loops_are_not_artifacts) ... ok
+test_tiny_circle_counts_as_artifact (test_border_notch_reconstruction.ArtifactPredicateEdgeTests.test_tiny_circle_counts_as_artifact) ... ok
+test_intersection_beyond_two_mm_still_adds_hole (test_border_notch_reconstruction.BorderDistanceThresholdTests.test_intersection_beyond_two_mm_still_adds_hole) ... ok
+test_negative_grow_is_refused (test_border_notch_reconstruction.BorderDistanceThresholdTests.test_negative_grow_is_refused) ... ok
+test_corner_hole_uses_longer_contact_and_clamps_mouth (test_border_notch_reconstruction.NotchClampTests.test_corner_hole_uses_longer_contact_and_clamps_mouth) ... ok
+test_single_edge_hole_is_not_clamped (test_border_notch_reconstruction.NotchClampTests.test_single_edge_hole_is_not_clamped) ... ok
+test_clockwise_outer_ring_still_cuts_inward (test_border_notch_reconstruction.NotchOrientationTests.test_clockwise_outer_ring_still_cuts_inward) ... ok
+test_notch_ring_stays_closed_and_connected (test_border_notch_reconstruction.NotchOrientationTests.test_notch_ring_stays_closed_and_connected) ... ok
+test_direct_call_still_converts_when_asked (test_border_notch_reconstruction.SizeGateTests.test_direct_call_still_converts_when_asked) ... ok
+test_large_border_opening_stays_a_hole (test_border_notch_reconstruction.SizeGateTests.test_large_border_opening_stays_a_hole) ... ok
 test_border_hole_becomes_notch (test_border_relief_notch.BorderHoleToNotchTests.test_border_hole_becomes_notch) ... ok
 test_expansion_converts_border_hole_and_drops_it (test_border_relief_notch.BorderHoleToNotchTests.test_expansion_converts_border_hole_and_drops_it) ... ok
 test_interior_hole_not_converted (test_border_relief_notch.BorderHoleToNotchTests.test_interior_hole_not_converted) ... ok
@@ -498,6 +509,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 462 tests in 10.909s
+Ran 473 tests in 10.940s
 
 OK (skipped=7)
