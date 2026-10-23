@@ -110,3 +110,15 @@ K 对照时对 profile 209 分别加 --k-factor 0.25 / 0.5，输出必须是两�
 p248 的 done 事件新增 bend_attempts，逐轮包含 attempt、relief_step、请求累计 relief_extra_mm、status、failed_bend_indices、completed_bend_count、错误类型；成功轮还报告 relief_slot_count。原槽/+1.0/+1.5mm 的请求记录不能替代实际槽几何变化证据。全部失败仍为 degraded/exit3；原生发布管线拒绝通过，并在 failure JSON 中保留 generation/bend_attempts。当前没有真实矩形内孔释放槽样本，保持未验收，不用模拟补上实机结论。
 
 同步时需要同一提交的 src/sw_owned_launch.py、sw_session.py、solidworks_generator.py、sw_tool_cli.py 及所用管线模块，避免混用旧归属函数。不自动覆盖 D 盘客户程序。正式复测需提供 owned-session.json、session 事件和 p248 每轮日志；在此之前独占会话及释放槽实机验收仍 pending。
+
+
+
+## p248 固定板面漂移修复（待 Windows 复测）
+
+只读复现当时的 DXF：原选择器按短折弯标记的有限端点距离排名，四折弯优先落在翼板；106/107 先折后，108/109 的前两候选又落在已折起的翼板。单条重试还会切换到别的板面。这个可重复的代码缺陷与“槽扩大过但仍失败”同时存在，不能据此认定 p248 的机械根因已全部解决。
+
+现在按完整折弯轴划分固定板面区域、排除孔，并将同一锚点传给全部分组与逐条重试；显式锚点不能在孔内或折弯轴上。扩槽幅度和最大重试次数保持原值，没有自动增加切口。Synthetic 回归不包含客户 CAD 几何。
+
+Gork 复测请使用当前提交的完整源码，在独立 C 盘工作副本中运行；不覆盖 D 盘程序，不使用 P0_RETEST_ATTACH。先通过 work/probe_owned_solidworks.py --sw-exe 的独占证明，再使用现有 sw_tool_cli 的 --sw-exe、--profile 248、t=2.5/R=1/90 度，输出到新的空目录。必须记录 `Fixed panel pinned for all bend groups`、每次原生折弯的 pick、bend_attempts、4/4 实际完成数、重建、关闭保存重开和展开验证。
+
+若仍为 2/4，不再把“改动=1”作为释放充分证据：需要失败原生特征错误以及实际槽与失败折弯的对应关系，再区分选择/折弯顺序和槽深不足。flat fallback 仍为 degraded；不得发实机通过。Windows 离线回归建议 `python -X utf8 work/run_cloud_tests.py`，避免系统默认 GBK 误读已有 UTF-8 方程 fixture。

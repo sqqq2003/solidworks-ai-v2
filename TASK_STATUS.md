@@ -114,3 +114,13 @@
 - p248 新增结构化 bend_attempts（级别/请求加深/失败索引/实际完成数），native 发布失败 JSON 保留 generation 以便联调，仍不把加深请求当成实际几何验证。
 - 新增 8 项模拟会话测试；`python work/run_cloud_tests.py`：351 ran / 347 passed / 4 skipped / 0 failures / 0 errors，跨进程锁通过。36 pending_features 未计通过。Linux 没有启动真实 SW。
 - 下一步：Gork 使用无 shim 的 --sw-exe 探针核对 PID/句柄/清单，再复测 p248。Windows 启动注册行为、独占证明与释放槽实机结果仍 pending。操作说明见 docs/p0-sheet-metal.md。
+
+
+
+## P0-CODEX-004：p248 固定板面漂移
+
+- 基线 e6a6c743fc5c9be3813a31e67923941c60d3379a；保留 Gork partial_deepened_then_flat 原始证据。
+- 只读原 DXF 与日志确认：短标记端点距离排名导致 108/109 在 106/107 折起后选中已移动翼板；每组/逐条还重新选择固定区域。中间孔也未被默认选择器排除。
+- 修复按完整折弯轴选择同一区域、排除孔、整轮分组/逐条固定同一锚点。未增大释放槽、未改变 t/R/角度或放松会话所有权。
+- 新增 5 项 synthetic 回归；修复前有明确短标记候选落在翼板的失败，修复后针对性 19 项通过。本机 `python -X utf8 work/run_cloud_tests.py`：356 ran / 351 passed / 5 skipped / 0 failures/errors；跨进程锁通过。Windows 多出的跳过是 Linux 平台拒绝测试。
+- 原始实机 108/109 尚未复测通过；这是已验证代码缺陷的修复，不是宣称全部机械根因或 p248 实机已解决。Gork 现有任务 xi3wwg 负责同一工作副本的后续闭环，完整步骤见 docs/p0-sheet-metal.md。

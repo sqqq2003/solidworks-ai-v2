@@ -2790,57 +2790,75 @@ def _fixed_face_pick_candidates(
     outer_profile: Primitive,
     bends: tuple[Primitive, ...],
     preferred: tuple[float, float] | None = None,
+    *,
+    holes: tuple[Primitive, ...] = (),
 ) -> list[tuple[float, float]]:
-    """多个固定面候选：中间不动区、折弯线两侧、包围盒内缩点。
+    """Select material in one fixed-panel cell, never by short-mark endpoints.
 
-    SolidWorks 草图折弯要求点选「折弯后不动」的那一侧；点错侧或点到折弯线上
-    都会直接拒绝，所以要比单一中心点多试几个区域。
+    Bend marks are finite annotations, but a moving panel is separated by the
+    entire bend axis. A point beyond a short mark can already be on a flange
+    folded by a previous group. Rank the common central cell using full axes
+    and exclude cutouts. An explicit anchor is authoritative, not a seed for
+    silently trying a different panel.
     """
-
     min_x, min_y, max_x, max_y = primitive_bounds(outer_profile)
-    scored: list[tuple[float, tuple[float, float]]] = []
-    samples = 13
-    for ix in range(samples):
-        for iy in range(samples):
-            point = (
-                min_x + (max_x - min_x) * (ix + 0.5) / samples,
-                min_y + (max_y - min_y) * (iy + 0.5) / samples,
-            )
-            if not _point_in_profile(point, outer_profile):
+    axes = []
+    for bend in bends:
+        start, end = bend.points[0], bend.points[-1]
+        dx, dy = end[0] - start[0], end[1] - start[1]
+        length = math.hypot(dx, dy)
+        if length <= 1e-9:
+            raise ValueError("fixed-panel selection received a zero-length bend")
+        axes.append((start, -dy / length, dx / length))
+
+    def signed(point, axis):
+        start, nx, ny = axis
+        return (point[0] - start[0]) * nx + (point[1] - start[1]) * ny
+
+    def material(point):
+        return (_point_in_profile(point, outer_profile)
+                and not any(_point_in_profile(point, hole) for hole in holes))
+
+    if preferred is not None:
+        if (not all(math.isfinite(value) for value in preferred)
+                or not material(preferred)
+                or any(abs(signed(preferred, axis)) <= 1e-6 for axis in axes)):
+            raise ValueError("fixed-panel anchor must be material outside holes and bend axes")
+        return [preferred]
+
+    reference = ((min_x + max_x) / 2, (min_y + max_y) / 2)
+    reference_sides = [signed(reference, axis) for axis in axes]
+    boundary_profiles = (outer_profile,) + tuple(holes)
+    boundaries = []
+    for profile in boundary_profiles:
+        ring = _profile_ring_points(profile)
+        boundaries.extend(zip(ring, ring[1:] + ring[:1]))
+    scored = []
+    central = []
+    for ix in range(13):
+        for iy in range(13):
+            point = (min_x + (max_x - min_x) * (ix + 0.5) / 13,
+                     min_y + (max_y - min_y) * (iy + 0.5) / 13)
+            if not material(point):
                 continue
-            if not bends:
-                score = 0.0
-            else:
-                score = min(
-                    _distance_point_to_segment(point, bend.points[0], bend.points[-1])
-                    for bend in bends
-                )
-            # 丢掉几乎压在折弯线上的点（API 会当固定面无效）。
-            if bends and score < max(0.15, (max_x - min_x + max_y - min_y) * 0.01):
+            distances = [abs(signed(point, axis)) for axis in axes]
+            if distances and min(distances) < max(0.15, (max_x-min_x+max_y-min_y)*0.01):
                 continue
-            scored.append((score, point))
-    scored.sort(key=lambda item: item[0], reverse=True)
+            distances += [_distance_point_to_segment(point, start, end)
+                          for start, end in boundaries]
+            score = min(distances) if distances else 0.0
+            row = (score, -math.dist(point, reference), point)
+            scored.append(row)
+            if all(abs(side) <= 1e-7 or signed(point, axis) * side > 0
+                   for side, axis in zip(reference_sides, axes)):
+                central.append(row)
+    # For nonconvex profiles the bbox centre can lie outside material. Use an
+    # actual material sample then pin it for the complete folding sequence.
+    ranked = sorted(central or scored, reverse=True)
+    if not ranked:
+        raise ValueError("no fixed-panel material point could be verified")
+    return [row[2] for row in ranked[:8]]
 
-    candidates: list[tuple[float, float]] = []
-    if preferred is not None and _point_in_profile(preferred, outer_profile):
-        candidates.append(preferred)
-
-    def _append_unique(point: tuple[float, float]) -> None:
-        for existing in candidates:
-            if math.dist(existing, point) <= 1e-6:
-                return
-        candidates.append(point)
-
-    # 按远离折弯线的分数取前几个；再补「局部最大」分散到不同隔间。
-    for _, point in scored[:8]:
-        _append_unique(point)
-    # 平行折弯时，隔间中心往往比全局最远点更稳（例如 U 型中间底板）。
-    for _, point in _region_seed_points(outer_profile, bends):
-        if _point_in_profile(point, outer_profile):
-            _append_unique(point)
-    if not candidates:
-        _append_unique(((min_x + max_x) / 2.0, (min_y + max_y) / 2.0))
-    return candidates
 
 
 def _region_seed_points(
@@ -3502,11 +3520,19 @@ def _create_bends_with_fallbacks(
     relief_step: int,
     bend_allowance: BendAllowanceSpec | None,
     outer_profile: Primitive,
+    *,
+    hole_profiles: tuple[Primitive, ...] = (),
 ) -> int:
     """自动折弯总调度：先全部同草图，再平行分组，最后逐条（仍在当前最大平面上）。"""
 
     if not bend_indices:
         return 0
+
+    fixed_face_point = _fixed_face_pick_candidates(
+        outer_profile, tuple(analysis.bend_lines[i] for i in bend_indices),
+        preferred=fixed_face_point, holes=hole_profiles)[0]
+    logger.info("Fixed panel pinned for all bend groups: xy=%s bends=%s",
+                fixed_face_point, tuple(i + 1 for i in bend_indices))
 
     global _auto_bend_deadline
     _auto_bend_deadline = time.monotonic() + AUTO_BEND_WALL_TIMEOUT_SEC
@@ -4787,6 +4813,7 @@ def generate_sheet_metal(
                 relief_step,
                 bend_allowance,
                 profile,
+                hole_profiles=tuple(hole for hole, _ in hole_profiles),
             )
             auto_bent = completed_bends == len(selected_bends)
 
@@ -5912,4 +5939,5 @@ def generate_roller_part(
         finally:
             if com_initialized:
                 pythoncom.CoUninitialize()
+
 

@@ -35,6 +35,7 @@ def _run(bend_indices, failing_groups, failing_single, all_ok=False):
         return None
 
     with (
+        patch("solidworks_generator._fixed_face_pick_candidates", return_value=[(0.0, 0.0)]),
         patch(
             "solidworks_generator._partition_bend_groups",
             return_value=[list(chunk) for chunk in _chunks(bend_indices)],
@@ -100,4 +101,5 @@ class PartialBendCountTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 
