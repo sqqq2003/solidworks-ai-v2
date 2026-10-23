@@ -1,0 +1,178 @@
+{
+  "issue": 5,
+  "check": "k_factor_fix_after_patch",
+  "generated_at": "2026-10-23T15:02:37+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": "DDD",
+  "profile": 209,
+  "source_dwg_work": "D:\\工程\\钣金导入\\临时\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+  "source_mother_untouched": true,
+  "cli_exposes_k": true,
+  "cli_note": "sw_tool_cli.py now has --k-factor (optional float 0..1)",
+  "default_k_in_generator": 0.44,
+  "patched": true,
+  "patch_note": "wired CreateCustomBendAllowance into BaseFlange+3dBend; CLI --k-factor",
+  "method": "analyze work DWG once; generate twice with K=0.5 and K=0.25; ExportFlatPatternView; compare DXF bbox",
+  "prior_post_edit_attempt": {
+    "note": "Earlier post-edit via _apply_sheet_metal_bend_allowance on existing p209 left K reading ~0.31 (not stuck); switched to regen-with-spec"
+  },
+  "variants": [
+    {
+      "k_target": 0.5,
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p5.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p5_unfold.DXF",
+      "spec_mode": "k_factor",
+      "spec_sw_type": 2,
+      "generate_ok": true,
+      "generate_path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p5.SLDPRT",
+      "generate_ms": 7468,
+      "generate_notes": "",
+      "open_ok": true,
+      "title": "01x1_2.5mm_p209_k0p5.SLDPRT",
+      "rebuild_ok": true,
+      "k_features": [
+        {
+          "name": "钣金6",
+          "type": "SheetMetal",
+          "k": 0.5,
+          "bend_type": 2,
+          "ok": true
+        }
+      ],
+      "bend_type_read": 2,
+      "k_read": 0.5,
+      "k_match": true,
+      "unfold": {
+        "ok": true,
+        "bytes": 24554,
+        "path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p5_unfold.DXF"
+      },
+      "dxf_extents": {
+        "ok": true,
+        "xmin": -75.8021458677,
+        "xmax": 355.2021458677,
+        "ymin": 47.9500013411,
+        "ymax": 167.9499986589,
+        "width_mm": 431.0042917354,
+        "height_mm": 119.9999973178,
+        "max_extent_mm": 431.0042917354,
+        "sum_line_len_mm": 1071.0344658436998,
+        "n_points": 18
+      },
+      "theoretical": {
+        "ba_mm": 3.5342917352885173,
+        "bd_mm": 3.465708264711482
+      },
+      "part_bytes": 126828,
+      "status": "ok"
+    },
+    {
+      "k_target": 0.25,
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p25.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p25_unfold.DXF",
+      "spec_mode": "k_factor",
+      "spec_sw_type": 2,
+      "generate_ok": true,
+      "generate_path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p25.SLDPRT",
+      "generate_ms": 7357,
+      "generate_notes": "",
+      "open_ok": true,
+      "title": "01x1_2.5mm_p209_k0p25.SLDPRT",
+      "rebuild_ok": true,
+      "k_features": [
+        {
+          "name": "钣金6",
+          "type": "SheetMetal",
+          "k": 0.25,
+          "bend_type": 2,
+          "ok": true
+        }
+      ],
+      "bend_type_read": 2,
+      "k_read": 0.25,
+      "k_match": true,
+      "unfold": {
+        "ok": true,
+        "bytes": 24555,
+        "path": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\01x1_2.5mm_p209_k0p25_unfold.DXF"
+      },
+      "dxf_extents": {
+        "ok": true,
+        "xmin": -75.8021458677,
+        "xmax": 355.2021458677,
+        "ymin": 47.9500013411,
+        "ymax": 167.9499986589,
+        "width_mm": 431.0042917354,
+        "height_mm": 119.9999973178,
+        "max_extent_mm": 431.0042917354,
+        "sum_line_len_mm": 1071.0344658436998,
+        "n_points": 18
+      },
+      "theoretical": {
+        "ba_mm": 2.552544031041707,
+        "bd_mm": 4.447455968958292
+      },
+      "part_bytes": 125951,
+      "status": "ok"
+    }
+  ],
+  "status": "still_blocked",
+  "theoretical_delta_ba_mm": 0.9817477042468101,
+  "profile_index_0based": 208,
+  "bend_count": 1,
+  "bend_indices_0based": [
+    30
+  ],
+  "summary": "status=still_blocked (k_sticks_but_unfold_unchanged). Before K read=0.31/0.31; after=0.5/0.25. Unfold max-extent delta=0.000 mm (theory≈0.982). Direct-BA control also delta=0.",
+  "compare": {
+    "possible": true,
+    "width_k0p5_mm": 431.0042917354,
+    "width_k0p25_mm": 431.0042917354,
+    "height_k0p5_mm": 119.9999973178,
+    "height_k0p25_mm": 119.9999973178,
+    "delta_width_mm": 0.0,
+    "delta_height_mm": 0.0,
+    "delta_max_extent_mm": 0.0,
+    "abs_delta_max_extent_mm": 0.0,
+    "theoretical_delta_ba_mm": 0.9817477042468101,
+    "k0p5_read": 0.5,
+    "k0p25_read": 0.25,
+    "k0p5_match": true,
+    "k0p25_match": true,
+    "changed": false,
+    "k_match_both": true
+  },
+  "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+  "patched_files": [
+    "D:\\工程\\钣金导入\\程序\\solidworks_generator.py",
+    "D:\\工程\\钣金导入\\程序\\sw_tool_cli.py"
+  ],
+  "backup_dir_glob": "D:\\工程\\钣金导入\\备份\\p0_kfix_*",
+  "patch_summary": [
+    "_try_insert_base_flange: CreateCustomBendAllowance passed as CustomBendAllowance (10th arg); variant with mirrored type/K numeric slots",
+    "_create_bend_feature: allowance_candidates=(custom_bend, None) instead of (None,)",
+    "threaded bend_allowance into CAD-import + sketch BaseFlange paths",
+    "CLI --k-factor optional float -> BendAllowanceSpec(mode=k_factor)"
+  ],
+  "before_after": {
+    "before_k_read_both": 0.31,
+    "after_k_read_0p5": 0.5,
+    "after_k_read_0p25": 0.25,
+    "k_stick": true,
+    "sm3dbend_also_sticks": true,
+    "before_unfold_delta_mm": 0.0,
+    "after_unfold_delta_mm": 0.0
+  },
+  "direct_ba_variant": {
+    "note": "Also tried BendAllowanceSpec(mode=bend_allowance) BA=10mm vs 1mm; CBA sticks (type=3, BA_mm correct on SheetMetal+SM3dBend) but unfold bbox still identical",
+    "delta_max_extent_mm": 0.0,
+    "evidence": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor_fix\\accept_ba_direct_variant.json"
+  },
+  "status_detail": "k_sticks_but_unfold_unchanged",
+  "honest_verdict": "K-factor wiring FIXED: CreateCustomBendAllowance now applied at BaseFlange/3dBend create-time; K readback matches request (0.5 / 0.25) on both SheetMetal and SM3dBend (was stuck at 0.31). CLI --k-factor added. HOWEVER ExportFlatPatternView DXF bbox still delta=0.0 mm for K 0.5 vs 0.25 (theory BA Δ≈0.982 mm), AND also for direct BA 10 vs 1 mm. So unfold-length acceptance remains blocked — root cause shifted from 'K never sticks' to 'flat pattern export/geometry ignores CBA for sketched-bend path on this SW build'.",
+  "next_fix_hint": [
+    "Investigate why IPartDoc.ExportFlatPatternView ignores CBA for SM3dBend parts (option flags? recreate FlatPattern after CBA?)",
+    "Try measuring flat length via FlatPatternFeatureData / bounding box of unsuppressed flat body instead of DXF",
+    "Check SW Rev 33.x sketched-bend + CustomBendAllowance known issues"
+  ]
+}
