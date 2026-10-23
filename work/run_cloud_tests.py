@@ -8,6 +8,15 @@ import subprocess
 import sys
 import unittest
 
+
+def _relative_executable() -> str:
+    exe = Path(sys.executable).resolve()
+    root = Path(__file__).resolve().parents[1].resolve()
+    try:
+        return f"<repo>/{exe.relative_to(root).as_posix()}"
+    except ValueError:
+        return str(exe)
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 os.chdir(ROOT)
@@ -35,6 +44,7 @@ try:
 except Exception as exc:  # reported, not hidden
     a01_parametric = {"status": "failed", "error": str(exc), "sw_live": "not_applicable_on_linux"}
 report = dict(scope='portable_simulation_only', platform=platform.system(), python=platform.python_version(),
+              python_executable=_relative_executable(),
               tests_run=result.testsRun, passed=result.testsRun-len(result.errors)-len(result.failures)-len(result.skipped),
               failures=len(result.failures), errors=len(result.errors), skipped=[dict(test=str(test), reason=reason) for test, reason in result.skipped],
               pending_feature_cases=pending, cross_process_lock_passed=probe.returncode == 0,

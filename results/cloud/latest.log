@@ -496,6 +496,6 @@ AssertionError: 1 != 2 : {"status": "failed", "error": "Live writes require conf
 
 
 ----------------------------------------------------------------------
-Ran 450 tests in 13.695s
+Ran 450 tests in 9.203s
 
 FAILED (failures=1, skipped=6)

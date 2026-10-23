@@ -17,6 +17,16 @@ ROOT = Path(__file__).resolve().parents[1]
 MODES = {'sheet','roller','turned'}
 
 
+def _relative_executable() -> str:
+    """Return a portable reference to sys.executable when it lives under ROOT."""
+    exe = Path(sys.executable).resolve()
+    try:
+        rel = exe.relative_to(ROOT.resolve())
+        return f"<repo>/{rel.as_posix()}"
+    except ValueError:
+        return str(exe)
+
+
 def capabilities():
     return {'project':'SolidWorks AI V2', 'scope':'whole_project',
         'modules':[
@@ -38,7 +48,7 @@ def doctor():
         except (ValueError,ModuleNotFoundError):
             return False
     return {'platform':platform.system(),'python':platform.python_version(),
-        'python_executable':sys.executable,'ezdxf_available':available('ezdxf'),
+        'python_executable':_relative_executable(),'ezdxf_available':available('ezdxf'),
         'tkinter_available':available('tkinter'),
         'pywin32_available':available('pythoncom'),
         'sw_started':False,'cad_executed':False,'desktop_display_tested':False,
