@@ -3,9 +3,9 @@
   "platform": "Windows",
   "python": "3.13.14",
   "python_executable": "<repo>/.venv/Scripts/python.exe",
-  "tests_run": 450,
-  "passed": 443,
-  "failures": 1,
+  "tests_run": 501,
+  "passed": 495,
+  "failures": 0,
   "errors": 0,
   "skipped": [
     {

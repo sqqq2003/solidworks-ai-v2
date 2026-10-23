@@ -2,7 +2,7 @@ test_drawing_skeleton_writes_no_files (test_a01_next_track.NextTrackTests.test_d
 test_mate_check_stays_unsolved (test_a01_next_track.NextTrackTests.test_mate_check_stays_unsolved) ... ok
 test_sheet_metal_hook_delegates_without_a_second_generator (test_a01_next_track.NextTrackTests.test_sheet_metal_hook_delegates_without_a_second_generator) ... ok
 test_dry_run_cli_emits_plan (test_a01_parametric.CliTests.test_dry_run_cli_emits_plan) ... ok
-test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com) ... FAIL
+test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com) ... ok
 test_cycle_is_rejected (test_a01_parametric.SolverTests.test_cycle_is_rejected) ... ok
 test_default_envelope_keeps_unconfirmed_measured_empty (test_a01_parametric.SolverTests.test_default_envelope_keeps_unconfirmed_measured_empty) ... ok
 test_dependency_order_follows_frame_conveyor_drive_mount (test_a01_parametric.SolverTests.test_dependency_order_follows_frame_conveyor_drive_mount) ... ok
@@ -128,6 +128,12 @@ test_wall_thickness_is_kept_separate_from_sheet_thickness (test_drawing_notes.Hi
 滚筒图的「臂厚」是筒身壁厚，不能当成钣金板厚。 ... ok
 test_material_thickness_forms (test_drawing_notes.MaterialThicknessTests.test_material_thickness_forms) ... ok
 test_each_column_follows_its_own_banner (test_drawing_notes.ZoneBannerTests.test_each_column_follows_its_own_banner) ... ok
+test_allocation_is_monotonic_and_persisted (test_drawing_numbers.DrawingNumberTests.test_allocation_is_monotonic_and_persisted) ... ok
+test_attach_drawing_refs_fills_bom_items (test_drawing_numbers.DrawingNumberTests.test_attach_drawing_refs_fills_bom_items) ... ok
+test_custom_scheme (test_drawing_numbers.DrawingNumberTests.test_custom_scheme) ... ok
+test_first_allocation_starts_at_one (test_drawing_numbers.DrawingNumberTests.test_first_allocation_starts_at_one) ... ok
+test_issued_number_is_never_reused_for_another_part (test_drawing_numbers.DrawingNumberTests.test_issued_number_is_never_reused_for_another_part) ... ok
+test_same_part_is_idempotent (test_drawing_numbers.DrawingNumberTests.test_same_part_is_idempotent) ... ok
 test_complete_synthetic_parameter_metadata (test_engineering_controls.EngineeringControlTests.test_complete_synthetic_parameter_metadata) ... ok
 test_encoded_token_without_resolution_evidence_is_refused (test_engineering_controls.EngineeringControlTests.test_encoded_token_without_resolution_evidence_is_refused) ... ok
 test_face_name_and_coordinates_are_not_a_persistent_reference (test_engineering_controls.EngineeringControlTests.test_face_name_and_coordinates_are_not_a_persistent_reference) ... ok
@@ -167,6 +173,29 @@ test_writes_records_to_file_and_reuses_configuration (test_logging_setup.Configu
 test_falls_back_to_appdata_when_local_app_data_missing (test_logging_setup.LogPathTests.test_falls_back_to_appdata_when_local_app_data_missing) ... ok
 test_falls_back_without_windows_variables (test_logging_setup.LogPathTests.test_falls_back_without_windows_variables) ... ok
 test_log_path_follows_local_app_data (test_logging_setup.LogPathTests.test_log_path_follows_local_app_data) ... ok
+test_duplicate_ids_rejected (test_machine_registry.RegistryTests.test_duplicate_ids_rejected) ... ok
+test_missing_spec_file_rejected (test_machine_registry.RegistryTests.test_missing_spec_file_rejected) ... ok
+test_ql5050px_spec_stays_independent_of_a01 (test_machine_registry.RegistryTests.test_ql5050px_spec_stays_independent_of_a01) ... ok
+test_registry_entries_expose_no_dimension_values (test_machine_registry.RegistryTests.test_registry_entries_expose_no_dimension_values) ... ok
+test_registry_lists_both_machines (test_machine_registry.RegistryTests.test_registry_lists_both_machines) ... ok
+test_resolve_spec_paths_exist (test_machine_registry.RegistryTests.test_resolve_spec_paths_exist) ... ok
+test_unknown_machine_id_is_rejected (test_machine_registry.RegistryTests.test_unknown_machine_id_is_rejected) ... ok
+test_clean_group_has_no_issues (test_mate_chain.MateChainTests.test_clean_group_has_no_issues) ... ok
+test_duplicate_group_id_is_refused (test_mate_chain.MateChainTests.test_duplicate_group_id_is_refused) ... ok
+test_empty_assembly_is_refused (test_mate_chain.MateChainTests.test_empty_assembly_is_refused) ... ok
+test_fastener_hole_mismatch_is_flagged (test_mate_chain.MateChainTests.test_fastener_hole_mismatch_is_flagged) ... ok
+test_grounded_component_must_exist (test_mate_chain.MateChainTests.test_grounded_component_must_exist) ... ok
+test_isolated_component_is_flagged (test_mate_chain.MateChainTests.test_isolated_component_is_flagged) ... ok
+test_mate_referencing_unknown_component_is_refused (test_mate_chain.MateChainTests.test_mate_referencing_unknown_component_is_refused) ... ok
+test_unknown_mate_type_is_refused_at_build_time (test_mate_chain.MateChainTests.test_unknown_mate_type_is_refused_at_build_time) ... ok
+test_unmodeled_mate_type_is_flagged_not_crashed (test_mate_chain.MateChainTests.test_unmodeled_mate_type_is_flagged_not_crashed) ... ok
+test_confirmed_density_resolves_with_source (test_material_data.MaterialDataTests.test_confirmed_density_resolves_with_source) ... ok
+test_confirmed_k_row_resolves (test_material_data.MaterialDataTests.test_confirmed_k_row_resolves) ... ok
+test_example_row_is_refused (test_material_data.MaterialDataTests.test_example_row_is_refused) ... ok
+test_k_factor_lookup_is_unresolved_without_default (test_material_data.MaterialDataTests.test_k_factor_lookup_is_unresolved_without_default) ... ok
+test_k_factor_rejects_nonpositive_thickness (test_material_data.MaterialDataTests.test_k_factor_rejects_nonpositive_thickness) ... ok
+test_k_factor_table_has_no_production_rows (test_material_data.MaterialDataTests.test_k_factor_table_has_no_production_rows) ... ok
+test_unknown_material_is_unresolved (test_material_data.MaterialDataTests.test_unknown_material_is_unresolved) ... ok
 test_allowance_units_bd_ba_and_missing_factory (test_p0_gork_regressions.GorkRegressions.test_allowance_units_bd_ba_and_missing_factory) ... ok
 test_custom_allowance_typed_before_property_writes (test_p0_gork_regressions.GorkRegressions.test_custom_allowance_typed_before_property_writes) ... ok
 test_existing_cli_k_flag_reaches_generator_and_success_gate (test_p0_gork_regressions.GorkRegressions.test_existing_cli_k_flag_reaches_generator_and_success_gate) ... ok
@@ -280,6 +309,14 @@ test_illegal_characters_are_replaced (test_roller_spec.VariantFilenameTests.test
 test_name_carries_key_dimensions (test_roller_spec.VariantFilenameTests.test_name_carries_key_dimensions) ... ok
 test_unknown_dimensions_do_not_crash (test_roller_spec.VariantFilenameTests.test_unknown_dimensions_do_not_crash) ... ok
 test_label_mentions_type_and_size (test_roller_spec.VariantLabelTests.test_label_mentions_type_and_size) ... ok
+test_bom_report_matches_schema (test_schema_validate.SchemaValidatorTests.test_bom_report_matches_schema) ... ok
+test_controlled_execution_mock_matches_schema (test_schema_validate.SchemaValidatorTests.test_controlled_execution_mock_matches_schema) ... ok
+test_named_schema_missing_is_reported (test_schema_validate.SchemaValidatorTests.test_named_schema_missing_is_reported) ... ok
+test_unfold_chain_output_matches_schema (test_schema_validate.SchemaValidatorTests.test_unfold_chain_output_matches_schema) ... ok
+test_unfold_plan_output_matches_schema (test_schema_validate.SchemaValidatorTests.test_unfold_plan_output_matches_schema) ... ok
+test_validator_accepts_type_union (test_schema_validate.SchemaValidatorTests.test_validator_accepts_type_union) ... ok
+test_validator_catches_const_violation (test_schema_validate.SchemaValidatorTests.test_validator_catches_const_violation) ... ok
+test_validator_catches_missing_required (test_schema_validate.SchemaValidatorTests.test_validator_catches_missing_required) ... ok
 test_bend_layer_red_solid_is_detected (test_sheet_metal.BendDetectionDxFTests.test_bend_layer_red_solid_is_detected) ... ok
 test_near_closed_polyline_becomes_profile (test_sheet_metal.BendDetectionDxFTests.test_near_closed_polyline_becomes_profile) ... ok
 test_dangling_stub_does_not_block_contour (test_sheet_metal.ContourJoinTests.test_dangling_stub_does_not_block_contour) ... ok
@@ -364,6 +401,14 @@ test_recovery_failure_is_explicit (test_sheet_metal_pipeline.PipelineTests.test_
 test_source_geometry_and_plan_edits_invalidate (test_sheet_metal_pipeline.PipelineTests.test_source_geometry_and_plan_edits_invalidate) ... ok
 test_import_is_lazy_and_linux_execution_refused (test_sheet_metal_pipeline.WindowsBridgeContractTests.test_import_is_lazy_and_linux_execution_refused) ... ok
 test_native_reopen_reads_definition_and_closes_owned_document (test_sheet_metal_pipeline.WindowsBridgeContractTests.test_native_reopen_reads_definition_and_closes_owned_document) ... ok
+test_invalid_quantity_rejected (test_sheetmetal_estimate.EstimateTests.test_invalid_quantity_rejected) ... ok
+test_job_report_is_estimate_only_and_declares_assumptions (test_sheetmetal_estimate.EstimateTests.test_job_report_is_estimate_only_and_declares_assumptions) ... ok
+test_job_without_density_keeps_mass_unresolved (test_sheetmetal_estimate.EstimateTests.test_job_without_density_keeps_mass_unresolved) ... ok
+test_labor_scales_with_bends_and_quantity (test_sheetmetal_estimate.EstimateTests.test_labor_scales_with_bends_and_quantity) ... ok
+test_material_estimate_matches_hand_computation (test_sheetmetal_estimate.EstimateTests.test_material_estimate_matches_hand_computation) ... ok
+test_material_estimate_unresolved_without_density (test_sheetmetal_estimate.EstimateTests.test_material_estimate_unresolved_without_density) ... ok
+test_plan_geometry_accepts_chain_shape (test_sheetmetal_estimate.EstimateTests.test_plan_geometry_accepts_chain_shape) ... ok
+test_plan_geometry_accepts_single_plan_shape (test_sheetmetal_estimate.EstimateTests.test_plan_geometry_accepts_single_plan_shape) ... ok
 test_request_describes_existing_generator_without_calling_it (test_sheetmetal_unfold.GenerationRequestTests.test_request_describes_existing_generator_without_calling_it) ... ok
 test_request_records_analysis_supplier (test_sheetmetal_unfold.GenerationRequestTests.test_request_records_analysis_supplier) ... ok
 test_k_factor_options_come_from_bend_allowance (test_sheetmetal_unfold.ReliefPlanTests.test_k_factor_options_come_from_bend_allowance) ... ok
@@ -456,6 +501,12 @@ test_schema_rejects_duplicates_and_incomplete_confirmation (test_sw_transaction.
 test_single_writer_and_existing_output (test_sw_transaction.TransactionTests.test_single_writer_and_existing_output) ... ok
 test_unknown_protected_and_pending_mappings (test_sw_transaction.TransactionTests.test_unknown_protected_and_pending_mappings) ... ok
 test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux) ... skipped 'Linux refusal test'
+test_doctor_command_reports_no_cad (test_swctl.SwctlTests.test_doctor_command_reports_no_cad) ... ok
+test_machines_command_lists_registry (test_swctl.SwctlTests.test_machines_command_lists_registry) ... ok
+test_missing_file_is_reported_as_json_error (test_swctl.SwctlTests.test_missing_file_is_reported_as_json_error) ... ok
+test_numbers_command_allocates_and_persists (test_swctl.SwctlTests.test_numbers_command_allocates_and_persists) ... ok
+test_precheck_command_reads_group_file (test_swctl.SwctlTests.test_precheck_command_reads_group_file) ... ok
+test_unfold_command_emits_plan (test_swctl.SwctlTests.test_unfold_command_emits_plan) ... ok
 test_load_accepts_utf8_bom (test_user_settings.UserSettingsTests.test_load_accepts_utf8_bom)
 记事本 / PowerShell 写出的 JSON 带 BOM，必须照样能读。 ... ok
 test_load_ignores_non_dict_payload (test_user_settings.UserSettingsTests.test_load_ignores_non_dict_payload) ... ok
@@ -485,17 +536,7 @@ test_disconnected_session_cannot_exit (test_review_session_boundaries.SessionBou
 test_lease_cannot_exit_different_application (test_review_session_boundaries.SessionBoundaryReview.test_lease_cannot_exit_different_application) ... ok
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
-======================================================================
-FAIL: test_live_flag_is_refused_without_com (test_a01_parametric.CliTests.test_live_flag_is_refused_without_com)
 ----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "C:\sw-ai-v2-work\tests\test_a01_parametric.py", line 179, in test_live_flag_is_refused_without_com
-    self.assertEqual(completed.returncode, 2, completed.stdout)
-    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: 1 != 2 : {"status": "failed", "error": "Live writes require confirmed mappings and a Windows transaction driver; legacy equation-only writes are disabled", "sw_live": "not_applicable_on_linux"}
+Ran 501 tests in 15.605s
 
-
-----------------------------------------------------------------------
-Ran 450 tests in 9.203s
-
-FAILED (failures=1, skipped=6)
+OK (skipped=6)
