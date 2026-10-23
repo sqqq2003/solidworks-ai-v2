@@ -1,0 +1,29 @@
+{
+  "task_id": "GORK-A01-005",
+  "source": "operator_report",
+  "raw_attachment_copied": false,
+  "reason": "Cloud agent uploads/ did not contain live_reshape_summary.json. This file records the operator report only.",
+  "tool": "D:\\工程\\改机工具\\apply_variant.py",
+  "exit_code": 0,
+  "target_mm": {
+    "Length": 1800,
+    "Width": 900,
+    "Height": 1500,
+    "FootHeight": 50
+  },
+  "save_as": "C:\\Users\\yue\\A01-live-work\\A01-1800x900x1500.SLDASM",
+  "mother_file_name": "GT-ZX-1300x000x750-001x1.SLDASM",
+  "mother_restored_mm": {
+    "Length": 1300,
+    "Width": 600,
+    "Height": 750
+  },
+  "rebuild_dialog": "SOLIDWORKS what-to-do dialog; operator clicked 全部忽略",
+  "mates_certified": false,
+  "interference_certified": false,
+  "motion_certified": false,
+  "pack_and_go": false,
+  "work_copy_shares_parts_with_mother": true,
+  "sw_live": "partial_envelope_rewrite_saveas_mother_restored",
+  "cad_files_committed": false
+}

@@ -58,3 +58,14 @@
 - `python work/run_cloud_tests.py`：309 ran / 305 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过；新增 11 项测试（含多阶段故障注入子测试）。跳过原因仍为 DWG/LibreDWG/原始基线文件缺失。36 pending_features 不计通过。
 - `python -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --dry-run --mapping-template runtime/a01-mapping.json` 可运行；12 项未知 OEM 映射保留，机械检查 unverified，cad_release_approved=false。
 - 等待 Gork 的真实映射及 Windows 驱动/重建/保存重开读回/失败恢复/机械检查证据。无任何 SolidWorks 实机通过声明。
+
+## GORK-A01-005
+
+- 状态：**sw_live 部分**。用户电脑（DDD）上完成包络改写、SaveAs 工作副本、母体恢复。不是配合/干涉/运动验收，也不是 Linux 云端测试的结论。
+- 母体：`GT-ZX-1300x000x750-001x1.SLDASM`（`D:\工程\滚筒工程\...\斜滚筒线-1300x000x750-方向A\装配图\`）。SW Premium 2025 SP1.2 / 33.1.2。只读 13 个方程，关闭未保存。QL-5050PX 不是这台装配。
+- 工具：`D:\工程\改机工具\apply_variant.py`。目标 Length=1800 Width=900 Height=1500 FootHeight=50。SaveAs `C:\Users\yue\A01-live-work\A01-1800x900x1500.SLDASM`。母体恢复 1300/600/750。退出码 0。
+- 重建弹出 SOLIDWORKS 对话框，操作者点了「全部忽略」。工作副本仍与母体共享零件，Pack and Go 未做。
+- 映射：DeckHeight 对应 `passline_height`（名字，unconfirmed）。Length/Width/Height 只记下方程名和操作者报告的母体恢复值。毫米级 confirmed 映射没有写入，因为云端 uploads 里没有方程正文。其余 OEM 项仍 pending。见 `results/windows/a01_parameter_mapping.json`。
+- 仍 pending：滚筒节距与数量、传动中心、链节距、齿数、轴颈、电机安装、轴承跨距、板厚、螺纹大径，以及未确认的余量。
+- 仓库不包含 SLDASM/SLDPRT。说明：`docs/a01-windows-live.md`。Issue #2 评论草稿在 `docs/github-issue-2-comment.md`，issue 不关闭。
+- Linux 复核：`python work/run_cloud_tests.py` → 309 ran / 305 passed / 0 failures / 0 errors / 4 skipped。`results/cloud/latest.json` 的 `sw_live` 仍是 `not_applicable_on_linux`。这次模拟通过不是上面的 Windows 部分实机。

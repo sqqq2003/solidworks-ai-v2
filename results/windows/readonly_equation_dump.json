@@ -1,0 +1,16 @@
+{
+  "task_id": "GORK-A01-005",
+  "source": "operator_report",
+  "raw_attachment_copied": false,
+  "reason": "Cloud agent uploads/ did not contain readonly_equation_dump.json. Equation text is omitted instead of reconstructed.",
+  "sw_product": "SOLIDWORKS Premium 2025 SP1.2",
+  "sw_revision": "33.1.2",
+  "assembly_file_name": "GT-ZX-1300x000x750-001x1.SLDASM",
+  "assembly_directory": "D:\\工程\\滚筒工程\\...\\斜滚筒线-1300x000x750-方向A\\装配图\\",
+  "path_note": "The operator wrote an ellipsis in the directory. The missing middle is not filled in.",
+  "open_mode": "read_only",
+  "equation_count": 13,
+  "closed_without_save": true,
+  "equations": null,
+  "not_the_mother": "QL-5050PX is a case sealer with DWG only, not this assembly."
+}

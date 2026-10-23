@@ -1,0 +1,390 @@
+{
+  "schema_version": 1,
+  "parameters": [
+    {
+      "parameter": "length",
+      "document": "GT-ZX-1300x000x750-001x1.SLDASM",
+      "configuration": null,
+      "feature": null,
+      "dimension": "Length",
+      "unit": "mm",
+      "depends_on": [],
+      "source": "Operator report: reshape variable Length. Mother restored to 1300 mm. Target envelope 1800 mm is a request, not a confirmed production range.",
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "unconfirmed"
+    },
+    {
+      "parameter": "width",
+      "document": "GT-ZX-1300x000x750-001x1.SLDASM",
+      "configuration": null,
+      "feature": null,
+      "dimension": "Width",
+      "unit": "mm",
+      "depends_on": [],
+      "source": "Operator report: reshape variable Width. Mother restored to 600 mm. Target envelope 900 mm is a request, not a confirmed production range.",
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "unconfirmed"
+    },
+    {
+      "parameter": "height",
+      "document": "GT-ZX-1300x000x750-001x1.SLDASM",
+      "configuration": null,
+      "feature": null,
+      "dimension": "Height",
+      "unit": "mm",
+      "depends_on": [],
+      "source": "Operator report: reshape variable Height. Mother restored to 750 mm. Target envelope 1500 mm is a request, not a confirmed production range.",
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "unconfirmed"
+    },
+    {
+      "parameter": "front_allowance",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "rear_allowance",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "left_allowance",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "right_allowance",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "top_allowance",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "bottom_allowance",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "frame_length",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "length",
+        "front_allowance",
+        "rear_allowance"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "frame_width",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "width",
+        "left_allowance",
+        "right_allowance"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "column_height",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "height",
+        "top_allowance",
+        "bottom_allowance"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "conveyor_bed_length",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "frame_length"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "conveyor_clear_width",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "frame_width"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "passline_height",
+      "document": "GT-ZX-1300x000x750-001x1.SLDASM",
+      "configuration": null,
+      "feature": null,
+      "dimension": "DeckHeight",
+      "unit": "mm",
+      "depends_on": [
+        "column_height"
+      ],
+      "source": "Operator report: mother equation name DeckHeight corresponds to passline_height. Millimeter value, configuration, feature and allowed range were not in the cloud upload, so this is not schema-confirmed.",
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "unconfirmed"
+    },
+    {
+      "parameter": "roller_pitch",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "conveyor_bed_length"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "roller_count",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "count",
+      "depends_on": [
+        "roller_pitch"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "drive_center_along_length",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "conveyor_bed_length"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "editable",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "chain_pitch",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "drive_center_along_length"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "sprocket_teeth",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "count",
+      "depends_on": [
+        "chain_pitch"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "bearing_journal",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "frame_width"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "motor_mount_x",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "drive_center_along_length",
+        "frame_length"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "motor_mount_z",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "column_height"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "bearing_mount_span",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "frame_width",
+        "bearing_journal"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "sheet_thickness",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "frame_length"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    },
+    {
+      "parameter": "thread_major_diameter",
+      "document": null,
+      "configuration": null,
+      "feature": null,
+      "dimension": null,
+      "unit": "mm",
+      "depends_on": [
+        "sheet_thickness"
+      ],
+      "source": null,
+      "allowed_range": null,
+      "component_kind": "fixed",
+      "status": "pending_mapping"
+    }
+  ],
+  "task_id": "GORK-A01-005",
+  "sw_live": "partial_envelope_rewrite_saveas_mother_restored",
+  "mates_interference_motion": "not_certified",
+  "raw_equation_dump_attached": false,
+  "note": "Name links only. No confirmed OEM millimeter values. Schema status confirmed is unused because configuration, feature, allowed range, and DeckHeight's value were not in the uploaded dump."
+}

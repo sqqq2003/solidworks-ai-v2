@@ -50,6 +50,8 @@ py -3.12 -m src.a01_parametric.cli --length 1800 --width 900 --height 1500 --liv
 
 装配配合、钣金生成和工程图导出目前只是下一轨骨架：配合检查不求解，钣金只指向已有的 `solidworks_generator.generate_sheet_metal`，绘图不写 DXF/DWG/SLDDRW。
 
+2026-10-23 用户电脑上的一次部分改型记在 `docs/a01-windows-live.md`。那次用的是 `apply_variant.py`，不是上面的 `--live`。它只说明包络改写、SaveAs 和母体恢复；配合、干涉、运动未验收。
+
 
 ## CODEX-A01-005：映射与事务接口
 

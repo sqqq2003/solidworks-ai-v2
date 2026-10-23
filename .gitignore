@@ -40,10 +40,12 @@ backup/
 *.swp
 .DS_Store
 
-# Local run output. The committed cloud simulated log is results/cloud/.
+# Local run output. Commit the cloud log and the Windows evidence JSON only.
 results/*
 !results/cloud/
 !results/cloud/**
+!results/windows/
+!results/windows/**
 
 runtime/
 reports/

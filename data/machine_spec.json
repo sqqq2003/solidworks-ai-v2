@@ -2,10 +2,19 @@
   "machine_id": "A01",
   "revision": "draft-001",
   "units": "mm",
-  "candidate_source_model": "QL-5050PX",
+  "candidate_source_model": "GT-ZX-1300x000x750-001x1",
+  "candidate_source_note": "A01 母体是 GT-ZX-1300x000x750-001x1.SLDASM。QL-5050PX 是只有 DWG 的封箱机，不是这台装配。身份来自用户电脑只读打开，不是工程批准。",
   "template_identity_confirmed": false,
   "engineering_approved": false,
-  "native_template": null,
+  "native_template": {
+    "identity": "GT-ZX-1300",
+    "file_name": "GT-ZX-1300x000x750-001x1.SLDASM",
+    "directory_note": "D:\\工程\\滚筒工程\\...\\斜滚筒线-1300x000x750-方向A\\装配图\\",
+    "sw_product": "SOLIDWORKS Premium 2025 SP1.2",
+    "sw_revision": "33.1.2",
+    "pack_and_go": false,
+    "note": "只读打开见 13 个方程，关闭时未保存。中间目录未在云端附件里展开，不补全。Pack and Go 未做，工作副本仍与母体共享零件。"
+  },
   "target_envelope_mm": {
     "length": 1800,
     "width": 900,
@@ -119,7 +128,8 @@
       "unit": "mm",
       "depends_on": ["column_height"],
       "mapping_id": "A01.conveyor.passline_height",
-      "meaning": "输送面高度未映射。不把立柱高写成实测值。"
+      "equation_name": "DeckHeight",
+      "meaning": "方程名 DeckHeight 对应该参数。毫米值未写入本规格，求解器仍保持 pending，不把立柱高写成实测。"
     },
     "roller_pitch": {
       "subsystem": "conveyor",
