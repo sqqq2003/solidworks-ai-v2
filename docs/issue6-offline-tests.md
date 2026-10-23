@@ -4,7 +4,7 @@
 
 - 基线：`13cc10c2a4fb29cbe166b16f82c9a72b7896ea0a`（`feat/issue6-ql5050px-five-modules`）
 - 测试分支：`feat/issue6-offline-tests`
-- 测试提交：本文档所在提交（`git log -1 --format=%H`）
+- 测试提交：`3b3013a86b03548f539a6e4490df3a1b24a47f74`（Qoder Agent，本地未推送）
 
 ## 运行
 
