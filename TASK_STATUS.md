@@ -181,3 +181,8 @@
 - 模块5 工程图/DXF/BOM src/drawing_bom.py：复用 batch_export/roller_spec/drawing_notes；mock BOM + mock 导出 trace，不写产品文件。
 - 新增 65 项单测（5 个测试文件）+ examples/issue6_framework_demo.py；全回归 450 ran / 443 passed / 1 failed / 6 skipped，跨进程锁通过。唯一失败为既有环境相关项（本机 pywin32 使 com_available 为 True，test_live_flag_is_refused_without_com 期望退出码 2 实得 1），记 KNOWN_ISSUES 未修。
 - 未启动/接管 SolidWorks；sw_live 全部 not_applicable_on_linux；未宣称任何实机验收。
+
+## ISSUE6-WB-001 后续（环境问题修复 + 路径依赖解除）
+
+- 路径依赖：新增 scripts/bootstrap_env.py（创建仓库根目录 .venv）与 scripts/run_tests.py（优先 .venv 解释器）；src/project_workbench.py、work/run_cloud_tests.py 将报告 python_executable 归一化为 <repo>/.venv/...，不再写死 D:/工程/滚筒工程/... 路径。
+- 环境相关失败修复：src/sw_api/win32com_backend.py 的 com_available() 增加显式测试钩子 SW_API_FORCE_NO_COM=1；tests/test_a01_parametric.py::CliTests::test_live_flag_is_refused_without_com 改为在子进程 env 中设该变量，确定性地走"无 COM"拒绝路径。全量回归 450 ran / 444 passed / 0 failed / 6 skipped，全绿。

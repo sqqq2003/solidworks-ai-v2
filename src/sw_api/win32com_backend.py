@@ -9,6 +9,7 @@ every open document, or kill a process.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -20,6 +21,11 @@ SW_OPEN_READONLY = 2
 
 
 def com_available() -> bool:
+    # Test hook: let a subprocess deterministically exercise the "no COM"
+    # refusal path even on a machine that has pywin32 installed. Without this,
+    # the CLI's --live refusal behavior depends on the host environment.
+    if os.environ.get("SW_API_FORCE_NO_COM") == "1":
+        return False
     try:
         import pythoncom  # noqa: F401
         import win32com.client  # noqa: F401

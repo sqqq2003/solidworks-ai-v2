@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -160,6 +161,10 @@ class CliTests(unittest.TestCase):
         self.assertFalse(trace.with_suffix(".sldasm").exists())
 
     def test_live_flag_is_refused_without_com(self):
+        # Force the "no COM" environment deterministically so the assertion
+        # holds on hosts that do have pywin32 installed as well as those that
+        # do not. The behavior under test is the --live refusal, not the host.
+        env = dict(os.environ, SW_API_FORCE_NO_COM="1")
         completed = subprocess.run(
             [
                 sys.executable,
@@ -175,6 +180,7 @@ class CliTests(unittest.TestCase):
             check=False,
             capture_output=True,
             text=True,
+            env=env,
         )
         self.assertEqual(completed.returncode, 2, completed.stdout)
         self.assertIn("not_applicable_on_linux", completed.stdout)
