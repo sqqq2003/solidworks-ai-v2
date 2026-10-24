@@ -1,0 +1,69 @@
+﻿{
+    "schema_version":  1,
+    "issue":  15,
+    "status":  "pass_offline",
+    "sha":  "a3ec0d02a7cfe8bff83e0a367b506220bfd5fb7d",
+    "cad_features_blob_sha":  "3b78f8add350d888a83d047a9162b1b5243aa647",
+    "cad_features_blob_sha_verified":  true,
+    "pr_url":  "https://github.com/sqqq2003/solidworks-ai-v2/pull/16",
+    "branch":  "feat/issue15-cad-features",
+    "offline_ok":  true,
+    "sw_live":  false,
+    "issue_complete_claimed":  false,
+    "native_feature_builders_claimed":  false,
+    "work_copy":  "C:\\sw-ai-v2-work\\solidworks-ai-v2-a3ec0d02",
+    "accept_dir":  "D:\\工程\\钣金导入\\wb_issue15_20261024_123749",
+    "timezone_label":  "Asia/Shanghai",
+    "tested_at":  "2026-10-24T12:40:36+08:00",
+    "commands":  [
+                     "python -m py_compile C:\\sw-ai-v2-work\\solidworks-ai-v2-a3ec0d02\\src\\ql5050px\\cad_features.py  # exit 0",
+                     "python work\\smoke_cad_features_offline.py D:\\工程\\钣金导入\\wb_issue15_20261024_123749\\runtime_cad  # SMOKE_OK exit 0"
+                 ],
+    "evidence":  {
+                     "compile_log":  "D:\\工程\\钣金导入\\wb_issue15_20261024_123749\\logs\\py_compile.txt",
+                     "handoff":  "C:\\sw-ai-v2-work\\solidworks-ai-v2-a3ec0d02\\docs\\issue15-handoff.md",
+                     "runtime_cad":  "D:\\工程\\钣金导入\\wb_issue15_20261024_123749\\runtime_cad",
+                     "materialization":  "C:\\sw-ai-v2-work\\solidworks-ai-v2-a3ec0d02\\MATERIALIZATION.txt",
+                     "smoke_log":  "D:\\工程\\钣金导入\\wb_issue15_20261024_123749\\logs\\smoke_stdout.txt"
+                 },
+    "unittest":  {
+                     "discover_ran":  false,
+                     "cad_features_dedicated":  "none_found",
+                     "note":  "tests/ has no cad_features-specific suite at this SHA; not inventing counts"
+                 },
+    "cli_full":  {
+                     "reason":  "partial tree only: Qile3 has no git/gh; private zipball HTTP 404; MCP file-fetch used for cad_features.py+example. Full project.py needs project_workbench+workflow deps.",
+                     "ran":  false,
+                     "suggested":  "python work/project.py ql --action cad_features --config examples/cad_features.json --output-dir runtime/cad-new"
+                 },
+    "smoke_summary":  {
+                          "manufacturing_approved":  false,
+                          "diag_count":  1,
+                          "artifacts":  [
+                                            "cad_executed.json",
+                                            "diagnostics.json",
+                                            "feature_plan.json",
+                                            "geometry.json",
+                                            "gork-cad-features.zip",
+                                            "manufacturing.json",
+                                            "plan.json",
+                                            "status.json",
+                                            "tests.json"
+                                        ],
+                          "cad_executed":  false,
+                          "status":  "pending_confirmation",
+                          "hole_candidates":  [
+                                                  "hole"
+                                              ],
+                          "geometry_status":  "review_required",
+                          "feature_plan_status":  "ready_for_native"
+                      },
+    "honest_notes":  [
+                         "PR author: syntax/artifact generation only; tests not run; Issue incomplete.",
+                         "Offline API smoke pass only; sw_live=false; do NOT claim native SW feature builders work.",
+                         "Gork matrix ALL NOT RUN per handoff.",
+                         "Known incomplete: topology, dimension semantics, native per-feature COM builders.",
+                         "p248 retest queued by parent after this accept; not run in this Issue15 turn."
+                     ],
+    "next_queued":  "p248_warm_reuse_retest"
+}

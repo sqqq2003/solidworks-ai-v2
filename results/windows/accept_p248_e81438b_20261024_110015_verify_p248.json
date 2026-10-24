@@ -1,0 +1,10 @@
+{
+  "verify": "reopen+unfold chain",
+  "warm_pid": 16564,
+  "part": "D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\p248_step0_warm.SLDPRT",
+  "attached_existing": false,
+  "warm_reuse_authorized": false,
+  "observed_pid": null,
+  "error": "SessionOwnershipError: refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\verify_chain_p248.py\", line 71, in main\n    result[\"job_outcome\"] = run_on_task_sta(job, timeout=600.0, task_name=\"p248-verify-warm\")\n                            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 600, in run_on_task_sta\n    return worker.call(fn, timeout=timeout, lock_token=token)\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 373, in call\n    raise job.error\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 296, in _loop\n    result = job.fn(*job.args, **job.kwargs)\n  File \"D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\verify_chain_p248.py\", line 53, in job\n    reopen = port.reopen_inspect(PART)\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sheet_metal_windows.py\", line 37, in reopen_inspect\n    lease = self.guard()\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sheet_metal_windows.py\", line 18, in guard\n    return require_model_write()\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 863, in require_model_write\n    raise SessionOwnershipError(\n        \"refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership\"\n    )\nsw_session.SessionOwnershipError: refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership\n"
+}

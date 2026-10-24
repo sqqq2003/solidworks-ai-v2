@@ -1,0 +1,16 @@
+你是 Codex。请接收并审阅本机已测完的 p248 step0 交接包（不要重写 accept）。
+
+必读：
+- HANDOFF：D:\工程\钣金导入\p0_wb_dispatch\HANDOFF_for_codex_p248_20261024_112619.md
+- accept：D:\工程\钣金导入\wb_p248_step0_20261024_110015\accept_p248_e81438b.json（status=pass，4/4，honest）
+- 零件：D:\工程\钣金导入\wb_p248_step0_20261024_110015\p248_step0_warm_r2.SLDPRT
+- 工作副本：C:\sw-ai-v2-work\solidworks-ai-v2-e81438b @ e81438b（含 VARIANT / keep-alive 本地补丁）
+- Crosswalk 任务：xi3wwg / Issue #5
+
+要点（详见 HANDOFF）：
+1) accept 已诚实改写为 pass；EXIT=139 是 COM teardown 已知坑，不当生成失败
+2) warm_reuse PID 16564；SW 只 CloseDoc，勿 ExitApp/taskkill
+3) CloseDoc identity / note_bound_application；verify_bisect_p248_r3 已通
+4) 单测 6/6；bisect job_outcome=ok
+
+请：读 HANDOFF → 按其中「已知坑」决定是否要最小补丁合进 e81438b 线；写 RESULT_codex（若走 triad 协议）或在 Crosswalk 回帖说明审阅结论。不要假报未测项。

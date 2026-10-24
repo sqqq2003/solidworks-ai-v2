@@ -1,0 +1,75 @@
+{
+  "bisect": "reopen+unfold on warm session",
+  "warm_pid": 16564,
+  "primed": {
+    "attached_existing": true,
+    "warm_reuse_authorized": true,
+    "observed_pid": 16564
+  },
+  "last_step": "final",
+  "reopened_title": "p248_step0_warm",
+  "rebuilt": true,
+  "feature_types": [
+    "FlatPattern",
+    "SM3dBend",
+    "ProfileFeature",
+    "ICE",
+    "ProfileFeature",
+    "SMBaseFlange",
+    "SheetMetal",
+    "ProfileFeature",
+    "ConfigTableFolder",
+    "OriginProfileFeature",
+    "RefPlane",
+    "RefPlane",
+    "RefPlane",
+    "MaterialFolder",
+    "EqnFolder",
+    "CommentsFolder",
+    "SurfaceBodyFolder",
+    "SolidBodyFolder",
+    "EnvFolder",
+    "InkMarkupFolder",
+    "DetailCabinet",
+    "DocsFolder",
+    "SensorFolder",
+    "SelectionSetFolder",
+    "HistoryFolder",
+    "FavoriteFolder"
+  ],
+  "bend_feature_count": 1,
+  "sheetmetal_access_selections": true,
+  "thickness_mm": 2.5,
+  "radius_mm": 1.0,
+  "bend_allowance_type": 2,
+  "k_factor": 0.34,
+  "geometry_states": {
+    "status": "measured",
+    "units": "mm",
+    "folded_bounds": [
+      -588.3488276301817,
+      -24.14159265360016,
+      -21.23561944908664,
+      587.3207963267996,
+      41.283185307200256,
+      0.006275
+    ],
+    "flat_bounds": [
+      -587.3270713268007,
+      -41.28318530720024,
+      -2.506275,
+      587.3207963267996,
+      41.283185307200256,
+      0.006275
+    ],
+    "axes": "model_axes",
+    "saved": false
+  },
+  "unfold": {
+    "path": "D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\p248_step0_warm_unfold.DXF",
+    "exists": true,
+    "size": 30125
+  },
+  "error": "SessionOwnershipError: refusing CloseDoc: the application object is not the lease-bound SolidWorks session (app_handle_id / identity)",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\verify_bisect_p248.py\", line 128, in main\n    result[\"job_outcome\"] = run_on_task_sta(job, timeout=600.0, task_name=\"p248-bisect-warm\")\n                            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 600, in run_on_task_sta\n    return worker.call(fn, timeout=timeout, lock_token=token)\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 373, in call\n    raise job.error\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 296, in _loop\n    result = job.fn(*job.args, **job.kwargs)\n  File \"D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\verify_bisect_p248.py\", line 122, in job\n    close_owned_document(lease, app, result[\"reopened_title\"])\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 873, in close_owned_document\n    _require_bound_application(lease, app, \"CloseDoc\")\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\sw-ai-v2-work\\solidworks-ai-v2-e81438b\\src\\sw_session.py\", line 761, in _require_bound_application\n    raise SessionOwnershipError(\n    ...<2 lines>...\n    )\nsw_session.SessionOwnershipError: refusing CloseDoc: the application object is not the lease-bound SolidWorks session (app_handle_id / identity)\n"
+}

@@ -1,0 +1,129 @@
+{
+  "task_id": "p248_retest_20261024",
+  "issue": "Issue#5 p248 step0 RETEST after Issue#15 (e81438b+VARIANT+warm-reuse)",
+  "commit": "e81438bbaf1fdbab09db125df115745f43a50b6c",
+  "status": "pass",
+  "status_reason": "Retest after Issue#15 offline smoke. Warm reuse PID 16564 authorized; InsertSheetMetal3dBend created bends (107,108,109,110) [= requested 0-based 106-109 under profile #299]; inline folded-vs-flat unfold verification passed; part saved as p248_step0_retest.SLDPRT. Python process then crashed during COM teardown with EXIT=-1073741819 (0xC0000005 ACCESS_VIOLATION) — same teardown-pitfall class as prior EXIT=139. Runner did not reach accept write; this accept is reconstructed from step0_warm.log + on-disk part. SW left running (CloseDoc only).",
+  "loaded_hash": "e81438bbaf1fdbab09db125df115745f43a50b6c",
+  "oracle_ok": true,
+  "oracle_evidence": "D:\\工程\\钣金导入\\wb_p248_e81438b_20261024_084536\\oracle_final_result.json",
+  "params": {
+    "profile_1based": 299,
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "angle_degrees": 90.0,
+    "deepen": false,
+    "only_step0": true,
+    "fixed_face_point": null,
+    "bend_indices": [
+      106,
+      107,
+      108,
+      109
+    ],
+    "bend_index_base": 0,
+    "warm_reuse_pid": 16564,
+    "source_dwg": "D:\\工程\\钣金导入\\临时\\p0_p248_20261024_100344\\QL-5050_sheetmetal_work.dwg",
+    "analysis_input_dxf": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\cad2sw_dwg_dxf\\QL-5050_sheetmetal_work_solidworks_18e155a028bd744c.dxf",
+    "part_name": "p248_step0_retest"
+  },
+  "out_dir": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127",
+  "session": {
+    "mode": "warm_reuse_operator_authorized",
+    "warm_pid": 16564,
+    "attached_existing": true,
+    "warm_reuse_authorized": true,
+    "verified_exclusive": false,
+    "observed_pid": 16564,
+    "foreign_titles_at_connect": [],
+    "teardown": "CloseDoc owned documents only; no ExitApp; no taskkill",
+    "evidence_source": "step0_warm.log session evidence line + OPERATOR-AUTHORIZED warning"
+  },
+  "candidates": {
+    "candidates": 2,
+    "rejected_raw": "{'not_fixed_xy_plane': 16, 'not_planar': 17}"
+  },
+  "bends": {
+    "107": {
+      "index": 107,
+      "status": "success",
+      "note": "1-based; requested 0-based 106 under profile #299"
+    },
+    "108": {
+      "index": 108,
+      "status": "success",
+      "note": "1-based; requested 0-based 107"
+    },
+    "109": {
+      "index": 109,
+      "status": "success",
+      "note": "1-based; requested 0-based 108"
+    },
+    "110": {
+      "index": 110,
+      "status": "success",
+      "note": "1-based; requested 0-based 109"
+    }
+  },
+  "insert_errors": null,
+  "rebuild": true,
+  "reopen": {
+    "status": "skipped_this_retest",
+    "detail": "Generation+accept prioritized; r3 reopen/unfold skipped after teardown crash; prior r3 evidence remains in wb_p248_step0_20261024_110015"
+  },
+  "unfold": {
+    "status": "verified",
+    "method": "folded-vs-flat bounding box compare inside generator (inline)",
+    "folded_bounds": "-0.5883488276301817, -0.02414159265360016, -0.02123561944908664, 0.5873207963267996, 0.04128318530720026, 6.275e-06",
+    "flat_bounds": "-0.5873270713268006, -0.04128318530720025, -0.002506275, 0.5873207963267996, 0.04128318530720026, 6.275e-06",
+    "dxf_file": null,
+    "note": "inline unfold verify passed before save; ExportFlatPatternView DXF not re-run this retest"
+  },
+  "completed_bend_count": 4,
+  "bend_group_attempts": 1,
+  "part_file": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\p248_step0_retest.SLDPRT",
+  "part_size": 223334,
+  "notes": [
+    "geometry unchanged: bends 106-109 (0-based) on profile #299",
+    "warm reuse PID 16564; SW pids stayed [16564,7924]; no ExitApp/taskkill",
+    "Issue#15 work copy solidworks-ai-v2-a3ec0d02 NOT mixed into this path; used e81438b work copy only",
+    "accept reconstructed after COM teardown ACCESS_VIOLATION prevented runner accept write — deliverables already on disk",
+    "comparison_vs_prior_pass: same (4/4 bends, warm 16564, unfold ok). prior=D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\accept_p248_e81438b.json",
+    "written_at_asia_shanghai=2026-10-24 12:44:06 Asia/Shanghai",
+    "unit_test sketch_transform: pass (EXIT=0)"
+  ],
+  "comparison_vs_prior": {
+    "prior_accept": "D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\accept_p248_e81438b.json",
+    "prior_status": "pass",
+    "verdict": "same",
+    "detail": "same 4/4 bends, same warm PID 16564, same unfold-pass class; part name p248_step0_retest vs prior p248_step0_warm_r2"
+  },
+  "sw_pids_before": [
+    16564,
+    7924
+  ],
+  "sw_pids_after": [
+    16564,
+    7924
+  ],
+  "exit_code": -1073741819,
+  "exit_code_hex": "0xC0000005",
+  "exit_note": "ACCESS_VIOLATION during COM teardown; not a generation failure",
+  "accept_reconstruction": true,
+  "evidence_paths": {
+    "log": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\step0_warm.log",
+    "part": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\p248_step0_retest.SLDPRT",
+    "stdout": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\step0_warm_retest_stdout.txt",
+    "runner": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\run_step0_warm_p248_retest.py",
+    "unit_test": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\unit_test_sketch_transform.txt"
+  },
+  "unit_test_sketch_transform": {
+    "status": "pass",
+    "evidence": "D:\\工程\\钣金导入\\wb_p248_retest_20261024_124127\\unit_test_sketch_transform.txt",
+    "tail": [
+      "Ran 6 tests in 0.022s",
+      "",
+      "OK"
+    ]
+  }
+}
