@@ -47,7 +47,7 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
             if kind=='extrude':
                 native=model.FeatureManager.FeatureExtrusion2(True,False,False,0,0,depth/1000,0,False,False,False,False,0,0,False,False,False,False,True,True,True,0,0,False)
             else:
-                native=model.FeatureManager.FeatureCut3(True,False,False,0,0,depth/1000,0,False,False,False,False,0,0,False,False,False,False,False,True,True,True,True,False,0,0,False)
+                native=model.FeatureManager.FeatureCut3(True,False,bool(p.get('reverse',False)),0,0,depth/1000,0,False,False,False,False,0,0,False,False,False,False,False,True,True,True,True,False,0,0,False)
             if native is None:raise RuntimeError('native feature creation failed')
             native.Name=feature['id']
         return {'feature':feature['id'],'status':'created_pending_readback'}

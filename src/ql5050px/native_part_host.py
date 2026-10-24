@@ -17,6 +17,11 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
     def preflight(self,plan,folder):
         self.guard()
         self.plan=plan
+        if plan.get('cad_source'):
+            import hashlib
+            source=Path(plan['cad_source']['path'])
+            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest()!=plan['cad_source']['sha256']:
+                raise ValueError('CAD source changed after planning')
         seen=set()
         for feature in plan['features']:
             if not set(feature.get('depends_on',[]))<=seen:raise ValueError('invalid feature dependency order')
@@ -24,6 +29,7 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
         if not self.template.is_file() or self.template.suffix.lower()!='.prtdot':raise ValueError('explicit existing part template required')
         if plan.get('pending_confirmation'):raise ValueError('unconfirmed plan refused')
         for f in plan['features']:
+            if f.get('unit')!='mm':raise ValueError('explicit mm feature IR required')
             if f['kind'] not in self.supported_feature_kinds:raise ValueError('native capability pending: '+f['kind'])
             if not f.get('confirmed') or not f.get('evidence'):raise ValueError('confirmed evidence required')
         validate_operations(plan['features'])
@@ -34,12 +40,25 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
         checks=[]
         import math
         for row in self.plan.get('readback_dimensions',[]):
+            if row['unit'] not in {'mm','deg'}:raise ValueError('unsupported readback unit')
             dimension=self.model.Parameter(row['name'])
             if dimension is None:raise RuntimeError('readback dimension missing')
             value=float(dimension.SystemValue)
             expected=row['value']/1000 if row['unit']=='mm' else math.radians(row['value'])
             if not math.isclose(value,expected,rel_tol=1e-7,abs_tol=1e-9):raise RuntimeError('persisted dimension mismatch')
             checks.append({'name':row['name'],'value_si':value})
+        if self.plan.get('expected_dims_mm'):
+            import solidworks_generator as sw
+            from part_verification import solid_inventory
+            module=sw.ensure_solidworks_typelib()
+            part=sw._as_interface(module,self.model,'IPartDoc')
+            bounds,bodies=solid_inventory(part,sw,module)
+            actual=[bounds[i+3]-bounds[i] for i in range(3)]
+            expected=self.plan['expected_dims_mm']
+            if any(not math.isclose(a,b,rel_tol=1e-4,abs_tol=.05) for a,b in zip(sorted(actual),sorted(expected))):
+                raise RuntimeError('recipe envelope differs from independent expected dimensions')
+            if len(bodies)!=self.plan.get('expected_body_count',1):raise RuntimeError('recipe solid body count differs')
+            result['recipe_envelope_mm']=actual
         result['dimension_evidence']=checks
         return result
     def export_flat(self,output):

@@ -23,6 +23,23 @@ def main():
     native.add_argument('manifest',type=Path)
     native.add_argument('--output',type=Path,required=True)
     native.add_argument('--resume',action='store_true')
+    golden=commands.add_parser('golden-check',help='Assess reported p248 evidence without rewriting it')
+    golden.add_argument('accept',type=Path)
+    golden.add_argument('--verification',type=Path)
+    recovery=commands.add_parser('recover-parts',help='Record operator recovery only after worker exit')
+    recovery.add_argument('attempt',type=Path)
+    recovery.add_argument('--reviewer',required=True)
+    recovery.add_argument('--evidence',required=True)
+    cad=commands.add_parser('plan-cad',help='Analyze CAD and attach reviewed feature IR without guessing depth')
+    cad.add_argument('input',type=Path)
+    cad.add_argument('--features',type=Path,required=True)
+    cad.add_argument('--out',type=Path,required=True)
+    review=commands.add_parser('review-parts',help='Bind explicit recipe review to local SW/template configuration')
+    review.add_argument('manifest',type=Path)
+    review.add_argument('--sw-exe',type=Path,required=True)
+    review.add_argument('--template',type=Path,required=True)
+    review.add_argument('--sketch-plane',required=True)
+    review.add_argument('--out',type=Path,required=True)
     batch = commands.add_parser('batch')
     batch.add_argument('manifest',type=Path)
     batch.add_argument('--reports',type=Path,default=ROOT/'runtime/project-reports')
@@ -32,6 +49,27 @@ def main():
             report = capabilities()
         elif args.command == 'doctor':
             report = doctor()
+        elif args.command == 'golden-check':
+            from ql5050px.golden_gate import evaluate_p248
+            evidence=json.loads(args.accept.read_text(encoding='utf-8-sig'))
+            verification=json.loads(args.verification.read_text(encoding='utf-8-sig')) if args.verification else None
+            report={'status':'review_required','evidence':evaluate_p248(evidence,verification)}
+        elif args.command == 'recover-parts':
+            from ql5050px.modeling_recovery import recover_attempt
+            report={'status':'review_required','recovery':recover_attempt(args.attempt,reviewer=args.reviewer,evidence=args.evidence)}
+        elif args.command == 'plan-cad':
+            import hashlib
+            from ql5050px.cad_features import geometry,feature_plan
+            request=json.loads(args.features.read_text(encoding='utf-8-sig'));request['cad_path']=str(args.input.resolve())
+            plan=feature_plan(request);plan['cad_source']={'path':str(args.input.resolve()),'sha256':hashlib.sha256(args.input.read_bytes()).hexdigest()}
+            report={'status':'review_required','geometry':geometry(request),'plan':plan}
+            with args.out.open('x',encoding='utf-8') as stream:json.dump(report,stream,ensure_ascii=False,indent=2)
+        elif args.command == 'review-parts':
+            from ql5050px.modeling_delivery import prepare_jobs
+            data=json.loads(args.manifest.read_text(encoding='utf-8-sig'))
+            jobs=prepare_jobs(data,sw_exe=args.sw_exe,template=args.template,sketch_plane=args.sketch_plane,review=True)
+            with args.out.open('x',encoding='utf-8') as stream:json.dump({'jobs':jobs},stream,ensure_ascii=False,indent=2)
+            report={'status':'review_required','reviewed_manifest':str(args.out),'job_count':len(jobs)}
         elif args.command == 'native-parts':
             if sys.platform!='win32':raise ValueError('native batch requires Windows')
             from ql5050px.modeling_supervisor import supervise

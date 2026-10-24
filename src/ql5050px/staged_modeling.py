@@ -15,29 +15,43 @@ class Journal:
             stream.write(json.dumps(row,ensure_ascii=False,allow_nan=False)+'\n');stream.flush();os.fsync(stream.fileno())
 
 
+def atomic_checkpoint(path,result):
+    path=Path(path);temporary=path.with_suffix('.new')
+    with temporary.open('w',encoding='utf-8') as stream:
+        json.dump(result,stream,indent=2,allow_nan=False);stream.flush();os.fsync(stream.fileno())
+    temporary.replace(path)
+
+
 def execute_part_job(plan,host,folder):
     """Host is already inside the proved STA. No unknown process shutdown."""
     folder=Path(folder);folder.mkdir(parents=True,exist_ok=False)
     log=Journal(folder/'stages.jsonl')
     result={'modeling':'not_started','cleanup':'not_started','native_acceptance':'pending_windows_validation'}
     created=False
+    def checkpoint(phase):
+        result['last_durable_phase']=phase
+        result['process_exit']='pending_external_observation'
+        atomic_checkpoint(folder/'checkpoint.json',result)
+    checkpoint('queued')
     try:
-        host.preflight(plan,folder);log.record('preflight','ok')
-        host.create();created=True;log.record('document','created')
+        host.preflight(plan,folder);log.record('preflight','ok');checkpoint('preflight')
+        host.create();created=True;log.record('document','created');checkpoint('document_created')
         for feature in plan['features']:
             value=host.create_editable_feature(feature)
             host.rebuild();log.record('feature','rebuilt',id=feature['id'],source=feature.get('evidence'),native=value)
+            result['last_feature']=feature['id'];checkpoint('feature_rebuilt')
         host.verify_feature_tree([f['id'] for f in plan['features']]);log.record('readback','ok')
         output=folder/'part.SLDPRT';host.save(output)
         if not output.is_file() or not output.stat().st_size:raise RuntimeError('missing output after save')
         log.record('save','ok',sha256=hash_file(output),bytes=output.stat().st_size)
-        host.close();created=False;log.record('close_before_reopen','ok')
+        result.update(modeling='saved_pending_reopen',output=str(output),sha256=hash_file(output));checkpoint('saved_before_close')
+        host.close();created=False;log.record('close_before_reopen','ok');checkpoint('closed_before_reopen')
         host.reopen(output);created=True;host.rebuild()
         result['readback']=host.verify_feature_tree([f['id'] for f in plan['features']])
         result['flat_export']=host.export_flat(output)
         log.record('flat_export','recorded',result=result['flat_export'])
         result.update(modeling='saved_reopened',output=str(output),sha256=hash_file(output))
-        log.record('reopen','ok',readback=result['readback'])
+        log.record('reopen','ok',readback=result['readback']);checkpoint('reopen_readback')
     except Exception as exc:
         result.update(modeling='failed',error=type(exc).__name__+': '+str(exc));log.record('modeling','failed',error=result['error'])
     finally:
@@ -48,7 +62,7 @@ def execute_part_job(plan,host,folder):
             result.update(cleanup='failed',cleanup_error=str(exc));log.record('cleanup','failed',error=str(exc))
         # Persist before Python/COM process teardown; cannot certify its exit.
         result['process_exit']='pending_external_observation'
-        (folder/'checkpoint.json').write_text(json.dumps(result,indent=2))
+        checkpoint('final_document_cleanup')
     return result
 
 

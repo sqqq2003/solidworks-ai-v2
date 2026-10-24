@@ -1,0 +1,19 @@
+{
+  "passed": 10,
+  "checks": [
+    "four concrete backends",
+    "closed shaft profile",
+    "hole plate and L bracket",
+    "missing template pending",
+    "bad K rejected",
+    "NaN rejected",
+    "cross-boundary hole rejected",
+    "stale review digest",
+    "unbound review rejected",
+    "read-only process liveness"
+  ],
+  "scope": "focused offline only",
+  "native_executed": false,
+  "full_regression": "not_run",
+  "windows_acceptance": "pending_windows_validation"
+}

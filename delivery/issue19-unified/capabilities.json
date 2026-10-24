@@ -1,0 +1,27 @@
+{
+  "native_direct": [
+    "sketch_line",
+    "sketch_circle",
+    "sketch_arc",
+    "extrude",
+    "cut"
+  ],
+  "legacy_recipe": [
+    "shaft_revolve",
+    "sheet_base_bends_relief_flat"
+  ],
+  "requires_reviewed_feature_data": [
+    "hole_wizard",
+    "fillet",
+    "chamfer",
+    "mirror",
+    "pattern",
+    "edge_flange"
+  ],
+  "not_certified": [
+    "native_binding_compatibility",
+    "manufacturing_approval",
+    "COM_crash_fix"
+  ],
+  "native_acceptance": "pending_windows_validation"
+}

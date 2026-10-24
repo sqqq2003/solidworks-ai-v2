@@ -1,0 +1,35 @@
+{
+  "task": "Issue #19 / PR #20",
+  "delivery_scope": "single-version native modeling source and reviewed recipes",
+  "source_status": {
+    "primitive_features": "implemented",
+    "mapped_advanced_features": "implemented_requires_reviewed_typelib_mapping",
+    "shaft_and_sheet": "existing_native_engines_reused",
+    "gui_native_review": "implemented_not_desktop_tested",
+    "serial_supervisor": "implemented_not_Windows_tested",
+    "durable_checkpoints": "implemented",
+    "resume_retry_and_hashes": "implemented",
+    "crash_recovery_review": "implemented_no_process_termination",
+    "flat_export_and_readback": "implemented_pending_native_validation"
+  },
+  "offline_evidence": {
+    "four_recipe_plans": "generated",
+    "focused_boundary_checks": 10,
+    "mocked_supervisor_checks": 5,
+    "two_bend_existing_pipeline": "simulated_pass",
+    "native_imports": "passed_without_COM",
+    "full_regression": "not_run"
+  },
+  "native_evidence": {
+    "new_source_version": "pending_windows_validation",
+    "p248": "PR18_reports_4_of_4_not_source_equivalence",
+    "COM_exit_crash": "not_claimed_fixed",
+    "manufacturing_approval": false
+  },
+  "known_limits": [
+    "Typelib enum/property/selection maps must be reviewed on actual SW release",
+    "No automatic GD&T or manufacturer selection from unknown OEM data",
+    "OS crash dump interpretation remains manual",
+    "Fully arbitrary CAD reconstruction is not implied by four reviewed recipes"
+  ]
+}
