@@ -30,7 +30,7 @@ import sys
 import tempfile
 import time
 import uuid
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +41,8 @@ STAGE_ORDER = ("S0", "S1", "S2", "S3", "S4", "S5")
 
 # Default staleness bound for a publish lock: 2x the session call timeout
 # (``sw_session.SW_SESSION_CALL_TIMEOUT_SEC`` = 600 s). A lock whose owner
-# process is dead, or whose heartbeat is older than this, is treated as a
-# crash leftover. A lock with a live owner and a fresh heartbeat is NEVER
-# stolen, even if the run looks stuck.
+# process is confirmed dead may be treated as a crash leftover. Heartbeat
+# age is diagnostic only: a live or unprobeable owner is NEVER stolen.
 DEFAULT_LOCK_STALE_SECONDS = 1200.0
 
 
@@ -139,8 +138,12 @@ def validate_checkpoint_chain(ckpt_dir, *, plan_id, code_sha256, base_dir):
         latest = ckpts[chain[-1]]
         intact = True
         for product in latest.get("products", []):
-            candidate = Path(base_dir) / product["name"]
-            if (not candidate.is_file()
+            name=product.get('name')
+            if not isinstance(name,str) or PurePosixPath(name).root or PureWindowsPath(name).root or PureWindowsPath(name).drive or '\\' in name or '..' in PurePosixPath(name).parts:
+                intact=False
+                break
+            candidate = (Path(base_dir) / name).resolve()
+            if (not candidate.is_relative_to(Path(base_dir).resolve()) or not candidate.is_file()
                     or sha256_file(candidate) != product["sha256"]):
                 intact = False
                 break
@@ -150,17 +153,17 @@ def validate_checkpoint_chain(ckpt_dir, *, plan_id, code_sha256, base_dir):
     return None, {}
 
 
-def _pid_alive(pid) -> bool:
-    if pid is None:
-        return False
+def _pid_alive(pid) -> bool | None:
+    if type(pid) is not int or pid<=0:
+        return None
     try:
-        os.kill(int(pid), 0)
+        os.kill(pid, 0)
     except ProcessLookupError:
         return False
     except PermissionError:
         return True
     except (OSError, ValueError, OverflowError):
-        return False
+        return None
     return True
 
 
@@ -221,9 +224,9 @@ class RunLock:
                 + str(self.lock_dir)) from exc
         alive = _pid_alive(owner.get("pid"))
         age = time.time() - float(owner.get("heartbeat", 0) or 0)
-        if alive and age <= self.stale_after_seconds:
+        if alive is not False:
             raise RuntimeError(
-                "publish lock held by live run pid=%s plan=%s age=%.1fs; "
+                "publish lock owner live or unverified pid=%s plan=%s age=%.1fs; "
                 "refusing to steal it" % (owner.get("pid"), owner.get("plan_id"), age))
         stamp = time.strftime("%Y%m%d_%H%M%S") + "-" + uuid.uuid4().hex[:8]
         archived = self.root / (self.lock_dir.name + ".archived-" + stamp)
@@ -419,17 +422,33 @@ def run_teardown_sequence(steps, *, recorder=None, pid=None) -> dict:
     record = recorder.record if recorder is not None else own_recorder.record
     started = time.monotonic()
     exit_code = None
+    close_succeeded = False
+    titles_empty = False
     for step in ("close_docs", "enumerate_titles", "exit_app", "release",
                  "poll_exit_code"):
         fn = steps.get(step)
         if fn is None:
             record(step, status="skipped", elapsed_ms=0)
             continue
+        if step == "exit_app" and not (close_succeeded and titles_empty):
+            record(step,status="skipped",elapsed_ms=0,detail="close or zero-document inventory not established; no ExitApp")
+            continue
         step_started = time.monotonic()
         try:
             result = fn()
+            if step == "close_docs":
+                if isinstance(result,dict) and result.get("ok") is False:raise RuntimeError("document close report failed")
+                close_succeeded = True
+            if step == "enumerate_titles":
+                if not isinstance(result,(list,tuple,set)) or result:raise RuntimeError("document inventory unavailable or nonempty; refuse ExitApp")
+                titles_empty = True
+            if step == "release" and isinstance(result,dict) and result.get("ok") is False:
+                raise RuntimeError("COM wrapper release report failed")
             if step == "poll_exit_code":
                 exit_code = result
+                if type(result) is not int or result != 0:
+                    record(step,status="pending" if result is None else "failed",elapsed_ms=int((time.monotonic()-step_started)*1000),detail="observed exit_code="+repr(result))
+                    continue
             record(step, status="ok",
                    elapsed_ms=int((time.monotonic() - step_started) * 1000),
                    detail=None if step == "poll_exit_code" else str(result)[:500])
@@ -529,3 +548,4 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

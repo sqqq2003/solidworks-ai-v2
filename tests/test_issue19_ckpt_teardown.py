@@ -97,11 +97,11 @@ class LockTests(unittest.TestCase):
         self.assertEqual(len(archived), 1)
         self.assertTrue((self.root / '.label.lock' / 'owner.json').is_file())
 
-    def test_expired_heartbeat_lock_is_archived_even_with_live_pid(self):
+    def test_expired_heartbeat_lock_is_refused_with_live_pid(self):
         self._plant_lock(os.getpid(), time.time() - 99999)
-        status = RunLock(self.root, 'label', plan_id='p1',
-                         stale_after_seconds=60).acquire()
-        self.assertEqual(status, 'recovered_stale_lock')
+        with self.assertRaises(RuntimeError):
+            RunLock(self.root,'label',plan_id='p1',stale_after_seconds=60).acquire()
+        self.assertEqual(list(self.root.glob('.label.lock.archived-*')),[])
 
     def test_release_only_removes_own_lock(self):
         lock = RunLock(self.root, 'label', plan_id='p1')
@@ -300,3 +300,4 @@ class RunPlanCheckpointTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
