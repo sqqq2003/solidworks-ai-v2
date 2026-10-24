@@ -2,12 +2,13 @@
 
 ## 结论（2026-10-24 20:30）
 
-分支 `wb/issue6-five-modules-framework`（HEAD=`231ab44`，51 个提交）**已成功推送到 GitHub**：
+分支 `wb/issue6-five-modules-framework`（HEAD=`ae5fc6f`，25 个提交）**已成功推送到 GitHub 且 CI 全绿**：
 
 - 远端：`https://github.com/sqqq2003/solidworks-ai-v2`（私有仓库）
 - 远端 SHA 与本地一致，已设置 upstream 跟踪
-- GitHub Actions「Portable Python regression」已在推送提交上触发运行
+- GitHub Actions「Portable Python regression」**success**（Python 3.11 + 3.12 两个矩阵任务，Cloud regression 与离线 demo 均通过）
 - PR 链接：https://github.com/sqqq2003/solidworks-ai-v2/pull/new/wb/issue6-five-modules-framework
+- CI 日志与产物：Actions → Portable Python regression → 最新一次运行
 
 ## 当时的阻塞与解法
 
@@ -45,3 +46,18 @@ git push origin FETCH_HEAD:wb/issue6-five-modules-framework
 - 推送包含 51 个提交：本轮 Issue #6 的 22 个 + 以往未推送的 29 个。
 - 远端已有其他 agent 的分支（如 `feat/issue6-ql5050px-five-modules`），与本分支同名不同内容，互不影响；如需合并由维护者决定。
 - 提交作者为 `WorkBuddy <workbuddy@local>`（沙箱内无用户身份配置）。如要改为真实身份，设置 `user.name` / `user.email` 后只影响新提交。
+
+## CI 首跑失败与修复（2026-10-24 20:40）
+
+前两次 CI 运行失败，暴露了两个**只在 Windows 成立**的新测试断言（本地 501 全绿但 Linux 挂）：
+
+1. `test_swctl.SwctlTests.test_doctor_command_reports_no_cad` 断言
+   `python_executable` 形如 `<repo>/.venv/...`；CI 上解释器在 toolcache
+   （`/opt/hostedtoolcache/...`）。改为只断言字段存在，路径形状是宿主相关的。
+2. `test_sw_controlled...test_live_request_never_touches_com_on_linux`
+   在**共享测试进程**里断言 `win32com_backend` 不在 `sys.modules`；同进程其他
+   测试已合法导入过该模块。改为在**全新子进程**里执行该检查，导入保证才有意义。
+
+修复提交 `ae5fc6f` 之后 CI 全绿（3.11/3.12 双矩阵，回归 + demo 均通过）。
+教训：跨平台断言不能依赖宿主路径形状或共享进程状态——这正是当初
+`SW_API_FORCE_NO_COM` 钩子解决的那类问题。
