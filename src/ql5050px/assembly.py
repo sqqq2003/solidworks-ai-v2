@@ -44,11 +44,7 @@ def inspect_assembly(components, mates, transmissions=()):
         if a not in nodes or b not in nodes or a == b:
             issues.append({"kind": "invalid_reference", "mate": m})
             continue
-        adjacency[a].add(b)
-        adjacency[b].add(a)
         if m.get("suppressed"):
-            adjacency[a].discard(b)
-            adjacency[b].discard(a)
             continue
         if m["type"] not in rank:
             issues.append({"kind": "unsupported_mate", "mate": m})
@@ -58,6 +54,8 @@ def inspect_assembly(components, mates, transmissions=()):
         if moving not in (a,b):
             issues.append({"kind": "invalid_moving_component", "mate": m})
             continue
+        adjacency[a].add(b)
+        adjacency[b].add(a)
         removed[moving] += rank[m["type"]]
     anchored = {k for k,c in nodes.items() if c.get("fixed")}
     reachable = set(anchored)
@@ -122,3 +120,4 @@ def sample_motion(components, trajectories, times, clearance_mm=0):
             moved.append(row)
         frames.append({"time_s": time, **interference(moved,clearance_mm)})
     return {"mode": "sampled_translation_aabb", "frames": frames, "native_status": "unverified"}
+

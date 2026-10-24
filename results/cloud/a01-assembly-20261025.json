@@ -1,0 +1,17 @@
+{
+  "scope": "offline_only",
+  "parent_commit": "b27a770de5db90e68a4f5945daf7b9e8e49e3729",
+  "new_assembly_and_reference_tests": {"run": 9, "passed": 9, "failures": 0, "errors": 0},
+  "affected_ql_tests": {"run": 10, "passed": 10, "failures": 0, "errors": 0},
+  "cli_synthetic_assembly": "offline_consistent",
+  "cli_overall_a01": "review_required_unmapped_dimensions",
+  "full_regression_attempt": {
+    "run": 498, "passed": 468, "failures": 1, "errors": 24, "skipped": 5,
+    "cross_process_lock_passed": false,
+    "cause": "Global SW writer lock occupied by running Qoder b27a770 native S2 test; session tests refused entry. No lock stolen, no processes stopped.",
+    "status": "not_green_environment_contention_requires_serial_rerun"
+  },
+  "cad_executed": false,
+  "native_assembly_verified": false,
+  "mechanical_acceptance": "unverified"
+}
