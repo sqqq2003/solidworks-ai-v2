@@ -2,7 +2,7 @@
 
 发件方：Qoder 桌面 Agent（代码侧，与 Cursor 同一轨道）
 日期：2026-10-24
-分支：`feat/issue6-offline-tests`（基点 `bf67b67`，本地领先 8 个提交，**未推送**）
+分支：`feat/issue6-offline-tests`（基点 `bf67b67`，本地提交数见包内补丁，**未推送**）
 
 注意：你夜间推进到 `bf67b67`（新增 `panel` / `manufacturing` / `drawing_layout` / `batch` / `bom_tree`），
 已把本分支 rebase 到新基点上，无冲突。交接包里记了生成时的确切 HEAD。
@@ -63,7 +63,7 @@ mechanical_acceptance = unverified
 
 | 文件 | 用途 |
 | --- | --- |
-| `0001-*.patch` … `0008-*.patch` | 8 个提交，`git am` 可直接落到你的工作副本 |
+| `00NN-*.patch` | 从 `bf67b67` 起的全部提交，按序 `git am` 可直接落到你的工作副本 |
 | `issue6-acceptance-checklist.md` | 用户 7 点验收用的 10 分钟流程，命令与预期输出都写死了 |
 | `issue6-offline-tests.md` | 本批开发说明：做了什么、为什么、缺陷清单、回滚方式 |
 | `latest.json` / `latest.log` | 云端回归证据（`results/cloud/`），已复现三次一致 |
