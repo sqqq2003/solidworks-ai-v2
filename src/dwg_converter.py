@@ -90,6 +90,7 @@ def convert_dwg_with_libredwg(source: str | Path, target: str | Path) -> None:
 
 def convert_dwg_with_solidworks(source: str | Path, target: str | Path) -> None:
     import sw_session
+    import sw_compat
 
     source_path = Path(source).resolve()
     target_path = Path(target).resolve()
@@ -169,8 +170,7 @@ def convert_dwg_with_solidworks(source: str | Path, target: str | Path) -> None:
             )
         if not target_path.is_file() or target_path.stat().st_size == 0:
             raise DwgConversionError("SolidWorks 未生成有效的 DXF 导出文件。")
-        title = imported_document.GetTitle
-        imported_title = str(title() if callable(title) else title)
+        imported_title = str(sw_compat.com_read(imported_document, "GetTitle"))
         if lease is not None and imported_title:
             lease.note_owned_document(imported_title, handle_id=id(imported_document))
     except (DwgConversionError, sw_session.SessionOwnershipError):
