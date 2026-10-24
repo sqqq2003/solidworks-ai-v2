@@ -106,7 +106,12 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(report['status'], 'failed')
             self.assertEqual(report['recovery'], 'staging_removed')
             self.assertEqual(len(list(out.glob('failure-*.json'))), 1)
-            self.assertEqual(len(list(out.iterdir())), 2)
+            # Issue #19: a crash package with the last checkpoints is kept
+            # next to the failure file; staging itself is still removed.
+            self.assertEqual(len(list(out.glob('crash-*.json'))), 1)
+            crash = json.loads(list(out.glob('crash-*.json'))[0].read_text())
+            self.assertEqual(crash['plan_id'], self.plan()['plan_id'])
+            self.assertEqual(len(list(out.iterdir())), 3)
             self.assertEqual(original.read_text(), 'keep')
 
     def test_recovery_failure_is_explicit(self):
