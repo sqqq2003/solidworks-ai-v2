@@ -12,7 +12,7 @@ sys.path[:0] = [str(ROOT),str(ROOT/'src')]
 def main():
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
-    from project_workbench import build_command, capabilities, doctor, run_batch, write_report
+    from project_workbench import build_command, confirm_job, capabilities, doctor, run_batch, write_report
     root = tk.Tk()
     root.title('SolidWorks AI V2 — 项目工作台')
     root.geometry('1080x820')
@@ -20,13 +20,14 @@ def main():
     messages = queue.Queue()
     stop = threading.Event()
     values = {name:tk.StringVar(value=value) for name,value in {
-        'kind':'sheet','source':'','output':'','sw_exe':'','profile':'1','variant':'0',
+        'kind':'sheet','machine':'QL-5050PX','source':'','output':'','sw_exe':'','profile':'1','variant':'0',
         'thickness':'2.5','radius':'1','angle':'90','k_factor':'0.4',
         'length':'1800','width':'900','height':'1500'}.items()}
     confirmed, flip, inferred = tk.BooleanVar(), tk.BooleanVar(), tk.BooleanVar()
     for value in values.values():
         value.trace_add('write',lambda *args:confirmed.set(False))
     flip.trace_add('write',lambda *args:confirmed.set(False))
+    inferred.trace_add('write',lambda *args:confirmed.set(False))
     tabs = ttk.Notebook(root)
     tabs.pack(fill='both',expand=True,padx=12,pady=10)
     jobs_tab, overview = ttk.Frame(tabs), ttk.Frame(tabs)
@@ -55,6 +56,8 @@ def main():
         ttk.Entry(numbers,textvariable=values[key],width=12).grid(row=1,column=col,padx=4)
     machine = ttk.Frame(form)
     machine.grid(row=5,column=0,columnspan=3,sticky='w',pady=4)
+    ttk.Combobox(machine,textvariable=values['machine'],values=('QL-5050PX','GT-ZX'),state='readonly',width=14).grid(row=1,column=0,columnspan=2)
+    ttk.Label(machine,text='QL 专用流水线见 PR #7；此处仅提供旧 GT-ZX 规划').grid(row=1,column=2,columnspan=4)
     for col,key in enumerate(('length','width','height')):
         ttk.Label(machine,text=key+' mm').grid(row=0,column=col*2)
         ttk.Entry(machine,textvariable=values[key],width=12).grid(row=0,column=col*2+1,padx=4)
@@ -78,13 +81,15 @@ def main():
         try:
             kind = values['kind'].get()
             if kind == 'parametric':
-                job = {'kind':kind,**{k:float(values[k].get()) for k in ('length','width','height')}}
+                job = {'kind':kind,'machine':values['machine'].get(),**{k:float(values[k].get()) for k in ('length','width','height')}}
             else:
                 job = {'kind':kind,'action':action,'name':Path(values['source'].get()).name,
                     **{k:values[k].get() for k in ('source','output','sw_exe')},
                     **{k:float(values[k].get()) for k in ('thickness','radius','angle','k_factor')},
                     'profile':int(values['profile'].get()),'variant':int(values['variant'].get()),
                     'confirmed':confirmed.get(),'flip':flip.get(),'allow_inferred':inferred.get()}
+            if kind != 'parametric' and action == 'generate' and confirmed.get():
+                job = confirm_job(job)
             build_command(job)
             if not state['jobs']:
                 for item in table.get_children():
@@ -149,3 +154,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

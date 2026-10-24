@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT),str(ROOT/'src'),str(ROOT/'work')]
-from project_workbench import build_command, execute_job, run_batch, write_report, capabilities
+from project_workbench import build_command, confirm_job, execute_job, run_batch, write_report, capabilities
 from prepare_test_handoff import build_package
 from verify_test_handoff import verify
 import sw_tool_cli
@@ -33,15 +33,15 @@ class ProjectTests(unittest.TestCase):
         return {'kind':'sheet','action':'analyze','source':str(self.source),**kw}
 
     def native(self, **kw):
-        return self.job(action='generate',profile=1,thickness=2.5,radius=1,angle=90,k_factor=.25,
-            confirmed=True,output=str(self.root/'new.SLDPRT'),sw_exe=str(self.exe),**kw)
+        return confirm_job(self.job(action='generate',profile=1,thickness=2.5,radius=1,angle=90,k_factor=.25,
+            confirmed=True,output=str(self.root/'new.SLDPRT'),sw_exe=str(self.exe),**kw))
 
     def test_all_part_modes_and_parametric_commands_are_argument_arrays(self):
         for mode in ('sheet','roller','turned'):
             cmd = build_command(self.job(kind=mode))
             self.assertIn(str(self.source),cmd)
             self.assertIn('--analyze-only',cmd)
-        cmd = build_command({'kind':'parametric','length':1800,'width':900,'height':1500})
+        cmd = build_command({'kind':'parametric','machine':'GT-ZX','length':1800,'width':900,'height':1500})
         self.assertIn('src.a01_parametric.cli',cmd)
         self.assertNotIn('--live',cmd)
 
@@ -67,7 +67,7 @@ class ProjectTests(unittest.TestCase):
 
     def test_parametric_pretty_json_remains_review_required(self):
         runner = lambda *a,**kw:SimpleNamespace(returncode=3,stdout=json.dumps({'plan':{'status':'review_required'}},indent=2),stderr='')
-        result = execute_job({'kind':'parametric','length':1800,'width':900,'height':1500},runner=runner)
+        result = execute_job({'kind':'parametric','machine':'GT-ZX','length':1800,'width':900,'height':1500},runner=runner)
         self.assertEqual(result['status'],'review_required')
         self.assertFalse(result['cad_verified'])
         self.assertEqual(result['events'][0]['kind'],'parametric')
@@ -170,9 +170,10 @@ class SavedPartContractTests(unittest.TestCase):
             app = SimpleNamespace(OpenDoc6=lambda *args:model)
             com = SimpleNamespace(CoInitialize=lambda:None,CoUninitialize=lambda:None)
             win = SimpleNamespace(client=SimpleNamespace())
-            with patch.dict(sys.modules,{'pythoncom':com,'win32com':win,'win32com.client':win.client}),patch('sw_session.require_model_write',return_value=lease),patch('sw_session.close_owned_document',side_effect=lambda lease,app,title:lease.owned_docs.pop(title,None)) as close,patch('solidworks_generator._connect_task_solidworks',return_value=(app,False)),patch('solidworks_generator.ensure_solidworks_typelib'),patch('solidworks_generator._as_interface',side_effect=lambda m,obj,t:obj),patch('solidworks_generator._body_bounds',return_value=(0,0,0,.12,.016,.016)),patch('solidworks_generator._features',return_value=[]):
+            with patch.dict(sys.modules,{'pythoncom':com,'win32com':win,'win32com.client':win.client}),patch('sw_session.require_model_write',return_value=lease),patch('sw_session.close_owned_document',side_effect=lambda lease,app,title:lease.owned_docs.pop(title,None)) as close,patch('solidworks_generator._connect_task_solidworks',return_value=(app,False)),patch('solidworks_generator.ensure_solidworks_typelib'),patch('solidworks_generator._as_interface',side_effect=lambda m,obj,t:obj),patch('part_verification.solid_inventory',return_value=([0,0,0,120,16,16],[[0,0,0,120,16,16]])),patch('solidworks_generator._features',return_value=[]):
                 report = verify_saved_part(part,expected_dims_mm=(120,16,16))
-                self.assertEqual(report['status'],'reopen_geometry_verified')
+                self.assertEqual(report['status'],'reopen_dimensions_verified')
+                self.assertFalse(report['geometry_verified'])
                 with self.assertRaisesRegex(RuntimeError,'dimensions differ'):
                     verify_saved_part(part,expected_dims_mm=(150,16,16))
             self.assertEqual(close.call_count,2)
@@ -186,3 +187,4 @@ class SavedPartContractTests(unittest.TestCase):
             text = path.with_name(path.stem+'-parameters.csv').read_text(encoding='utf-8-sig')
             self.assertIn('chain_pitch,,mm,pending_mapping',text)
             self.assertIn('length,1800,mm',text)
+

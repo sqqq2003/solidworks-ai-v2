@@ -261,12 +261,13 @@ def run_roller(args: argparse.Namespace) -> int:
     verification = None
     if args.verify_reopen:
         from part_verification import verify_saved_part
-        verification = verify_saved_part(result.path,expected_dims_mm=[
-            (result.bounds[i+3]-result.bounds[i])*1000 for i in range(3)])
+        # result.bounds historically measures the first body only; it is not
+        # an independent full-part target. Do not use it as an oracle.
+        verification = verify_saved_part(result.path)
     emit(
         "done",
         kind="roller", reopen=verification, mechanical_acceptance="unverified",
-        status="reopen_geometry_verified" if verification else "generated_unverified",
+        status=verification['status'] if verification else "generated_unverified",
         inferred_fields=missing,dimensions_source="explicitly_allowed_generic_defaults" if missing else "drawing",
         path=str(result.path),
         message=f"滚筒零件已生成：{Path(result.path).name}",
@@ -299,7 +300,7 @@ def run_turned(args: argparse.Namespace) -> int:
         from part_verification import verify_saved_part
         verification = verify_saved_part(path,expected_dims_mm=build.expected_dims_mm)
     emit("done",kind="turned",path=path,reopen=verification,mechanical_acceptance="unverified",
-         status="reopen_geometry_verified" if verification else "generated_unverified",
+         status=verification['status'] if verification else "generated_unverified",
          warnings=list(build.warnings),threads="cosmetic_or_pending_not_certified")
     return 3 if build.warnings or verification is None else 0
 
@@ -334,4 +335,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

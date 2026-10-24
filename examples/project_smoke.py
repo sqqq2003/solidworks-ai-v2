@@ -34,7 +34,7 @@ def main():
          'profile':1,'thickness':2.5,'radius':1,'angle':90,'k_factor':.4},
         {'name':'synthetic roller missing dimensions','kind':'roller','action':'plan','source':str(roller)},
         {'name':'synthetic turned plan','kind':'turned','action':'plan','source':str(shaft),'variant':0},
-        {'name':'A01 pending real mappings','kind':'parametric','length':1800,'width':900,'height':1500}]
+        {'name':'GT-ZX legacy pending mappings (not QL)','kind':'parametric','machine':'GT-ZX','length':1800,'width':900,'height':1500}]
     (folder/'jobs.json').write_text(json.dumps({'schema_version':1,'sample':'synthetic_only','jobs':jobs},ensure_ascii=False,indent=2),encoding='utf-8')
     report = run_batch(jobs)
     path = write_report(report,folder)
@@ -44,3 +44,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

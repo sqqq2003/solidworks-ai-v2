@@ -11,7 +11,29 @@ def assert_native_save(path, error_code):
         raise RuntimeError('native save produced a missing or empty file')
 
 
-def verify_saved_part(path, *, expected_dims_mm=None):
+def solid_inventory(part, sw, module):
+    """Measure the union of every solid, retaining body-by-body evidence."""
+    bodies = part.GetBodies2(sw.SW_BODY_TYPE_SOLID, False)
+    if not bodies:
+        raise RuntimeError('reopened part has no solid bodies')
+    boxes = []
+    for raw in bodies:
+        body = sw._as_interface(module, raw, 'IBody2')
+        faces = body.GetFaces()
+        if not faces:
+            raise RuntimeError('solid body has no measurable faces')
+        face_boxes = [sw._as_interface(module,f,'IFace2').GetBox() for f in faces]
+        if any(b is None or len(b)!=6 or not all(math.isfinite(v) for v in b) for b in face_boxes):
+            raise RuntimeError('invalid native body bounds')
+        box = [min(b[i] for b in face_boxes) for i in range(3)]+[max(b[i] for b in face_boxes) for i in range(3,6)]
+        if any(box[i+3]<=box[i] for i in range(3)):
+            raise RuntimeError('degenerate solid body')
+        boxes.append([v*1000 for v in box])
+    union = [min(b[i] for b in boxes) for i in range(3)]+[max(b[i] for b in boxes) for i in range(3,6)]
+    return union,boxes
+
+
+def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
     from sw_session import require_model_write, close_owned_document
     import solidworks_generator as sw
     import pythoncom
@@ -45,15 +67,23 @@ def verify_saved_part(path, *, expected_dims_mm=None):
         if not sw._com_read(model, 'EditRebuild3'):
             raise RuntimeError('reopened part rebuild failed')
         part = sw._as_interface(module, model, 'IPartDoc')
-        bounds = [v*1000 for v in sw._body_bounds(part, module)]
+        bounds,body_boxes = solid_inventory(part,sw,module)
         dims = [bounds[i+3]-bounds[i] for i in range(3)]
         if not all(math.isfinite(v) and v > 0 for v in dims):
             raise RuntimeError('invalid reopened solid bounding dimensions')
         if expected_dims_mm is not None:
-            if len(expected_dims_mm) != 3 or any(not math.isclose(a,b,rel_tol=1e-4,abs_tol=.05)
+            if len(expected_dims_mm) != 3 or not all(type(v) in (int,float) and math.isfinite(v) and v>0 for v in expected_dims_mm) or any(not math.isclose(a,b,rel_tol=1e-4,abs_tol=.05)
                     for a,b in zip(sorted(dims),sorted(expected_dims_mm))):
                 raise RuntimeError('reopened solid dimensions differ from plan')
-        return {'status':'reopen_geometry_verified','rebuilt':True,'reopened':True,
+        if expected_body_count is not None:
+            if type(expected_body_count) is not int or expected_body_count<1 or len(body_boxes)!=expected_body_count:
+                raise RuntimeError('reopened solid body count differs from plan')
+        # Bounds, even with body counts, cannot establish holes, bends or shape.
+        status = 'reopen_dimensions_verified' if expected_dims_mm is not None else 'reopened_rebuilt'
+        return {'status':status,'rebuilt':True,'reopened':True,
+                'verification_scope':'solid_inventory_and_optional_envelope_only',
+                'body_count':len(body_boxes),'body_bounds_mm':body_boxes,
+                'expected_body_count':expected_body_count,'geometry_verified':False,
                 'bounds_mm':bounds,'dimensions_mm':dims,
                 'feature_types':[str(sw._com_read(f,'GetTypeName2')) for f in sw._features(model,module)],
                 'mechanical_acceptance':'unverified','threads':'not_certified'}
@@ -63,3 +93,4 @@ def verify_saved_part(path, *, expected_dims_mm=None):
                 close_owned_document(lease,app,title)
         finally:
             pythoncom.CoUninitialize()
+
