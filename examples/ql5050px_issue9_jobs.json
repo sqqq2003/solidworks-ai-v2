@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "jobs": [
+    {
+      "kind": "ql5050px",
+      "action": "auto_assembly",
+      "config": "ql5050px_issue9.json",
+      "name": "Issue9 auto_assembly"
+    },
+    {
+      "kind": "ql5050px",
+      "action": "drive",
+      "config": "ql5050px_issue9.json",
+      "name": "Issue9 drive"
+    },
+    {
+      "kind": "ql5050px",
+      "action": "manufacturing",
+      "config": "ql5050px_issue9.json",
+      "name": "Issue9 manufacturing"
+    },
+    {
+      "kind": "ql5050px",
+      "action": "machine_package",
+      "config": "ql5050px_issue9.json",
+      "name": "Issue9 machine_package",
+      "output_dir": "../runtime/issue9-project-package-new"
+    }
+  ]
+}

@@ -23,7 +23,7 @@ def main(argv=None):
         event = {'event':'plan' if args.action=='plan' else 'done','kind':'ql5050px',
                  'status':result['status'],'workflow':result,'plan':result['plan'],'cad_executed':False}
         print(json.dumps(event,ensure_ascii=False,allow_nan=False))
-        return 1 if result['status']=='failed' else 3
+        return 1 if result['status'] in {'failed','conflict'} else 3
     except Exception as exc:
         print(json.dumps({'event':'error','kind':'ql5050px','message':str(exc),'cad_executed':False},ensure_ascii=False))
         return 1

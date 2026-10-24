@@ -14,7 +14,8 @@ def main():
     commands.add_parser('status')
     commands.add_parser('doctor')
     ql = commands.add_parser('ql',help='QL-5050PX offline workflow; no native writes')
-    ql.add_argument('--action',choices=('plan','assembly','bom','drawing','pipeline'),default='plan')
+    from ql5050px.workflow import ACTIONS
+    ql.add_argument('--action',choices=sorted(ACTIONS),default='plan')
     ql.add_argument('--config',type=Path,required=True)
     ql.add_argument('--output-dir',type=Path)
     ql.add_argument('--resume',action='store_true')
@@ -43,7 +44,7 @@ def main():
             report = run_batch(jobs)
             report['report_file'] = str(write_report(report,args.reports))
         print(json.dumps(report,ensure_ascii=False,indent=2))
-        return 1 if report.get('status') == 'failed' else (3 if report.get('status') in {'review_required','pending_mapping'} else 0)
+        return 1 if report.get('status') in {'failed','conflict'} else (3 if report.get('status') in {'review_required','pending_mapping','ready_for_native'} else 0)
     except (OSError,ValueError,KeyError,TypeError) as exc:
         print(json.dumps({'status':'failed','error':str(exc)},ensure_ascii=False))
         return 1
