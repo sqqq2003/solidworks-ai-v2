@@ -1,0 +1,70 @@
+{
+  "task_id": "pr20_issue19_20261024_135326",
+  "role": "workbuddy",
+  "pr": "PR#20 Issue19 @ e1a14a74210471a09e1c82a8f77a9e8c7904f8aa (staged native editable modeling; Gork evidence levels)",
+  "sha": "e1a14a74210471a09e1c82a8f77a9e8c7904f8aa",
+  "sha_verified": "git rev-parse HEAD == e1a14a74210471a09e1c82a8f77a9e8c7904f8aa (work tree clean, pin unchanged)",
+  "overlay_on": null,
+  "status": "partial",
+  "status_reason": "Offline modeling_batch cross-validation PASSED independently (4/4 mock_only, resume OK, changed-jobs rejected). Native modeling was NOT validated: PR20's sw_session.require_model_write refuses any write unless the session is task-OWNED (verified_exclusive requires spawn_claimed=True and attached_existing=False); a warm-reuse ATTACH to the running SolidWorks is refused by design (SessionOwnershipError), and the only write-legal path owned_solidworks spawns a process that never registers an independent COM object on this single-instance SW host (forbidden here per constraints, and already shown broken in the PR17 oracle). This matches Qoder's 'native not formally accepted / pending_windows_validation' and is NOT a regression.",
+  "offline_pass": true,
+  "offline_detail": {
+    "runner": "ql5050px.staged_modeling.modeling_batch(cfg, isolated_out)",
+    "config": "examples\\modeling_batch.json",
+    "independent_out": "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\batch_wb",
+    "jobs": 4,
+    "job_ids": ["plate", "bracket", "shaft", "two_bends"],
+    "top_status": "review_required",
+    "cad_executed": false,
+    "native_acceptance_field": "pending_windows_validation",
+    "per_job_status": "all 4 = mock_only (simulated feature contract only; no fake SLDPRT written)"
+  },
+  "jobs": 4,
+  "resume_ok": true,
+  "resume_detail": "Second run with resume=True on the same jobs re-loaded the 4 existing per-job JSON files (signature matched request.sha256); exit 0.",
+  "changed_rejected": true,
+  "changed_detail": "Run with resume=True but modified jobs raised ValueError('changed batch cannot resume') at staged_modeling.py:72; exit code 1.",
+  "native_ran": true,
+  "native_plate_created": false,
+  "native_acceptance": "SessionOwnershipError",
+  "native_detail": {
+    "method": "read-only warm-reuse ATTACH to running SolidWorks (SW_WARM_REUSE_PID=16564) via solidworks_generator._connect_task_solidworks, then invoked sw_session.require_model_write; NO owned_spawn, NO NewDocument/save, NO ExitApp/taskkill.",
+    "attach_state": {
+      "attached_existing": true,
+      "created_by_task": false,
+      "spawn_claimed": false,
+      "verified_exclusive": false,
+      "observed_pid": null,
+      "foreign_titles": []
+    },
+    "write_gate": "refused",
+    "require_model_write_error": "SessionOwnershipError: refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership",
+    "conclusion": "PR20 enforces exclusive task-OWNED sessions for any modeling write. Warm-reuse attach (the only non-spawn option on this host) is refused by design; the template gb_part.prtdot + minimal sketch+extrude plate therefore could not be created. This is a design/environment limitation, not a code failure of the staged modeling contract."
+  },
+  "sw_pids_before_after": {
+    "offline": {"before": [16564], "after": [16564], "note": "offline is pure Python; no SW spawned; prior instance 7924 had exited before this run"},
+    "native_probe": {"before": [16564, 19724], "after": [16564, 19724], "note": "read-only attach; probe created_by_task=false (did not spawn) and killed nothing; 19724 pre-existed the probe"}
+  },
+  "sw_killed": false,
+  "com_crash": false,
+  "evidence": [
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step1_fresh_stdout.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step1_fresh_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step2_resume_stdout.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step2_resume_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step3_changed_stderr.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step3_changed_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\batch_wb\\request.sha256",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\batch_wb\\plate.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\batch_wb\\bracket.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\batch_wb\\shaft.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\batch_wb\\two_bends.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\native_attach_probe.json",
+    "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\native_attach_probe_stdout.txt"
+  ],
+  "p248": {
+    "ran": false,
+    "note": "p248 not part of this task; oracle/offline modeling_batch result says nothing about p248; do not infer p248 from this."
+  },
+  "honest": true
+}

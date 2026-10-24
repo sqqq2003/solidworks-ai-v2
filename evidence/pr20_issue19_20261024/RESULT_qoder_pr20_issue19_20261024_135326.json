@@ -1,0 +1,86 @@
+{
+  "task_id": "pr20_issue19_20261024_135326",
+  "role": "qoder",
+  "ts": "20261024_141444",
+  "status": "ready",
+  "summary": "PR#20 @e1a14a74210471a09e1c82a8f77a9e8c7904f8aa prepared at C:\\sw-ai-v2-work\\solidworks-ai-v2-pr20-e1a14a. Offline modeling_batch: 4/4 mock_only, resume identical, changed jobs rejected, import smoke still passes after the native fix. Native path was then executed as requested. run_native_part/owned_solidworks spawned PID 19724 but COM registration stayed with the existing instance 16564, so ownership proof failed and the process was left open (no ExitApp/taskkill). The warm-attach harness completed the full staged job on PID 16564: sketch1 + extrude1 rebuilt, saved, closed, reopened, feature tree read back (sketch1=ProfileFeature, extrude1=Extrusion), and a read-only reopen measured one solid 10x40x40mm. Two real SW2022 defects were found and fixed in src/ql5050px/editable_features.py: ISketch has no GetFeature (use FeatureByPositionReverse(0)) and IModelDoc2 has no FeatureByName (use IPartDoc + IFeature). Because the successful run used a harness that bypasses the ownership gate (attached_existing=true, exclusive=false), native_acceptance remains pending_windows_validation; no p248 pass is claimed.",
+  "out_dir": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326",
+  "next": "lxy_accept",
+  "honest": true,
+  "changed_files": [
+    "src/ql5050px/editable_features.py"
+  ],
+  "evidence": [
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\accept_pr20_issue19_pr20_issue19_20261024_135326.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\batch_win\\plate.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\batch_win\\bracket.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\batch_win\\shaft.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\batch_win\\two_bends.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\batch_win_stdout.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\batch_win_stderr.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\batch_win_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\resume_changed_stdout.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\import_smoke_after_native_fix.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\pr20_native_fix.diff",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_owned_spawn.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_owned_attempt.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_plate_warm.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate\\stages.jsonl",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate\\checkpoint.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate\\part.SLDPRT",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_verify_readonly.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_verify.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\attempts",
+    "D:\\工程\\钣金导入\\p0_wb_dispatch\\NOTE_qoder_pr20_native_followup_20261024_141444.md"
+  ],
+  "pr": {
+    "number": 20,
+    "sha": "e1a14a74210471a09e1c82a8f77a9e8c7904f8aa",
+    "branch": "feat/issue19-staged-modeling",
+    "draft": true,
+    "head_at_fetch": "4b81e2b57b33f1c064fd7fdbf8f2286535088010"
+  },
+  "batch": {
+    "status": "review_required",
+    "cad_executed": false,
+    "jobs": 4,
+    "job_statuses": ["mock_only", "mock_only", "mock_only", "mock_only"],
+    "resume_ok": true,
+    "changed_input_rejected": true
+  },
+  "native": {
+    "owned_spawn": {
+      "attempted": true,
+      "spawned_pid": 19724,
+      "attached_pid": 16564,
+      "result": "ownership proof failed: COM registration did not match spawned PID; process left open",
+      "exit_app_or_kill_issued": false
+    },
+    "warm_smoke": {
+      "pid": 16564,
+      "modeling": "saved_reopened",
+      "cleanup": "owned_document_closed",
+      "sha256": "77bddea10791e563544d5f21b238db0f7d20bace19879ad6fe6baecac919132e",
+      "readback": ["sketch1:ProfileFeature", "extrude1:Extrusion"],
+      "geometry": {"solid_bodies": 1, "dims_mm": [10.0, 40.0, 40.0]},
+      "deviation": "harness bypasses require_model_write; attached_existing=true, exclusive=false"
+    },
+    "code_fixes": [
+      "ISketch.GetFeature absent in SW2022 -> model.FeatureByPositionReverse(0)",
+      "IModelDoc2.FeatureByName absent in SW2022 -> IPartDoc.FeatureByName + IFeature wrapper"
+    ]
+  },
+  "native_acceptance": "pending_windows_validation",
+  "p248_pass_claimed": false,
+  "sw": {
+    "com_used": true,
+    "cad_written": true,
+    "cad_paths": ["D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate\\part.SLDPRT"],
+    "desktop_written": false,
+    "pids_before": [16564],
+    "pids_after": [16564, 19724],
+    "exit_app_or_taskkill_issued": false,
+    "pid_19724_note": "spawned by the owned-spawn attempt and left open after failed proof; operator may close it manually",
+    "pid_7924_note": "exited externally during the earlier offline phase; no ExitApp/taskkill issued by this task"
+  }
+}

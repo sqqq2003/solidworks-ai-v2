@@ -1,0 +1,36 @@
+diff --git a/src/ql5050px/editable_features.py b/src/ql5050px/editable_features.py
+index ba626df..25b8d72 100644
+--- a/src/ql5050px/editable_features.py
++++ b/src/ql5050px/editable_features.py
+@@ -32,7 +32,11 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
+                 self.apply_sketch_constraints(p.get('constraints',[]))
+                 sketch=manager.ActiveSketch
+                 if sketch is None:raise RuntimeError('no active native sketch')
+-                native=sketch.GetFeature();native.Name=feature['id']
++                # ISketch has no GetFeature in the SW2022 typelib; the open sketch
++                # is the top feature in the tree.
++                native=model.FeatureByPositionReverse(0)
++                if native is None:raise RuntimeError('active sketch feature not found')
++                native.Name=feature['id']
+             finally:manager.InsertSketch(True)
+         else:
+             sketch=p.get('sketch')
+@@ -49,10 +53,16 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
+ 
+     def verify_feature_tree(self,names):
+         self.guard()
++        import solidworks_generator as sw
++        module=sw.ensure_solidworks_typelib()
++        # IModelDoc2 has no FeatureByName in the SW2022 typelib; the raw result
++        # also needs the IFeature interface for method-style GetTypeName2.
++        part=sw._as_interface(module,self.model,'IPartDoc')
+         evidence=[]
+         for name in names:
+-            f=self.model.FeatureByName(name)
+-            if f is None:raise RuntimeError('feature missing after reopen: '+name)
++            raw=part.FeatureByName(name)
++            if raw is None:raise RuntimeError('feature missing after reopen: '+name)
++            f=sw._as_interface(module,raw,'IFeature')
+             evidence.append({'name':name,'native_type':f.GetTypeName2()})
+         return {'features':evidence,'dimensions_verified':False,'status':'pending_native_validation'}
+ 

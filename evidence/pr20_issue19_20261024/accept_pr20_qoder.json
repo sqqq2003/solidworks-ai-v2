@@ -1,0 +1,153 @@
+{
+  "task_id": "pr20_issue19_20261024_135326",
+  "pr": 20,
+  "sha": "e1a14a74210471a09e1c82a8f77a9e8c7904f8aa",
+  "branch": "feat/issue19-staged-modeling",
+  "scope": "offline_modeling_batch_import_smoke_and_native_attempt",
+  "work_copy": "C:\\sw-ai-v2-work\\solidworks-ai-v2-pr20-e1a14a",
+  "work_copy_state": "e1a14a7 plus one uncommitted native fix in src/ql5050px/editable_features.py; patch saved as logs/pr20_native_fix.diff",
+  "head_note": "refs/pull/20/head resolved to 4b81e2b57b33f1c064fd7fdbf8f2286535088010 at fetch time; e1a14a7 is an ancestor in that PR history and this task is pinned to e1a14a7 per instruction",
+  "files_present": {
+    "src/ql5050px/staged_modeling.py": true,
+    "src/ql5050px/native_part_host.py": true,
+    "src/ql5050px/editable_features.py": true,
+    "src/ql5050px/feature_operations.py": true,
+    "src/sw_math_arrays.py": true,
+    "examples/modeling_batch.json": true,
+    "examples/p248_golden.json": true,
+    "docs/issue19-review.md": true,
+    "workflow_modeling_batch_entry": true
+  },
+  "batch": {
+    "out_dir": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\batch_win",
+    "command": "python -c ... modeling_batch(cfg, batch_win)",
+    "exit_code": 0,
+    "stderr_empty": true,
+    "status": "review_required",
+    "cad_executed": false,
+    "native_acceptance": "pending_windows_validation",
+    "jobs": [
+      {"id": "plate", "status": "mock_only", "features": 4},
+      {"id": "bracket", "status": "mock_only", "features": 3},
+      {"id": "shaft", "status": "mock_only", "features": 2},
+      {"id": "two_bends", "status": "mock_only", "features": 4}
+    ],
+    "job_files": ["plate.json", "bracket.json", "shaft.json", "two_bends.json", "request.sha256"]
+  },
+  "resume": {
+    "ok": true,
+    "results_same": true,
+    "status": "review_required",
+    "cad_executed": false,
+    "native_acceptance": "pending_windows_validation"
+  },
+  "changed_jobs": {
+    "rejected": true,
+    "error": "changed batch cannot resume"
+  },
+  "import_smoke": {
+    "ql5050px.staged_modeling": "ok",
+    "ql5050px.native_part_host": "ok",
+    "ql5050px.editable_features": "ok",
+    "ql5050px.feature_operations": "ok",
+    "sw_math_arrays": "ok",
+    "win32com_imported": false,
+    "pythoncom_imported": false,
+    "workflow_has_modeling_batch": true,
+    "rerun_after_native_fix": "ok"
+  },
+  "p248_golden": {
+    "fields_present": true,
+    "missing_fields": [],
+    "pass_claimed": false,
+    "note": "only field presence checked; no claim that p248 4/4 passes because of this PR"
+  },
+  "native": {
+    "ran": true,
+    "owned_spawn": {
+      "attempted": true,
+      "entry": "run_native_part -> owned_solidworks",
+      "exe": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+      "spawned_pid": 19724,
+      "attached_pid": 16564,
+      "result": "SessionOwnershipError: COM registration did not match spawned PID 19724; process left open by design",
+      "conclusion": "the already-running single-instance SolidWorks owns the COM registration, so owned-spawn PID/image proof is unavailable on this host",
+      "exit_app_or_kill_issued": false,
+      "evidence": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_owned_attempt.json"
+    },
+    "warm_attach_smoke": {
+      "harness": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_plate_warm.py",
+      "warm_pid": 16564,
+      "template": "C:\\ProgramData\\SOLIDWORKS\\SOLIDWORKS 2022\\templates\\gb_part.prtdot",
+      "plane": "上视基准面",
+      "plan": "sketch1: circle r=20mm on plane; extrude1: 10mm",
+      "modeling": "saved_reopened",
+      "cleanup": "owned_document_closed",
+      "output": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate\\part.SLDPRT",
+      "sha256": "77bddea10791e563544d5f21b238db0f7d20bace19879ad6fe6baecac919132e",
+      "bytes": 62355,
+      "readback": [
+        {"name": "sketch1", "native_type": "ProfileFeature"},
+        {"name": "extrude1", "native_type": "Extrusion"}
+      ],
+      "deviation": "harness bypasses require_model_write ownership gate; attached_existing=true, exclusive=false; this is not an owned-spawn validation"
+    },
+    "geometry_readonly": {
+      "harness": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_verify_readonly.py",
+      "result": "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_verify.json",
+      "solid_bodies": 1,
+      "dims_mm": [10.0, 40.0, 40.0],
+      "bounds_mm": [0.0, -20.0, -20.0, 10.0, 20.0, 20.0],
+      "feature_tree": ["extrude1:Extrusion", "sketch1:ProfileFeature"],
+      "rebuild_ok": true
+    },
+    "code_fixes": [
+      "src/ql5050px/editable_features.py: SW2022 ISketch has no GetFeature (typed and dynamic both fail); name the open sketch via model.FeatureByPositionReverse(0)",
+      "src/ql5050px/editable_features.py: IModelDoc2 has no FeatureByName in the SW2022 typelib; use IPartDoc.FeatureByName and wrap the result as IFeature for GetTypeName2"
+    ],
+    "failed_attempts_preserved": [
+      "logs/attempts/native_plate_failed_rawdispatch",
+      "logs/attempts/native_plate_failed_isketch",
+      "logs/attempts/native_plate_failed_featurebyname",
+      "logs/attempts/native_plate_failed_feature_dynamic"
+    ],
+    "native_acceptance": "pending_windows_validation",
+    "reason_pending": "owned spawn is unproven on this host; the successful smoke is harness-adapted to the warm attached session"
+  },
+  "sw": {
+    "pids_before": [16564],
+    "pids_after": [16564, 19724],
+    "com_used": true,
+    "cad_written": true,
+    "cad_paths": ["D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate\\part.SLDPRT"],
+    "desktop_written": false,
+    "exit_app_or_taskkill_issued": false,
+    "pid_19724_note": "spawned by the owned-spawn attempt; ownership proof failed; left running per the no-kill rule; operator may close it manually",
+    "pid_7924_note": "former second instance exited externally before the native phase; no ExitApp/taskkill issued by this task"
+  },
+  "pass_offline": true,
+  "native_smoke_result": "saved_reopened_on_warm_session",
+  "honest": true,
+  "evidence": [
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\batch_win_stdout.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\batch_win_stderr.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\batch_win_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\resume_changed_stdout.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\resume_changed_stderr.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\resume_changed_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\import_smoke_stdout.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\import_smoke_stderr.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\import_smoke_exit.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\import_smoke_after_native_fix.log",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\check_resume.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_diag2.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_plate_warm.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_verify_readonly.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_verify.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_owned_spawn.py",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\native_owned_attempt.json",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\logs\\pr20_native_fix.diff",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\native_plate",
+    "D:\\工程\\钣金导入\\wb_pr20_issue19_20261024_135326\\batch_win"
+  ]
+}
