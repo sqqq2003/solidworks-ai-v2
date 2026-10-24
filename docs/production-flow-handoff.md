@@ -20,12 +20,14 @@ With a completely mapped configuration, inspect `production-plan.json` and its
 `review_sha256`, then explicitly launch the owned Windows transaction:
 
 ```powershell
-python work/project.py native-production runtime/production-handoff/production-plan.json --sw-exe "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe" --output runtime/new-native-run --review-sha256 <reviewed-plan-hash>
+python work/project.py native-production runtime/reviewed-production.json --sw-exe "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe" --output runtime/new-native-run --review-sha256 <reviewed-plan-hash>
 ```
 
-The digest binds plan contents, not mutable source/template file bytes. Preserve
-and independently identify the exact input files alongside the pinned source
-commit. The native command rejects changed digests, incomplete plans, conflicts
+Before native CLI execution, run the new `review-production` step described in
+[production-file-review.md](production-file-review.md). It binds declared local
+source/template bytes and implementation hashes to a new review digest. The CLI
+requires this sealed plan. Hidden assembly dependencies still require the native
+Pack-and-Go reference audit. The native command rejects changed digests, incomplete plans, conflicts
 and non-Windows execution. All existing owned-session/write guards remain active.
 The desktop action exports plans only; it never silently starts native CAD.
 

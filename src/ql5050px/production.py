@@ -77,15 +77,19 @@ def execute_production(plan,driver,destination,*,review_sha256):
     or cleanup success is inferred; the existing supervisor owns process lifetime.
     """
     validate_review(plan,review_sha256)
+    from .production_review import verify_production_inputs
+    input_verification=verify_production_inputs(plan)
     root=Path(destination).resolve();root.mkdir(parents=True,exist_ok=False)
     report={'schema_version':1,'review_sha256':review_sha256,'status':'running','stages':[],
-        'cad_executed':False,'native_acceptance':'pending_windows_validation','manufacturing_approved':False}
+        'cad_executed':False,'native_acceptance':'pending_windows_validation','manufacturing_approved':False,
+        'input_verification':input_verification}
     def checkpoint():
         temporary=root/'checkpoint.tmp'
         with temporary.open('w',encoding='utf-8') as f:
             json.dump(report,f,ensure_ascii=False,indent=2,allow_nan=False);f.flush();os.fsync(f.fileno())
         temporary.replace(root/'checkpoint.json')
     def stage(name,call):
+        verify_production_inputs(plan)
         report['stages'].append({'name':name,'status':'running','started':time.time()});checkpoint()
         result=call();report['stages'][-1].update(status='returned',result=result);checkpoint();return result
     machine=plan['machine_plan'];tree=machine['assembly_plan']['tree'];root_node=tree['root']

@@ -18,6 +18,12 @@ def main():
     acceptance=commands.add_parser('export-acceptance',help='Redacted evidence export without CAD binaries')
     acceptance.add_argument('batch_root',type=Path)
     acceptance.add_argument('--out',type=Path,required=True)
+    production_review=commands.add_parser('review-production',help='Bind declared local CAD/template bytes and implementation to reviewed plan')
+    production_review.add_argument('plan',type=Path)
+    production_review.add_argument('--out',type=Path,required=True)
+    production_export=commands.add_parser('export-production',help='Audit whole-machine checkpoint and export evidence ZIP')
+    production_export.add_argument('directory',type=Path)
+    production_export.add_argument('--out',type=Path,required=True)
     ql = commands.add_parser('ql',help='QL-5050PX offline workflow; no native writes')
     from ql5050px.workflow import ACTIONS
     ql.add_argument('--action',choices=sorted(ACTIONS),default='plan')
@@ -86,11 +92,21 @@ def main():
             jobs=prepare_jobs(data,sw_exe=args.sw_exe,template=args.template,sketch_plane=args.sketch_plane,review=True)
             with args.out.open('x',encoding='utf-8') as stream:json.dump({'jobs':jobs},stream,ensure_ascii=False,indent=2)
             report={'status':'review_required','reviewed_manifest':str(args.out),'job_count':len(jobs)}
+        elif args.command == 'review-production':
+            from ql5050px.production_review import seal_production_review
+            plan=seal_production_review(json.loads(args.plan.read_text(encoding='utf-8-sig')))
+            with args.out.open('x',encoding='utf-8') as stream:json.dump(plan,stream,ensure_ascii=False,indent=2)
+            report={'status':'review_required','reviewed_plan':str(args.out),'review_sha256':plan['review_sha256']}
+        elif args.command == 'export-production':
+            from ql5050px.production_acceptance import export_production_acceptance
+            report=export_production_acceptance(args.directory,args.out)
         elif args.command == 'native-production':
             from ql5050px.production import validate_review
             from ql5050px.native_machine import run_owned_native
             plan=json.loads(args.plan.read_text(encoding='utf-8-sig'))
             validate_review(plan,args.review_sha256)
+            from ql5050px.production_review import verify_production_inputs
+            verify_production_inputs(plan,require_seal=True)
             report=run_owned_native(args.sw_exe,args.output,'production',{'plan':plan,'review_sha256':args.review_sha256})
         elif args.command == 'native-parts':
             if sys.platform!='win32':raise ValueError('native batch requires Windows')
