@@ -3,8 +3,8 @@ import json,subprocess,sys,hashlib,time,threading,os
 from pathlib import Path
 
 
-def supervise(jobs,root,*,resume=False,timeout=900,stop_requested=lambda:False):
-    root=Path(root).resolve();root.mkdir(parents=True,exist_ok=resume)
+def _supervise_locked(jobs,root,*,resume=False,timeout=900,stop_requested=lambda:False):
+    root=Path(root).resolve()
     source=Path(__file__).resolve().parent
     engine=source.parent
     version_files=list(source.glob('*.py'))
@@ -14,12 +14,13 @@ def supervise(jobs,root,*,resume=False,timeout=900,stop_requested=lambda:False):
     spec=root/'batch.sha256'
     if spec.exists() and spec.read_text()!=signature:raise ValueError('resume input changed')
     spec.write_text(signature)
+    (root/'source-manifest.json').write_text(json.dumps({'code_sha256':code,'request_and_code_signature':signature,'native_acceptance':'pending_windows_validation'},indent=2))
     results=[];ids=set()
     for job in jobs:
         name=job['id']
         if not name.replace('_','').replace('-','').isalnum() or name in ids:raise ValueError('safe unique job ids required')
         ids.add(name)
-    for job in jobs:
+    for index,job in enumerate(jobs):
         if stop_requested():
             results.append({'id':job['id'],'status':'not_run','reason':'stopped after previous worker'});continue
         folder=root/job['id'];folder.mkdir(exist_ok=True)
@@ -29,7 +30,7 @@ def supervise(jobs,root,*,resume=False,timeout=900,stop_requested=lambda:False):
             if not latest.exists():raise RuntimeError('incomplete worker attempt; inspect PID/logs before retry')
             old=json.loads(latest.read_text())
             if old.get('worker_may_be_running'):raise RuntimeError('unresolved worker blocks further native work')
-            if old.get('exit_class')=='native_access_violation' and not old.get('recovery_approved'):
+            if (old.get('exit_class')=='native_access_violation' or old.get('cleanup') in {'failed','needs_review','unknown',None}) and not old.get('recovery_approved'):
                 raise RuntimeError('crashed worker requires explicit recover-parts review before retry')
             if old.get('status')=='completed':
                 artifact=old.get('artifact',{})
@@ -76,8 +77,25 @@ def supervise(jobs,root,*,resume=False,timeout=900,stop_requested=lambda:False):
         (attempt/'supervisor.json').write_text(json.dumps(row,indent=2));results.append(row)
         if crash:
             (attempt/'CRASH_REVIEW.json').write_text(json.dumps({'pid':process.pid,'checkpoint':str(checkpoint),'native_exit':code,'instruction':'Preserve checkpoint/logs. Inspect SW session; do not infer success or kill unknown processes.'},indent=2))
-        if running or crash or model.get('cleanup') in {'failed','needs_review'}:break # uncertain COM lifetime blocks further native writes
+        if running or crash or model.get('cleanup') in {'failed','needs_review','unknown',None}:
+            results.extend({'id':later['id'],'status':'not_run','reason':'previous worker lifetime requires review'} for later in jobs[index+1:])
+            break
     summary={'results':results,'status':'review_required','native_acceptance':'pending_windows_validation',
         'counts':{s:sum(r['status']==s for r in results) for s in sorted({r['status'] for r in results})}}
     (root/'summary.json').write_text(json.dumps(summary,indent=2))
     return summary
+
+
+def supervise(jobs,root,*,resume=False,timeout=900,stop_requested=lambda:False):
+    if not isinstance(jobs,list) or not jobs:raise ValueError('nonempty native jobs list required')
+    if type(timeout) not in (int,float) or not __import__('math').isfinite(timeout) or timeout<=0:
+        raise ValueError('finite positive timeout required')
+    root=Path(root).resolve();root.mkdir(parents=True,exist_ok=resume)
+    lock=root/'.supervisor.lock'
+    descriptor=os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+    try:
+        os.write(descriptor,json.dumps({'supervisor_pid':os.getpid(),'started':time.time()}).encode())
+        return _supervise_locked(jobs,root,resume=resume,timeout=timeout,stop_requested=stop_requested)
+    finally:
+        os.close(descriptor);lock.unlink()
+

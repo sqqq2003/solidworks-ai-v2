@@ -49,7 +49,7 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
             expected=row['value']/1000 if row['unit']=='mm' else math.radians(row['value'])
             if not math.isclose(value,expected,rel_tol=1e-7,abs_tol=1e-9):raise RuntimeError('persisted dimension mismatch')
             checks.append({'name':row['name'],'value_si':value})
-        if self.plan.get('expected_dims_mm'):
+        if self.plan.get('expected_dims_mm') is not None or self.plan.get('expected_body_count') is not None:
             import solidworks_generator as sw
             from part_verification import solid_inventory
             module=sw.ensure_solidworks_typelib()
@@ -57,9 +57,9 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
             bounds,bodies=solid_inventory(part,sw,module)
             actual=[bounds[i+3]-bounds[i] for i in range(3)]
             from .modeling_validation import envelope
-            expected=envelope(self.plan['expected_dims_mm'])
             actual=envelope(actual)
-            if any(not math.isclose(a,b,rel_tol=1e-4,abs_tol=.05) for a,b in zip(sorted(actual),sorted(expected))):
+            expected=envelope(self.plan['expected_dims_mm']) if self.plan.get('expected_dims_mm') is not None else None
+            if expected is not None and any(not math.isclose(a,b,rel_tol=1e-4,abs_tol=.05) for a,b in zip(sorted(actual),sorted(expected))):
                 raise RuntimeError('recipe envelope differs from independent expected dimensions')
             if len(bodies)!=self.plan.get('expected_body_count',1):raise RuntimeError('recipe solid body count differs')
             result['recipe_envelope_mm']=actual
@@ -108,3 +108,4 @@ def run_native_part(sw_exe,template,plan,output_dir):
             host=NativePartHost(current_lease(),root,template)
             return execute_part_job(plan,host,root)
     return run_on_task_sta(job,timeout=900,task_name='editable-part-staged')
+

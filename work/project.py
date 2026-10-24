@@ -13,6 +13,11 @@ def main():
     commands = p.add_subparsers(dest='command',required=True)
     commands.add_parser('status')
     commands.add_parser('doctor')
+    native_doctor=commands.add_parser('native-doctor',help='Read-only active COM environment; no writes or spawn')
+    native_doctor.add_argument('--sw-exe',type=Path)
+    acceptance=commands.add_parser('export-acceptance',help='Redacted evidence export without CAD binaries')
+    acceptance.add_argument('batch_root',type=Path)
+    acceptance.add_argument('--out',type=Path,required=True)
     ql = commands.add_parser('ql',help='QL-5050PX offline workflow; no native writes')
     from ql5050px.workflow import ACTIONS
     ql.add_argument('--action',choices=sorted(ACTIONS),default='plan')
@@ -47,6 +52,12 @@ def main():
     try:
         if args.command == 'status':
             report = capabilities()
+        elif args.command == 'native-doctor':
+            from ql5050px.native_environment import inspect_environment
+            report=inspect_environment(args.sw_exe)
+        elif args.command == 'export-acceptance':
+            from ql5050px.acceptance_report import export_acceptance
+            report=export_acceptance(args.batch_root,args.out)
         elif args.command == 'doctor':
             report = doctor()
         elif args.command == 'golden-check':
@@ -99,4 +110,5 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
 
