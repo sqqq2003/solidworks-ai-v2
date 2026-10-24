@@ -104,10 +104,15 @@ class OwnedBinding:
         return self.app, True  # This exact application was created by this task.
 
     def evidence(self):
+        # Issue #19 S5: the process exit code is the acceptance signal for
+        # teardown. poll() is None while the process is still exiting; a
+        # code of 0 is required for "stable exit", 139 / 0xC0000005 (-1073741819)
+        # is the known teardown-crash class. pending_windows_validation.
         return {'ownership': 'spawned_pid_and_live_handle', 'pid': self.lifetime.pid,
                 'image': self.lifetime.executable, 'attached_existing': False,
                 'native_verification': 'session_only_not_cad_acceptance',
-                'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error}
+                'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
+                'cleanup_exit_code': self.lifetime.process.poll()}
 
 
 def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump=None):

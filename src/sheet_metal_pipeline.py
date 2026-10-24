@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import asdict
 import hashlib
 import json
+import logging
 import math
 import os
 from pathlib import Path
@@ -15,6 +16,11 @@ import tempfile
 import uuid
 from typing import Protocol
 
+logger = logging.getLogger(__name__)
+
+from run_recovery import (STAGE_ORDER, RunLock, quarantine_orphan_staging,
+                          read_checkpoints, validate_checkpoint_chain,
+                          write_checkpoint, write_crash_package)
 from bend_allowance import resolve_bend_allowance_spec
 from profile_selection import contained_hole_indices, outermost_containing_profile_index
 from profile_sanitize import contour_self_intersects, sanitize_closed_profile
@@ -157,11 +163,31 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
     root.mkdir(parents=True, exist_ok=True)
     label = ('simulation-' if port.simulated else 'native-') + plan_id
     destination = root / label
-    lock = root / ('.' + label + '.lock')
-    lock.mkdir()  # Cross-process single publisher; never clear someone else's lock.
+    # Issue #19: crash-safe publish lock. A live owner's lock is never stolen;
+    # a stale lock (dead owner pid or expired heartbeat) is archived, not deleted.
+    run_lock = RunLock(root, label, plan_id=plan_id)
+    lock_status = run_lock.acquire()
+    if lock_status != 'acquired':
+        logger.info('recovered stale publish lock for plan %s', plan_id)
     stage = None
     generated = None
+    evidence = None
+    ckpt_dir = None
+    checkpoints = {}
+    resume_stage = None
     try:
+        # A completed destination always wins; any staging left behind is
+        # stale by definition, so quarantine everything in that case.
+        def _resumable(candidate):
+            found, _ckpts = validate_checkpoint_chain(
+                candidate / 'ckpt', plan_id=plan_id,
+                code_sha256=plan['code_sha256'], base_dir=candidate)
+            return found is not None
+        resumable, quarantined = quarantine_orphan_staging(
+            root, label, is_resumable=(lambda candidate: False) if destination.exists()
+            else _resumable)
+        if quarantined:
+            logger.info('quarantined orphan staging: %s', [str(q) for q in quarantined])
         if destination.exists():
             manifest = json.loads((destination/'result.json').read_text())
             if manifest['plan_id'] != plan_id or manifest['simulated_only'] != port.simulated:
@@ -178,24 +204,79 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
                 if Path(name).name != name or file_hash(destination/name) != checksum:
                     raise RuntimeError('artifact changed; refusing stale resume')
             return {**manifest, 'resumed': True, 'output_dir': str(destination)}
-        stage = Path(tempfile.mkdtemp(prefix='.'+label+'-', dir=root))
+        if resumable:
+            # Adopt the staging directory with the longest verified chain.
+            best = None
+            for candidate in resumable:
+                found, ckpts = validate_checkpoint_chain(
+                    candidate / 'ckpt', plan_id=plan_id,
+                    code_sha256=plan['code_sha256'], base_dir=candidate)
+                if found is not None and (best is None
+                        or STAGE_ORDER.index(found) > STAGE_ORDER.index(best[1])):
+                    best = (candidate, found, ckpts)
+            stage, resume_stage, checkpoints = best
+            ckpt_dir = stage / 'ckpt'
+            if resume_stage in ('S1', 'S2', 'S3'):
+                generated = checkpoints['S1']['evidence'].get('generation')
+            if resume_stage in ('S2', 'S3'):
+                evidence = checkpoints['S2']['evidence'].get('reopen')
+            logger.info('resuming plan %s from checkpoint %s in %s',
+                        plan_id, resume_stage, stage)
+        else:
+            stage = Path(tempfile.mkdtemp(prefix='.'+label+'-', dir=root))
+            ckpt_dir = stage / 'ckpt'
+            ckpt_dir.mkdir()
         part = stage / ('part.trace.json' if port.simulated else 'part.SLDPRT')
         flat = stage / ('flat.trace.json' if port.simulated else 'flat.DXF')
-        generated = port.generate(analysis, plan, part)
-        if not port.simulated and plan['bend_indices'] and (not generated.get('auto_bent') or generated.get('auto_bend_failed_count', 0)):
-            raise RuntimeError('automatic bending incomplete; manual/reference fallback rejected')
-        evidence = port.reopen_inspect(part)
-        if not port.simulated:
-            validate_native(plan, evidence)
-        port.export_flat(part, flat)
-        if not port.simulated:
-            import ezdxf
-            drawing = ezdxf.readfile(flat)
-            if not list(drawing.modelspace()):
-                raise RuntimeError('flat DXF contains no geometry')
-        for product in (part, flat):
-            if not product.is_file() or product.stat().st_size == 0:
-                raise RuntimeError('missing or empty product: ' + product.name)
+        if resume_stage is None:
+            # S0: plan locked. Later stages are skipped only when this
+            # fingerprint still matches, so a changed plan/code can never
+            # silently resume past a stage it did not produce.
+            write_checkpoint(ckpt_dir, 'S0', plan_id=plan_id,
+                             code_sha256=plan['code_sha256'], products=(),
+                             evidence={'status': 'plan_locked'})
+            checkpoints = read_checkpoints(ckpt_dir)
+        run_lock.heartbeat()
+        if resume_stage in (None, 'S0'):
+            # S1: generation.
+            generated = port.generate(analysis, plan, part)
+            if not port.simulated and plan['bend_indices'] and (not generated.get('auto_bent') or generated.get('auto_bend_failed_count', 0)):
+                raise RuntimeError('automatic bending incomplete; manual/reference fallback rejected')
+            write_checkpoint(ckpt_dir, 'S1', plan_id=plan_id,
+                             code_sha256=plan['code_sha256'],
+                             products=[{'name': part.name, 'sha256': file_hash(part)}],
+                             evidence={'generation': generated})
+            checkpoints = read_checkpoints(ckpt_dir)
+        run_lock.heartbeat()
+        if resume_stage in (None, 'S0', 'S1'):
+            # S2: fresh reopen + native feature readback.
+            evidence = port.reopen_inspect(part)
+            if not port.simulated:
+                validate_native(plan, evidence)
+            write_checkpoint(ckpt_dir, 'S2', plan_id=plan_id,
+                             code_sha256=plan['code_sha256'],
+                             products=[{'name': part.name, 'sha256': file_hash(part)}],
+                             evidence={'reopen': evidence})
+            checkpoints = read_checkpoints(ckpt_dir)
+        run_lock.heartbeat()
+        if resume_stage in (None, 'S0', 'S1', 'S2'):
+            # S3: flat-pattern export.
+            port.export_flat(part, flat)
+            if not port.simulated:
+                import ezdxf
+                drawing = ezdxf.readfile(flat)
+                if not list(drawing.modelspace()):
+                    raise RuntimeError('flat DXF contains no geometry')
+            for product in (part, flat):
+                if not product.is_file() or product.stat().st_size == 0:
+                    raise RuntimeError('missing or empty product: ' + product.name)
+            write_checkpoint(ckpt_dir, 'S3', plan_id=plan_id,
+                             code_sha256=plan['code_sha256'],
+                             products=[{'name': p.name, 'sha256': file_hash(p)}
+                                       for p in (part, flat)],
+                             evidence={'export': 'flat_exported'})
+            checkpoints = read_checkpoints(ckpt_dir)
+        run_lock.heartbeat()
         result = {'status': 'simulated_pass' if port.simulated else 'native_features_verified',
                   'plan_id': plan_id, 'simulated_only': port.simulated,
                   'sw_live_verified': not port.simulated, 'mechanical_acceptance': 'unverified',
@@ -204,9 +285,45 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
         (stage/'result.json').write_text(json.dumps(result, indent=2, default=str, allow_nan=False)+'\n')
         os.rename(stage, destination)
         stage = None
-        return {**result, 'resumed': False, 'output_dir': str(destination)}
+        # Keep the published artifact dir to result + products only (the
+        # dry-run contract asserts every entry there is JSON): relocate the
+        # checkpoint evidence to a hidden sibling directory instead of
+        # leaving it inside the destination.
+        ckpt_dir = root / ('.' + label + '.ckpt')
+        try:
+            os.rename(destination / 'ckpt', ckpt_dir)
+        except OSError:
+            logger.warning('could not relocate checkpoint dir; leaving it in %s',
+                           destination)
+            ckpt_dir = destination / 'ckpt'
+        # S4: acceptance landed. S5: run_plan teardown. The SolidWorks
+        # process exit code is NOT recorded here; the session owner
+        # (owned_solidworks evidence) owns it, and it stays
+        # pending_windows_validation until Gork runs it.
+        products = [{'name': name, 'sha256': checksum}
+                    for name, checksum in result['artifact_sha256'].items()]
+        write_checkpoint(ckpt_dir, 'S4', plan_id=plan_id,
+                         code_sha256=plan['code_sha256'], products=products,
+                         evidence={'status': result['status']})
+        write_checkpoint(ckpt_dir, 'S5', plan_id=plan_id,
+                         code_sha256=plan['code_sha256'], products=products,
+                         evidence={'teardown': 'run_plan_complete_lock_released_by_finally',
+                                   'process_exit_code': 'recorded_by_session_owner_not_here',
+                                   'pending_windows_validation': True})
+        return {**result, 'resumed': resume_stage is not None, 'output_dir': str(destination)}
     except Exception as exc:
         recovery = 'not_needed'
+        crash_file = None
+        if ckpt_dir is not None and Path(ckpt_dir).is_dir():
+            try:
+                products = [{'name': p.name, 'size': p.stat().st_size}
+                            for p in Path(stage).iterdir() if p.is_file()] \
+                    if stage is not None and Path(stage).is_dir() else []
+                crash_file = write_crash_package(
+                    root, plan_id=plan_id, error=exc,
+                    checkpoints=read_checkpoints(ckpt_dir), products=products)
+            except Exception:
+                crash_file = None
         if stage is not None:
             try:
                 port.abort(stage)
@@ -217,11 +334,13 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
         failure = {'status': 'failed', 'error': str(exc), 'recovery': recovery,
                    'plan_id': plan_id, 'sw_live_verified': False, 'generation': generated,
                    'diagnostic_stage': str(stage) if stage and stage.exists() else None}
+        if crash_file is not None:
+            failure['crash_package'] = str(crash_file)
         diagnostic = root / ('failure-' + uuid.uuid4().hex + '.json')
         diagnostic.write_text(json.dumps(failure, ensure_ascii=False, indent=2)+'\n')
         return {**failure, 'diagnostic_file': str(diagnostic)}
     finally:
-        lock.rmdir()
+        run_lock.release()
 
 
 class MockSheetMetalPort:
