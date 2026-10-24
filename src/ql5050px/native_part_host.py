@@ -15,6 +15,8 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
     def __init__(self,lease,root,template):
         NativeMachineDriver.__init__(self,lease,root);self.template=Path(template);self.model=None
     def preflight(self,plan,folder):
+        from .modeling_validation import validate_part_plan
+        validate_part_plan(plan,self.supported_feature_kinds)
         self.guard()
         self.plan=plan
         if plan.get('cad_source'):
@@ -54,7 +56,9 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
             part=sw._as_interface(module,self.model,'IPartDoc')
             bounds,bodies=solid_inventory(part,sw,module)
             actual=[bounds[i+3]-bounds[i] for i in range(3)]
-            expected=self.plan['expected_dims_mm']
+            from .modeling_validation import envelope
+            expected=envelope(self.plan['expected_dims_mm'])
+            actual=envelope(actual)
             if any(not math.isclose(a,b,rel_tol=1e-4,abs_tol=.05) for a,b in zip(sorted(actual),sorted(expected))):
                 raise RuntimeError('recipe envelope differs from independent expected dimensions')
             if len(bodies)!=self.plan.get('expected_body_count',1):raise RuntimeError('recipe solid body count differs')
@@ -95,6 +99,8 @@ def run_native_part(sw_exe,template,plan,output_dir):
     from sw_session import run_on_task_sta,current_lease
     from sw_owned_launch import owned_solidworks
     from .staged_modeling import execute_part_job
+    from .modeling_validation import validate_part_plan
+    validate_part_plan(plan,NativePartHost.supported_feature_kinds)
     def job():
         root=Path(output_dir).resolve()
         if root.exists():raise FileExistsError(root)

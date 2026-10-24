@@ -43,6 +43,11 @@ def validate_operations(features):
                 if constraint.get('confirmed') is not True or not constraint.get('source') or not constraint.get('references'):
                     raise ValueError('confirmed sourced sketch constraint required')
                 if constraint['kind'] not in RELATIONS and constraint['kind']!='dimension':raise ValueError('unsupported sketch relation')
+                if constraint['kind']=='dimension':
+                    if constraint.get('unit') not in {'mm','deg'}:raise ValueError('driving dimension must be length or angle')
+                    native_value(constraint)
+                    xyz=constraint.get('position_mm')
+                    if not isinstance(xyz,(list,tuple)) or len(xyz)!=3 or any(type(v) not in (int,float) or not math.isfinite(v) for v in xyz):raise ValueError('finite xyz dimension position required')
 
 
 class FeatureOperationsMixin:
