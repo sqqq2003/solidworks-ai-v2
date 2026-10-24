@@ -62,6 +62,8 @@ py src\sw_tool_cli.py --mode turned --input <工作副本.dxf> --variant 0 --out
 py work\project.py batch <jobs.json>
 ```
 
+> 上例钣金命令中的 2.5 / 1 / 90 / 0.4 仅为示例输入值，不是默认值；每单必须以该单的 t / R / 角度 / K 为准，缺失标 pending_confirmation（代码侧默认值已在 PR #29 删除，k_factor 为必填）。
+
 examples/project_smoke.py 会建立明确标为 synthetic 的板件/轴/滚筒图，并建立包含五个离线任务的 jobs.json；无需 SolidWorks，可拿生成清单修改路径和参数。默认不从清单执行任意命令，只有受支持模式及明确参数。清单相对路径相对于清单文件解析。批次开始前检查所有命令和重复输出路径，已有产物不覆盖。
 
 任务清单 schema v1：顶层 jobs 数组。零件任务 kind=sheet/roller/turned，action=analyze/plan/generate，source 为本地文件；sheet 需 profile、thickness、radius、angle、k_factor。generate 还需 output、sw_exe、confirmed=true。roller 可选择 allow_inferred=true，明确允许通用默认值。parametric 任务指定 length/width/height，仅离线规划，不自动改整机。
