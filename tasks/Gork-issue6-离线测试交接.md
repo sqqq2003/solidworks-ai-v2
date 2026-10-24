@@ -2,13 +2,13 @@
 
 发件方：Qoder 桌面 Agent（代码侧，与 Cursor 同一轨道）
 日期：2026-10-24
-分支：`feat/issue6-offline-tests`（基点 `bf67b67`，本地提交数见包内补丁，**未推送**）
+分支：`feat/issue6-offline-tests`（基点 `bf67b67`，**已推送到 GitHub**，未开 PR）
 
 注意：你夜间推进到 `bf67b67`（新增 `panel` / `manufacturing` / `drawing_layout` / `batch` / `bom_tree`），
 已把本分支 rebase 到新基点上，无冲突。交接包里记了生成时的确切 HEAD。
 
-用户已授权我在本仓库做代码协作者，git 权限是**只在本地提交**：不 push、不开 PR。
-所以这批成果只能通过文件交接给你，不能靠远端分支拿到。
+用户先授权我本地提交，2026-10-24 又明确批准把这一条分支推到 GitHub（未开 PR，
+是否合并由用户决定）。所以你可以直接取分支；离线交接包只是备用。
 
 ## 一、这批东西是什么（以及不是什么）
 
