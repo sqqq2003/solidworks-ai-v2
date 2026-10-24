@@ -13,6 +13,7 @@ def prepare(folder,*,thickness,radius,angle,k_factor,sw_exe):
     import math
     import ezdxf
     from cad_analyzer import analyze_dxf,primitive_bounds
+    from sheet_metal_pipeline import code_hash
     parameters=dict(thickness_mm=thickness,radius_mm=radius,angle_degrees=angle,k_factor=k_factor)
     if not all(type(v) in (int,float) and math.isfinite(v) for v in parameters.values()):
         raise ValueError('explicit finite fixture parameters required')
@@ -44,6 +45,7 @@ def prepare(folder,*,thickness,radius,angle,k_factor,sw_exe):
     report=dict(scope='synthetic_fixture_only_not_production',cad_executed=False,
                 parameters=parameters,profile_index=index,index_base=0,
                 source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+                code_sha256=code_hash(),
                 loaded_code_sha256={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in modules},
                 command_argv=argv,command_windows=subprocess.list2cmdline(argv),
                 expected='S1/S2/S3 published native feature evidence; clean exit separately verified')
