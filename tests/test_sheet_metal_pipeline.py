@@ -82,6 +82,21 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(third['status'], 'failed')
         self.assertIn('artifact changed', third['error'])
 
+    def test_manifest_stays_utf8_under_non_utf8_locale(self):
+        # 中文 Windows 默认 cp936：按默认编码写会把中文写成 GBK，
+        # 严解码 utf-8 会失败；续跑也会读错。这里用中文返回值卡住。
+        class ChinesePort(MockSheetMetalPort):
+            def generate(self, analysis, plan, part):
+                return {**super().generate(analysis, plan, part), 'note': '模拟端口中文备注'}
+
+        plan = self.plan()
+        first = run_plan(self.analysis, plan, self.root/'out', ChinesePort())
+        self.assertEqual(first['status'], 'simulated_pass')
+        manifest = Path(first['output_dir'])/'result.json'
+        payload = json.loads(manifest.read_bytes().decode('utf-8'))
+        self.assertEqual(payload['generation']['note'], '模拟端口中文备注')
+        self.assertTrue(run_plan(self.analysis, plan, self.root/'out', ChinesePort())['resumed'])
+
     def test_source_geometry_and_plan_edits_invalidate(self):
         plan = self.plan()
         changed = dict(plan)

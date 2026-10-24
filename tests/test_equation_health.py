@@ -62,7 +62,8 @@ class Model:
 
 class EquationHealthTests(unittest.TestCase):
     def setUp(self):
-        self.rows = json.loads((ROOT/'results/windows/readonly_equation_dump.json').read_text())['equations']
+        # 显式 utf-8：中文 Windows 的默认编码是 cp936，按默认读会解码失败。
+        self.rows = json.loads((ROOT/'results/windows/readonly_equation_dump.json').read_text(encoding='utf-8'))['equations']
 
     def test_actual_dump_identifies_forward_refs_and_unverified_geometry(self):
         report = analyze_equations(self.rows)

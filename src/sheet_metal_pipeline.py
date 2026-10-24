@@ -163,7 +163,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
     generated = None
     try:
         if destination.exists():
-            manifest = json.loads((destination/'result.json').read_text())
+            manifest = json.loads((destination/'result.json').read_text(encoding='utf-8'))
             if manifest['plan_id'] != plan_id or manifest['simulated_only'] != port.simulated:
                 raise RuntimeError('existing artifact manifest does not match')
             expected_status = 'simulated_pass' if port.simulated else 'native_features_verified'
@@ -201,7 +201,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
                   'sw_live_verified': not port.simulated, 'mechanical_acceptance': 'unverified',
                   'generation': generated, 'reopen': evidence,
                   'artifact_sha256': {p.name: file_hash(p) for p in (part, flat)}}
-        (stage/'result.json').write_text(json.dumps(result, indent=2, default=str, allow_nan=False)+'\n')
+        (stage/'result.json').write_text(json.dumps(result, indent=2, default=str, allow_nan=False)+'\n', encoding='utf-8')
         os.rename(stage, destination)
         stage = None
         return {**result, 'resumed': False, 'output_dir': str(destination)}
@@ -218,7 +218,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
                    'plan_id': plan_id, 'sw_live_verified': False, 'generation': generated,
                    'diagnostic_stage': str(stage) if stage and stage.exists() else None}
         diagnostic = root / ('failure-' + uuid.uuid4().hex + '.json')
-        diagnostic.write_text(json.dumps(failure, ensure_ascii=False, indent=2)+'\n')
+        diagnostic.write_text(json.dumps(failure, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
         return {**failure, 'diagnostic_file': str(diagnostic)}
     finally:
         lock.rmdir()
