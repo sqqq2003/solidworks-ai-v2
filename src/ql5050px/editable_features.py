@@ -27,6 +27,11 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
                         segment=manager.CreateLine(a[0]/1000,a[1]/1000,0,b[0]/1000,b[1]/1000,0)
                     elif entity['type']=='circle':
                         x,y=entity['center'];segment=manager.CreateCircleByRadius(x/1000,y/1000,0,entity['radius']/1000)
+                    elif entity['type']=='arc':
+                        center,start,end=entity['center'],entity['start'],entity['end']
+                        direction=entity['direction']
+                        if direction not in (-1,1):raise ValueError('explicit arc direction required')
+                        segment=manager.CreateArc(center[0]/1000,center[1]/1000,0,start[0]/1000,start[1]/1000,0,end[0]/1000,end[1]/1000,0,direction)
                     else:raise ValueError('unsupported sketch entity')
                     if segment is None:raise RuntimeError('sketch entity creation failed')
                 self.apply_sketch_constraints(p.get('constraints',[]))

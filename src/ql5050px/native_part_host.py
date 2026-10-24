@@ -5,7 +5,13 @@ from .editable_features import EditableFeaturesMixin
 from .feature_operations import validate_operations
 
 
-class NativePartHost(NativeMachineDriver,EditableFeaturesMixin):
+from .sheet_feature_data import ExtraFeatureMixin, EXTRA, validate_extra
+
+class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin):
+    supported_feature_kinds=EditableFeaturesMixin.supported_feature_kinds | EXTRA
+    def create_editable_feature(self,feature):
+        if feature['kind'] in EXTRA:return self.create_extra_feature(feature)
+        return EditableFeaturesMixin.create_editable_feature(self,feature)
     def __init__(self,lease,root,template):
         NativeMachineDriver.__init__(self,lease,root);self.template=Path(template);self.model=None
     def preflight(self,plan,folder):
@@ -16,6 +22,7 @@ class NativePartHost(NativeMachineDriver,EditableFeaturesMixin):
             if f['kind'] not in self.supported_feature_kinds:raise ValueError('native capability pending: '+f['kind'])
             if not f.get('confirmed') or not f.get('evidence'):raise ValueError('confirmed evidence required')
         validate_operations(plan['features'])
+        for feature in plan['features']:validate_extra(feature)
         self.owned_path(folder)
     def create(self):
         self.model=self.app.NewDocument(str(self.template),0,0,0)
