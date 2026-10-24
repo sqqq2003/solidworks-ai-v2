@@ -36,7 +36,10 @@ class SwctlTests(unittest.TestCase):
         payload = json.loads(completed.stdout)
         self.assertFalse(payload["sw_started"])
         self.assertFalse(payload["cad_executed"])
-        self.assertEqual(payload["python_executable"].split("/")[1], ".venv")
+        self.assertFalse(payload["desktop_display_tested"])
+        # The executable path is host-specific (repo venv vs CI toolcache);
+        # only its presence is part of the contract.
+        self.assertTrue(payload["python_executable"])
 
     def test_unfold_command_emits_plan(self):
         completed = run_swctl(

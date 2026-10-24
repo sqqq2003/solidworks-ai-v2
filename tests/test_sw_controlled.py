@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -94,12 +95,28 @@ class ControlledExecutionTests(unittest.TestCase):
 
     def test_live_request_never_touches_com_on_linux(self):
         # On non-win32 the platform refusal must short-circuit before the COM
-        # backend is even imported.
+        # backend is even imported. Verified in a fresh interpreter: the shared
+        # test process may legitimately have imported the backend for other
+        # tests, so an in-process sys.modules check proves nothing.
         if sys.platform == "win32":
             self.skipTest("COM probe is expected on Windows")
-        request = self.request(live=True, destination=self.root / "copy.SLDASM")
-        run_controlled_execution(request)
-        self.assertNotIn("src.sw_api.win32com_backend", sys.modules)
+        code = (
+            "import sys; sys.path[:0] = [{root!r}, {src!r}];"
+            "from pathlib import Path;"
+            "from src.sw_api.controlled import ExecutionRequest, run_controlled_execution;"
+            "request = ExecutionRequest("
+            "    source='simulated://QL-5050PX/unmapped-template',"
+            "    destination=Path('copy.SLDASM'), plan={{}}, live=True);"
+            "report = run_controlled_execution(request);"
+            "assert report['status'] == 'refused', report;"
+            "assert report['cad_executed'] is False, report;"
+            "assert 'src.sw_api.win32com_backend' not in sys.modules, 'COM backend imported off win32';"
+            "print('ok')"
+        ).format(root=str(ROOT), src=str(ROOT / "src"))
+        completed = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True, check=False
+        )
+        self.assertIn("ok", completed.stdout, completed.stderr)
 
     def test_live_request_keeps_work_copy_rules(self):
         # A .json live destination would be refused for the suffix even on
