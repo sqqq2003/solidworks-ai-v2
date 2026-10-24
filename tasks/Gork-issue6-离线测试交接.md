@@ -63,15 +63,12 @@ mechanical_acceptance = unverified
 
 | 文件 | 用途 |
 | --- | --- |
-| `00NN-*.patch` | 从 `bf67b67` 起的全部提交，按序 `git am` 可直接落到你的工作副本 |
 | `issue6-acceptance-checklist.md` | 用户 7 点验收用的 10 分钟流程，命令与预期输出都写死了 |
 | `issue6-offline-tests.md` | 本批开发说明：做了什么、为什么、缺陷清单、回滚方式 |
 | `latest.json` / `latest.log` | 云端回归证据（`results/cloud/`），已复现三次一致 |
 | `TASK_STATUS.md` 摘录 | `ISSUE6-OFFLINE-001/002`、`P0-QODER-001` 三条任务状态 |
 
 ## 四、怎么落盘
-
-本分支目前只在本地（`feat/issue6-offline-tests`）。两条路任选：
 
 **路径 1（推荐，需要用户先推送一次）**：用户把分支推到 GitHub 后，直接取分支：
 
@@ -80,18 +77,20 @@ git fetch origin feat/issue6-offline-tests
 git checkout -b feat/issue6-offline-tests origin/feat/issue6-offline-tests
 ```
 
-**路径 2（只能拿到离线交接包时）**：用 `handoff/gork-issue6-20261024/` 里的
-补丁或 thin bundle（该目录未入库，靠文件传递）：
+**路径 2（只能拿到离线交接包时）**：用 `handoff/gork-issue6-20261024/issue6-offline-tests.bundle`。
+该目录未入库，靠文件传递。
 
 ```bash
-# 方式 B：补丁
-git checkout -b feat/issue6-offline-tests bf67b67
-git am /path/to/handoff/gork-issue6-20261024/*.patch
-
-# 方式 C：thin bundle（需要本地已有 bf67b67）
-git bundle verify issue6-offline-tests.bundle
+git bundle verify issue6-offline-tests.bundle          # 需要本地已有 bf67b67
 git fetch issue6-offline-tests.bundle     feat/issue6-offline-tests:feat/issue6-offline-tests
+git checkout -b feat/issue6-offline-tests feat/issue6-offline-tests
 ```
+
+没有提供 `git am` 补丁序列：这个仓库有 64 个文件在索引里就是 CRLF 行尾
+（`.gitignore`、`src/cad_analyzer.py`、`tests/pending_features/README.md` 等，
+都不是本轮改的），`format-patch` 打出的补丁带 CR，`git am` 在 Windows 上解析时
+把 CR 剥掉、上下文就对不上了。bundle 里是真实对象，不受行尾影响。
+如果你只能用补丁，请改用 `git apply --index <patch>` 再自己提交，实测这条能过。
 
 落盘后请重跑一次回归，核对与 `results/cloud/latest.json` 是否一致：
 
