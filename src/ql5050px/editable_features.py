@@ -3,14 +3,18 @@
 Host supplies guard(), model and proved document ownership. This does not attach
 or create an unknown SW session. Unsupported features fail before any operation.
 """
-class EditableFeaturesMixin:
-    supported_feature_kinds = {'sketch','extrude','cut'}
+from .feature_operations import FeatureOperationsMixin, validate_operations
+
+class EditableFeaturesMixin(FeatureOperationsMixin):
+    supported_feature_kinds = {'sketch','extrude','cut','fillet','chamfer','mirror','pattern'}
     def create_editable_feature(self,feature):
         self.guard()
         model=self.model
         kind=feature['kind'];p=feature.get('parameters',{})
         if not feature.get('confirmed') or not feature.get('evidence'):raise ValueError('confirmed feature evidence required')
-        if kind not in {'sketch','extrude','cut'}:raise ValueError('native builder not implemented for '+kind)
+        if kind not in self.supported_feature_kinds:raise ValueError('native builder not implemented for '+kind)
+        validate_operations([feature])
+        if kind in {'fillet','chamfer','mirror','pattern'}:return self.create_mapped_operation(feature)
         model.ClearSelection2(True)
         if kind=='sketch':
             if not p.get('plane'):raise ValueError('mapped sketch plane required')
@@ -25,6 +29,7 @@ class EditableFeaturesMixin:
                         x,y=entity['center'];segment=manager.CreateCircleByRadius(x/1000,y/1000,0,entity['radius']/1000)
                     else:raise ValueError('unsupported sketch entity')
                     if segment is None:raise RuntimeError('sketch entity creation failed')
+                self.apply_sketch_constraints(p.get('constraints',[]))
                 sketch=manager.ActiveSketch
                 if sketch is None:raise RuntimeError('no active native sketch')
                 native=sketch.GetFeature();native.Name=feature['id']
@@ -50,3 +55,4 @@ class EditableFeaturesMixin:
             if f is None:raise RuntimeError('feature missing after reopen: '+name)
             evidence.append({'name':name,'native_type':f.GetTypeName2()})
         return {'features':evidence,'dimensions_verified':False,'status':'pending_native_validation'}
+

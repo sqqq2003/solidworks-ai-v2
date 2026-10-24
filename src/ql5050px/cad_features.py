@@ -71,6 +71,8 @@ def execute_part(plan,port,destination):
     supported=getattr(port,'supported_feature_kinds',None)
     if supported is not None and any(f['kind'] not in supported for f in plan['features']):
         raise ValueError('host does not support all planned feature kinds; refused before writes')
+    from .feature_operations import validate_operations
+    validate_operations(plan['features'])
     with port.writer():
         port.preflight([],str(destination));checkpoint=port.checkpoint()
         try:
