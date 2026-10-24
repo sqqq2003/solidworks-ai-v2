@@ -136,3 +136,93 @@ tests/test_bridge_wiring.py，8 项：桥接可用时 S1/S2/S5 证据记录、
 teardown 失败保产物 + crash 包、证据形状与无默认参数、续跑保留
 桥接证据、无 bridge 时行为与旧版一致。另回归：#23 的 14 项
 checkpoint/teardown 测试 + 现有 pipeline 测试 14 项，合计 36 项全过。
+
+---
+
+# build/reopen 接线实施记录（Issue #25 batch 2）
+
+> 本节记录桥接 build / reopen 方法接入 run_plan 的实施。契约见
+> CONTRACT.md §12；Python 客户端见 python/bridge_client.py；
+> C# 侧见 src/SwBridge.cs；接线适配器见 src/bridge_wiring.py。
+
+## 接了哪两个方法（只接 S1/S2，不动 S0/S3/S4/S5）
+
+- S1（生成）：bridge 供 bridge 时，`run_plan` 先调桥接 `build`
+  方法（plan 参数 + staging part 路径 + 确定性幂等键）；方法成功
+  时 `executed_via="bridge"`，生成结果即桥接返回（auto_bent /
+  auto_bend_failed_count 检查与 port 路径相同）；方法失败、
+  桥接不可用、或客户端尚不支持 build 时 `executed_via="port"`，
+  回落到 `port.generate`，流程继续。桥接 build 成功必须已把零件
+  写到 staging 路径，否则是硬失败（不是回落）。
+- S2（重开检查）：bridge 供 bridge 时，`run_plan` 先调桥接
+  `reopen` 方法（先 list_titles 验活）；方法成功时
+  `executed_via="bridge"`，读回值（reopened / rebuilt /
+  feature_types / editable / thickness / radius / k_factor）直接
+  走 `validate_native` 与计划比对；失败时回落到
+  `port.reopen_inspect`。读回值嵌在证据块的 `readback` 子字典
+  里，顶层证据块仍不出现 thickness / radius / angle / k_factor
+  键（读回是实测，不是接线捏造的参数）。
+- 旧客户端兼容：不支持 build / reopen 的客户端（call 抛
+  unknown method）仍走原有会话证明路径：S1 保留 grade + session
+  pid，S2 保留 open_titles；只有执行本身回落到 port。旧接线测试
+  （tests/test_bridge_wiring.py）不改动，继续全过。
+- 锁、staging、checkpoint 所有权仍归 run_plan；桥接不碰 lock
+  目录、不碰 staging 目录（除 build 写入给定的 part 路径外）、
+  不删任何文件。#30 的守卫（接管拒绝、退出值原样记录、检查点
+  路径边界校验）原样保留，新方法不绕过。
+
+## 回落规则（在 #31 规则上扩展）
+
+| 情况 | 处理 | crash 包 |
+|---|---|---|
+| 无 bridge 参数 | 行为与接线前完全一致，不写 bridge 块 | 无 |
+| probe / spawn 失败 | 全部阶段 fallback，grade mock + fallback_reason | 无 |
+| build / reopen 方法失败（含超时、老客户端不支持） | 当阶段 fallback 到 port，`executed_via="port"` + fallback_reason，流程继续 | 无（port 回落即恢复手段） |
+| 桥接 build 成功但零件文件缺失 | 硬失败，run 失败（不是回落） | 按 run_plan 通用失败路径 |
+| 桥接 reopen 读回与计划不一致 | `validate_native` 抛错，run 失败（与 port 路径相同） | 按 run_plan 通用失败路径 |
+| S5 teardown 失败（已有会话） | 记失败证据 + crash 包，产物不反发布（#31 纪律不变） | 有 |
+| 桥接返回非零退出码（S5） | 原样记录 exit_code，ok=false，不改写成 0 | 无 |
+
+## 证据等级与证据块形状
+
+- `executed_via="bridge"` 仅当桥接方法调用成功；grade 规则不变：
+  channel == "bridge" 且调用成功才是 grade "bridge"，mock 通道
+  即使调用成功也只能是 grade "mock"。
+- S1 桥接块：`{grade, channel, stage: "S1", available, session,
+  executed_via: "bridge", result: {title, owned, bend_count,
+  auto_bent, auto_bend_failed_count, part}}`。
+- S2 桥接块：`{grade, channel, stage: "S2", available, session,
+  open_titles（回落路径保留）, executed_via: "bridge",
+  readback: {reopened, rebuilt, feature_types, editable,
+  bend_feature_count, completed_bend_count, thickness_mm, radius_mm,
+  k_factor}}`。
+- `validate_bridge_evidence` 已扩展：executed_via 非法、
+  port 执行缺 fallback_reason、bridge 执行缺 result / readback
+  均判 ValueError；顶层禁键检查不变。
+
+## 未接什么（下一批 / 待实机）
+
+- 完整几何 IR 传输：build 目前只用 plan_id 引用已验证计划，
+  轮廓 / 孔 / 折弯线几何的传输方式未定稿；RealSwApp build
+  在此定稿前不得宣称完成（见 CONTRACT.md §12.1）。
+- C# 编译、命名管道实测、RealSwApp、SW2022/SW2025 行为：
+  全部 pending_windows_validation（见 PR #26 未测清单）。
+- S3 导出仍走 port；S5 收尾纪律不变。
+
+## 测试（mock，Linux 可跑）
+
+tests/test_bridge_build_reopen.py，见 PR 描述。另回归：
+tests/test_bridge_wiring.py（8 项，老客户端兼容）、
+csharp-bridge/tests/test_bridge_contract.py（17 项）、
+pipeline / bend_allowance / no-default-k / p0_gork /
+issue19 checkpoint-teardown 等回归合计见 PR 描述。
+
+## 给 Gork 的验收矩阵增补（build / reopen）
+
+| # | 测试 | 步骤 | 通过标准 | 证据 |
+|---|---|---|---|---|
+| B6 | build 冒烟 | 桥接 build 跑 p248 计划（单件钣金） | 零件落盘到 staging 路径、bend_count 与计划一致、auto_bent 真 | ckpt-S1（含 executed_via="bridge" 的 bridge 块）+ 零件文件 |
+| B7 | reopen 读回 | 桥接 reopen 刚建的零件 | thickness / radius / k 与计划一致（容差 1e-6）、feature_types 含 SheetMetal / FlatPattern / SMBaseFlange、editable 真 | ckpt-S2（含 readback 的 bridge 块） |
+| B8 | 读回不一致拒绝 | 改计划参数后重跑 reopen（不重建） | validate_native 失败、run 不通过 | 失败报告 |
+| B9 | 幂等重放 | 同一 plan_id + 同一幂等键连调两次 build | 第二次不重复建模、返回首次结果 | 两次调用记录 |
+| B10 | 方法失败回落 | 停掉桥接服务后跑全流程 | S1/S2 回落到 port、流程继续、证据块 executed_via="port" + fallback_reason、无 crash 包 | ckpt-S1/S2 + 无 crash 包 |
