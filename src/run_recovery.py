@@ -153,9 +153,35 @@ def validate_checkpoint_chain(ckpt_dir, *, plan_id, code_sha256, base_dir):
     return None, {}
 
 
+def _windows_pid_alive(pid) -> bool | None:
+    """Non-destructive Windows liveness query. Never send a signal."""
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.WaitForSingleObject.argtypes = (wintypes.HANDLE, wintypes.DWORD)
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
+    kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+    kernel.CloseHandle.restype = wintypes.BOOL
+    handle = kernel.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE only
+    if not handle:
+        return False if ctypes.get_last_error() == 87 else None
+    try:
+        state = kernel.WaitForSingleObject(handle, 0)
+        return True if state == 258 else (False if state == 0 else None)
+    finally:
+        kernel.CloseHandle(handle)
+
+
 def _pid_alive(pid) -> bool | None:
     if type(pid) is not int or pid<=0:
         return None
+    if sys.platform == "win32":
+        try:
+            return _windows_pid_alive(pid)
+        except (OSError, ValueError, OverflowError):
+            return None
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
@@ -548,4 +574,5 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 

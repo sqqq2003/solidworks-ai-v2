@@ -3076,15 +3076,19 @@ def _try_insert_sheet_metal_bend(
     bend_pos: int,
     use_default_radius: bool,
     custom_bend: Any | None,
+    *, diagnostic: dict | None = None,
 ) -> bool:
     """选草图+固定面并 InsertSheetMetal3dBend；成功重建返回 True。
 
     COM 断连向上抛；普通失败返回 False，供参数组合继续试。
     """
 
+    trace = {} if diagnostic is None else diagnostic
+    trace.update(stage="select_sketch", status="failed")
     try:
         if not _select_bend_sketch_for_feature(model, extension, module, bend_sketch):
             return False
+        trace["stage"] = "select_fixed_face"
         picked = extension.SelectByID2(
             "",
             "FACE",
@@ -3110,26 +3114,61 @@ def _try_insert_sheet_metal_bend(
                 custom_bend,
             )
 
+        trace["stage"] = "insert"
         bend_feature = _call_with_sw_watchdog(
             BEND_INSERT_TIMEOUT_SEC, _do_insert
         )
         if bend_feature is None:
+            trace["reason"] = "native_insert_returned_none"
             return False
         bend_feature = _as_interface(module, bend_feature, "IFeature")
         type_name = bend_feature.GetTypeName2()
+        trace["feature_type"] = str(type_name)
+        try:
+            trace["native_error"] = bend_feature.GetErrorCode2()
+        except Exception as error:
+            if _is_com_disconnect_error(error):
+                raise
+            trace["native_error_unavailable"] = type(error).__name__
         if type_name != "SM3dBend":
             _delete_model_item(model, bend_feature.Name, "BODYFEATURE")
             return False
+        trace["stage"] = "rebuild"
         if not _com_read(model, "EditRebuild3"):
             _delete_model_item(model, bend_feature.Name, "BODYFEATURE")
             return False
+        trace.update(stage="complete", status="created")
         return True
     except _SwWatchdogTimeout:
+        trace.update(status="timed_out", error_kind="SwWatchdogTimeout")
         raise
     except Exception as error:  # noqa: BLE001
+        trace["error_kind"] = type(error).__name__
         if _is_com_disconnect_error(error):
             raise
         return False
+
+
+class NativeSketchTransformError(SolidWorksGenerationError):
+    """Native math disagreed: abort this job without relief retries."""
+
+
+def _verified_bend_sketch_point(module, transform_object, point):
+    """Use SW's native math as the oracle before writing any bend sketch line."""
+    lease = require_model_write()
+    binding = getattr(lease, "native_launch", None)
+    if binding is None:
+        raise SessionOwnershipError("native transform verification requires owned launch")
+    utility = _as_interface(module, _com_read(binding.app, "GetMathUtility"), "IMathUtility")
+    native_point = _as_interface(module, utility.CreatePoint(tuple(point)), "IMathPoint")
+    projected = _as_interface(module, native_point.MultiplyTransform(transform_object), "IMathPoint")
+    actual = tuple(float(v) for v in _com_read(projected, "ArrayData"))
+    expected = _transform_to_sketch(_com_read(transform_object, "ArrayData"), point)
+    if len(actual) != 3 or not all(math.isfinite(v) for v in actual):
+        raise NativeSketchTransformError("native sketch transform returned invalid coordinates")
+    if math.dist(expected, actual[:2]) > 1e-8 or abs(actual[2]) > 1e-8:
+        raise NativeSketchTransformError("native sketch transform mismatch or point off sketch plane")
+    return actual[:2]
 
 
 def _create_bend_sketch_on_face(
@@ -3174,11 +3213,12 @@ def _create_bend_sketch_on_face(
     }
     sketch_manager.InsertSketch(True)
     active_sketch = _as_interface(module, sketch_manager.ActiveSketch, "ISketch")
-    transform = _as_interface(
+    transform_object = _as_interface(
         module,
         active_sketch.ModelToSketchTransform,
         "IMathTransform",
-    ).ArrayData
+    )
+    transform = _com_read(transform_object, "ArrayData")
     previous_add_to_db = sketch_manager.AddToDB
     sketch_manager.AddToDB = True
     drawn: list[tuple[tuple[float, float], tuple[float, float]]] = []
@@ -3204,8 +3244,8 @@ def _create_bend_sketch_on_face(
                 (feature_end[1] - origin[1]) / 1000.0,
                 face_z,
             )
-            sketch_start = _transform_to_sketch(transform, model_start)
-            sketch_end = _transform_to_sketch(transform, model_end)
+            sketch_start = _verified_bend_sketch_point(module, transform_object, model_start)
+            sketch_end = _verified_bend_sketch_point(module, transform_object, model_end)
             logger.info("Bend sketch coordinates: bend=%d transform=%s model=%s->%s sketch=%s->%s",
                         bend_index + 1, tuple(transform), model_start, model_end, sketch_start, sketch_end)
             sketch_manager.CreateLine(
@@ -3244,6 +3284,7 @@ def _create_bend_feature(
     relief_step: int = 0,
     bend_allowance: BendAllowanceSpec | None = None,
     outer_profile: Primitive | None = None,
+    diagnostic_events: list[dict] | None = None,
 ) -> None:
     """创建草图折弯；多策略重试（同草图多线 / 位置枚举 / 反向 / 固定面候选）。"""
 
@@ -3318,6 +3359,8 @@ def _create_bend_feature(
                 sketch_face,
                 seed_xy,
             )
+        except (NativeSketchTransformError, SessionOwnershipError):
+            raise
         except Exception as error:  # noqa: BLE001
             if _is_com_disconnect_error(error):
                 logger.warning(
@@ -3386,6 +3429,10 @@ def _create_bend_feature(
                                 flip,
                             )
                             try:
+                                detail = dict(face_index=face_index, pick_m=list(pick_point),
+                                              bend_indices=list(bend_indices), index_base=0)
+                                if diagnostic_events is not None:
+                                    diagnostic_events.append(detail)
                                 ok = _try_insert_sheet_metal_bend(
                                     model,
                                     feature_manager,
@@ -3400,6 +3447,7 @@ def _create_bend_feature(
                                     bend_pos,
                                     use_default_radius,
                                     custom_bend,
+                                    diagnostic=detail,
                                 )
                             except _SwWatchdogTimeout as error:
                                 logger.error(
@@ -3615,7 +3663,7 @@ def _create_bends_with_fallbacks_impl(
         event = dict(sequence=len(group_attempts) + 1 if group_attempts is not None else 1,
                      bend_indices=list(indices), index_base=0,
                      fixed_point_mm=list(fixed_face_point), relief_step=relief_step,
-                     status="started", scope="feature_creation_not_native_acceptance")
+                     status="started", native_attempts=[], scope="feature_creation_not_native_acceptance")
         if group_attempts is not None:
             group_attempts.append(event)
         started = time.monotonic()
@@ -3639,6 +3687,7 @@ def _create_bends_with_fallbacks_impl(
                 relief_step,
                 bend_allowance=bend_allowance,
                 outer_profile=outer_profile,
+                diagnostic_events=event["native_attempts"],
             )
         except Exception as error:
             event.update(status="failed", error_kind=type(error).__name__)

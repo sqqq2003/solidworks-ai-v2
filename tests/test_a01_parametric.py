@@ -163,8 +163,10 @@ class CliTests(unittest.TestCase):
         completed = subprocess.run(
             [
                 sys.executable,
-                "-m",
-                "src.a01_parametric.cli",
+                "-c",
+                "import src.sw_api.win32com_backend as backend; "
+                "backend.com_available = lambda: False; "
+                "from src.a01_parametric.cli import main; raise SystemExit(main())",
                 "--live",
                 "--assembly",
                 str(ROOT / "runtime" / "original.SLDASM"),
@@ -183,3 +185,4 @@ class CliTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

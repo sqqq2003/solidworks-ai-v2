@@ -6,9 +6,15 @@ from run_recovery import RunLock,run_teardown_sequence,write_checkpoint,validate
 
 class ReviewGuards(unittest.TestCase):
     def test_unprobeable_owner_is_not_dead(self):
-        with patch('run_recovery.os.kill',side_effect=OSError('probe unavailable')):
+        with patch('run_recovery.sys.platform','linux'),patch('run_recovery.os.kill',side_effect=OSError('probe unavailable')):
             self.assertIsNone(_pid_alive(123))
         for pid in (None,-1,0,'123',True):self.assertIsNone(_pid_alive(pid))
+    def test_windows_probe_never_sends_a_signal(self):
+        for state in (True,False,None):
+            with patch('run_recovery.sys.platform','win32'),patch('run_recovery._windows_pid_alive',return_value=state),patch('run_recovery.os.kill') as kill:
+                self.assertIs(_pid_alive(123),state)
+                kill.assert_not_called()
+
     def test_unknown_owner_lock_preserved(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);lock=root/'.part.lock';lock.mkdir()
@@ -42,3 +48,4 @@ class ReviewGuards(unittest.TestCase):
                 self.assertIsNone(stage)
 
 if __name__=='__main__':unittest.main()
+

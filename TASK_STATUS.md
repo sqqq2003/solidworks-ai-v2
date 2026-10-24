@@ -179,3 +179,13 @@
 - 本批只做 AST/JSON 语法解析；未执行单测、示例、全面回归、原生 API 或实机验收，不继承旧通过统计。新增回归代码未运行。
 - Gork 继续旧 p248，之后统一接测；真实 QL 模型/OEM 映射/Windows driver 仍待提供。集成 SHA 在 Issue #6 评论记录。
 
+
+
+
+## CODEX-PROJECT-RUN-20261024
+
+- 同步基线d392b74，启动统一桌面工作台（窗口响应已核对）；三类零件smoke及QL integrated示例实际运行并生成离线交接包，未知OEM值保持pending。
+- 补齐本地开发venv pywin32/comtypes；普通桌面/离线与SW实机验收分开。
+- 修复恢复锁Windows os.kill(pid,0)会终止进程的错误，改为只读句柄查询，新增禁止发信号回归。
+- 合并原生数学核验硬门槛、逐次Insert结构化诊断、失败证据保留、--no-relief-retries及只读证据检查。无新原生通过声明。
+- 完整离线436 ran / 431 passed / 0 failures/errors / 5 skipped；锁通过。另C# Python合约17/17；未编译C#、未运行真实桥。36 pending合约不算通过。说明及一次联合回传矩阵见docs/project-start-20261024.md。

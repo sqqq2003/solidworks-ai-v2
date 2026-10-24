@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 class WindowsSheetMetalPort:
     simulated = False
 
+    def __init__(self, *, allow_relief_retries=True):
+        self.allow_relief_retries = bool(allow_relief_retries)
+
     def guard(self):
         if sys.platform != 'win32':
             raise RuntimeError('SolidWorks native execution requires Windows')
@@ -25,9 +28,10 @@ class WindowsSheetMetalPort:
     def generate(self, analysis, plan, part):
         self.guard()
         from bend_allowance import BendAllowanceSpec
-        from solidworks_generator import generate_sheet_metal_with_relief_retries
+        from solidworks_generator import generate_sheet_metal_with_relief_retries, generate_sheet_metal
         p = plan['parameters']
-        result = generate_sheet_metal_with_relief_retries(analysis, plan['profile_index'], plan['bend_indices'],
+        generate = generate_sheet_metal_with_relief_retries if self.allow_relief_retries else generate_sheet_metal
+        result = generate(analysis, plan['profile_index'], plan['bend_indices'],
             p['thickness_mm'], p['radius_mm'], p['angle_degrees'], part,
             flip_direction=p['flip_direction'], auto_bend=True, cad_import=False,
             relief_bend_indices=plan['relief_bend_indices'],
@@ -201,3 +205,4 @@ def measure_folded_and_flat(model, module):
                 'flat_bounds': flat, 'axes': 'model_axes', 'saved': False}
     finally:
         set_flat(not suppressed)
+

@@ -371,7 +371,11 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
                 recovery = 'staging_removed'
             except Exception as rollback:
                 recovery = 'recovery_required: ' + str(rollback)
-        failure = {'status': 'failed', 'error': str(exc), 'recovery': recovery,
+        failure = {'status': 'failed', 'error': str(exc), 'error_kind': type(exc).__name__,
+                   'bend_group_attempts': list(getattr(exc, 'bend_group_attempts', ())),
+                   'failed_bend_indices': list(getattr(exc, 'bend_indices', ())),
+                   'completed_bend_count': getattr(exc, 'completed_bend_count', None),
+                   'recovery': recovery,
                    'plan_id': plan_id, 'sw_live_verified': False, 'generation': generated,
                    'diagnostic_stage': str(stage) if stage and stage.exists() else None}
         if crash_file is not None:
@@ -419,3 +423,4 @@ def diagnose_k_change(*, thickness_mm, radius_mm, angle_degrees, old_k, new_k,
             'status': 'pending_measurement' if observed is None else (
                 'consistent_with_formula' if math.isclose(observed, expected, abs_tol=1e-5) else 'mismatch'),
             'sw_live_verified': False}
+
