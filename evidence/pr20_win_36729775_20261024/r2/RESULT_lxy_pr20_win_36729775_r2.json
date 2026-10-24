@@ -1,0 +1,23 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "lxy",
+  "ts": "20261024_155600",
+  "status": "fail",
+  "honest": true,
+  "run": "r2",
+  "next": "codex_review",
+  "summary": "r2 clean-host: owned-launch PASS; still fail — plate/bracket type mismatch, shaft COM disconnect after save; two_bend not_run; native pending_windows_validation.",
+  "pin_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+  "supersedes": "r1 SessionOwnershipError packet (CW #vn9tbj / Git PR#22 baseline)",
+  "native_acceptance": "pending_windows_validation",
+  "phase": {
+    "owned_launch_write_gate": "PASS 3/3",
+    "document_creation": "PASS 3/3",
+    "modeling": "plate/bracket type mismatch; shaft saved then COM disconnect; two_bend not_run"
+  },
+  "recommendations": [
+    "rebase PR17 SAFEARRAY fix into this line",
+    "repro shaft post-save COM disconnect",
+    "fix source_fingerprint path filter"
+  ]
+}

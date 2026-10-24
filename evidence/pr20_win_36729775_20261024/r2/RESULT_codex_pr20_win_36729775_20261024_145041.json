@@ -1,0 +1,29 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "codex",
+  "agent": "workbuddy",
+  "honest": true,
+  "status": "fail",
+  "next": "lxy_accept",
+  "run": "r2 (clean-host rerun; operator closed all SLDWORKS instances; supersedes r1 evidence)",
+  "pin_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+  "pr": "https://github.com/sqqq2003/solidworks-ai-v2/pull/20",
+  "out_dir": "D:\\工程\\钣金导入\\wb_pr20_wb_win_36729775_20261024_151500",
+  "accept": "accept_pr20_wb_win_36729775_20261024_151500_r2.json",
+  "summary": "干净主机重跑（r2）后 Windows 正式 native 验收仍未通过（诚实 fail），但比 r1 前进了一个量级：owned-launch/write gate 3/3 通过（r1 的 SessionOwnershipError 消失）、文档创建 3/3、自有文档清理 2/3（plate/bracket owned_document_closed）、shaft（turned_generator 后端）实际建模并保存 part.SLDPRT（72391B, sha256 6f481998...）。剩余失败：① plate/bracket 建模早期同点死于 com_error -2147352571 '类型不匹配'（feature_ir 后端，症状族与 PR17 math SAFEARRAY 修复一致，本 pin 基于 2ab51aa 疑未含该修复）；② shaft 保存成功后 ~30ms COM 服务器断连（OBJNOTCONNECTED，与 EXIT=139 teardown 家族相似），cleanup needs_review；③ two_bend_sheet 因批停止策略 not_run。全部 spawned SLDWORKS 自行退出，批后 0 实例（进程级退出证据 ✅）。export-acceptance 产出 handoff_r2/gork-acceptance.zip（evidence_consistent=true 仅指记录内部一致，非 native pass）。离线单测维持 7/8（source-path 过滤缺陷未修）。write gate 未绕过，native_acceptance=pending_windows_validation。p248 未跑。零 ExitApp/taskkill。",
+  "native_acceptance": "pending_windows_validation",
+  "key_evidence": [
+    "batch_r2/summary.json (3 needs_review + 1 not_run)",
+    "batch_r2/plate/attempt-000001/model/stages.jsonl (类型不匹配)",
+    "batch_r2/bracket/attempt-000001/model/stages.jsonl (同点同错)",
+    "batch_r2/shaft/attempt-000001/model/ (part.SLDPRT 已保存, stages: owned→saved→COM 断连)",
+    "handoff_r2/gork-acceptance.zip",
+    "logs/rerun_pids_before.txt / after / final (spawn 全自退)"
+  ],
+  "recommendations": [
+    "① PR17 (8f4f57) math SAFEARRAY 修复合入本线后重测 plate/bracket",
+    "② shaft 保存后 COM 断连单独复现，与 EXIT=139 家族归并排查",
+    "③ 修复 export source-path 过滤缺陷",
+    "④ two_bend_sheet 待前三配方 cleanup 解除 review 后补跑"
+  ]
+}
