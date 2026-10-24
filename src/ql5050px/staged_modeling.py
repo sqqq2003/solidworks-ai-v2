@@ -34,6 +34,8 @@ def execute_part_job(plan,host,folder):
         host.close();created=False;log.record('close_before_reopen','ok')
         host.reopen(output);created=True;host.rebuild()
         result['readback']=host.verify_feature_tree([f['id'] for f in plan['features']])
+        result['flat_export']=host.export_flat(output)
+        log.record('flat_export','recorded',result=result['flat_export'])
         result.update(modeling='saved_reopened',output=str(output),sha256=hash_file(output))
         log.record('reopen','ok',readback=result['readback'])
     except Exception as exc:

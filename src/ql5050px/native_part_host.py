@@ -16,6 +16,11 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
         NativeMachineDriver.__init__(self,lease,root);self.template=Path(template);self.model=None
     def preflight(self,plan,folder):
         self.guard()
+        self.plan=plan
+        seen=set()
+        for feature in plan['features']:
+            if not set(feature.get('depends_on',[]))<=seen:raise ValueError('invalid feature dependency order')
+            seen.add(feature['id'])
         if not self.template.is_file() or self.template.suffix.lower()!='.prtdot':raise ValueError('explicit existing part template required')
         if plan.get('pending_confirmation'):raise ValueError('unconfirmed plan refused')
         for f in plan['features']:
@@ -24,6 +29,29 @@ class NativePartHost(ExtraFeatureMixin,NativeMachineDriver,EditableFeaturesMixin
         validate_operations(plan['features'])
         for feature in plan['features']:validate_extra(feature)
         self.owned_path(folder)
+    def verify_feature_tree(self,names):
+        result=EditableFeaturesMixin.verify_feature_tree(self,names)
+        checks=[]
+        import math
+        for row in self.plan.get('readback_dimensions',[]):
+            dimension=self.model.Parameter(row['name'])
+            if dimension is None:raise RuntimeError('readback dimension missing')
+            value=float(dimension.SystemValue)
+            expected=row['value']/1000 if row['unit']=='mm' else math.radians(row['value'])
+            if not math.isclose(value,expected,rel_tol=1e-7,abs_tol=1e-9):raise RuntimeError('persisted dimension mismatch')
+            checks.append({'name':row['name'],'value_si':value})
+        result['dimension_evidence']=checks
+        return result
+    def export_flat(self,output):
+        self.guard()
+        if not self.plan.get('flat_export'):return {'status':'not_requested'}
+        if not any(f['kind']=='base_flange' for f in self.plan['features']):raise ValueError('flat export requires native sheet metal')
+        source=str(read_member(self.model,'GetPathName'))
+        target=self.owned_path(Path(output).with_suffix('.dxf'))
+        if target.exists():raise FileExistsError(target)
+        if not self.model.ExportToDWG2(str(target),source,1,True,None,False,False,5,None) or not target.is_file():
+            raise RuntimeError('native flat DXF failed')
+        return {'path':str(target),'status':'exported_pending_windows_validation'}
     def create(self):
         self.model=self.app.NewDocument(str(self.template),0,0,0)
         if self.model is None:raise RuntimeError('part creation failed')

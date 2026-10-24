@@ -1,5 +1,5 @@
 """Serial native worker supervision: never kills CAD or treats crash as success."""
-import json,subprocess,sys,hashlib,time,threading
+import json,subprocess,sys,hashlib,time,threading,os
 from pathlib import Path
 
 
@@ -22,13 +22,21 @@ def supervise(jobs,root,*,resume=False,timeout=900):
             if not latest.exists():raise RuntimeError('incomplete worker attempt; inspect PID/logs before retry')
             old=json.loads(latest.read_text())
             if old.get('worker_may_be_running'):raise RuntimeError('unresolved worker blocks further native work')
-            if old.get('status')=='completed':results.append(old);continue
+            if old.get('status')=='completed':
+                artifact=old.get('artifact',{})
+                path=Path(artifact.get('path',''))
+                if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=artifact.get('sha256'):
+                    raise ValueError('completed artifact missing/changed; use new batch directory')
+                results.append(old);continue
         attempt=folder/f'attempt-{len(attempts)+1:06d}';attempt.mkdir()
         request=attempt/'request.json';request.write_text(json.dumps(job))
         output=attempt/'model'
         command=[sys.executable,'-X','utf8','-m','ql5050px.modeling_worker',str(request),str(output)]
         with (attempt/'stdout.log').open('x') as out,(attempt/'stderr.log').open('x') as err:
-            process=subprocess.Popen(command,stdout=out,stderr=err,shell=False)
+            env=dict(os.environ)
+            source=str(Path(__file__).resolve().parents[1])
+            env['PYTHONPATH']=source+os.pathsep+env.get('PYTHONPATH','')
+            process=subprocess.Popen(command,stdout=out,stderr=err,shell=False,env=env)
             (attempt/'worker.json').write_text(json.dumps({'pid':process.pid,'command':command,'started':time.time()}))
             try:code=process.wait(timeout=timeout);running=False
             except subprocess.TimeoutExpired:
@@ -39,6 +47,8 @@ def supervise(jobs,root,*,resume=False,timeout=900):
              'modeling':model.get('modeling','unknown'),'cleanup':model.get('cleanup','unknown'),
              'status':'completed' if code==0 and model.get('modeling')=='saved_reopened' and model.get('cleanup')=='owned_document_closed' else 'needs_review',
              'native_acceptance':'pending_windows_validation','attempt':str(attempt)}
+        if model.get('output') and Path(model['output']).is_file():
+            row['artifact']={'path':model['output'],'sha256':hashlib.sha256(Path(model['output']).read_bytes()).hexdigest()}
         (attempt/'supervisor.json').write_text(json.dumps(row,indent=2));results.append(row)
         if running:break # never overlap an uncertain native writer
     return {'results':results,'status':'review_required','native_acceptance':'pending_windows_validation'}

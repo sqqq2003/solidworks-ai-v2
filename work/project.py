@@ -19,6 +19,10 @@ def main():
     ql.add_argument('--config',type=Path,required=True)
     ql.add_argument('--output-dir',type=Path)
     ql.add_argument('--resume',action='store_true')
+    native = commands.add_parser('native-parts',help='Explicit Windows native batch; requires reviewed templates and plans')
+    native.add_argument('manifest',type=Path)
+    native.add_argument('--output',type=Path,required=True)
+    native.add_argument('--resume',action='store_true')
     batch = commands.add_parser('batch')
     batch.add_argument('manifest',type=Path)
     batch.add_argument('--reports',type=Path,default=ROOT/'runtime/project-reports')
@@ -28,6 +32,11 @@ def main():
             report = capabilities()
         elif args.command == 'doctor':
             report = doctor()
+        elif args.command == 'native-parts':
+            if sys.platform!='win32':raise ValueError('native batch requires Windows')
+            from ql5050px.modeling_supervisor import supervise
+            data=json.loads(args.manifest.read_text(encoding='utf-8-sig'))
+            report=supervise(data['jobs'],args.output,resume=args.resume)
         elif args.command == 'ql':
             from ql5050px.workflow import run_workflow
             config = json.loads(args.config.read_text(encoding='utf-8-sig'))
