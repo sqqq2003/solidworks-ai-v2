@@ -19,7 +19,8 @@ def geometry(request):
             points=entity['points'];area=sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(points,points[1:]+points[:1]))/2
             if abs(area)<1e-8:issues.append({'entity':entity['id'],'reason':'degenerate contour'})
     if request.get('unit')!='mm' or request.get('scale')!=1:issues.append({'reason':'explicit mm and unit scale required'})
-    return {'entities':entities,'groups':groups,'issues':issues,'hole_candidates':[e['id'] for e in entities if e['type']=='circle'],'status':'review_required','inferred_depth':None}
+    from .cad_topology import analyze_loops,dimension_relations
+    return {'topology':analyze_loops(entities),'dimension_relations':dimension_relations(entities),'entities':entities,'groups':groups,'issues':issues,'hole_candidates':[e['id'] for e in entities if e['type']=='circle'],'status':'review_required','inferred_depth':None}
 
 
 def feature_plan(request):
@@ -67,6 +68,9 @@ def diagnose(records):
 def execute_part(plan,port,destination):
     """Host port enforces owned STA, isolated new output, checkpoint and readback."""
     if plan['pending_confirmation']:raise ValueError('unconfirmed geometry cannot execute')
+    supported=getattr(port,'supported_feature_kinds',None)
+    if supported is not None and any(f['kind'] not in supported for f in plan['features']):
+        raise ValueError('host does not support all planned feature kinds; refused before writes')
     with port.writer():
         port.preflight([],str(destination));checkpoint=port.checkpoint()
         try:
