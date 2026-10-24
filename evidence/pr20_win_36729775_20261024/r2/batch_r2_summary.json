@@ -1,0 +1,56 @@
+{
+  "results": [
+    {
+      "id": "plate",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_pid": 23952,
+      "worker_may_be_running": false,
+      "modeling": "failed",
+      "cleanup": "owned_document_closed",
+      "status": "needs_review",
+      "native_acceptance": "pending_windows_validation",
+      "attempt": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\wb_pr20_wb_win_36729775_20261024_151500\\batch_r2\\plate\\attempt-000001",
+      "artifacts": {}
+    },
+    {
+      "id": "bracket",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_pid": 25760,
+      "worker_may_be_running": false,
+      "modeling": "failed",
+      "cleanup": "owned_document_closed",
+      "status": "needs_review",
+      "native_acceptance": "pending_windows_validation",
+      "attempt": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\wb_pr20_wb_win_36729775_20261024_151500\\batch_r2\\bracket\\attempt-000001",
+      "artifacts": {}
+    },
+    {
+      "id": "shaft",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_pid": 24700,
+      "worker_may_be_running": false,
+      "modeling": "failed",
+      "cleanup": "needs_review",
+      "status": "needs_review",
+      "native_acceptance": "pending_windows_validation",
+      "attempt": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\wb_pr20_wb_win_36729775_20261024_151500\\batch_r2\\shaft\\attempt-000001",
+      "artifacts": {
+        "shaft\\attempt-000001\\model\\part.SLDPRT": "6f481998b3ad11a02713cc9b335d11367cd379b4adcc81100d5693c852b2e3c1"
+      }
+    },
+    {
+      "id": "two_bend_sheet",
+      "status": "not_run",
+      "reason": "previous worker lifetime requires review"
+    }
+  ],
+  "status": "review_required",
+  "native_acceptance": "pending_windows_validation",
+  "counts": {
+    "needs_review": 3,
+    "not_run": 1
+  }
+}

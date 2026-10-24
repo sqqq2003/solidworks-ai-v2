@@ -1,0 +1,18 @@
+{
+  "platform": "win32",
+  "python": "3.13.14",
+  "requested_executable_exists": true,
+  "pywin32_available": true,
+  "cad_written": false,
+  "spawned": false,
+  "documents_closed": false,
+  "native_acceptance": "pending_windows_validation",
+  "diagnostics": [
+    "Active object is observational only. Single-instance COM registration can prevent a new spawned PID from binding. Run owned launch proof separately; never bypass require_model_write."
+  ],
+  "status": "active_instance_observed",
+  "active_pid": 21772,
+  "revision": "30.5.0",
+  "open_document_count": 0,
+  "owned_write_authorized": false
+}

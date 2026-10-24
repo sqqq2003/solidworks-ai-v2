@@ -1,0 +1,38 @@
+{
+  "results": [
+    {
+      "id": "plate",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_pid": 10048,
+      "worker_may_be_running": false,
+      "modeling": "unknown",
+      "cleanup": "unknown",
+      "status": "needs_review",
+      "native_acceptance": "pending_windows_validation",
+      "attempt": "D:\\\u5de5\u7a0b\\\u94a3\u91d1\u5bfc\u5165\\wb_pr20_wb_win_36729775_20261024_151500\\batch\\plate\\attempt-000001",
+      "artifacts": {}
+    },
+    {
+      "id": "bracket",
+      "status": "not_run",
+      "reason": "previous worker lifetime requires review"
+    },
+    {
+      "id": "shaft",
+      "status": "not_run",
+      "reason": "previous worker lifetime requires review"
+    },
+    {
+      "id": "two_bend_sheet",
+      "status": "not_run",
+      "reason": "previous worker lifetime requires review"
+    }
+  ],
+  "status": "review_required",
+  "native_acceptance": "pending_windows_validation",
+  "counts": {
+    "needs_review": 1,
+    "not_run": 3
+  }
+}

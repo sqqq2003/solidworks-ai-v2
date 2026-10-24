@@ -1,0 +1,21 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "codex",
+  "agent": "workbuddy",
+  "honest": true,
+  "status": "fail",
+  "next": "lxy_accept",
+  "pin_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+  "pr": "https://github.com/sqqq2003/solidworks-ai-v2/pull/20",
+  "out_dir": "D:\\工程\\钣金导入\\wb_pr20_wb_win_36729775_20261024_151500",
+  "accept": "accept_pr20_wb_win_36729775_20261024_151500.json",
+  "summary": "Windows 正式 native 验收未通过（诚实 fail）。HEAD 已钉在 36729775（rev-parse 核对一致；git fetch 报 pack 损坏、父提交 2ab51aa 本地缺失，按指令未重拉，仅记录）。执行链：8 个离线契约单测 7/8（test_external_artifact_and_source_paths_removed 真实失败：source_fingerprint 未过滤外部路径 /secret）；native-doctor 只读探查正常（active_pid=21772, rev 30.5.0, 0 doc, owned_write_authorized=false）；review-parts 绑定 4 配方成功（gb_part.prtdot, sha256 fc875b2c...）；native-parts 第一个作业 plate 即失败——SessionOwnershipError: COM registration did not match spawned PID 21804（单实例主机 3 个既有实例，spawn 转发后无法自证 PID，框架按设计留置进程、不杀），批处理按设计停止，bracket/shaft/two_bend_sheet 均 not_run；四配方完整链（保存重开/几何回读/钣金展开/清理证据）unverified。export-acceptance 产出 gork-acceptance.zip（acceptance.json+SHA256.json，无 CAD 二进制/原始日志；evidence_consistent=true 仅指记录内部一致，plate=needs_review 0 artifacts，不是 native pass）。write gate 未绕过，native_acceptance=pending_windows_validation。SLDWORKS 进程：before=[21772,20016,21828], after=[+21804 测试 spawn 留置], killed=[]，零 ExitApp/taskkill。p248 未跑不宣称。建议上游：① 干净单实例环境重试正式验收；② 修复 export 源路径过滤缺陷；③ 仓库重克隆解 pack 损坏。",
+  "native_acceptance": "pending_windows_validation",
+  "key_evidence": [
+    "logs/unit_test_acceptance_recovery.txt (7/8)",
+    "logs/native_doctor.json (active_pid=21772)",
+    "batch/plate/attempt-000001/stderr.log (SessionOwnershipError PID 21804)",
+    "handoff/gork-acceptance.zip",
+    "logs/native_parts_pids_before.txt / after / sw_pids_final.txt"
+  ]
+}

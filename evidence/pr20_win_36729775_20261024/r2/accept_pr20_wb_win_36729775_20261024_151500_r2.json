@@ -1,0 +1,78 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "workbuddy",
+  "role_on_bus": "codex",
+  "honest": true,
+  "generated_at": "2026-10-24T15:55:00+08:00",
+  "run": "r2 (clean-host rerun after operator closed all SLDWORKS instances)",
+  "supersedes": "accept_pr20_wb_win_36729775_20261024_151500.json (r1, 3-instance host, owned-launch could not bind)",
+  "pin_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+  "work_copy": "C:\\sw-ai-v2-work\\solidworks-ai-v2-pr20-36729775",
+  "status": "fail",
+  "verdict": "干净主机重跑后 owned-launch/write gate/文档创建全部打通（不再有 SessionOwnershipError），自有文档清理 2/3 通过，shaft 实际建模并保存出 part.SLDPRT。但正式 native 验收仍未通过：plate/bracket 建模阶段同点死于 com_error -2147352571 类型不匹配（feature_ir 后端），shaft 保存后 COM 服务器断连（cleanup needs_review），two_bend_sheet 因批停止策略未跑。native_acceptance 保持 pending_windows_validation。",
+  "phase_matrix": {
+    "owned_launch_and_write_gate": "PASS (3/3 jobs: COM 绑定到 spawned PID，获得独占写权)",
+    "document_creation": "PASS (3/3)",
+    "modeling": {
+      "plate": "FAIL com_error -2147352571 类型不匹配 (feature_ir, 建文档后 ~30ms)",
+      "bracket": "FAIL com_error -2147352571 类型不匹配 (feature_ir, 同点同错)",
+      "shaft": "modeling+save 完成 (turned_generator 后端, part.SLDPRT 72391B, sha256 6f481998...)，随后 COM 断连",
+      "two_bend_sheet": "not_run (批停止策略: 前序 worker lifetime 需 review)"
+    },
+    "cleanup": {
+      "plate": "PASS owned_document_closed",
+      "bracket": "PASS owned_document_closed",
+      "shaft": "needs_review (COM 服务器断连后无法确认)"
+    },
+    "process_exit": "全部 spawned SLDWORKS 自行退出，批后机器 0 实例（外部观察与 worker_may_be_running=false 一致）"
+  },
+  "failure_analysis": {
+    "type_mismatch_plate_bracket": "com_error (-2147352571, '类型不匹配。', None, 8) 出现在文档创建后的第一个/早期 feature 调用。症状族与 PR17 (fix/gork-math-safearray, 8f4f57) 修复的 math SAFEARRAY marshaling 一致；本 pin 基于 2ab51aa，疑似不含 PR17 修复。属代码层缺陷线索，不是环境问题。",
+    "shaft_com_disconnect": "(-2147220995, '对象没有连接到服务器') 发生在保存成功后 ~30ms（GetProcessID 的 ownership validate 中 OBJNOTCONNECTED）。SW 进程在保存后立即消失——与 e81438b 线已知 EXIT=139 COM teardown 段错误家族相似，需在交付物判红而非退出码。",
+    "note": "两条失败都不阻塞'诚实记录'，也不是 write gate 或所有权框架的问题。"
+  },
+  "offline": {
+    "unit_test_acceptance_recovery": "7/8 (test_external_artifact_and_source_paths_removed 失败：source_fingerprint 未滤外部路径 /secret —— 本 SHA 真实契约缺陷，r1 已记录，未复跑)",
+    "review_parts": "PASS (4 jobs, gb_part.prtdot sha256 fc875b2c..., Front Plane)"
+  },
+  "sw_pids": {
+    "before": [],
+    "after": [],
+    "during_batch_spawned": [23952, 25760, 24700],
+    "killed": [],
+    "note": "全部由 owned-launch spawn、全部自行退出；未 ExitApp/taskkill。"
+  },
+  "export_acceptance_r2": {
+    "exit": 3,
+    "status": "review_required",
+    "evidence_consistent": true,
+    "package": "handoff_r2/gork-acceptance.zip",
+    "package_contents": ["acceptance.json", "SHA256.json"],
+    "meaning": "evidence_consistent=true 指记录内部一致（3 needs_review + 1 not_run），不是 native pass；无 CAD 二进制/原始日志"
+  },
+  "p248": "未跑，不宣称 pass/fail",
+  "constraints_respected": {
+    "no_exitapp": true,
+    "no_taskkill": true,
+    "no_write_gate_bypass": true,
+    "no_pr_merge_no_push": true
+  },
+  "artifacts": {
+    "out_dir": "D:\\工程\\钣金导入\\wb_pr20_wb_win_36729775_20261024_151500",
+    "batch_r2": "batch_r2/ (plate/bracket/shaft attempt-000001 各含 request.json/supervisor.json/worker.json/stderr.log/stages.jsonl/checkpoint.json)",
+    "shaft_artifact": "batch_r2/shaft/attempt-000001/model/part.SLDPRT (72391B, sha256 6f481998b3ad11a02713cc9b335d11367cd379b4adcc81100d5693c852b2e3c1)",
+    "acceptance_package": "handoff_r2/gork-acceptance.zip",
+    "logs": ["logs/rerun_pids_before.txt", "logs/rerun_pids_after.txt", "logs/rerun_pids_final.txt", "logs/native_parts_r2_stdout.json", "logs/native_parts_r2_stderr.txt", "logs/native_parts_r2_exit.txt", "logs/export_acceptance_r2_stdout.json", "logs/native_doctor.json", "logs/unit_test_acceptance_recovery.txt"]
+  },
+  "unverified": [
+    "two_bend_sheet 全链",
+    "plate/bracket 几何回读与钣金展开（建模失败未到达）",
+    "shaft 保存后的 close/reopen 与几何回读（COM 断连未到达）"
+  ],
+  "recommendations": [
+    "① 将 PR17 math SAFEARRAY 修复（8f4f57）rebase/合入本线后重测 plate/bracket 的类型不匹配",
+    "② shaft 保存后 COM 断连需在干净环境下单独复现定位（与 EXIT=139 家族归并排查）",
+    "③ 修复 export source-path 过滤缺陷（单测已复现）",
+    "④ two_bend_sheet 需在前三配方 cleanup 全部 needs_review 解除后再跑"
+  ]
+}

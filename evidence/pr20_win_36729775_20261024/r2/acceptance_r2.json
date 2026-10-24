@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "source_fingerprint": {
+    "code_sha256": {
+      "solidworks_generator.py": "a280b712ed57a48bda2c37d11052647d0d500d057ea3178e9f42e607aeffc6bd",
+      "sheet_metal_pipeline.py": "d4a78cbbd71a9fd0a18ee5bc6f77a9ca47c09e71018ddd6dc6248b46e71bab66",
+      "sheet_metal_windows.py": "5d6e007d30842ab9d72785b8e38efa874ae5b2de5e1281252db9866c4c4ec665",
+      "turned_part.py": "100510c1e70313cd8b51e2bbcac522cd2596c1614490bf0636a4a1aa5e06036d",
+      "turned_generate.py": "d1da24954c1d50f93a59ecd2232c49590382f4681ab8d0ac4ebf76e1db9ed2df",
+      "cad_analyzer.py": "aea82573c24c79822a4785482ba869c4f9fd6eda7e322f979fb3d2e32961532b",
+      "profile_sanitize.py": "5449eecba8758fcff5629640f799547a313ddcf6999ad038da9b6a07d67bf76f",
+      "profile_selection.py": "0c511367015a8de4e24b8b695fb659b73ae9acea154dff1e950e5dc654befd89",
+      "bend_allowance.py": "6a016fa696098ac156b4770b5c04482efce5b80d76acfd8ba53e37fc70ec0d60",
+      "part_verification.py": "c2335e656ee23ec847e0ebb1b72f75e9b5b60ec920eee11053d08eef7ee0abb3",
+      "sw_session.py": "3b8213ecd000d02efdcab9a595ca5fac32ff5cfd91837a380f0bbfc022ff1ae4",
+      "sw_owned_launch.py": "ad63d3686eefe60d080714af236363f4eb3bd17b3f10f12eb4abedb905eb0a0d"
+    },
+    "request_and_code_signature": "21a74f518ad7986fff2dd85b9952436f2f4857b622771ba42db1d1df950ce38a"
+  },
+  "results": [
+    {
+      "id": "plate",
+      "status": "needs_review",
+      "modeling": "failed",
+      "cleanup": "owned_document_closed",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_may_be_running": false,
+      "artifact_checks": [],
+      "evidence_errors": [],
+      "evidence_consistent": true,
+      "native_acceptance": "pending_windows_validation"
+    },
+    {
+      "id": "bracket",
+      "status": "needs_review",
+      "modeling": "failed",
+      "cleanup": "owned_document_closed",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_may_be_running": false,
+      "artifact_checks": [],
+      "evidence_errors": [],
+      "evidence_consistent": true,
+      "native_acceptance": "pending_windows_validation"
+    },
+    {
+      "id": "shaft",
+      "status": "needs_review",
+      "modeling": "failed",
+      "cleanup": "needs_review",
+      "returncode": 1,
+      "exit_class": "worker_error",
+      "worker_may_be_running": false,
+      "artifact_checks": [
+        {
+          "name": "part.SLDPRT",
+          "sha256": "6f481998b3ad11a02713cc9b335d11367cd379b4adcc81100d5693c852b2e3c1",
+          "matches": true
+        }
+      ],
+      "evidence_errors": [],
+      "evidence_consistent": true,
+      "native_acceptance": "pending_windows_validation"
+    },
+    {
+      "id": "two_bend_sheet",
+      "status": "not_run",
+      "modeling": null,
+      "cleanup": null,
+      "returncode": null,
+      "exit_class": null,
+      "worker_may_be_running": null,
+      "artifact_checks": [],
+      "evidence_errors": [],
+      "evidence_consistent": true,
+      "native_acceptance": "pending_windows_validation"
+    }
+  ],
+  "evidence_errors": [],
+  "evidence_consistent": true,
+  "scope": "revalidated reported worker evidence, not independent model inspection",
+  "manufacturing_approved": false,
+  "native_acceptance": "pending_windows_validation",
+  "redaction": "no absolute paths, source CAD or binary artifacts included"
+}

@@ -1,0 +1,4 @@
+{"phase": "preflight", "status": "ok", "time": 1792828176.9106922}
+{"phase": "document", "status": "created", "time": 1792828182.058806}
+{"phase": "modeling", "status": "failed", "time": 1792828182.0895262, "error": "com_error: (-2147352571, '类型不匹配。', None, 8)"}
+{"phase": "cleanup", "status": "document_closed", "time": 1792828182.2509117}
