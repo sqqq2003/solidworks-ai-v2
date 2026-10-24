@@ -45,7 +45,8 @@ def code_hash():
     return digest({name: file_hash(root/name) for name in (
         'sheet_metal_pipeline.py', 'sheet_metal_windows.py', 'cad_analyzer.py',
         'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py',
-        'bend_allowance.py', 'sw_session.py', 'sw_owned_launch.py')})
+        'bend_allowance.py', 'sw_session.py', 'sw_owned_launch.py',
+        'bridge_wiring.py')})
 
 
 def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
@@ -150,7 +151,12 @@ def validate_native(plan, evidence):
             raise RuntimeError(key + ' native readback mismatch or missing')
 
 
-def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
+def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
+    # Bridge wiring (Issue #25, next batch): ``bridge`` is an optional
+    # BridgeWiring (src/bridge_wiring.py) wrapping a bridge client. None
+    # preserves the exact pre-wiring behavior: no bridge evidence blocks
+    # are recorded at all. A supplied wiring never upgrades a run: bridge
+    # evidence says which channel answered, never "native SolidWorks ran".
     expected = dict(plan)
     plan_id = expected.pop('plan_id')
     if digest(expected) != plan_id or plan['code_sha256'] != code_hash():
@@ -242,10 +248,18 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
             generated = port.generate(analysis, plan, part)
             if not port.simulated and plan['bend_indices'] and (not generated.get('auto_bent') or generated.get('auto_bend_failed_count', 0)):
                 raise RuntimeError('automatic bending incomplete; manual/reference fallback rejected')
+            s1_evidence = {'generation': generated}
+            if bridge is not None:
+                # Bridge wiring: the bridge contract (PR #26) has no build
+                # method yet, so generation itself still runs through the
+                # port. This block records only the bridge session proof +
+                # grade for S1; a bridge failure here is fallback evidence
+                # and never aborts the run.
+                s1_evidence['bridge'] = bridge.s1_evidence()
             write_checkpoint(ckpt_dir, 'S1', plan_id=plan_id,
                              code_sha256=plan['code_sha256'],
                              products=[{'name': part.name, 'sha256': file_hash(part)}],
-                             evidence={'generation': generated})
+                             evidence=s1_evidence)
             checkpoints = read_checkpoints(ckpt_dir)
         run_lock.heartbeat()
         if resume_stage in (None, 'S0', 'S1'):
@@ -253,10 +267,16 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
             evidence = port.reopen_inspect(part)
             if not port.simulated:
                 validate_native(plan, evidence)
+            s2_evidence = {'reopen': evidence}
+            if bridge is not None:
+                # Bridge wiring: reuses the S1 session and verifies
+                # liveness via list_titles; a lost session is fallback
+                # evidence, not a run failure (reopen already ran).
+                s2_evidence['bridge'] = bridge.s2_evidence()
             write_checkpoint(ckpt_dir, 'S2', plan_id=plan_id,
                              code_sha256=plan['code_sha256'],
                              products=[{'name': part.name, 'sha256': file_hash(part)}],
-                             evidence={'reopen': evidence})
+                             evidence=s2_evidence)
             checkpoints = read_checkpoints(ckpt_dir)
         run_lock.heartbeat()
         if resume_stage in (None, 'S0', 'S1', 'S2'):
@@ -305,11 +325,31 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort):
         write_checkpoint(ckpt_dir, 'S4', plan_id=plan_id,
                          code_sha256=plan['code_sha256'], products=products,
                          evidence={'status': result['status']})
+        s5_evidence = {'teardown': 'run_plan_complete_lock_released_by_finally',
+                       'process_exit_code': 'recorded_by_session_owner_not_here',
+                       'pending_windows_validation': True}
+        if bridge is not None:
+            # Bridge wiring: the bridge 5-step teardown report (steps +
+            # exit code) is recorded into ckpt-S5. A bridge teardown
+            # failure does NOT unpublish the already-landed artifact: it
+            # is recorded here plus a crash package, and acceptance
+            # readers must check ckpt-S5 before claiming "full-process
+            # stable". Plain bridge unavailability is fallback, not a
+            # failure, and gets no crash package.
+            bridge_evidence, bridge_error = bridge.teardown_evidence()
+            s5_evidence['bridge'] = bridge_evidence
+            if bridge_error is not None:
+                logger.warning('bridge teardown failed for plan %s: %s', plan_id, bridge_error)
+                try:
+                    crash_file = write_crash_package(
+                        root, plan_id=plan_id, error=bridge_error,
+                        checkpoints=read_checkpoints(ckpt_dir), products=products)
+                    s5_evidence['bridge_teardown_crash_package'] = str(crash_file)
+                except Exception:
+                    logger.warning('could not write S5 bridge crash package', exc_info=True)
         write_checkpoint(ckpt_dir, 'S5', plan_id=plan_id,
                          code_sha256=plan['code_sha256'], products=products,
-                         evidence={'teardown': 'run_plan_complete_lock_released_by_finally',
-                                   'process_exit_code': 'recorded_by_session_owner_not_here',
-                                   'pending_windows_validation': True})
+                         evidence=s5_evidence)
         return {**result, 'resumed': resume_stage is not None, 'output_dir': str(destination)}
     except Exception as exc:
         recovery = 'not_needed'
