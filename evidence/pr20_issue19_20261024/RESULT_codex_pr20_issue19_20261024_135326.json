@@ -1,0 +1,67 @@
+{
+    "task_id":  "pr20_issue19_20261024_135326",
+    "issue":  "Issue#19 (PR#20 staged native editable modeling)",
+    "role":  "codex",
+    "ts":  "20261024_141757",
+    "status":  "partial_1_of_2",
+    "summary":  "WorkBuddy 独立交叉验证完成：离线 modeling_batch 4/4 mock_only、resume OK、改输入拒绝——Qoder 的离线结论被独立复现（在独立目录 D:\\...\\wb_pr20_wb_20261024_140819\\batch_wb，非照抄）。Native 建模未能验收：PR20 require_model_write 只放行 task-OWNED（spawn）会话，温复用 attach 被设计性拒绝（SessionOwnershipError: GetActiveObject/Dispatch alone is not exclusive ownership），唯一合法写路径 owned_solidworks 在本机单实例 SW 上永远拿不到独立 COM 注册（本轮禁用 owned_spawn，且 PR17 oracle 已证同因失败）。与 Qoder『native 未正式验收 / pending_windows_validation』一致，非回归。",
+    "changed_files":  [
+
+                      ],
+    "out_dir":  "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819",
+    "evidence":  [
+                     "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\accept_pr20_wb_20261024_140819.json",
+                     "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step1_fresh_stdout.json",
+                     "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step2_resume_stdout.json",
+                     "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\logs\\step3_changed_stderr.txt",
+                     "D:\\工程\\钣金导入\\wb_pr20_wb_20261024_140819\\native_attach_probe.json"
+                 ],
+    "findings":  {
+                     "sha_pin_verified":  "git rev-parse HEAD == e1a14a74210471a09e1c82a8f77a9e8c7904f8aa (clean, pin unchanged)",
+                     "offline_pass":  true,
+                     "jobs":  4,
+                     "offline_job_ids":  [
+                                             "plate",
+                                             "bracket",
+                                             "shaft",
+                                             "two_bends"
+                                         ],
+                     "offline_top_status":  "review_required",
+                     "offline_cad_executed":  false,
+                     "resume_ok":  true,
+                     "changed_rejected":  true,
+                     "changed_reject_error":  "ValueError(\u0027changed batch cannot resume\u0027) @ staged_modeling.py:72",
+                     "native_ran":  true,
+                     "native_plate_created":  false,
+                     "native_acceptance":  "SessionOwnershipError",
+                     "native_require_model_write_error":  "SessionOwnershipError: refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership",
+                     "native_root_cause":  "PR20 sw_session.require_model_write needs verified_exclusive (spawn_claimed=True AND attached_existing=False); warm-reuse attach sets attached_existing=True -\u003e refused by design; owned_solidworks spawn cannot bind on this single-instance SW host (no independent COM registration for spawned PID)",
+                     "sw_killed":  false,
+                     "com_crash":  false,
+                     "sw_pids":  {
+                                     "offline":  [
+                                                     16564,
+                                                     16564
+                                                 ],
+                                     "native_probe_before":  [
+                                                                 16564,
+                                                                 19724
+                                                             ],
+                                     "native_probe_after":  [
+                                                                16564,
+                                                                19724
+                                                            ]
+                                 }
+                 },
+    "p248":  {
+                 "ran":  false,
+                 "note":  "not in scope; no p248 inference from this task"
+             },
+    "next":  "lxy_accept",
+    "honest":  true,
+    "recommended_next_steps":  [
+                                   "离线 staged_modeling 契约已双源验证（Qoder + WorkBuddy 独立），可作为 Issue19 的离线通过项。",
+                                   "Native 验收需一台可 owned_spawn 独立 COM 注册的 Windows/SW 环境（本机单实例不满足），或在目标环境按 PR20 的 owned_solidworks 流程跑最小 plate；本轮按约束未 owned_spawn、未 ExitApp/taskkill。",
+                                   "lxy 决定是否据此标记 Issue19 为 offline-pass / native-pending。"
+                               ]
+}

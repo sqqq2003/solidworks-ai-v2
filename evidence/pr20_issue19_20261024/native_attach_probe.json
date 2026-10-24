@@ -1,0 +1,13 @@
+{
+  "task": "pr20_native_warm_reuse_attach_probe",
+  "attach": {
+    "observed_pid": null,
+    "attached_existing": true,
+    "created_by_task": false,
+    "spawn_claimed": false,
+    "verified_exclusive": false,
+    "foreign_titles": []
+  },
+  "write_gate": "refused",
+  "require_model_write": "SessionOwnershipError: refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership"
+}
