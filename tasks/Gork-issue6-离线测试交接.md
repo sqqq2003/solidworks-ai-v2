@@ -71,18 +71,29 @@ mechanical_acceptance = unverified
 
 ## 四、怎么落盘
 
-```bash
-# 方式 A：补丁
-git checkout -b feat/issue6-offline-tests bf67b67
-git am handoff/gork-issue6-20261024/*.patch
+本分支目前只在本地（`feat/issue6-offline-tests`）。两条路任选：
 
-# 方式 B：thin bundle（需要本地已有 bf67b67）
-git bundle verify handoff/gork-issue6-20261024/issue6-offline-tests.bundle
-git fetch handoff/gork-issue6-20261024/issue6-offline-tests.bundle \
-    feat/issue6-offline-tests:feat/issue6-offline-tests
+**路径 1（推荐，需要用户先推送一次）**：用户把分支推到 GitHub 后，直接取分支：
+
+```bash
+git fetch origin feat/issue6-offline-tests
+git checkout -b feat/issue6-offline-tests origin/feat/issue6-offline-tests
 ```
 
-落盘后请重跑一次回归，核对与 `latest.json` 是否一致：
+**路径 2（只能拿到离线交接包时）**：用 `handoff/gork-issue6-20261024/` 里的
+补丁或 thin bundle（该目录未入库，靠文件传递）：
+
+```bash
+# 方式 B：补丁
+git checkout -b feat/issue6-offline-tests bf67b67
+git am /path/to/handoff/gork-issue6-20261024/*.patch
+
+# 方式 C：thin bundle（需要本地已有 bf67b67）
+git bundle verify issue6-offline-tests.bundle
+git fetch issue6-offline-tests.bundle     feat/issue6-offline-tests:feat/issue6-offline-tests
+```
+
+落盘后请重跑一次回归，核对与 `results/cloud/latest.json` 是否一致：
 
 ```bash
 python work/run_cloud_tests.py
