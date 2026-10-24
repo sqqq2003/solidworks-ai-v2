@@ -15,6 +15,27 @@ from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
     on_task_sta, claim_spawned_process, require_model_write, exit_owned_application)
 
 
+def refuse_registered_instance(lookup):
+    """Read-only preflight; discovery never grants ownership or closes CAD."""
+    app=lookup()
+    if app is not None:
+        raise SessionOwnershipError('existing registered SolidWorks instance; no process spawned. '
+            'Preserve current work and use an operator-prepared dedicated environment; '
+            'do not bypass the owned write gate or automatically close sessions.')
+
+
+def _registered_application():
+    import pythoncom
+    import win32com.client
+    try:
+        return win32com.client.GetActiveObject('SldWorks.Application')
+    except pythoncom.com_error as exc:
+        # MK_E_UNAVAILABLE means no active ROT object. Other discovery failures
+        # are not proof of an empty environment and must fail before spawning.
+        if getattr(exc,'hresult',None)==-2147221021:return None
+        raise SessionOwnershipError('active COM registration probe failed; no process spawned') from exc
+
+
 class WindowsProcessLifetime:
     def __init__(self, executable):
         self.executable = str(executable)
@@ -166,6 +187,7 @@ def owned_solidworks(executable, *, timeout=90):
         raise ValueError('provide the installed SLDWORKS.exe absolute path')
     import pythoncom
     from solidworks_generator import _list_open_document_titles
+    refuse_registered_instance(_registered_application)
     lifetime = WindowsProcessLifetime(path)
     lease.native_launch_attempt = lifetime  # Keep the lifetime handle even on failed proof.
     try:
@@ -192,3 +214,4 @@ def owned_solidworks(executable, *, timeout=90):
             binding.cleanup_error = str(exc)
             import logging
             logging.getLogger(__name__).exception('owned process left open; no forced cleanup')
+

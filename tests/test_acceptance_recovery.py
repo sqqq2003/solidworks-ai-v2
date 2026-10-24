@@ -3,7 +3,7 @@ import hashlib,json,tempfile,unittest,zipfile
 from pathlib import Path
 from unittest.mock import patch
 from ql5050px import modeling_supervisor as supervisor
-from ql5050px.acceptance_report import collect_acceptance,export_acceptance
+from ql5050px.acceptance_report import collect_acceptance,export_acceptance,safe_source_name
 from ql5050px.native_environment import inspect_environment
 
 class RecoveryContracts(unittest.TestCase):
@@ -65,6 +65,23 @@ class RecoveryContracts(unittest.TestCase):
         self.assertFalse(report['evidence_consistent'])
         self.assertEqual(report['source_fingerprint']['code_sha256'],{'ql5050px/a.py':'c'*64})
         self.assertNotIn(str(external),json.dumps(report))
+    def test_portable_source_paths_reject_both_os_roots(self):
+        for name in ['/secret','//host/share/file',r'C:\secret',r'\secret',r'\\host\share\file',
+                     'C:relative.py','../secret','ql/../../secret','ql\\secret','']:
+            with self.subTest(name=name):self.assertFalse(safe_source_name(name))
+        self.assertTrue(safe_source_name('ql5050px/acceptance_report.py'))
+    def test_failed_and_not_run_batch_has_no_acceptance_green(self):
+        self.root.mkdir()
+        (self.root/'source-manifest.json').write_text(json.dumps({'code_sha256':{'ql5050px/a.py':'a'*64},'request_and_code_signature':'b'*64}))
+        rows=[{'id':'plate','status':'needs_review','returncode':1,'modeling':'unknown','cleanup':'unknown','artifacts':{}}]
+        rows.extend({'id':name,'status':'not_run'} for name in ['bracket','shaft','two_bend_sheet'])
+        (self.root/'summary.json').write_text(json.dumps({'results':rows}))
+        report=collect_acceptance(self.root)
+        self.assertTrue(report['record_consistent'])
+        self.assertFalse(report['execution_complete'])
+        self.assertFalse(report['evidence_consistent'])
+        self.assertEqual(report['counts'],{'needs_review':1,'not_run':3})
+        self.assertTrue(all('job_not_completed' in row['evidence_errors'] for row in report['results']))
     def test_empty_evidence_cannot_pass(self):
         self.root.mkdir()
         (self.root/'summary.json').write_text(json.dumps({'results':[]}))
@@ -78,3 +95,4 @@ class RecoveryContracts(unittest.TestCase):
         self.assertEqual(report['status'],'windows_required');self.assertFalse(report['cad_written'])
 
 if __name__=='__main__':unittest.main()
+

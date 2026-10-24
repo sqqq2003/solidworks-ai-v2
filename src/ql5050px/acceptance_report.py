@@ -1,6 +1,14 @@
 """Read-only, redacted batch evidence export; no reconstruction of a native pass."""
 import hashlib,json,zipfile,re
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
+
+
+def safe_source_name(name):
+    """Repo fingerprints use portable POSIX relative paths on every host."""
+    if not isinstance(name,str) or not name or '\\' in name or ':' in name:
+        return False
+    posix,windows=PurePosixPath(name),PureWindowsPath(name)
+    return not (posix.root or windows.root or windows.drive or '..' in posix.parts)
 
 
 def collect_acceptance(batch_root):
@@ -8,7 +16,8 @@ def collect_acceptance(batch_root):
     summary=json.loads((root/'summary.json').read_text(encoding='utf-8'))
     source=json.loads((root/'source-manifest.json').read_text(encoding='utf-8')) if (root/'source-manifest.json').is_file() else {'status':'missing_source_fingerprint'}
     raw_code=source.get('code_sha256',{})
-    code={name:sha for name,sha in raw_code.items() if isinstance(name,str) and not Path(name).is_absolute() and '..' not in Path(name).parts and ':' not in name and '\\' not in name and isinstance(sha,str) and re.fullmatch(r'[0-9a-f]{64}',sha)}
+    code={name:sha for name,sha in raw_code.items() if safe_source_name(name)
+          and isinstance(sha,str) and re.fullmatch(r'[0-9a-f]{64}',sha)}
     signature=source.get('request_and_code_signature')
     source={'code_sha256':code,'request_and_code_signature':signature if isinstance(signature,str) and re.fullmatch(r'[0-9a-f]{64}',signature) else None}
     batch_errors=[]
@@ -29,13 +38,20 @@ def collect_acceptance(batch_root):
             if row.get('returncode')!=0 or row.get('modeling')!='saved_reopened' or row.get('cleanup')!='owned_document_closed':
                 errors.append('completed_status_contradicts_phase_evidence')
             if not checks:errors.append('completed_without_artifacts')
+        record_errors=list(errors)
+        completed=row.get('status')=='completed'
+        if not completed:errors.append('job_not_completed')
         report.update(artifact_checks=checks,evidence_errors=errors,
+            record_consistent=not record_errors,execution_complete=completed,
             evidence_consistent=not errors,native_acceptance='pending_windows_validation')
         reports.append(report)
-    return {'schema_version':1,'source_fingerprint':source,'results':reports,
+    return {'schema_version':2,'source_fingerprint':source,'results':reports,
+        'record_consistent':not batch_errors and all(r['record_consistent'] for r in reports),
+        'execution_complete':bool(reports) and all(r['execution_complete'] for r in reports),
+        'counts':{status:sum(r['status']==status for r in reports) for status in sorted({r['status'] for r in reports})},
         'evidence_errors':batch_errors,
         'evidence_consistent':not batch_errors and all(r['evidence_consistent'] for r in reports),
-        'scope':'revalidated reported worker evidence, not independent model inspection',
+        'scope':'evidence_consistent requires every job completed with coherent reported phases and artifact hashes; not independent native validation',
         'manufacturing_approved':False,'native_acceptance':'pending_windows_validation',
         'redaction':'no absolute paths, source CAD or binary artifacts included'}
 
@@ -48,4 +64,5 @@ def export_acceptance(batch_root,destination):
     (root/'SHA256.json').write_text(json.dumps({'acceptance.json':digest},indent=2))
     with zipfile.ZipFile(root/'gork-acceptance.zip','x',zipfile.ZIP_DEFLATED) as z:
         z.write(path,path.name);z.write(root/'SHA256.json','SHA256.json')
-    return {'status':'review_required','package':str(root/'gork-acceptance.zip'),'evidence_consistent':report['evidence_consistent']}
+    return {'status':'review_required','package':str(root/'gork-acceptance.zip'),'evidence_consistent':report['evidence_consistent'],'execution_complete':report['execution_complete'],'record_consistent':report['record_consistent'],'counts':report['counts'],'native_acceptance':report['native_acceptance']}
+
