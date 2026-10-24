@@ -13,6 +13,11 @@ def main():
     commands = p.add_subparsers(dest='command',required=True)
     commands.add_parser('status')
     commands.add_parser('doctor')
+    ql = commands.add_parser('ql',help='QL-5050PX offline workflow; no native writes')
+    ql.add_argument('--action',choices=('plan','assembly','bom','drawing','pipeline'),default='plan')
+    ql.add_argument('--config',type=Path,required=True)
+    ql.add_argument('--output-dir',type=Path)
+    ql.add_argument('--resume',action='store_true')
     batch = commands.add_parser('batch')
     batch.add_argument('manifest',type=Path)
     batch.add_argument('--reports',type=Path,default=ROOT/'runtime/project-reports')
@@ -22,19 +27,23 @@ def main():
             report = capabilities()
         elif args.command == 'doctor':
             report = doctor()
+        elif args.command == 'ql':
+            from ql5050px.workflow import run_workflow
+            config = json.loads(args.config.read_text(encoding='utf-8-sig'))
+            report = run_workflow(args.action,config,output_dir=args.output_dir,resume=args.resume)
         else:
             data = json.loads(args.manifest.read_text(encoding='utf-8-sig'))
             if data.get('schema_version') != 1:
                 raise ValueError('unsupported job manifest schema')
             jobs = data['jobs']
             for job in jobs:
-                for key in ('source','output','sw_exe'):
+                for key in ('source','output','sw_exe','config','output_dir'):
                     if key in job and not Path(job[key]).is_absolute():
                         job[key] = str((args.manifest.resolve().parent/job[key]).resolve())
             report = run_batch(jobs)
             report['report_file'] = str(write_report(report,args.reports))
         print(json.dumps(report,ensure_ascii=False,indent=2))
-        return 1 if report.get('status') == 'failed' else (3 if report.get('status') == 'review_required' else 0)
+        return 1 if report.get('status') == 'failed' else (3 if report.get('status') in {'review_required','pending_mapping'} else 0)
     except (OSError,ValueError,KeyError,TypeError) as exc:
         print(json.dumps({'status':'failed','error':str(exc)},ensure_ascii=False))
         return 1
@@ -42,3 +51,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

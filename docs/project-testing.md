@@ -70,4 +70,15 @@ examples/project_smoke.py 会建立明确标为 synthetic 的板件/轴/滚筒�
 
 ## 测试人员回传
 
-回传 HANDOFF.json 的 revision、TEST_RESULTS.json、project.py doctor 输出、GUI 操作错误、任务 JSON/CSV 报告及工作副本产物哈希。原生测试还需正式会话PID证据、SW版本、特征与尺寸读回、重建/保存/重开/展开的逐项结果。客户 CAD 留在本机，不放入源码包。不存在的功能写未实现，没跑的项目写未测。
+回传 HANDOFF.json 的 revision、对应源码版本实际运行的测试结果、project.py doctor 输出、GUI 操作错误、任务 JSON/CSV 报告及工作副本产物哈希。原生测试还需正式会话PID证据、SW版本、特征与尺寸读回、重建/保存/重开/展开的逐项结果。客户 CAD 留在本机，不放入源码包。不存在的功能写未实现，没跑的项目写未测。
+
+## 框架审核修订（覆盖上文旧确认和状态说明）
+
+- 整机规划必须显式 `machine="GT-ZX"`，只调用旧 A01 规划。GUI 默认 QL-5050PX 请求会拒绝，指向独立 QL 流水线 PR #7；本版本尚未接通 QL 桌面流程。
+- 原生任务不再只接受 `confirmed=true`。审核图纸和参数后用 `project_workbench.confirm_job(job)` 生成带 source_sha256、confirmation_digest 的任务，再保存清单。路径、参数或源文件内容改变均需重新确认；GUI 入队时自动生成绑定信息。清单请先使用最终绝对路径再确认。
+- `reopened_rebuilt` 仅表示重开/重建及实体包络可读；`reopen_dimensions_verified` 另表示给定包络尺寸相符。均不表示完整几何或机械验收，cad_verified 保持 false。当前核对所有实体的联合包络和实体数量证据，不只读取首个实体。
+- 默认等待 600 秒，可用 timeout_seconds 指定。超时状态 timed_out 会停止本批，保留 worker PID、日志和原生恢复标记；不杀 Python/SolidWorks。旧原生 worker/session 未核对前不得移除 runtime/project-workers/native.pending.json，后续原生任务会拒绝。
+- 交接包仅收集受跟踪的白名单源码，记录工作区 dirty 状态。不再自动携带旧 latest.json 冒充当前源码测试证据。未跟踪的客户 JSON/TXT 不收集。
+
+详见 docs/framework-review-fixes.md。上述修订代码及回归合约未执行单测或 Windows 实机验证。
+

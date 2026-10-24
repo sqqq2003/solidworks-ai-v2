@@ -8,15 +8,32 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_SUFFIXES = {'.py','.md','.json','.txt','.yml','.yaml'}
+SOURCE_ROOTS = {'src':{'.py','.md'},'tests':{'.py','.json','.md'},
+    'examples':{'.py','.json','.md'},'docs':{'.md'},'work':{'.py'},
+    '.github':{'.yml','.yaml'}}
+CONFIG_FILES = {'data/machine_spec.json','data/tasks.json','docs/ql5050px-handoff-index.json'}
+
+
+def allowed_source(path):
+    name = path.as_posix()
+    if name in CONFIG_FILES:
+        return True
+    if len(path.parts)==1:
+        return path.suffix=='.py' or name in {'README.md','AGENTS.md','TASK_STATUS.md',
+            'requirements-cloud.txt','requirements-offline.lock.txt'}
+    if path.parts[0]=='.github' and path.parts[1]!='workflows':
+        return False
+    return path.suffix in SOURCE_ROOTS.get(path.parts[0],set())
 
 
 def collect(root):
     root = Path(root).resolve()
-    names = subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=root).decode().split('\0')
+    # Only deliberately versioned source paths; never collect untracked files.
+    names = subprocess.check_output(['git','ls-files','--cached','-z'],cwd=root).decode().split('\0')
     result = []
     for name in sorted(set(names)-{''}):
         path = Path(name)
-        if (path.suffix.casefold() not in ALLOWED_SUFFIXES or path.parts[0] in {'.git','runtime','results','legacy','backups'}
+        if (not allowed_source(path) or path.parts[0] in {'.git','runtime','results','legacy','backups'}
                 or any(part.startswith('.env') or any(word in part.casefold() for word in ('secret','credential','private_key')) for part in path.parts)):
             continue
         full = root/path
@@ -31,7 +48,10 @@ def build_package(root, output, revision):
     if output.exists():
         raise FileExistsError('test package already exists; use a new path')
     files = collect(root)
+    dirty = bool(subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=root).strip())
     manifest = {'schema_version':1,'revision':revision,'scope':'whole_project_source_only',
+        'tracked_workspace_dirty':dirty,'untracked_files_included':False,
+        'collection_policy':'tracked_source_allowlist_v2',
         'sw_live_acceptance':'pending','excluded':['customer CAD','credentials','git history','results/windows'],
         'files':{p.as_posix():hashlib.sha256((root/p).read_bytes()).hexdigest() for p in files}}
     output.parent.mkdir(parents=True,exist_ok=True)
@@ -39,11 +59,8 @@ def build_package(root, output, revision):
     with zipfile.ZipFile(output,'x',zipfile.ZIP_DEFLATED) as bundle:
         for path in files:
             bundle.write(root/path,path.as_posix())
-        results = root/'results/cloud/latest.json'
-        if results.is_file():
-            data = results.read_bytes()
-            bundle.writestr('TEST_RESULTS.json',data)
-            manifest['files']['TEST_RESULTS.json'] = hashlib.sha256(data).hexdigest()
+        # Do not attach stale test statistics to a changed source snapshot.
+        manifest['test_status'] = 'not_attached_requires_matching_source_revision'
         bundle.writestr('HANDOFF.json',json.dumps(manifest,indent=2,ensure_ascii=False)+'\n')
         bundle.writestr('READ-FIRST.txt',
             'SolidWorks AI V2 whole-project test bundle\n'
@@ -67,3 +84,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
