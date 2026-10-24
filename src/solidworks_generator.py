@@ -36,6 +36,7 @@ from sw_session import (
     on_task_sta,
     release_task_documents,
     require_model_write,
+    ensure_application_keepalive,
     run_on_task_sta,
 )
 
@@ -347,11 +348,16 @@ def _set_sw_automation_mode(solidworks: Any, enabled: bool) -> None:
     CommandInProgress. Exclusive proof is required first.
     """
 
-    require_model_write()
-    try:
-        solidworks.UserControl = not enabled
-    except Exception:
-        logger.debug("UserControl set failed", exc_info=True)
+    lease = require_model_write()
+    if getattr(lease, "keep_application_open", False) is True:
+        # Background + last CloseDoc exits SW even without an ExitApp call.
+        # Do not reset UserControl=False between S1 generation and S2 reopen.
+        ensure_application_keepalive(lease, solidworks)
+    else:
+        try:
+            solidworks.UserControl = not enabled
+        except Exception:
+            logger.debug("UserControl set failed", exc_info=True)
     try:
         solidworks.CommandInProgress = bool(enabled)
     except Exception:
@@ -3153,6 +3159,16 @@ class NativeSketchTransformError(SolidWorksGenerationError):
     """Native math disagreed: abort this job without relief retries."""
 
 
+def _native_point_array(point):
+    """Explicit SAFEARRAY(double); tuple VARIANT arrays can fail in SW2022."""
+    values = tuple(float(v) for v in point)
+    if len(values) != 3 or not all(math.isfinite(v) for v in values):
+        raise NativeSketchTransformError("invalid native point array")
+    import pythoncom
+    from win32com.client import VARIANT
+    return VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, values)
+
+
 def _verified_bend_sketch_point(module, transform_object, point):
     """Use SW's native math as the oracle before writing any bend sketch line."""
     lease = require_model_write()
@@ -3160,7 +3176,7 @@ def _verified_bend_sketch_point(module, transform_object, point):
     if binding is None:
         raise SessionOwnershipError("native transform verification requires owned launch")
     utility = _as_interface(module, _com_read(binding.app, "GetMathUtility"), "IMathUtility")
-    native_point = _as_interface(module, utility.CreatePoint(tuple(point)), "IMathPoint")
+    native_point = _as_interface(module, utility.CreatePoint(_native_point_array(point)), "IMathPoint")
     projected = _as_interface(module, native_point.MultiplyTransform(transform_object), "IMathPoint")
     actual = tuple(float(v) for v in _com_read(projected, "ArrayData"))
     expected = _transform_to_sketch(_com_read(transform_object, "ArrayData"), point)

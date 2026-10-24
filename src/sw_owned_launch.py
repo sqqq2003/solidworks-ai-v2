@@ -79,6 +79,7 @@ class OwnedBinding:
         self.read_pid, self.list_titles = read_pid, list_titles
         self.cleanup_status = 'not_attempted'
         self.cleanup_error = None
+        self.keepalive_verified = False
 
     def validate(self, lease, *, documents=True):
         if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
@@ -112,7 +113,9 @@ class OwnedBinding:
                 'image': self.lifetime.executable, 'attached_existing': False,
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
-                'cleanup_exit_code': self.lifetime.process.poll()}
+                'cleanup_exit_code': self.lifetime.process.poll(),
+                'keepalive_policy': 'user_control_true_before_intermediate_close',
+                'keepalive_verified': self.keepalive_verified}
 
 
 def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump=None):
@@ -197,3 +200,4 @@ def owned_solidworks(executable, *, timeout=90):
             binding.cleanup_error = str(exc)
             import logging
             logging.getLogger(__name__).exception('owned process left open; no forced cleanup')
+

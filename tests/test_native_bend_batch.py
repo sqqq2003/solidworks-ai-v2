@@ -16,7 +16,7 @@ class NativeBendBatchTests(unittest.TestCase):
         app = NS(GetMathUtility=utility)
         lease = NS(native_launch=NS(app=app))
         transform = NS(ArrayData=(1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0))
-        with patch.object(sw,'require_model_write',return_value=lease), \
+        with patch.object(sw,'_native_point_array',side_effect=tuple),patch.object(sw,'require_model_write',return_value=lease), \
              patch.object(sw,'_as_interface',side_effect=lambda m,o,n:o):
             return sw._verified_bend_sketch_point(None,transform,expected)
 
@@ -72,3 +72,11 @@ class NativeBendBatchTests(unittest.TestCase):
         self.assertIn('incomplete_native_bends',report['issues'])
         self.assertIn('owned_session_evidence_missing',report['issues'])
         self.assertFalse(report['cad_executed'])
+
+    def test_native_point_uses_explicit_double_safearray(self):
+        client=NS(VARIANT=lambda tag,values:(tag,values))
+        with patch.dict(sys.modules,{'pythoncom':NS(VT_ARRAY=0x2000,VT_R8=5),
+                                     'win32com':NS(client=client),'win32com.client':client}):
+            self.assertEqual(sw._native_point_array((1,2,3)),(0x2005,(1.,2.,3.)))
+        with self.assertRaises(sw.NativeSketchTransformError):
+            sw._native_point_array((0,float('nan'),0))

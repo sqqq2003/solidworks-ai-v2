@@ -197,3 +197,13 @@
 - 修复QL续跑日志value与result.json不绑定、空产物完成项复用、kind不符复用，以及$ref共享对象被下游修改。新增5项回归，旧实现4项明确失败，新实现通过；正常缓存不重跑。
 - 完整441 ran / 436 passed / 0 failures/errors / 5 skipped，跨进程锁通过；C# Python合约17项沿用前轮未改模块结果。
 - .NET host有但SDK缺失，实际build失败；SW oracle交接原稿在本机指定路径不可读，已向现有执行者请求共享。按ur56w8下一原生阶段仅oracle，不整跑step0。a9rpk4双轨选型仍未验收。详见docs/project-problems-20261024.md。
+
+
+## CODEX-S2-KEEPALIVE：gh268s双轨回传审查
+
+- WB/Qoder S1保存成功、S2断连发布失败，整体不放行。旧Windows探针/路径断言已由def70f3修复，不重复实现。
+- 原生保活缺陷定位：_set_sw_automation_mode把UserControl设False；后台会话关最后文档会退出。现按keep_application_open设置True并严格读回；受控CloseDoc前再次核验，失败不关文档。最终空文档ExitApp保留。
+- oracle回传显示typed数学有效但raw dispatch/tuple编组不可靠，补显式SAFEARRAY(double)；不合入温复用绕过。
+- p248温测报告改了源图/profile299且非独占、exit139，仅保留几何正面信号，不按原任务或稳定发布通过。Qoder不一致汇总不累计。
+- 新增会话/编组/fixture回归，完整478 ran / 473 passed / 0 failures/errors / 5 skipped，锁通过；另C#Python合同17/17。合成fixture dry-run实际simulated_pass，未启动新SW实测。
+- 新work/prepare_s2_retest.py输出样本与加载模块哈希、自动轮廓及精确argv；run_sheet_metal新增不可覆盖UTF8诊断日志。docs/s2-retest-20261024.md给出串行WB/Qoder精确跑法，待实机。
