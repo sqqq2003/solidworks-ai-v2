@@ -8,7 +8,7 @@ from .parameters import build_plan
 from .assembly import inspect_assembly
 from .drawing_bom import build_bom, drawing_model, export_bom_csv, export_drawing_json
 
-ACTIONS = {'plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package'}
+ACTIONS = {'plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence'}
 
 
 @dataclass(frozen=True)
@@ -91,6 +91,9 @@ def native_mechanical_checks(document, request, port: NativeMechanicalPort):
 
 
 def run_workflow(action, config, *, output_dir=None, resume=False):
+    if action=='intelligence':
+        from .intelligence import run_intelligence
+        return run_intelligence(config,output_dir)
     if action not in ACTIONS:
         raise ValueError('unknown QL action')
     if action in {'auto_assembly','drive','manufacturing','machine_package'}:
