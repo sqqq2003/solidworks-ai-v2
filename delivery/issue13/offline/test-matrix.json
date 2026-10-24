@@ -1,0 +1,61 @@
+[
+  {
+    "id": "ASM-01",
+    "case": "tree/reuse/configuration/placement/mate plan",
+    "expected": "cycles rejected; unknown refs pending",
+    "status": "not_run"
+  },
+  {
+    "id": "ASM-02",
+    "case": "owned Windows Pack and Go + insertion + save/reopen",
+    "expected": "all refs inside work root; occurrence counts match",
+    "status": "not_run"
+  },
+  {
+    "id": "DRV-01",
+    "case": "envelope change/ratios/centers/belt/chain",
+    "expected": "affected components, missing inputs and conflicts reported",
+    "status": "not_run"
+  },
+  {
+    "id": "DRV-02",
+    "case": "purchased/fixed dimensions",
+    "expected": "no stretch; only explicitly allowed repositioning",
+    "status": "not_run"
+  },
+  {
+    "id": "DRV-03",
+    "case": "native mate dimensions/rebuild/readback/checks",
+    "expected": "independent copy; native evidence per step",
+    "status": "not_run"
+  },
+  {
+    "id": "DRW-01",
+    "case": "register/material/thickness/process/views",
+    "expected": "part + assembly tasks and pending engineering data",
+    "status": "not_run"
+  },
+  {
+    "id": "DRW-02",
+    "case": "native projected views/dimensions/notes/BOM/balloons",
+    "expected": "linked model dimensions and BOM; no fabricated approval",
+    "status": "not_run"
+  },
+  {
+    "id": "DRW-03",
+    "case": "sheet flat view and DXF",
+    "expected": "native flat output exists; source unchanged",
+    "status": "not_run"
+  },
+  {
+    "id": "PKG-01",
+    "case": "CLI/desktop/batch and ZIP checksums",
+    "expected": "same API; no COM offline; hashes match",
+    "status": "not_run"
+  },
+  {
+    "id": "INT-01",
+    "case": "scan/classify/map/decision/calculation integration",
+    "status": "not_run"
+  }
+]

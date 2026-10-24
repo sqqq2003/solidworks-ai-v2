@@ -1,0 +1,8 @@
+﻿item,part_number,configuration,material,purchased,quantity,status
+1,QL-CONVEYOR-PENDING,,pending_mapping,False,1,pending_mapping
+2,QL-FRAME-PENDING,,pending_mapping,False,1,pending_mapping
+3,QL-INTERFACES-PENDING,,pending_mapping,False,1,pending_mapping
+4,QL-LEFT_DRIVE-PENDING,,pending_mapping,False,1,pending_mapping
+5,QL-RIGHT_DRIVE-PENDING,,pending_mapping,False,1,pending_mapping
+6,QL-SEALING-PENDING,,pending_mapping,False,1,pending_mapping
+7,QL-STANDARD_PARTS-PENDING,,pending_mapping,False,1,pending_mapping
