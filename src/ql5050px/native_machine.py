@@ -276,7 +276,7 @@ class NativeMachineDriver:
         model = self.open_document(root_copy,plan['assembly_configuration'])
         receipt = self.save_reopen(model,folder/'variant.SLDASM',plan['assembly_configuration'])
         return {'document':receipt,'changes':changes,'status':'native_changes_readback',
-                'native_checks':plan['native_checks'],'mechanical_acceptance':'unverified'}
+                'native_checks':plan['native_checks'],'isolated_documents':copies,'mechanical_acceptance':'unverified'}
 
     def inspect_native(self,document,motion_samples=()):
         """Report native mate states/interference and sampled mate-drive evidence.
@@ -323,6 +323,9 @@ class NativeMachineDriver:
 
 def run_owned_native(sw_exe,work_root,operation,payload):
     """Explicit Windows entry; fresh work root; no process attachment shortcuts."""
+    if operation=='production':
+        from .production import validate_review
+        validate_review(payload['plan'],payload['review_sha256'])
     if sys.platform!='win32': raise RuntimeError('Windows SolidWorks required')
     from sw_session import run_on_task_sta, current_lease
     from sw_owned_launch import owned_solidworks
@@ -332,6 +335,9 @@ def run_owned_native(sw_exe,work_root,operation,payload):
         with owned_solidworks(Path(sw_exe)):
             from .native_drawings import ManufacturingDriver
             driver = ManufacturingDriver(current_lease(),root)
+            if operation=='production':
+                from .production import execute_production
+                return execute_production(payload['plan'],driver,root/'production',review_sha256=payload['review_sha256'])
             if operation=='assembly': return driver.build_assembly(payload,root/'assembly')
             if operation=='drive': return driver.apply_drive(payload,root/'drive')
             if operation=='drawings':
@@ -345,3 +351,4 @@ def run_owned_native(sw_exe,work_root,operation,payload):
                 return driver.inspect_native(copied,payload.get('motion_samples',[]))
             raise ValueError('unknown native machine operation')
     return run_on_task_sta(job,timeout=900,task_name='ql-machine-native')
+

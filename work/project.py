@@ -24,6 +24,11 @@ def main():
     ql.add_argument('--config',type=Path,required=True)
     ql.add_argument('--output-dir',type=Path)
     ql.add_argument('--resume',action='store_true')
+    production=commands.add_parser('native-production',help='Explicit owned Windows whole-machine execution')
+    production.add_argument('plan',type=Path)
+    production.add_argument('--sw-exe',type=Path,required=True)
+    production.add_argument('--output',type=Path,required=True)
+    production.add_argument('--review-sha256',required=True)
     native = commands.add_parser('native-parts',help='Explicit Windows native batch; requires reviewed templates and plans')
     native.add_argument('manifest',type=Path)
     native.add_argument('--output',type=Path,required=True)
@@ -81,6 +86,12 @@ def main():
             jobs=prepare_jobs(data,sw_exe=args.sw_exe,template=args.template,sketch_plane=args.sketch_plane,review=True)
             with args.out.open('x',encoding='utf-8') as stream:json.dump({'jobs':jobs},stream,ensure_ascii=False,indent=2)
             report={'status':'review_required','reviewed_manifest':str(args.out),'job_count':len(jobs)}
+        elif args.command == 'native-production':
+            from ql5050px.production import validate_review
+            from ql5050px.native_machine import run_owned_native
+            plan=json.loads(args.plan.read_text(encoding='utf-8-sig'))
+            validate_review(plan,args.review_sha256)
+            report=run_owned_native(args.sw_exe,args.output,'production',{'plan':plan,'review_sha256':args.review_sha256})
         elif args.command == 'native-parts':
             if sys.platform!='win32':raise ValueError('native batch requires Windows')
             from ql5050px.modeling_supervisor import supervise
@@ -103,7 +114,7 @@ def main():
             report['report_file'] = str(write_report(report,args.reports))
         print(json.dumps(report,ensure_ascii=False,indent=2))
         return 1 if report.get('status') in {'failed','conflict'} else (3 if report.get('status') in {'review_required','pending_mapping','ready_for_native'} else 0)
-    except (OSError,ValueError,KeyError,TypeError) as exc:
+    except (OSError,ValueError,KeyError,TypeError,RuntimeError,TimeoutError) as exc:
         print(json.dumps({'status':'failed','error':str(exc)},ensure_ascii=False))
         return 1
 
