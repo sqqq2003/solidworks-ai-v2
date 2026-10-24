@@ -183,6 +183,15 @@
 - 起因：`tests/pending_features/` 三个文件都因导入引导层级写错（子目录里用了 `parents[1]/src`，应为 `parents[2]/src`）而在 import 阶段就失败，"算法缺失"的结论因此被掩盖。修正层级后暴露真实缺口。
 - 按 `src/CHANGELOG.md` 记录的既有语义重建两个上传快照里缺失的函数：`solidworks_generator._is_drawing_artifact_loop()`（闭环最大边 ≤2 mm 且面积 ≤0.6 mm² 判为标注残留；Φ2 孔 3.14 mm²、3×3 方孔最大边 3 mm 均不受影响）与 `convert_border_hole_to_notch()`（贴边矩形槽孔转外轮廓缺口，三边直角不斜切；≤0.75 mm 细缝先拉到板边；搭边覆盖 <80% 保持为孔；口部沿板边加宽后 clamp 在外边端点内）。
 - 接线：孔列表装配处跳过标注残留并写 warning（与 CHANGELOG 记载一致）；`apply_rectangular_relief_expansion()` 先转贴边缺口再考虑板内扩槽并删除该孔；`ensure_intersection_reliefs()` 在交汇点距板边 ≤2 mm 时从板边伸进材料开缺口（深度=到边距离+本级增量，宽度=另一轴增量），找不到可贴直角边才退回板内孔。
-- 结果：`test_spur_segments.py` 5 项、`test_border_relief_notch.py` 9 项全部通过，已从 `tests/pending_features/` 移入 `tests/` 计入回归。另加 `tests/test_border_notch_reconstruction.py` 11 项守护测试，钉住重建自行决定的边界：外环顺/逆时针、口部 clamp、角部孔落在贴合更长的边、大贴边开口不转缺口、交汇点 >2 mm 仍走板内孔、负 `grow` 拒绝、标注残留判定的开环/细长/微小圆边界。全量 **473 ran / 466 passed / 0 failures / 0 errors / 7 skipped**，跨进程锁通过；pending 由 36 项降为 **22 项**。
+- 结果：`test_spur_segments.py` 5 项、`test_border_relief_notch.py` 9 项全部通过，已从 `tests/pending_features/` 移入 `tests/` 计入回归。另加 `tests/test_border_notch_reconstruction.py` 11 项守护测试，钉住重建自行决定的边界：外环顺/逆时针、口部 clamp、角部孔落在贴合更长的边、大贴边开口不转缺口、交汇点 >2 mm 仍走板内孔、负 `grow` 拒绝、标注残留判定的开环/细长/微小圆边界。全量（当时基线）**473 ran / 466 passed / 0 failures / 0 errors / 7 skipped**；在基线前移到 `bf67b67` 后为 **474 ran / 467 passed**，跨进程锁通过；pending 由 36 项降为 **22 项**。
 - 仍未实现：`test_turned_part.py` 22 项需要 `cad_analyzer.DrawingDimension`、`DrawingAnalysis.dimensions`（当前不读 DIMENSION 实体）以及 `turned_part._axial_lengths` / `_radius_ladder`。这是车件轨道的功能开发，本轮不猜测实现，保留为 pending，不计通过。
 - 边界：标注残留跳过接在生成路径（COM 段）里，离线只覆盖了判定函数本身与扩槽/交汇接线，**该跳过未经 SolidWorks 实机验证**；本轮未运行 COM、未生成 SLDPRT、未接触客户 CAD，`solidworks_live_verified=false`。
+
+
+## ISSUE6-OFFLINE-003：前移基点与中文 Windows 编码缺陷
+
+- 基点前移：`origin/feat/issue6-ql5050px-five-modules` 在夜间由 `13cc10c` 前进到 `bf67b67`（新增 `panel` / `manufacturing` / `drawing_layout` / `batch` / `bom_tree` 五模块，只加文件、未改本轮触碰的文件）。`feat/issue6-offline-tests` 的 7 个提交已 rebase 到 `bf67b67`，无冲突，新 HEAD `dbd5ee6`。
+- 发现的真实缺陷：在中文 Windows（默认编码 cp936）上直接跑 `work/run_cloud_tests.py`，`tests/test_equation_health.py` 10 项全部在 `setUp` 报 `UnicodeDecodeError`——用 `read_text()` 默认编码读 UTF-8 的证据文件 `results/windows/readonly_equation_dump.json`。此前的"0 errors"是在 UTF-8 模式下跑出来的，Linux CI 也永远是 UTF-8，所以这条缺陷一直没被看见；而 Gork 在 Windows 上复跑必然撞上。
+- 同类缺陷扫描：`src/sheet_metal_pipeline.py` 有 3 处未指定编码——续跑时读 `result.json`、写 `result.json`、写失败诊断（`ensure_ascii=False`，中文错误信息会被写成 GBK）。已统一改为显式 `encoding='utf-8'`，读写两侧一起改，保证旧文件语义一致。
+- 守卫：新增 `test_sheet_metal_pipeline.test_manifest_stays_utf8_under_non_utf8_locale`——用返回中文备注的端口跑一遍，严解码 UTF-8 校验 `result.json`，并确认续跑仍成立；默认编码一旦退回 GBK 就会失败。
+- 结果：全量 **474 ran / 467 passed / 0 failures / 0 errors / 7 skipped**，跨进程锁通过，`pending_feature_cases` 仍为 22。未运行 COM、未生成 SLDPRT，`solidworks_live_verified=false`。
