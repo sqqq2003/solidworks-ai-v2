@@ -179,6 +179,24 @@
 - 本批只做 AST/JSON 语法解析；未执行单测、示例、全面回归、原生 API 或实机验收，不继承旧通过统计。新增回归代码未运行。
 - Gork 继续旧 p248，之后统一接测；真实 QL 模型/OEM 映射/Windows driver 仍待提供。集成 SHA 在 Issue #6 评论记录。
 
+
+
+
+## CODEX-PROJECT-RUN-20261024
+
+- 同步基线d392b74，启动统一桌面工作台（窗口响应已核对）；三类零件smoke及QL integrated示例实际运行并生成离线交接包，未知OEM值保持pending。
+- 补齐本地开发venv pywin32/comtypes；普通桌面/离线与SW实机验收分开。
+- 修复恢复锁Windows os.kill(pid,0)会终止进程的错误，改为只读句柄查询，新增禁止发信号回归。
+- 合并原生数学核验硬门槛、逐次Insert结构化诊断、失败证据保留、--no-relief-retries及只读证据检查。无新原生通过声明。
+- 完整离线436 ran / 431 passed / 0 failures/errors / 5 skipped；锁通过。另C# Python合约17/17；未编译C#、未运行真实桥。36 pending合约不算通过。说明及一次联合回传矩阵见docs/project-start-20261024.md。
+
+
+## CODEX-FOLLOWUP-20261024
+
+- 继续跑完离线集成/产物哈希/覆盖保护/冲突拒绝及制造队列首次、resume；5项完成、0失败、1原生pending。
+- 修复QL续跑日志value与result.json不绑定、空产物完成项复用、kind不符复用，以及$ref共享对象被下游修改。新增5项回归，旧实现4项明确失败，新实现通过；正常缓存不重跑。
+- 完整441 ran / 436 passed / 0 failures/errors / 5 skipped，跨进程锁通过；C# Python合约17项沿用前轮未改模块结果。
+- .NET host有但SDK缺失，实际build失败；SW oracle交接原稿在本机指定路径不可读，已向现有执行者请求共享。按ur56w8下一原生阶段仅oracle，不整跑step0。a9rpk4双轨选型仍未验收。详见docs/project-problems-20261024.md。
 ## 2026-10-24 Issue #19 / #25 云端批次合并记账（#23 / #26 / #31 / #29 / #30 已合并，#32 待合并）
 
 - 记账口径：本节只补 2026-10-24 当天 Muse 云端批次（#23、#26、#27→#31、#29）与 #23 评审修正（#30）的合并事实；此前各节原样保留，不改写他人条目与历史结论。
