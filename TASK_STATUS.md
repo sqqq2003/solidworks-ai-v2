@@ -193,3 +193,21 @@
 - 跨批共识（写入账本，防后人踩坑）：
   - t、R、K、角度一律按每单输入参数处理，绝无默认值；t=2.5 / R=1 / K=0.36 / BA=3.0 / BD=4.0 只是本厂一次实测用例（2026-10-22 对称 U 槽），不是默认值；#29 已删除 k_factor=0.44 默认与通用材料 K 表；缺输入标 pending_confirmation，永不以默认数顶替。
   - 合并 ≠ 实机验证：上述所有 Windows / SolidWorks 验收项均为 pending_windows_validation；mock 与离线通过不得写成实机通过；accept 结论以 runner 正常写出的 accept JSON 与实机证据为准，事后重建的 accept 须注明证据等级。
+
+## 补记（2026-10-24 合并批：#32/#34/#35/#36/#37/#38 已合并，#33 最后合并）
+
+- 合并前 dev HEAD：`243e269f`。合并顺序与 merge SHA（均为 merge commit 方式，分支保留未删）：
+  - #32 桥接 build/reopen（分支 `feat/bridge-build-reopen`）→ `d4183dec`
+  - #34 口径统一（分支 `docs/k-value-wording-20261024`）→ `38e88ac7`
+  - #35 模块③ DXF 提取（分支 `feat/issue25-dxf-extract`）→ `a1f697c0`
+  - #36 模块④ 特征树执行（分支 `feat/issue25-feature-tree-exec`）→ `a7f71a45`
+  - #37 模块⑤ 依赖引擎（分支 `feat/issue25-dependency-engine`）→ `d9d9f719`
+  - #38 模块⑥ 离线验证包（分支 `feat/issue25-offline-verify`）→ `4fe6e05c`
+  - #33（本节所在分支 `docs/task-status-20261024`）在内容批合完后追加本节，再最后合并；其 merge SHA 以 GitHub 合并记录为准。
+- 合并过程：6 批均无冲突直接合并。#35/#36/#37/#38 为纯新增目录；#32 改 csharp-bridge/ 与 src/bridge_wiring.py 等已有文件，合并时无冲突；#34 只改 docs/ 措辞。#32/#34/#35/#36 基于旧 dev `d392b74d`，#37/#38 基于 dev `243e269f`，均未 rebase 即合（diff 可干净应用）。
+- 合并 ≠ 实机验证：上述各批的 Windows / SolidWorks 验收项仍为 pending_windows_validation；统一验收总表见 `offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`（42 项）。
+- 遗留项（本批未改，如实记账）：
+  - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项，已标 diff 未改基线，待归属方确认后随其 PR 更新。
+  - 生成器头部 `DEFAULT_BEND_K_FACTOR = 0.44` 残留由独立清理批处理（分支 `feat/generator-no-default-k`），不在本批范围。
+  - Issue #25 仍 open，关闭与否待用户/Gork 定。
+  - 仍 open 的其他 PR：#28（Codex #24 滚筒）、#20（统一原生建模）、#16、#17、#21/#22/#18（证据类）、#1（dev→main 记录 PR）。
