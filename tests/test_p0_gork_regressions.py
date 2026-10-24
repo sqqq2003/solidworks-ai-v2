@@ -28,8 +28,9 @@ class GorkRegressions(unittest.TestCase):
         self.assertNotIn('KFactor', raw.__dict__)
 
     def test_allowance_units_bd_ba_and_missing_factory(self):
-        for mode, kwargs, field in (('bend_deduction', {'bend_deduction_mm':3.2}, 'BendDeduction'),
-                                    ('bend_allowance', {'bend_allowance_mm':4.1}, 'BendAllowance')):
+        # k_factor 在此断言中无关（只验 BendDeduction/BendAllowance 字段），但必须显式传入：构造不再有默认值。
+        for mode, kwargs, field in (('bend_deduction', {'bend_deduction_mm':3.2, 'k_factor':0.5}, 'BendDeduction'),
+                                    ('bend_allowance', {'bend_allowance_mm':4.1, 'k_factor':0.5}, 'BendAllowance')):
             custom = SimpleNamespace()
             result = _build_custom_bend_allowance(SimpleNamespace(CreateCustomBendAllowance=lambda:custom), BendAllowanceSpec(mode, **kwargs))
             self.assertAlmostEqual(getattr(result, field), list(kwargs.values())[0]/1000)
@@ -66,7 +67,7 @@ class GorkRegressions(unittest.TestCase):
 
     def test_modify_true_but_k_still_031_is_failure(self):
         for k, fails in ((.31,True),(.25,False)):
-            custom = SimpleNamespace(Type=BendAllowanceSpec('k_factor').sw_type, KFactor=k)
+            custom = SimpleNamespace(Type=BendAllowanceSpec('k_factor', k_factor=.25).sw_type, KFactor=k)
             data = SimpleNamespace(AccessSelections=lambda *a:True,
                 GetCustomBendAllowance=lambda:custom, ReleaseSelectionAccess=MagicMock())
             feature = SimpleNamespace(GetTypeName2=lambda:'SheetMetal',GetDefinition=lambda:data)
@@ -127,14 +128,14 @@ class KVariantEvidenceTests(unittest.TestCase):
         evidence = {'variants':[
             {'k_target':.5,'k_read':.5,'dxf_extents':{'ok':True,'max_extent_mm':431.004}},
             {'k_target':.25,'k_read':.25,'dxf_extents':{'ok':True,'max_extent_mm':431.004}}]}
-        self.assertEqual(audit_variants(evidence)['status'], 'pending_dimension_basis')
-        fixed = audit_variants(evidence, geometry_basis='fixed_blank')
+        self.assertEqual(audit_variants(evidence, thickness_mm=2.5, radius_mm=1, angle_degrees=90)['status'], 'pending_dimension_basis')
+        fixed = audit_variants(evidence, geometry_basis='fixed_blank', thickness_mm=2.5, radius_mm=1, angle_degrees=90)
         self.assertEqual(fixed['status'], 'consistent_fixed_blank_pending_folded_measurements')
         self.assertFalse(fixed['sw_live_verified'])
-        legs = audit_variants(evidence, geometry_basis='fixed_outside_legs')
+        legs = audit_variants(evidence, geometry_basis='fixed_outside_legs', thickness_mm=2.5, radius_mm=1, angle_degrees=90)
         self.assertEqual(legs['flat_comparison']['status'], 'mismatch')
         evidence['variants'][1]['k_read'] = .31
-        self.assertEqual(audit_variants(evidence)['native_k_persistence'], 'mismatch_or_missing')
+        self.assertEqual(audit_variants(evidence, thickness_mm=2.5, radius_mm=1, angle_degrees=90)['native_k_persistence'], 'mismatch_or_missing')
 
     def test_native_state_measurement_restores_initial_suppression(self):
         from sheet_metal_windows import measure_folded_and_flat
