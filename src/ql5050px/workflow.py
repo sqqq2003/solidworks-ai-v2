@@ -8,7 +8,7 @@ from .parameters import build_plan
 from .assembly import inspect_assembly
 from .drawing_bom import build_bom, drawing_model, export_bom_csv, export_drawing_json
 
-ACTIONS = {'plan','assembly','bom','drawing','pipeline'}
+ACTIONS = {'plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package'}
 
 
 @dataclass(frozen=True)
@@ -93,6 +93,20 @@ def native_mechanical_checks(document, request, port: NativeMechanicalPort):
 def run_workflow(action, config, *, output_dir=None, resume=False):
     if action not in ACTIONS:
         raise ValueError('unknown QL action')
+    if action in {'auto_assembly','drive','manufacturing','machine_package'}:
+        from .machine_package import plan_machine, write_machine_package
+        if resume: raise ValueError('machine planning packages require a new output directory')
+        if action=='machine_package':
+            if output_dir is None: raise ValueError('machine_package requires output_dir')
+            package = write_machine_package(config,output_dir)
+            return {**package,'plan':package['plan']['parameters'],'machine_plan':package['plan'],
+                    'machine':'QL-5050PX','action':action,'cad_executed':False,
+                    'mechanical_acceptance':'unverified'}
+        machine = plan_machine(config)
+        key = {'auto_assembly':'assembly_plan','drive':'drive_plan','manufacturing':'drawing_plan'}[action]
+        return {'schema_version':1,'machine':'QL-5050PX','action':action,'status':machine[key]['status'],
+                'plan':machine['parameters'],'result':machine[key],'cad_executed':False,
+                'mechanical_acceptance':'unverified','test_status':'not_run'}
     plan = machine_plan(config)
     result = {'schema_version':1,'machine':'QL-5050PX','action':action,'plan':plan,
               'status':'pending_mapping','cad_executed':False,'mechanical_acceptance':'unverified',

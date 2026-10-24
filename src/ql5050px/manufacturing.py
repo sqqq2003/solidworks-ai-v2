@@ -59,6 +59,13 @@ def offline_runner(*, driver=None, native_port=None):
                 "bom_diff":lambda p,f:compare_boms(**p),
                 "assembly":lambda p,f:inspect_assembly(**p),
                 "takeoff":lambda p,f:panel_takeoff(**p),"drawing_svg":drawing}
+    from .assembly_builder import plan_assembly
+    from .drive_variant import plan_drive
+    from .manufacturing_drawings import plan_drawings
+    from .machine_package import write_machine_package
+    handlers.update(auto_assembly=lambda p,f:plan_assembly(**p),drive_variant=lambda p,f:plan_drive(**p),
+                    manufacturing_drawings=lambda p,f:plan_drawings(**p),
+                    machine_package=lambda p,f:write_machine_package(p,f/'execution-package'))
     if driver is not None:
         def variant(payload,folder):
             from .control import execute_variant

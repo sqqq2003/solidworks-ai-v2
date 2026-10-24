@@ -141,8 +141,8 @@ def build_command(job: dict, *, root=ROOT):
             if output.exists() and not (action=='pipeline' and job.get('resume') is True):
                 raise ValueError('QL output directory already exists')
             cmd.extend(['--output-dir',str(output)])
-        elif action=='pipeline':
-            raise ValueError('QL pipeline requires output_dir')
+        elif action in {'pipeline','machine_package'}:
+            raise ValueError('QL pipeline/machine_package requires output_dir')
         if job.get('resume'):
             if action!='pipeline':
                 raise ValueError('QL resume requires pipeline action')

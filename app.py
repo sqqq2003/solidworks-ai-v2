@@ -62,8 +62,8 @@ def main():
     machine.grid(row=5,column=0,columnspan=3,sticky='w',pady=4)
     ttk.Combobox(machine,textvariable=values['machine'],values=('QL-5050PX','GT-ZX'),state='readonly',width=14).grid(row=1,column=0,columnspan=2)
     ttk.Label(machine,text='QL 专用任务：选择 ql5050px 类型及 JSON 配置').grid(row=1,column=2,columnspan=4)
-    ttk.Combobox(machine,textvariable=values['ql_action'],values=('plan','assembly','bom','drawing','pipeline'),state='readonly',width=14).grid(row=2,column=0,columnspan=2)
-    ttk.Label(machine,text='QL 操作：计划 / 装配预检 / BOM / 工程图 / 流水线（离线）').grid(row=2,column=2,columnspan=4)
+    ttk.Combobox(machine,textvariable=values['ql_action'],values=('plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package'),state='readonly',width=20).grid(row=2,column=0,columnspan=2)
+    ttk.Label(machine,text='QL：装配计划 / 传动改型 / 制造图任务 / 统一交接包（离线）').grid(row=2,column=2,columnspan=4)
     for col,key in enumerate(('length','width','height')):
         ttk.Label(machine,text=key+' mm').grid(row=0,column=col*2)
         ttk.Entry(machine,textvariable=values[key],width=12).grid(row=0,column=col*2+1,padx=4)
