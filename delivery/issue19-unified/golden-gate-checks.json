@@ -1,0 +1,9 @@
+{
+  "scope": "synthetic evidence checks",
+  "passed": 2,
+  "native_executed": false,
+  "checks": [
+    "crash not promoted to pass",
+    "missing golden metadata rejected"
+  ]
+}

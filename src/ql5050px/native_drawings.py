@@ -56,6 +56,8 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                         raise RuntimeError('projected view parent selection failed')
                     view = drawing.CreateUnfoldedViewAt3(x,y,0,False)
                 if view is None: raise RuntimeError('native view creation failed')
+                if item['kind']=='model':
+                    view.ReferencedConfiguration = assembly_receipt['documents'][task['node']]['configuration']
                 views[item['id']] = view
                 drawing.ClearSelection2(True)
             for dimension in task['dimensions']:
@@ -103,3 +105,4 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 self.close_document(part)
             results.append({'task':task['id'],**receipt,'manufacturing_approved':False})
         return {'results':results,'native_status':'files_created_reopened','manufacturing_approved':False}
+

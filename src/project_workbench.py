@@ -141,8 +141,8 @@ def build_command(job: dict, *, root=ROOT):
             if output.exists() and not (action=='pipeline' and job.get('resume') is True):
                 raise ValueError('QL output directory already exists')
             cmd.extend(['--output-dir',str(output)])
-        elif action in {'pipeline','machine_package'}:
-            raise ValueError('QL pipeline/machine_package requires output_dir')
+        elif action in {'pipeline','machine_package','production_package'}:
+            raise ValueError('QL pipeline/machine_package/production_package requires output_dir')
         if job.get('resume'):
             if action!='pipeline':
                 raise ValueError('QL resume requires pipeline action')
@@ -336,4 +336,5 @@ def write_report(report, folder):
                         metadata.get('unit',''),metadata.get('confirmation_status',metadata.get('status','')),metadata.get('source','')]
                     writer.writerow(["'"+v if isinstance(v,str) and v.startswith(('=','+','-','@')) else v for v in cells])
     return path
+
 

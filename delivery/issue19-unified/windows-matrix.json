@@ -1,0 +1,42 @@
+[
+  {
+    "id": "GOLDEN",
+    "case": "p248 original local patch/source distinction, 4/4, first/retest reopen and DXF separately",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "FEATURES",
+    "case": "line/circle/arc, constraints, dimensions, extrude/cut and reviewed feature-data operations",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "RECIPES",
+    "case": "plate holes, L bracket, stepped revolved shaft, exactly two sheet bends",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "READBACK",
+    "case": "feature names/types, explicit dimensions before save and after reopen",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "SHEET",
+    "case": "thickness/R/K/direction, relief selection, bend count, folded/flat states and DXF",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "BATCH",
+    "case": "serial workers, immutable input, failure retry, successful hash reuse and changed artifact refusal",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "LIFECYCLE",
+    "case": "saved checkpoint vs CloseDoc vs context/worker exit, access violation and timeout",
+    "status": "pending_windows_validation"
+  },
+  {
+    "id": "SAFETY",
+    "case": "no original overwrite, no unknown SW shutdown, stale approval rejection, QL/GT-ZX isolation",
+    "status": "pending_windows_validation"
+  }
+]

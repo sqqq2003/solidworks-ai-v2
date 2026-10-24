@@ -62,7 +62,7 @@ def main():
     machine.grid(row=5,column=0,columnspan=3,sticky='w',pady=4)
     ttk.Combobox(machine,textvariable=values['machine'],values=('QL-5050PX','GT-ZX'),state='readonly',width=14).grid(row=1,column=0,columnspan=2)
     ttk.Label(machine,text='QL 专用任务：选择 ql5050px 类型及 JSON 配置').grid(row=1,column=2,columnspan=4)
-    ttk.Combobox(machine,textvariable=values['ql_action'],values=('plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence','integrated'),state='readonly',width=20).grid(row=2,column=0,columnspan=2)
+    ttk.Combobox(machine,textvariable=values['ql_action'],values=('plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence','modeling_batch','modeling_delivery','cad_features','integrated','production_package'),state='readonly',width=20).grid(row=2,column=0,columnspan=2)
     ttk.Label(machine,text='QL：装配计划 / 传动改型 / 制造图任务 / 统一交接包（离线）').grid(row=2,column=2,columnspan=4)
     for col,key in enumerate(('length','width','height')):
         ttk.Label(machine,text=key+' mm').grid(row=0,column=col*2)
@@ -148,6 +148,10 @@ def main():
             for item in table.get_children():
                 table.delete(item)
     ttk.Button(controls,text='清空队列',command=clear).pack(side='left',padx=3)
+    def native_review():
+        from ql5050px.modeling_gui import open_review
+        open_review(root,state,messages,stop)
+    ttk.Button(controls,text='审核并运行原生配方',command=native_review).pack(side='left',padx=3)
     overview_text = tk.Text(overview,wrap='word')
     overview_text.pack(fill='both',expand=True)
     overview_text.insert('end',json.dumps({'environment':doctor(),'project':capabilities()},ensure_ascii=False,indent=2))
@@ -165,4 +169,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
