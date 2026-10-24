@@ -193,14 +193,57 @@ def checkpoint_record(stage, plan_id, evidence):
     }
 
 
+def validate_build_params(params):
+    """Validate one bridge build request's per-job parameters.
+
+    Returns a cleaned param dict. Missing thickness / radius / angle /
+    K factor / flip direction raises MissingParameterError
+    (pending_confirmation, never a default); out-of-range values raise
+    ValueError. Geometry itself is referenced by plan_id, not carried
+    here: full profile / hole / bend-line geometry transfer is a pending
+    design item for RealSwApp (see CONTRACT.md section 12).
+    """
+    missing = [name for name in
+               ("thickness_mm", "radius_mm", "angle_degrees", "k_factor",
+                "flip_direction")
+               if params.get(name) is None]
+    if missing:
+        raise MissingParameterError(missing)
+    BendParameters(
+        thickness_mm=params["thickness_mm"], radius_mm=params["radius_mm"],
+        angle_degrees=params["angle_degrees"],
+        k_factor=params["k_factor"]).validate()
+    if type(params["flip_direction"]) is not bool:
+        raise ValueError("flip_direction must be boolean")
+    if type(params.get("bend_count")) is not int or params["bend_count"] < 0:
+        raise ValueError("bend_count must be a non-negative integer")
+    return params
+
+
+# Mock canned reopen readback. These values are NOT defaults and NOT
+# measurements: the mock has no document to read, so it returns a fixed
+# shape for contract tests. Real mode reads every field from the
+# reopened document. Tests that check validate_native against the mock
+# use plan parameters equal to these canned values on purpose.
+MOCK_READBACK = {
+    "reopened": True, "rebuilt": True,
+    "feature_types": ["SheetMetal", "FlatPattern", "SMBaseFlange"],
+    "editable": True, "bend_feature_count": 1, "completed_bend_count": 1,
+    "thickness_mm": 2.5, "radius_mm": 1.0, "k_factor": 0.4,
+}
+
+
 class MockTransport:
     """In-process stand-in for the C# bridge. Linux-safe, no SolidWorks.
 
     Simulates: hello, spawn, create_empty_document, close_document,
-    list_titles, echo_point, echo_transform, exit_app, teardown_report.
+    list_titles, echo_point, echo_transform, exit_app, teardown_report,
+    build, reopen.
     Ownership is enforced: closing a title this task does not own fails.
     ``slow_s`` simulates a hung bridge for timeout tests; ``exit_code``
     lets tests verify nonzero exit codes are recorded, not assumed 0.
+    Build results are memoized by idempotency_key: replaying the same
+    key returns the first result instead of building twice.
     """
 
     def __init__(self, *, slow_s=0.0, exit_code=0, pid=424242):
@@ -210,6 +253,8 @@ class MockTransport:
         self.owned_titles = set()
         self.released_wrappers = []
         self.acquired_wrappers = []
+        self.build_results = {}
+        self.last_build_params = None
 
     def handle(self, request):
         if self.slow_s:
@@ -251,6 +296,36 @@ class MockTransport:
             return self._ok(request, {"exit_requested": True})
         if method == "teardown_report":
             return self._ok(request, {"exit_code": self.exit_code})
+        if method == "build":
+            try:
+                validate_build_params(params)
+            except MissingParameterError as exc:
+                return self._error(
+                    request,
+                    "missing per-job parameters (pending_confirmation, "
+                    "no defaults applied): " + ", ".join(exc.missing))
+            except ValueError as exc:
+                return self._error(request, str(exc))
+            key = params.get("idempotency_key")
+            if key is not None and key in self.build_results:
+                return self._ok(request, self.build_results[key])
+            title = params.get("title", "mock-part.SLDPRT")
+            self.owned_titles.add(title)
+            self.acquired_wrappers.append("model:" + title)
+            self.last_build_params = dict(params)
+            result = {"title": title, "owned": True,
+                      "bend_count": params["bend_count"],
+                      "auto_bent": True, "auto_bend_failed_count": 0,
+                      "part": title}
+            if key is not None:
+                self.build_results[key] = result
+            return self._ok(request, result)
+        if method == "reopen":
+            # Mock canned readback (see MOCK_READBACK): fixed shape, not
+            # a measurement. Real mode reads the document.
+            result = dict(MOCK_READBACK)
+            result["title"] = params.get("title")
+            return self._ok(request, result)
         return self._error(request, f"unknown method {method!r}")
 
     def _ok(self, request, result):
@@ -289,6 +364,61 @@ class BridgeClient:
                 raise OwnershipError(message)
             raise BridgeError(message)
         return response["result"]
+
+    def build(self, *, plan_id, title, part_path, thickness_mm=None,
+              radius_mm=None, angle_degrees=None, k_factor=None,
+              flip_direction=None, bend_count=None, idempotency_key=None,
+              timeout_s=None):
+        """Build one native sheet-metal part through the bridge (S1).
+
+        Every per-job input is an explicit keyword argument; there are
+        no defaults. Client-side validation runs first: missing inputs
+        raise MissingParameterError (pending_confirmation), never a
+        default. The bridge saves to ``part_path`` (a run staging work
+        copy, never a customer original). Returns the build result dict.
+        """
+        params = {
+            "plan_id": plan_id, "title": title, "part_path": str(part_path),
+            "thickness_mm": thickness_mm,
+            "radius_mm": radius_mm,
+            "angle_degrees": angle_degrees,
+            "k_factor": k_factor,
+            "flip_direction": flip_direction,
+            "bend_count": bend_count,
+            "idempotency_key": idempotency_key or uuid.uuid4().hex,
+        }
+        validate_build_params(params)
+        saved_timeout = self.timeout_s
+        if timeout_s is not None:
+            self.timeout_s = timeout_s
+        try:
+            return self.call("build", params)
+        finally:
+            self.timeout_s = saved_timeout
+
+    def reopen(self, *, plan_id, title, part_path, idempotency_key=None,
+               timeout_s=None):
+        """Fresh reopen + native readback through the bridge (S2).
+
+        Returns the readback dict (reopened, rebuilt, feature_types,
+        editable, bend counts, thickness_mm, radius_mm, k_factor).
+        The caller compares it against the plan with validate_native;
+        this method itself never invents or defaults a value.
+        """
+        params = {
+            "plan_id": plan_id, "title": title, "part_path": str(part_path),
+            "idempotency_key": idempotency_key or uuid.uuid4().hex,
+        }
+        saved_timeout = self.timeout_s
+        if timeout_s is not None:
+            self.timeout_s = timeout_s
+        try:
+            result = self.call("reopen", params)
+        finally:
+            self.timeout_s = saved_timeout
+        if not isinstance(result, dict) or "reopened" not in result:
+            raise BridgeError("bridge reopen returned a malformed readback")
+        return result
 
     def teardown(self, *, owned_titles=()):
         """Run the 5-step teardown in order and record every step.

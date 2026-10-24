@@ -22,18 +22,38 @@ Evidence discipline (hard):
   radius, angle or K factor of its own. Those are plan inputs (build_plan
   already pendings them when missing); the wiring only passes evidence
   through. Missing inputs stay pending_confirmation, never defaulted.
-- Bridge evidence never upgrades a run: a simulated run stays simulated,
-  and a bridge grade says only "the bridge channel answered", never
+  The one exception is nested, never top-level: an S2 bridge ``readback``
+  sub-dict carries document measurements (thickness_mm / radius_mm /
+  k_factor read back from the reopened part) so run_plan's validate_native
+  can compare them against the plan. A readback is a measurement, not an
+  invented parameter; the top-level block still never carries those keys.
+- Bridge evidence never upgrades a run: a simulated run stays simulated, and
+  a bridge grade says only "the bridge channel answered", never
   "native SolidWorks ran".
 - Every Windows behaviour here is pending_windows_validation. Mock
   success is never native acceptance.
+
+Execution evidence (build / reopen, Issue #25 batch 2):
+- ``executed_via`` says which executor actually ran the stage: "bridge"
+  (the bridge build / reopen method answered) or "port" (the existing
+  port path ran). A stage executed via the port is NOT a bridge failure:
+  it is the designed fallback, recorded with a fallback_reason.
+- ``build_evidence`` / ``reopen_evidence`` always start from the session
+  proof (probe + spawn + list_titles liveness), so a client that predates
+  the build / reopen methods still yields the old session-proof blocks
+  (grade + session pid at S1, open_titles at S2); only the execution
+  itself falls back to the port.
+- Idempotency keys are deterministic per (plan_id, stage, method), so a
+  retried run replays the same key instead of building twice.
 
 Fallback semantics:
 - Bridge unavailable (no client, or hello handshake fails) is ordinary
   fallback, not a failure: the run continues on the port-only path and
   no crash package is written.
-- A bridge call that fails mid-run (spawn / list_titles) also falls back
-  for that stage; the run continues.
+- A bridge call that fails mid-run (spawn / list_titles / build / reopen)
+  also falls back for that stage; the run continues on the port path.
+  S1/S2 method failures write NO crash package: falling back to the port
+  is the recovery, and the fallback evidence is the diagnosis record.
 - A bridge teardown failure at S5 is different: the artifact already
   landed, so the run is NOT unpublished. The failure is recorded in the
   S5 checkpoint evidence plus a crash package (written by run_plan), and
@@ -43,6 +63,7 @@ Fallback semantics:
 
 from __future__ import annotations
 
+import hashlib
 import logging
 
 logger = logging.getLogger(__name__)
@@ -57,6 +78,20 @@ TEARDOWN_STEPS = (
 )
 
 _FORBIDDEN_EVIDENCE_KEYS = ("thickness_mm", "radius_mm", "angle_degrees", "k_factor")
+
+# Fields a bridge reopen readback must carry for run_plan's validate_native.
+_READBACK_KEYS = ("reopened", "rebuilt", "feature_types", "editable",
+                  "thickness_mm", "radius_mm", "k_factor")
+
+
+def idempotency_key(plan_id, stage, method) -> str:
+    """Deterministic idempotency key for one (plan_id, stage, method) call.
+
+    Retries replay the same key, so the bridge side must not build twice
+    for the same key + params (see CONTRACT.md section 12).
+    """
+    return hashlib.sha256(
+        ("%s:%s:%s" % (plan_id, stage, method)).encode()).hexdigest()
 
 
 def validate_bridge_evidence(evidence) -> bool:
@@ -82,6 +117,24 @@ def validate_bridge_evidence(evidence) -> bool:
     for key in _FORBIDDEN_EVIDENCE_KEYS:
         if key in evidence:
             raise ValueError("bridge evidence must not invent per-job parameters: " + key)
+    executed_via = evidence.get("executed_via")
+    if executed_via is not None and executed_via not in ("bridge", "port"):
+        raise ValueError("bridge evidence executed_via must be 'bridge' or 'port'")
+    if executed_via == "port" and "fallback_reason" not in evidence:
+        raise ValueError("port-executed bridge evidence needs a fallback_reason")
+    if executed_via == "bridge":
+        if evidence["grade"] == "bridge" and evidence["channel"] != "bridge":
+            raise ValueError("bridge execution needs the bridge channel")
+        if evidence["stage"] == "S1":
+            result = evidence.get("result")
+            if not isinstance(result, dict) or "title" not in result \
+                    or "auto_bent" not in result:
+                raise ValueError("bridge S1 execution needs a build result")
+        if evidence["stage"] == "S2":
+            readback = evidence.get("readback")
+            if not isinstance(readback, dict) or any(
+                    key not in readback for key in _READBACK_KEYS):
+                raise ValueError("bridge S2 execution needs a full readback")
     return True
 
 
@@ -149,12 +202,11 @@ class BridgeWiring:
                 "session": dict(self.session)}
 
     def s1_evidence(self) -> dict:
-        """Evidence block merged into the ckpt-S1 evidence.
+        """Session-proof block for ckpt-S1 (pre-build-method shape).
 
-        NOTE: the bridge contract (PR #26) has no build method yet, so
-        generation itself still runs through the port. This block records
-        only the bridge session proof + grade for S1; a future batch that
-        adds a bridge build method will extend it, not reinterpret it.
+        Kept for backward compatibility: clients that predate the build
+        method still yield this shape. New code paths use build_evidence,
+        which starts from the same session proof and adds execution info.
         """
         evidence = self.ensure_session()
         evidence["stage"] = "S1"
@@ -184,6 +236,89 @@ class BridgeWiring:
             logger.warning("bridge list_titles failed at S2, falling back: %s", exc)
             return {"grade": "mock", "channel": self.channel, "available": False,
                     "fallback_reason": "list_titles failed: " + str(exc), "stage": "S2"}
+
+    def build_evidence(self, *, plan_id, title, part_path, parameters,
+                       bend_count) -> dict:
+        """Attempt a bridge build; fall back to the port path on any failure.
+
+        Returns the S1 bridge evidence block. ``executed_via`` is "bridge"
+        only when the bridge build method answered; otherwise it is "port"
+        and run_plan must run ``port.generate`` instead. The block always
+        carries the session proof first, so a client that predates the
+        build method still yields the old session-proof shape. Never
+        raises: every failure mode is fallback evidence.
+
+        ``parameters`` is the plan's per-job parameter dict (thickness_mm,
+        radius_mm, angle_degrees, k_factor, flip_direction). Missing values
+        are passed through as None: the bridge client raises
+        MissingParameterError (pending_confirmation), which lands here as
+        a fallback_reason, never a default.
+        """
+        session = self.ensure_session()
+        if not session.get("available"):
+            session["stage"] = "S1"
+            session["executed_via"] = "port"
+            return session
+        params = {
+            "plan_id": plan_id,
+            "title": title,
+            "part_path": str(part_path),
+            "thickness_mm": parameters.get("thickness_mm"),
+            "radius_mm": parameters.get("radius_mm"),
+            "angle_degrees": parameters.get("angle_degrees"),
+            "k_factor": parameters.get("k_factor"),
+            "flip_direction": parameters.get("flip_direction"),
+            "bend_count": bend_count,
+            "idempotency_key": idempotency_key(plan_id, "S1", "build"),
+        }
+        try:
+            result = self.client.call("build", params)
+        except Exception as exc:  # noqa: BLE001 - build failure is fallback data
+            logger.warning("bridge build failed, falling back to port generate: %s", exc)
+            block = dict(session)
+            block["stage"] = "S1"
+            block["executed_via"] = "port"
+            block["fallback_reason"] = "build failed: " + str(exc)
+            return block
+        block = dict(session)
+        block["stage"] = "S1"
+        block["executed_via"] = "bridge"
+        block["result"] = result
+        return block
+
+    def reopen_evidence(self, *, plan_id, title, part_path) -> dict:
+        """Attempt a bridge reopen; fall back to the port path on any failure.
+
+        Returns the S2 bridge evidence block. ``executed_via`` is "bridge"
+        only when the bridge reopen method answered (its ``readback`` then
+        carries the document measurements for validate_native); otherwise
+        it is "port" and run_plan must run ``port.reopen_inspect``
+        instead. The liveness check (list_titles) runs first, so a client
+        that predates the reopen method still yields the old block with
+        open_titles. Never raises.
+        """
+        base = self.s2_evidence()
+        if not base.get("available"):
+            base["executed_via"] = "port"
+            return base
+        params = {
+            "plan_id": plan_id,
+            "title": title,
+            "part_path": str(part_path),
+            "idempotency_key": idempotency_key(plan_id, "S2", "reopen"),
+        }
+        try:
+            result = self.client.call("reopen", params)
+        except Exception as exc:  # noqa: BLE001 - reopen failure is fallback data
+            logger.warning("bridge reopen failed, falling back to port reopen: %s", exc)
+            block = dict(base)
+            block["executed_via"] = "port"
+            block["fallback_reason"] = "reopen failed: " + str(exc)
+            return block
+        block = dict(base)
+        block["executed_via"] = "bridge"
+        block["readback"] = result
+        return block
 
     def teardown_evidence(self, owned_titles=()):
         """Run the bridge 5-step teardown; returns ``(evidence, error)``.

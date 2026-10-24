@@ -244,18 +244,33 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
             checkpoints = read_checkpoints(ckpt_dir)
         run_lock.heartbeat()
         if resume_stage in (None, 'S0'):
-            # S1: generation.
-            generated = port.generate(analysis, plan, part)
+            # S1: generation. When a bridge wiring is supplied, the bridge
+            # build method runs first; any bridge failure (unavailable,
+            # unsupported by an older client, method error, timeout) falls
+            # back to port.generate for this stage, recorded with
+            # executed_via + fallback_reason. A bridge build that reports
+            # success must have written the part file to the staging path
+            # (contract: the bridge writes only to the given work-copy
+            # path); a missing product is a hard failure, not a fallback.
+            if bridge is not None:
+                s1_bridge = bridge.build_evidence(
+                    plan_id=plan_id, title=part.name, part_path=part,
+                    parameters=plan['parameters'],
+                    bend_count=len(plan['bend_indices']))
+                if s1_bridge.get('executed_via') == 'bridge':
+                    generated = s1_bridge['result']
+                    if not part.is_file() or part.stat().st_size == 0:
+                        raise RuntimeError(
+                            'bridge build reported success but part file missing')
+                else:
+                    generated = port.generate(analysis, plan, part)
+            else:
+                generated = port.generate(analysis, plan, part)
             if not port.simulated and plan['bend_indices'] and (not generated.get('auto_bent') or generated.get('auto_bend_failed_count', 0)):
                 raise RuntimeError('automatic bending incomplete; manual/reference fallback rejected')
             s1_evidence = {'generation': generated}
             if bridge is not None:
-                # Bridge wiring: the bridge contract (PR #26) has no build
-                # method yet, so generation itself still runs through the
-                # port. This block records only the bridge session proof +
-                # grade for S1; a bridge failure here is fallback evidence
-                # and never aborts the run.
-                s1_evidence['bridge'] = bridge.s1_evidence()
+                s1_evidence['bridge'] = s1_bridge
             write_checkpoint(ckpt_dir, 'S1', plan_id=plan_id,
                              code_sha256=plan['code_sha256'],
                              products=[{'name': part.name, 'sha256': file_hash(part)}],
@@ -263,16 +278,25 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
             checkpoints = read_checkpoints(ckpt_dir)
         run_lock.heartbeat()
         if resume_stage in (None, 'S0', 'S1'):
-            # S2: fresh reopen + native feature readback.
-            evidence = port.reopen_inspect(part)
+            # S2: fresh reopen + native feature readback. When a bridge
+            # wiring is supplied, the bridge reopen method runs first and
+            # its readback is validated exactly like a port readback; any
+            # bridge failure falls back to port.reopen_inspect for this
+            # stage, recorded with executed_via + fallback_reason.
+            if bridge is not None:
+                s2_bridge = bridge.reopen_evidence(
+                    plan_id=plan_id, title=part.name, part_path=part)
+                if s2_bridge.get('executed_via') == 'bridge':
+                    evidence = s2_bridge['readback']
+                else:
+                    evidence = port.reopen_inspect(part)
+            else:
+                evidence = port.reopen_inspect(part)
             if not port.simulated:
                 validate_native(plan, evidence)
             s2_evidence = {'reopen': evidence}
             if bridge is not None:
-                # Bridge wiring: reuses the S1 session and verifies
-                # liveness via list_titles; a lost session is fallback
-                # evidence, not a run failure (reopen already ran).
-                s2_evidence['bridge'] = bridge.s2_evidence()
+                s2_evidence['bridge'] = s2_bridge
             write_checkpoint(ckpt_dir, 'S2', plan_id=plan_id,
                              code_sha256=plan['code_sha256'],
                              products=[{'name': part.name, 'sha256': file_hash(part)}],

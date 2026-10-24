@@ -44,10 +44,46 @@ namespace SwBridge
         void CloseDocument(string title);
         IReadOnlyList<string> ListOpenTitles();
         void ExitApp();
+        BuildResult BuildDocument(string title, string partPath,
+            double thicknessMm, double radiusMm, double angleDegrees,
+            double kFactor, bool flipDirection, int bendCount);
+        ReopenResult ReopenDocument(string title, string partPath);
+    }
+
+    /// <summary>Build result: mirrors the port generate() result shape
+    /// (bend counts + auto_bent flag) so run_plan's S1 checks apply
+    /// unchanged to bridge-built generation.</summary>
+    public sealed class BuildResult
+    {
+        public string Title;
+        public bool Owned;
+        public int BendCount;
+        public bool AutoBent;
+        public int AutoBendFailedCount;
+        public string Part;
+    }
+
+    /// <summary>Reopen readback: mirrors the port reopen_inspect()
+    /// evidence shape so run_plan's validate_native applies unchanged.
+    /// Values are document measurements in real mode.</summary>
+    public sealed class ReopenResult
+    {
+        public bool Reopened;
+        public bool Rebuilt;
+        public List<string> FeatureTypes;
+        public bool Editable;
+        public int BendFeatureCount;
+        public int CompletedBendCount;
+        public double ThicknessMm;
+        public double RadiusMm;
+        public double KFactor;
     }
 
     /// <summary>In-memory stand-in. Lets the bridge compile and run with no
-    /// SolidWorks installed. Mock success is never native acceptance.</summary>
+    /// SolidWorks installed. Mock success is never native acceptance.
+    /// The canned reopen readback below is a fixed shape for contract
+    /// tests, NOT a default and NOT a measurement: the mock has no
+    /// document to read. Real mode reads every field from the document.</summary>
     public sealed class MockSwApp : ISwApp
     {
         private readonly HashSet<string> _owned = new HashSet<string>();
@@ -78,6 +114,35 @@ namespace SwBridge
             if (_owned.Count > 0)
                 throw new InvalidOperationException(
                     "refusing ExitApp while documents remain open");
+        }
+
+        public BuildResult BuildDocument(string title, string partPath,
+            double thicknessMm, double radiusMm, double angleDegrees,
+            double kFactor, bool flipDirection, int bendCount)
+        {
+            // partPath is recorded, not written: the mock has no CAD
+            // kernel. The caller (run_plan tests) writes the mock part
+            // file; real mode saves the SLDPRT to partPath.
+            _owned.Add(title);
+            return new BuildResult
+            {
+                Title = title, Owned = true, BendCount = bendCount,
+                AutoBent = true, AutoBendFailedCount = 0, Part = title,
+            };
+        }
+
+        public ReopenResult ReopenDocument(string title, string partPath)
+        {
+            // Canned readback (see class note). Matches the Python
+            // MockTransport canned values so both mocks agree.
+            return new ReopenResult
+            {
+                Reopened = true, Rebuilt = true,
+                FeatureTypes = new List<string>
+                    { "SheetMetal", "FlatPattern", "SMBaseFlange" },
+                Editable = true, BendFeatureCount = 1, CompletedBendCount = 1,
+                ThicknessMm = 2.5, RadiusMm = 1.0, KFactor = 0.4,
+            };
         }
     }
 
@@ -130,6 +195,37 @@ namespace SwBridge
 
         public void ExitApp()
         {
+            throw new NotImplementedException("pending_windows_validation");
+        }
+
+        public BuildResult BuildDocument(string title, string partPath,
+            double thicknessMm, double radiusMm, double angleDegrees,
+            double kFactor, bool flipDirection, int bendCount)
+        {
+            // TODO (Windows, pending_windows_validation):
+            // Drive the native build on the single STA thread, in the
+            // owned session only: BaseFlange from the validated plan +
+            // sketched bends + rebuild + save to partPath (a run staging
+            // work copy, never a customer original). Geometry transfer
+            // is the open design item: build currently references the
+            // plan by plan_id only; the full profile / hole / bend-line
+            // geometry IR must be specified (CONTRACT.md section 12)
+            // before this method can be claimed complete. On any
+            // failure, leave the session alive and report the error;
+            // never ExitApp, never touch a foreign document.
+            throw new NotImplementedException("pending_windows_validation");
+        }
+
+        public ReopenResult ReopenDocument(string title, string partPath)
+        {
+            // TODO (Windows, pending_windows_validation):
+            // Open the saved part fresh (never an unsaved live handle),
+            // rebuild, read the feature tree + SheetMetal definition +
+            // CustomBendAllowance (thickness / radius / K), then close
+            // the inspection document unsaved, mirroring
+            // sheet_metal_windows.reopen_inspect. Release wrappers in
+            // reverse acquisition order and CoUninitialize only after
+            // the last wrapper is dropped (see section 9).
             throw new NotImplementedException("pending_windows_validation");
         }
     }
@@ -229,6 +325,70 @@ namespace SwBridge
                     }
                     case "list_titles":
                         resultJson = "{\"titles\":" + JsonSerializer.Serialize(app.ListOpenTitles()) + "}";
+                        break;
+                    case "build":
+                    {
+                        var p = root.GetProperty("params");
+                        // Missing per-job inputs are pending_confirmation,
+                        // never defaulted: a missing key surfaces as
+                        // ok:false, which the Python client maps to
+                        // MissingParameterError.
+                        foreach (var required in new[]
+                            { "title", "part_path", "thickness_mm", "radius_mm",
+                              "angle_degrees", "k_factor", "flip_direction",
+                              "bend_count" })
+                        {
+                            if (!p.TryGetProperty(required, out _))
+                                throw new InvalidOperationException(
+                                    "missing per-job parameters (pending_confirmation, "
+                                    + "no defaults applied): " + required);
+                        }
+                        var title = p.GetProperty("title").GetString();
+                        var partPath = p.GetProperty("part_path").GetString();
+                        var thickness = p.GetProperty("thickness_mm").GetDouble();
+                        var radius = p.GetProperty("radius_mm").GetDouble();
+                        var angle = p.GetProperty("angle_degrees").GetDouble();
+                        var kFactor = p.GetProperty("k_factor").GetDouble();
+                        var flip = p.GetProperty("flip_direction").GetBoolean();
+                        var bendCount = p.GetProperty("bend_count").GetInt32();
+                        if (!(thickness > 0) || radius < 0
+                            || !(angle > 0 && angle < 180)
+                            || kFactor < 0 || kFactor > 1 || bendCount < 0)
+                            throw new InvalidOperationException(
+                                "build parameters out of range");
+                        var built = app.BuildDocument(title, partPath,
+                            thickness, radius, angle, kFactor, flip, bendCount);
+                        resultJson = JsonSerializer.Serialize(new Dictionary<string, object>
+                        {
+                            ["title"] = built.Title, ["owned"] = built.Owned,
+                            ["bend_count"] = built.BendCount,
+                            ["auto_bent"] = built.AutoBent,
+                            ["auto_bend_failed_count"] = built.AutoBendFailedCount,
+                            ["part"] = built.Part,
+                        });
+                        break;
+                    }
+                    case "reopen":
+                    {
+                        var p = root.GetProperty("params");
+                        var title = p.GetProperty("title").GetString();
+                        var partPath = p.GetProperty("part_path").GetString();
+                        var read = app.ReopenDocument(title, partPath);
+                        resultJson = JsonSerializer.Serialize(new Dictionary<string, object>
+                        {
+                            ["title"] = title,
+                            ["reopened"] = read.Reopened,
+                            ["rebuilt"] = read.Rebuilt,
+                            ["feature_types"] = read.FeatureTypes,
+                            ["editable"] = read.Editable,
+                            ["bend_feature_count"] = read.BendFeatureCount,
+                            ["completed_bend_count"] = read.CompletedBendCount,
+                            ["thickness_mm"] = read.ThicknessMm,
+                            ["radius_mm"] = read.RadiusMm,
+                            ["k_factor"] = read.KFactor,
+                        });
+                        break;
+                    }
                         break;
                     case "teardown_report":
                         // Full teardown is driven by the Python client step by

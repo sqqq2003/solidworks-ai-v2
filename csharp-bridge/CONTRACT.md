@@ -64,6 +64,8 @@ Python + win32com 跨进程驱动 SolidWorks 已被证明脆弱：p248 折弯 4/
 | `list_titles` | — | `{titles}` | 列出当前打开的文档标题 |
 | `exit_app` | — | `{exit_requested}` | 仅当 owned 文档已空时才允许；否则拒绝 |
 | `teardown_report` | — | `{exit_code}` | 上次收尾的进程退出码（整数，可为非零） |
+| `build` | 见 §12 | `{title, owned, bend_count, auto_bent, auto_bend_failed_count, part}` | 按已验证计划建原生钣金件并保存到工作副本路径（S1 执行） |
+| `reopen` | 见 §12 | `{reopened, rebuilt, feature_types, editable, bend_feature_count, completed_bend_count, thickness_mm, radius_mm, k_factor}` | 重开已保存件并读回原生特征与钣金参数（S2 执行） |
 
 ## 4. 独占会话规则（与 sw_session.py / sw_owned_launch.py 同款纪律）
 
@@ -139,3 +141,79 @@ Python-COM 路径的对应规则：先放引用（`del` + `gc.collect()`），**
 - 命名管道在目标 Windows 环境的权限策略（普通用户能否创建/连接同名管道）。
 - 大装配场景下单条消息的体积上限（目前不定上限，首批只跑单件钣金）。
 - 以上三项在实机验证前均为 pending_windows_validation。
+
+## 12. build / reopen 方法（本批新增，Issue #25 batch 2）
+
+### 12.1 build（S1 执行）
+
+请求 `params`（单位一律 mm / 度，`units` 仍须为 `"mm"`）：
+
+```json
+{
+  "plan_id": "<build_plan 的 plan_id>",
+  "title": "<零件文档标题，如 part.SLDPRT>",
+  "part_path": "<run staging 内的保存路径，工作副本>",
+  "thickness_mm": 2.5, "radius_mm": 1.0, "angle_degrees": 90.0,
+  "k_factor": 0.4, "flip_direction": false,
+  "bend_count": 1,
+  "idempotency_key": "<plan_id:S1:build 的 sha256，见 §12.4>"
+}
+```
+
+- `thickness_mm / radius_mm / angle_degrees / k_factor / flip_direction`
+  全部是**每单显式输入**：缺任何一项，服务端返回 ok:false，错误中注明
+  pending_confirmation；Python 客户端在发请求前同样先校验，缺项直接
+  抛 MissingParameterError。**绝无默认值**（t=2.5 / K=0.36 只是本厂一次
+  实测用例，不是默认值，见 bridge_client.py）。
+- `part_path` 只能是 run 的 staging 工作副本路径：桥接只写该路径，
+  绝不写客户原件，绝不写其他目录。
+- `bend_count` 是计划中的折弯条数（整数计数，不是几何）；mock 回显
+  该计数，实机由建模结果决定。
+- 返回 `{title, owned, bend_count, auto_bent, auto_bend_failed_count,
+  part}`，形状与 port `generate()` 的结果对齐，`run_plan` 的 S1 检查
+  （非模拟运行时 `auto_bent` 必须真、`auto_bend_failed_count` 必须 0）
+  对桥接结果同样适用。
+- **几何引用（本批的诚实边界）**：build 目前只用 `plan_id` 引用已验证
+  计划，不在消息里传完整轮廓 / 孔 / 折弯线几何。完整几何 IR 的传输
+  方式（消息内嵌还是工作副本文件引用）是 RealSwApp build 宣称完成前
+  必须先定稿的设计项；mock 与骨架不掩盖这一点。
+
+### 12.2 reopen（S2 执行）
+
+请求 `params`：`{plan_id, title, part_path, idempotency_key}`。
+
+- 语义与 port `reopen_inspect()` 一致：**重开已保存件**（绝不是检查
+  未保存的 live 句柄），重建，读回特征树、钣金定义、CustomBendAllowance。
+- 返回 `{reopened, rebuilt, feature_types, editable, bend_feature_count,
+  completed_bend_count, thickness_mm, radius_mm, k_factor}`，其中
+  thickness / radius / k_factor 是**文档实测读回值**，调用方用
+  `validate_native` 对照计划参数比对（容差 1e-6），不一致即失败。
+  mock 返回固定形状的 canned 读回（见 bridge_client.py 的
+  MOCK_READBACK 与 SwBridge.cs 的 MockSwApp 注释），不是实测、不是默认值。
+- 重开后检查文档必须**不保存地关闭**，恢复检查前的抑制状态
+  （与 `measure_folded_and_flat` 同款纪律）。
+
+### 12.3 错误映射
+
+| 情况 | 服务端响应 | Python 客户端 | 调用方（run_plan）处理 |
+|---|---|---|---|
+| 缺每单参数 | ok:false，注明 pending_confirmation | MissingParameterError | 当阶段 fallback 到 port，grade mock + fallback_reason |
+| 参数越界（K ∉ [0,1]、角度 ∉ (0,180)、t ≤ 0、R < 0） | ok:false | BridgeError（ValueError 文本） | 当阶段 fallback 到 port |
+| 欲关 / 欲读非 owned 文档 | ok:false，注明 unowned | OwnershipError | 当阶段 fallback 到 port |
+| 方法执行失败（建模 / 重开异常） | ok:false | BridgeError | 当阶段 fallback 到 port，**不写 crash 包**（port 回落即恢复手段） |
+| 请求超时 | （无响应） | BridgeTimeoutError | 当阶段 fallback 到 port；超时后的会话视为不可信，后续阶段先重建会话 |
+| 会话丢失（spawn PID 失配、list_titles 失败） | ok:false 或无响应 | BridgeError / 超时 | 当阶段 fallback 到 port |
+
+- 错误响应只含人类可读原因 + 方法名，不含堆栈、不含客户文件路径。
+- **退出隔离**：build / reopen 失败绝不杀会话、绝不 ExitApp、绝不碰
+  无关进程；S5 的收尾纪律（失败记证据 + crash 包、产物不反发布）
+  不受本批影响。
+
+### 12.4 幂等键
+
+- `idempotency_key` 由调用方按 `(plan_id, 阶段, 方法)` 确定性生成
+  （sha256 hex），同一计划重跑重放同一键。
+- 服务端对同一键 + 同一参数的 build **不得重复建模**：mock 按键记忆
+  首次结果并原样返回；实机实现必须同样保证（未实现前不得宣称
+  build 已实机可用）。
+- reopen 是只读操作，键仅用于请求追踪，不做结果记忆。
