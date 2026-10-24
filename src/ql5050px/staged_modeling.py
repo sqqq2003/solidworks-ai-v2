@@ -1,5 +1,5 @@
 """Audited serial execution. Model success and cleanup success are independent."""
-import hashlib,json,os,time
+import hashlib,json,os,time,traceback
 from pathlib import Path
 
 
@@ -37,6 +37,8 @@ def execute_part_job(plan,host,folder):
         host.preflight(plan,folder);log.record('preflight','ok');checkpoint('preflight')
         host.create();created=True;log.record('document','created');checkpoint('document_created')
         for feature in plan['features']:
+            result['active_feature']={'id':feature['id'],'kind':feature['kind']}
+            log.record('feature','started',**result['active_feature']);checkpoint('before_feature_call')
             value=host.create_editable_feature(feature)
             host.rebuild();log.record('feature','rebuilt',id=feature['id'],source=feature.get('evidence'),native=value)
             result['last_feature']=feature['id'];checkpoint('feature_rebuilt')
@@ -53,7 +55,7 @@ def execute_part_job(plan,host,folder):
         result.update(modeling='saved_reopened',output=str(output),sha256=hash_file(output))
         log.record('reopen','ok',readback=result['readback']);checkpoint('reopen_readback')
     except Exception as exc:
-        result.update(modeling='failed',error=type(exc).__name__+': '+str(exc));log.record('modeling','failed',error=result['error'])
+        result.update(modeling='failed',error=type(exc).__name__+': '+str(exc));log.record('modeling','failed',error=result['error'],feature=result.get('active_feature'),traceback=traceback.format_exc())
     finally:
         try:
             if created:host.close()
@@ -99,3 +101,4 @@ def modeling_batch(request,output_dir=None):
         with path.open('x') as stream:json.dump(result,stream,indent=2)
         rows.append(result)
     return {'results':rows,'status':'review_required','cad_executed':False,'plan':{},'native_acceptance':'pending_windows_validation'}
+

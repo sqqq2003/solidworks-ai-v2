@@ -4,6 +4,7 @@ Feature IDs/property names come from a reviewed version-specific SW mapping;
 this module never guesses feature type enum values or selection references.
 """
 import math
+from .com_selection import select_by_id
 
 PROPERTIES={
  'fillet':{'DefaultRadius','Radius','IsMultipleRadius','PropagateFeatureToParts'},
@@ -55,7 +56,7 @@ class FeatureOperationsMixin:
         self.guard();self.model.ClearSelection2(True)
         for ref in references:
             if not ref.get('name') or not ref.get('type'):raise ValueError('named selection reference required')
-            if not self.model.Extension.SelectByID2(ref['name'],ref['type'],0,0,0,True,int(ref.get('mark',0)),None,0):
+            if not select_by_id(self.model.Extension,ref['name'],ref['type'],append=True,mark=ref.get('mark',0)):
                 raise RuntimeError('native reference selection failed: '+ref['name'])
 
     def create_mapped_operation(self,feature):
@@ -82,3 +83,4 @@ class FeatureOperationsMixin:
                 if not math.isclose(float(dimension.SystemValue),value,rel_tol=1e-8,abs_tol=1e-9):raise RuntimeError('dimension readback mismatch')
             else:self.model.SketchAddConstraints(RELATIONS[row['kind']])
         self.model.ClearSelection2(True)
+

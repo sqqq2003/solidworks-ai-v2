@@ -4,6 +4,7 @@ Host supplies guard(), model and proved document ownership. This does not attach
 or create an unknown SW session. Unsupported features fail before any operation.
 """
 from .feature_operations import FeatureOperationsMixin, validate_operations
+from .com_selection import select_by_id
 
 class EditableFeaturesMixin(FeatureOperationsMixin):
     supported_feature_kinds = {'sketch','extrude','cut','fillet','chamfer','mirror','pattern'}
@@ -18,7 +19,7 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
         model.ClearSelection2(True)
         if kind=='sketch':
             if not p.get('plane'):raise ValueError('mapped sketch plane required')
-            if not model.Extension.SelectByID2(p['plane'],'PLANE',0,0,0,False,0,None,0):raise RuntimeError('plane selection failed')
+            if not select_by_id(model.Extension,p['plane'],'PLANE'):raise RuntimeError('plane selection failed')
             manager=model.SketchManager;manager.InsertSketch(True)
             try:
                 for entity in p.get('entities',[]):
@@ -50,7 +51,7 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
             sketch=p.get('sketch')
             depth=p.get('depth_mm')
             if not sketch or type(depth) not in (int,float) or depth<=0:raise ValueError('mapped sketch and positive depth required')
-            if not model.Extension.SelectByID2(sketch,'SKETCH',0,0,0,False,0,None,0):raise RuntimeError('sketch selection failed')
+            if not select_by_id(model.Extension,sketch,'SKETCH'):raise RuntimeError('sketch selection failed')
             if kind=='extrude':
                 native=model.FeatureManager.FeatureExtrusion2(True,False,False,0,0,depth/1000,0,False,False,False,False,0,0,False,False,False,False,True,True,True,0,0,False)
             else:
@@ -71,4 +72,5 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
             f=sw._as_interface(module,raw,'IFeature')
             evidence.append({'name':name,'native_type':f.GetTypeName2()})
         return {'features':evidence,'dimensions_verified':False,'status':'pending_native_validation'}
+
 

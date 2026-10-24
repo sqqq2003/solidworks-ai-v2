@@ -1,5 +1,5 @@
 """Explicit native recipe dispatch inside existing proved-owned STA workers."""
-import json,sys
+import json,sys,traceback,hashlib
 from pathlib import Path
 from .part_recipes import compile_recipe,approval_digest
 
@@ -10,7 +10,6 @@ def run_recipe_job(job,output_dir):
     if plan['pending_confirmation']:raise ValueError('recipe requires confirmation: '+str(plan['pending_confirmation']))
     if job.get('reviewed_digest')!=plan['approval_digest']:raise ValueError('reviewed recipe/bindings digest missing or stale')
     if job.get('bindings',{}).get('template_sha256'):
-        import hashlib
         template=Path(job['bindings']['template'])
         if hashlib.sha256(template.read_bytes()).hexdigest()!=job['bindings']['template_sha256']:raise ValueError('template changed after review')
     if plan['backend']=='feature_ir':
@@ -33,8 +32,16 @@ def run_recipe_job(job,output_dir):
                     driver=NativeMachineDriver(current_lease(),root);driver.guard()
                     p=plan['payload']
                     turned=TurnedPartPlan(p['axis'],0,'explicit reviewed recipe',tuple(tuple(x) for x in p['profile_mm']),(),())
-                    output=root/'part.SLDPRT';generate_turned_part(turned,str(output))
-                    journal.record('save','saved',path=str(output))
+                    output=root/'part.SLDPRT'
+                    result['last_durable_phase']='before_turned_generator'
+                    atomic_checkpoint(root/'checkpoint.json',result)
+                    journal.record('generator','started')
+                    generate_turned_part(turned,str(output))
+                    if not output.is_file() or not output.stat().st_size:raise RuntimeError('turned generator produced no saved artifact')
+                    result.update(output=str(output),modeling='saved_pending_reopen',sha256=hashlib.sha256(output.read_bytes()).hexdigest(),last_durable_phase='generator_returned_saved_artifact')
+                    atomic_checkpoint(root/'checkpoint.json',result)
+                    journal.record('save','saved',sha256=result['sha256'],bytes=output.stat().st_size)
+                    journal.record('reopen_verification','started')
                     diameter=max(point[1] for point in p['profile_mm'])*2
                     length=max(point[0] for point in p['profile_mm'])
                     verify=verify_saved_part(output,expected_dims_mm=[length,diameter,diameter],expected_body_count=1)
@@ -66,8 +73,9 @@ def run_recipe_job(job,output_dir):
             journal.record('session_context','returned')
         except Exception as exc:
             result.update(error=str(exc),modeling='failed' if result['modeling']!='saved_reopened' else result['modeling'],cleanup='needs_review')
-            journal.record('worker','failed',error=str(exc))
+            journal.record('worker','failed',error=str(exc),last_durable_phase=result.get('last_durable_phase'),traceback=traceback.format_exc())
         finally:
-            (root/'checkpoint.json').write_text(json.dumps(result,default=str,indent=2))
+            atomic_checkpoint(root/'checkpoint.json',result)
         return result
     return run_on_task_sta(work,timeout=900,task_name='reviewed-recipe')
+
