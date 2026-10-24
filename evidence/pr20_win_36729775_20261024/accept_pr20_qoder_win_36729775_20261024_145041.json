@@ -1,0 +1,261 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "generated_ts": "20261024_150705",
+  "scope": "formal_windows_acceptance_pr20_issue19_new_head",
+  "status": "blocked_native_owned_launch",
+  "oracle": {
+    "native_acceptance": "pending_windows_validation",
+    "native_pass": false,
+    "reason": "owned-launch ownership proof failed on this host; only the first of four recipes was attempted and its cleanup is unknown; save/reopen, geometry readback and sheet flatten never ran",
+    "honest": true
+  },
+  "pr": {
+    "number": 20,
+    "branch": "feat/issue19-staged-modeling",
+    "draft": true,
+    "pinned_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+    "parent_sha": "2ab51aa66051bfe064b0df54d2fb767e048e4f20",
+    "commit_date": "2026-10-24T06:46:01Z",
+    "requested_by": "Codex comment 2026-10-24 14:46 Asia/Shanghai",
+    "changed_files_in_commit": [
+      "docs/native-acceptance-recovery.md",
+      "src/ql5050px/acceptance_report.py",
+      "src/ql5050px/modeling_supervisor.py",
+      "src/ql5050px/native_environment.py",
+      "src/ql5050px/native_part_host.py",
+      "tests/test_acceptance_recovery.py",
+      "work/project.py"
+    ]
+  },
+  "work_copy": {
+    "path": "C:\\sw-ai-v2-work\\solidworks-ai-v2-pr20-36729775",
+    "source": "codeload tarball for the pinned SHA (github.com git smart HTTP was unreachable, TCP 443 timeout)",
+    "rev_parse_head": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+    "rev_parse_match": true,
+    "tree_sha": "852b5bb4ac05df7313ea7a4b4015e96c290fd9cb",
+    "tree_match": true,
+    "blob_mismatches": 0,
+    "missing_files": 0,
+    "extra_files": 0,
+    "commit_object_sha1": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+    "status_porcelain_lines": 0,
+    "uncommitted_edits": [],
+    "provenance_note": "commit/tree metadata from api.github.com; blob hashes recomputed with git hash-object; unsigned commit object rebuilt byte-exact; no push and no write to GitHub"
+  },
+  "criteria": [
+    {
+      "id": "owned_launch_write_gate",
+      "required": "guarded owned launcher proves spawned PID owns COM registration before any write",
+      "status": "failed",
+      "detail": "SessionOwnershipError: COM registration did not match spawned PID 21828; require_model_write was not bypassed and no write was attempted"
+    },
+    {
+      "id": "save_reopen",
+      "required": "model saved and reopened from disk inside the owned session",
+      "status": "unverified",
+      "detail": "never reached; owned-launch failed before document creation"
+    },
+    {
+      "id": "geometry_readback",
+      "required": "feature tree and solid-body geometry read back for each recipe",
+      "status": "unverified",
+      "detail": "never reached; no native part was created"
+    },
+    {
+      "id": "sheet_flatten",
+      "required": "two_bend_sheet flattened/exported by the native pipeline",
+      "status": "unverified",
+      "detail": "job not_run"
+    },
+    {
+      "id": "cleanup_and_process_exit",
+      "required": "owned document closed and worker/child process exit separately confirmed",
+      "status": "unverified",
+      "detail": "plate cleanup=unknown, worker PID 23200 exited rc=1, spawned SLDWORKS PID 21828 left alive on purpose; no ExitApp/taskkill issued"
+    }
+  ],
+  "native_doctor": {
+    "command": "python work/project.py native-doctor --sw-exe <SLDWORKS.exe>",
+    "status": "active_instance_observed",
+    "active_pid": 21772,
+    "revision": "30.5.0",
+    "open_document_count": 0,
+    "pywin32_available": true,
+    "cad_written": false,
+    "spawned": false,
+    "documents_closed": false,
+    "owned_write_authorized": false,
+    "note": "observational only; an existing single-instance registration can prevent a newly spawned PID from binding"
+  },
+  "focused_tests": {
+    "command": "PYTHONPATH=src python -m unittest discover -s tests -p test_acceptance_recovery.py -v",
+    "ran": 8,
+    "passed": 7,
+    "failed": 1,
+    "failed_test": "test_external_artifact_and_source_paths_removed",
+    "failure": "Path('/secret').is_absolute() is False on Windows, so a POSIX-root-relative key survives the source-path filter; got {'/secret': 'a...', 'ql5050px/a.py': 'c...'}",
+    "source_edited": false,
+    "note": "pinned head accepted as-is; defect recorded rather than patched during formal acceptance"
+  },
+  "review_parts": {
+    "status": "review_required",
+    "jobs": 4,
+    "reviewed_manifest": "reviewed-native-jobs.json",
+    "note": "all four recipes bound to template and sketch plane"
+  },
+  "native_batch": {
+    "command": "python work/project.py native-parts --manifest reviewed-native-jobs.json --output native_batch",
+    "status": "review_required",
+    "native_acceptance": "pending_windows_validation",
+    "job_counts": {
+      "needs_review": 1,
+      "not_run": 3
+    },
+    "jobs": [
+      {
+        "id": "plate",
+        "status": "needs_review",
+        "returncode": 1,
+        "exit_class": "worker_error",
+        "worker_pid": 23200,
+        "worker_may_be_running": false,
+        "modeling": "unknown",
+        "cleanup": "unknown",
+        "spawned_sldworks_pid": 21828,
+        "attached_existing_pid": 21772,
+        "error": "SessionOwnershipError: spawned PID 21828 is unproven and left open: COM registration did not match spawned PID 21828; process left untouched",
+        "artifacts": {}
+      },
+      {
+        "id": "bracket",
+        "status": "not_run",
+        "reason": "previous worker lifetime requires review"
+      },
+      {
+        "id": "shaft",
+        "status": "not_run",
+        "reason": "previous worker lifetime requires review"
+      },
+      {
+        "id": "two_bend_sheet",
+        "status": "not_run",
+        "reason": "previous worker lifetime requires review"
+      }
+    ],
+    "resume_refusal": {
+      "attempted": true,
+      "result": "RuntimeError: crashed worker requires explicit recover-parts review before retry",
+      "refusal_worked": true,
+      "ux_note": "project.py surfaces this as a raw traceback rather than structured JSON; behavior matches the documented refusal"
+    },
+    "com_used": true,
+    "cad_written": false,
+    "exit_app_or_taskkill_issued": false
+  },
+  "export_acceptance": {
+    "ran": true,
+    "package": "handoff_acceptance\\gork-acceptance.zip",
+    "contents": [
+      "acceptance.json",
+      "SHA256.json"
+    ],
+    "acceptance_json_sha256": "897ed3533e8d675b9a1d4e6186649f7527b26bfc0fe96e5e2c49c50df890357b",
+    "reported_status": "review_required",
+    "reported_evidence_consistent": true,
+    "evidence_consistent_trustworthy": false,
+    "defect": "a fully failed/not_run batch still yields evidence_consistent=true because only completed rows are checked for missing artifacts; this package must not be read as a native pass",
+    "omitted": "no CAD binaries, no raw logs, no absolute artifact paths"
+  },
+  "offline_delivery": {
+    "ran": true,
+    "recipes_compiled": 4,
+    "ids": [
+      "plate",
+      "bracket",
+      "shaft",
+      "two_bend_sheet"
+    ],
+    "cad_executed": false,
+    "status": "offline_plan_generated",
+    "note": "offline compilation only; not evidence of native execution"
+  },
+  "defects_found": [
+    {
+      "id": "windows_posix_absolute_path_filter",
+      "file": "src/ql5050px/acceptance_report.py",
+      "detail": "Path(name).is_absolute() is False for '/secret' on Windows, so POSIX-root-relative keys bypass source-path filtering; focused test fails",
+      "fixed_in_this_task": false
+    },
+    {
+      "id": "evidence_consistency_false_positive",
+      "file": "src/ql5050px/acceptance_report.py",
+      "detail": "non-completed rows with no artifacts produce no evidence_errors, so a failed/unrun batch exports evidence_consistent=true",
+      "fixed_in_this_task": false
+    }
+  ],
+  "p248": {
+    "algorithm_paths_touched": false,
+    "ran": false,
+    "pass_or_fail_claimed": false,
+    "note": "pinned commit changes 7 files, none under the p248 bend algorithm; bend_allowance.py appears only as a hashed source fingerprint in the export"
+  },
+  "sw": {
+    "com_used": true,
+    "cad_written": false,
+    "documents_closed": false,
+    "owned_documents_only": true,
+    "exit_app_issued": false,
+    "taskkill_issued": false,
+    "force_kill_issued": false,
+    "pids_before_native": [
+      21772,
+      20016
+    ],
+    "pids_after_native": [
+      21772,
+      20016,
+      21828
+    ],
+    "pid_21828_note": "spawned by the owned-launch attempt, ownership unproven, deliberately left alive; operator may close it manually",
+    "pid_21772_note": "pre-existing instance observed by native-doctor",
+    "pid_20016_note": "pre-existing instance observed before the native batch"
+  },
+  "unverified": [
+    "owned-launch/write gate on this host (blocked by single-instance COM registration)",
+    "save and reopen of any recipe under the owned session",
+    "geometry readback / feature-tree verification for all four recipes",
+    "sheet flatten and flat-pattern export for two_bend_sheet",
+    "cleanup of the plate attempt (unknown) and native process-exit evidence",
+    "bracket, shaft and two_bend_sheet native execution (not_run)",
+    "real native feature geometry and manufacturing output"
+  ],
+  "evidence": [
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\accept_pr20_win_36729775_20261024_145041.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\reviewed-native-jobs.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\repo_pin_verification_final.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\pr20_commit_36729775.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\pr20_tree_36729775.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\pr20_commit_object.bin",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\pr20_36729775.tar.gz",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\native_doctor.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\test_acceptance_recovery.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\review_parts.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\native_parts.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\native_parts_resume.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\export_acceptance.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\offline_delivery.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\sldworks_pids_before_native.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\sldworks_pids_after_native.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\summary.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\source-manifest.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\plate\\attempt-000001\\supervisor.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\plate\\attempt-000001\\worker.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\plate\\attempt-000001\\stderr.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\handoff_acceptance\\acceptance.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\handoff_acceptance\\SHA256.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\handoff_acceptance\\gork-acceptance.zip",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\offline_delivery\\compiled-jobs.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\offline_delivery\\offline-report.json"
+  ],
+  "next": "lxy_accept"
+}

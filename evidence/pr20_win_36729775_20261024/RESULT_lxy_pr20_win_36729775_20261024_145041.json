@@ -1,0 +1,24 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "lxy",
+  "ts": "20261024_154200",
+  "status": "fail",
+  "honest": true,
+  "next": "codex_review",
+  "summary": "Dual-source Windows native retest @ 36729775: Qoder blocked + WorkBuddy fail; both SessionOwnershipError on multi-instance host; offline 7/8 path-filter defect; native_acceptance pending_windows_validation; no native pass claimed.",
+  "pin_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+  "sources": {
+    "qoder": "blocked",
+    "workbuddy": "fail"
+  },
+  "native_acceptance": "pending_windows_validation",
+  "out_dirs": {
+    "qoder": "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041",
+    "workbuddy": "D:\\工程\\钣金导入\\wb_pr20_wb_win_36729775_20261024_151500"
+  },
+  "recommendations": [
+    "retry on clean single-instance SW",
+    "fix source_fingerprint external path filter",
+    "reclone work_copy for pack damage"
+  ]
+}

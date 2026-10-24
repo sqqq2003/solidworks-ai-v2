@@ -1,0 +1,117 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "workbuddy",
+  "role_on_bus": "codex",
+  "honest": true,
+  "generated_at": "2026-10-24T15:38:00+08:00",
+  "pin_sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+  "work_copy": "C:\\sw-ai-v2-work\\solidworks-ai-v2-pr20-36729775",
+  "git_state": {
+    "rev_parse_head_match_pin": true,
+    "tree_clean": true,
+    "fetch_attempt": "git fetch origin FAILED locally: 'Could not read 2ab51aa66051bfe064b0df54d2fb767e048e4f20 / pack has 8 unresolved deltas' (parent commit 2ab51aa not present locally). HEAD itself verified at pin via rev-parse; checkout step unnecessary since work_copy was already pinned. Recorded honestly; no re-clone performed (instruction: 勿重拉)."
+  },
+  "status": "fail",
+  "verdict": "Windows 正式 native 验收未通过：owned-launch COM 所有权证明在单实例主机上无法匹配 spawned PID（SessionOwnershipError），write gate 未绕过，native_acceptance 保持 pending_windows_validation；离线契约 7/8（1 真实失败）。",
+  "offline": {
+    "unit_test_acceptance_recovery": {
+      "command": "PYTHONPATH=src python -m unittest discover -s tests -p test_acceptance_recovery.py -v",
+      "ran": 8,
+      "passed": 7,
+      "failed": 1,
+      "failure": "test_external_artifact_and_source_paths_removed: source_fingerprint.code_sha256 保留了外部路径 '/secret' 的哈希，未按契约过滤。这是本 SHA 的真实离线契约缺陷（导出器 source-path 过滤不完整）。",
+      "log": "logs/unit_test_acceptance_recovery.txt"
+    },
+    "review_parts": {
+      "ran": true,
+      "exit": 3,
+      "status": "review_required",
+      "jobs": ["plate", "bracket", "shaft", "two_bend_sheet"],
+      "template": "C:\\ProgramData\\SOLIDWORKS\\SOLIDWORKS 2022\\templates\\gb_part.prtdot",
+      "template_sha256": "fc875b2c44eeffaae8de90898b82ba11d228718e2cb3f942051187950cd362ad",
+      "sketch_plane": "Front Plane",
+      "sw_exe": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+      "output": "reviewed_jobs.json"
+    }
+  },
+  "native": {
+    "native_doctor": {
+      "ran": true,
+      "status": "active_instance_observed",
+      "active_pid": 21772,
+      "revision": "30.5.0",
+      "open_document_count": 0,
+      "owned_write_authorized": false,
+      "read_only": true,
+      "log": "logs/native_doctor.json"
+    },
+    "native_parts_batch": {
+      "ran": true,
+      "exit": 3,
+      "results": {
+        "plate": {
+          "status": "needs_review",
+          "exit_class": "worker_error",
+          "returncode": 1,
+          "modeling": "unknown",
+          "cleanup": "unknown",
+          "artifacts": 0,
+          "error": "SessionOwnershipError: COM registration did not match spawned PID 21804; process left untouched"
+        },
+        "bracket": "not_run (previous worker lifetime requires review)",
+        "shaft": "not_run (previous worker lifetime requires review)",
+        "two_bend_sheet": "not_run (previous worker lifetime requires review)"
+      },
+      "batch_stop_reason": "unknown cleanup stops batch (per docs/native-acceptance-recovery.md design)",
+      "owned_launch_proof_failed": true,
+      "write_gate_bypassed": false,
+      "root_cause": "单实例 SW2022 主机：新 spawn 的 SLDWORKS(21804) 转发到既有活动实例（doctor: active_pid=21772），自身永远注册不出与 spawned PID 匹配的独立 COM 对象，bind_spawned 90s 证明窗口必然超时。框架按设计把 unproven 进程留置（'process left untouched'），不杀。",
+      "attempt_evidence": "batch/plate/attempt-000001/ (request.json, supervisor.json, worker.json, stderr.log)"
+    },
+    "four_recipes_full_chain": "unverified",
+    "native_acceptance": "pending_windows_validation"
+  },
+  "export_acceptance": {
+    "ran": true,
+    "exit": 3,
+    "status": "review_required",
+    "evidence_consistent": true,
+    "package": "handoff/gork-acceptance.zip",
+    "package_contents": ["acceptance.json", "SHA256.json"],
+    "package_meaning": "evidence_consistent=true 指记录与结果内部一致（plate=needs_review 0 artifacts，3×not_run），不是 native pass；无 CAD 二进制、无原始日志、无绝对路径。SHA256.json 覆盖 acceptance.json (b2448fe0...)。",
+    "log": "logs/export_acceptance_stdout.json"
+  },
+  "sw_pids": {
+    "before": [21772, 20016, 21828],
+    "after": [21772, 20016, 21828, 21804],
+    "spawned_by_test": [21804],
+    "killed": [],
+    "note": "21804 为 owned-launch spawn 的 unproven 实例，框架按设计留置不杀；三个原有实例未受影响。未 ExitApp、未 taskkill、未 CloseDoc 任何非自有文档。"
+  },
+  "p248": "未跑，不宣称 pass/fail",
+  "constraints_respected": {
+    "no_exitapp": true,
+    "no_taskkill": true,
+    "no_write_gate_bypass": true,
+    "warm_bypass_smoke_not_used": true,
+    "no_pr_merge_no_push": true,
+    "old_e1a14a7_offline_pass_not_reused": true
+  },
+  "known_blockers": [
+    "单实例 COM 归属：本机已有 3 个 SLDWORKS 实例时 owned-launch 无法通过 PID 匹配证明；需干净单实例环境（或上游提供多实例/会话隔离方案）才能正式验收。",
+    "export-acceptance 的 source-path 过滤在单测契约下失败（/secret 未滤），正式导出虽未触发该路径，但缺陷真实存在，应报上游修复。",
+    "git fetch pack 损坏（父提交 2ab51aa 缺失），仓库完整性建议重克隆（本轮按指令未重拉）。"
+  ],
+  "artifacts": {
+    "out_dir": "D:\\工程\\钣金导入\\wb_pr20_wb_win_36729775_20261024_151500",
+    "accept": "accept_pr20_wb_win_36729775_20261024_151500.json",
+    "reviewed_manifest": "reviewed_jobs.json",
+    "batch_dir": "batch/",
+    "acceptance_package": "handoff/gork-acceptance.zip",
+    "logs": ["logs/unit_test_acceptance_recovery.txt", "logs/native_doctor.json", "logs/review_parts_stdout.json", "logs/native_parts_stdout.json", "logs/native_parts_stderr.txt", "logs/native_parts_exit.txt", "logs/export_acceptance_stdout.json", "logs/native_parts_pids_before.txt", "logs/native_parts_pids_after.txt", "logs/sw_pids_final.txt"]
+  },
+  "unverified": [
+    "四配方完整链（保存重开/几何回读/钣金展开/清理与进程退出证据）——因 owned-launch 第一步即失败，未到达",
+    "native COM teardown、真实特征几何、制造输出（文档本身亦声明 pending Windows validation）"
+  ]
+}

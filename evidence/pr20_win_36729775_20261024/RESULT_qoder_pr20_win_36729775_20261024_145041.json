@@ -1,0 +1,92 @@
+{
+  "task_id": "pr20_win_36729775_20261024_145041",
+  "role": "qoder",
+  "ts": "20261024_151000",
+  "status": "blocked",
+  "summary": "PR#20 pinned at 367297751a9bc0add008c6b92a6e30a5c6d41ac9 was reconstructed exactly (rev-parse HEAD match, tree 852b5bb..., 0 blob mismatches, clean worktree) and the documented Windows acceptance flow was run. native-doctor observed the pre-existing instance (PID 21772, rev 30.5.0, 0 docs) read-only; review-parts bound all four recipes; offline delivery compiled all four; focused tests passed 7/8. The guarded native batch then failed on plate with SessionOwnershipError: COM registration did not match spawned PID 21828, so the write gate was never bypassed and no document was written; bracket, shaft and two_bend_sheet were not_run, and resume was refused as designed. Spawned SLDWORKS PID 21828 was deliberately left alive; no ExitApp/taskkill was issued. export-acceptance produced a ZIP but its evidence_consistent=true is a false positive for a fully failed batch and must not be read as a native pass. Save/reopen, geometry readback, sheet flatten and cleanup remain unverified; native_acceptance=pending_windows_validation. Two defects are recorded (Windows '/secret' source-path filter; evidence consistency false positive). No source files were edited and no p248 pass is claimed.",
+  "out_dir": "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041",
+  "next": "lxy_accept",
+  "honest": true,
+  "changed_files": [],
+  "evidence": [
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\accept_pr20_win_36729775_20261024_145041.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\repo_pin_verification_final.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\native_doctor.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\test_acceptance_recovery.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\native_parts.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\native_parts_resume.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\export_acceptance.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\offline_delivery.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\sldworks_pids_before_native.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\logs\\sldworks_pids_after_native.txt",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\summary.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\plate\\attempt-000001\\stderr.log",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\native_batch\\plate\\attempt-000001\\supervisor.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\handoff_acceptance\\gork-acceptance.zip",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\handoff_acceptance\\acceptance.json",
+    "D:\\工程\\钣金导入\\wb_pr20_win_36729775_20261024_145041\\offline_delivery\\compiled-jobs.json"
+  ],
+  "pr": {
+    "number": 20,
+    "sha": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+    "branch": "feat/issue19-staged-modeling",
+    "draft": true,
+    "parent_sha": "2ab51aa66051bfe064b0df54d2fb767e048e4f20"
+  },
+  "pin": {
+    "rev_parse_head": "367297751a9bc0add008c6b92a6e30a5c6d41ac9",
+    "rev_parse_match": true,
+    "tree_sha": "852b5bb4ac05df7313ea7a4b4015e96c290fd9cb",
+    "blob_mismatches": 0,
+    "worktree_clean": true,
+    "source": "codeload tarball plus api.github.com commit/tree; exact commit object reconstructed"
+  },
+  "batch": {
+    "status": "review_required",
+    "cad_executed": false,
+    "jobs": 4,
+    "job_statuses": [
+      "needs_review",
+      "not_run",
+      "not_run",
+      "not_run"
+    ],
+    "plate_error": "SessionOwnershipError: COM registration did not match spawned PID 21828; process left untouched",
+    "resume_refused": true
+  },
+  "native_acceptance": "pending_windows_validation",
+  "native_pass_claimed": false,
+  "p248_pass_claimed": false,
+  "verification": {
+    "native_doctor": "read-only; active PID 21772, revision 30.5.0, 0 open docs",
+    "review_parts": "4/4 bound",
+    "offline_delivery": "4/4 compiled, cad_executed=false",
+    "focused_tests": "7/8 passed; Windows '/secret' path-filter test failed",
+    "export_acceptance": "ZIP produced; evidence_consistent=true is a false positive and not pass evidence"
+  },
+  "unverified": [
+    "owned-launch/write gate",
+    "save and reopen",
+    "geometry readback",
+    "sheet flatten",
+    "cleanup and native process exit",
+    "bracket, shaft, two_bend_sheet native runs"
+  ],
+  "sw": {
+    "com_used": true,
+    "cad_written": false,
+    "documents_closed": false,
+    "pids_before_native": [
+      21772,
+      20016
+    ],
+    "pids_after_native": [
+      21772,
+      20016,
+      21828
+    ],
+    "exit_app_issued": false,
+    "taskkill_issued": false,
+    "pid_21828_note": "spawned by the owned-launch attempt; ownership unproven; left alive deliberately"
+  }
+}
