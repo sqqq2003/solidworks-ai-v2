@@ -37,7 +37,14 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
                 self.apply_sketch_constraints(p.get('constraints',[]))
                 sketch=manager.ActiveSketch
                 if sketch is None:raise RuntimeError('no active native sketch')
-                native=sketch.GetFeature();native.Name=feature['id']
+                import solidworks_generator as sw
+                module=sw.ensure_solidworks_typelib()
+                raw=model.FeatureByPositionReverse(0)
+                if raw is None:raise RuntimeError('active sketch feature not found')
+                native=sw._as_interface(module,raw,'IFeature')
+                if native.GetTypeName2() not in {'ProfileFeature','3DProfileFeature'}:
+                    raise RuntimeError('latest feature is not the active sketch; refusing to rename it')
+                native.Name=feature['id']
             finally:manager.InsertSketch(True)
         else:
             sketch=p.get('sketch')
@@ -54,10 +61,14 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
 
     def verify_feature_tree(self,names):
         self.guard()
+        import solidworks_generator as sw
+        module=sw.ensure_solidworks_typelib()
+        part=sw._as_interface(module,self.model,'IPartDoc')
         evidence=[]
         for name in names:
-            f=self.model.FeatureByName(name)
-            if f is None:raise RuntimeError('feature missing after reopen: '+name)
+            raw=part.FeatureByName(name)
+            if raw is None:raise RuntimeError('feature missing after reopen: '+name)
+            f=sw._as_interface(module,raw,'IFeature')
             evidence.append({'name':name,'native_type':f.GetTypeName2()})
         return {'features':evidence,'dimensions_verified':False,'status':'pending_native_validation'}
 
