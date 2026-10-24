@@ -189,3 +189,11 @@
 - 修复恢复锁Windows os.kill(pid,0)会终止进程的错误，改为只读句柄查询，新增禁止发信号回归。
 - 合并原生数学核验硬门槛、逐次Insert结构化诊断、失败证据保留、--no-relief-retries及只读证据检查。无新原生通过声明。
 - 完整离线436 ran / 431 passed / 0 failures/errors / 5 skipped；锁通过。另C# Python合约17/17；未编译C#、未运行真实桥。36 pending合约不算通过。说明及一次联合回传矩阵见docs/project-start-20261024.md。
+
+
+## CODEX-FOLLOWUP-20261024
+
+- 继续跑完离线集成/产物哈希/覆盖保护/冲突拒绝及制造队列首次、resume；5项完成、0失败、1原生pending。
+- 修复QL续跑日志value与result.json不绑定、空产物完成项复用、kind不符复用，以及$ref共享对象被下游修改。新增5项回归，旧实现4项明确失败，新实现通过；正常缓存不重跑。
+- 完整441 ran / 436 passed / 0 failures/errors / 5 skipped，跨进程锁通过；C# Python合约17项沿用前轮未改模块结果。
+- .NET host有但SDK缺失，实际build失败；SW oracle交接原稿在本机指定路径不可读，已向现有执行者请求共享。按ur56w8下一原生阶段仅oracle，不整跑step0。a9rpk4双轨选型仍未验收。详见docs/project-problems-20261024.md。

@@ -1,5 +1,6 @@
 """Single-writer, resumable dependency queue for offline and future native jobs."""
 from contextlib import contextmanager
+from copy import deepcopy
 import hashlib
 import json
 import os
@@ -55,7 +56,7 @@ def resolve(payload, results, allowed):
             value = results[path[0]]["value"]
             for key in path[1:]:
                 value = value[int(key)] if isinstance(value,list) else value[key]
-            return value
+            return deepcopy(value)
         return {k:resolve(v,results,allowed) for k,v in payload.items()}
     if isinstance(payload,list):
         return [resolve(v,results,allowed) for v in payload]
@@ -116,10 +117,25 @@ class BatchRunner:
                 old = history.get(name)
                 reusable = old and old["status"]=="completed"
                 if reusable:
-                    for relative,sha in old["artifacts"].items():
+                    if old.get("kind") != job["kind"]:
+                        raise ValueError(f"resume job kind mismatch: {name}")
+                    artifacts = old.get("artifacts")
+                    if not isinstance(artifacts,dict) or not artifacts:
+                        raise ValueError(f"resume result artifact missing: {name}")
+                    result_files = []
+                    for relative,sha in artifacts.items():
                         artifact = (root/relative).resolve()
                         if not artifact.is_relative_to(root) or not artifact.is_file() or digest(artifact)!=sha:
                             raise ValueError(f"resume artifact missing or changed: {relative}")
+                        parts = Path(relative).parts
+                        if (len(parts)==3 and parts[0]==name and
+                                re.fullmatch(r"attempt-[1-9][0-9]*",parts[1]) and parts[2]=="result.json"):
+                            result_files.append(artifact)
+                    if len(result_files)!=1:
+                        raise ValueError(f"resume result artifact ambiguous or missing: {name}")
+                    value = json.loads(result_files[0].read_text(encoding="utf-8"))
+                    if canonical(value)!=canonical(old.get("value")):
+                        raise ValueError(f"resume result value differs from hashed artifact: {name}")
                     results[name] = old
                     continue
                 result = {"id":name,"kind":job["kind"],"status":"blocked","artifacts":{}}
@@ -158,3 +174,4 @@ class BatchRunner:
                 results[name] = result
             counts = {s:sum(r["status"]==s for r in results.values()) for s in ("completed","failed","blocked","pending_native")}
             return {"jobs":results,"counts":counts,"test_status":"not_run","native_acceptance":"unverified"}
+
