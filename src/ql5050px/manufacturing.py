@@ -66,6 +66,8 @@ def offline_runner(*, driver=None, native_port=None):
     handlers.update(auto_assembly=lambda p,f:plan_assembly(**p),drive_variant=lambda p,f:plan_drive(**p),
                     manufacturing_drawings=lambda p,f:plan_drawings(**p),
                     machine_package=lambda p,f:write_machine_package(p,f/'execution-package'))
+    from .intelligence import run_intelligence
+    handlers['intelligence'] = lambda p,f:run_intelligence(p,f/'intelligence')
     if driver is not None:
         def variant(payload,folder):
             from .control import execute_variant

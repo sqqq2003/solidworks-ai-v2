@@ -1,0 +1,16 @@
+{
+  "baseline_commit": "1fcaf2b2b791c6a2c64ffcf7f5b444e14f0180ad",
+  "test_status": "not_run",
+  "files": {
+    "app.py": "cd4a49c2dbd933f013863c727224582c1a1c2ff4203d58d52164b5c7fb52916e",
+    "examples/ql5050px_intelligence.json": "342b06738c409fa2e12b5c78f99717374fd5da694c0cf60334bda9faf66d1102",
+    "docs/issue11-handoff.md": "f00904efd59af4855b7bb057f21714d07dda678960334a0329c9a53a910b46f0",
+    "src/ql5050px/automatic_mapping.py": "fa725239524148136c696f78c06e25687180d791114a3308736801f9505b7ad1",
+    "src/ql5050px/intelligent_decision.py": "1bdcdd04d6c8a491efddea7f100a9b05b9c8f5ede5134c420e7c1fa8a358aa7a",
+    "src/ql5050px/manufacturing.py": "0a936ae492a994581e3822d4828f960f41636ed4008e2c7079dc5b556aa88399",
+    "src/ql5050px/mechanical_selection.py": "035908d9274291822870c438a932ddf82cc0d9ec2cd8d3db5ac8365cd72e469f",
+    "src/ql5050px/intelligent_scan.py": "a74f7c6360e3f2520d27d5069479ea502bb493f622a8716cef65f4d87416abe5",
+    "src/ql5050px/workflow.py": "86f2f93629779709e7761facef19e65c5d4bedb53aa17f924ef622b784c23aa8",
+    "src/ql5050px/intelligence.py": "b1cc57982c7eeb627c7a89aed71d5261196af97248851161a07b3d6bc16e9394"
+  }
+}
