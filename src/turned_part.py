@@ -606,6 +606,33 @@ def discover_turned_parts(analysis: DrawingAnalysis) -> tuple[TurnedPartPlan, ..
     return tuple(labeled)
 
 
+def finish_turned_generation(output, *, saved, lease, post_save_error, release_error):
+    """Keep a non-empty SLDPRT. Later COM failure is not a hard failure.
+
+    Returns the path when the file stays on disk. Returns None when there is
+    nothing to keep, so the original error still propagates. Does not delete
+    the file and does not call ExitApp.
+    """
+    from part_verification import (
+        PARTIAL_COM_DISCONNECT_STATUS,
+        PARTIAL_REBIND_STATUS,
+        PostSaveRebindFailed,
+        is_member_not_found,
+        product_file_ready,
+    )
+
+    if not saved or not product_file_ready(output):
+        return None
+    disconnected = bool(getattr(lease, "disconnected", False)) if lease is not None else False
+    if lease is not None and (post_save_error is not None or release_error is not None or disconnected):
+        if not getattr(lease, "post_save_outcome", None):
+            if isinstance(post_save_error, PostSaveRebindFailed) or is_member_not_found(post_save_error):
+                lease.post_save_outcome = PARTIAL_REBIND_STATUS
+            else:
+                lease.post_save_outcome = PARTIAL_COM_DISCONNECT_STATUS
+    return str(output)
+
+
 def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     """按件类生成零件。轴类绕局部中心线旋转；六角和方钢凸台拉伸。
 
@@ -910,6 +937,7 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         saved = True
         if lease is not None:
             lease.generation_saved = True
+            lease.generation_path = str(output)
 
         from part_verification import (
             PostSaveRebindFailed,
@@ -971,7 +999,8 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
             )
         except (PostSaveComDisconnect, PostSaveRebindFailed) as error:
             post_save_error = error
-            if not output.is_file() or output.stat().st_size == 0:
+            from part_verification import product_file_ready
+            if not product_file_ready(output):
                 raise
             import logging
             logging.getLogger(__name__).warning(
@@ -990,6 +1019,8 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         document_title = rebound_title
         return str(output)
     finally:
+        import sys
+        release_error = None
         keep_previous = False
         try:
             if lease is not None:
@@ -998,25 +1029,46 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                 lease.keep_application_open = True
             application = typed_solidworks if typed_solidworks is not None else solidworks
             if application is not None:
+                # A failed rebind must not CloseDoc through the stale pointer.
+                release_model = None if post_save_error is not None else model
+
+                def _saved_title():
+                    from part_verification import read_com_property
+                    return read_com_property(release_model, "GetTitle")
+
                 session.release_task_documents(
                     lease,
                     application,
                     title=str(document_title) if document_title else None,
                     close=bool(document_title),
-                    resolve_title=(lambda: sw._com_read(model, "GetTitle")) if saved and model is not None else None,
+                    resolve_title=_saved_title if saved and release_model is not None else None,
                 )
+        except Exception as error:
+            release_error = error
         finally:
             if lease is not None:
                 lease.keep_application_open = keep_previous
             if com_initialized:
                 pythoncom.CoUninitialize()
-        if saved and lease is not None and (post_save_error is not None or lease.disconnected):
+        kept = finish_turned_generation(
+            output,
+            saved=saved,
+            lease=lease,
+            post_save_error=post_save_error,
+            release_error=release_error,
+        )
+        pending = sys.exc_info()[1]
+        if kept is not None and (pending is not None or post_save_error is not None or release_error is not None):
             import logging
             logging.getLogger(__name__).warning(
-                "COM disconnected after the turned part was saved; "
-                "keeping %s; ExitApp was not called",
-                output,
+                "turned part kept after post-save COM failure; "
+                "ExitApp was not called: %s",
+                post_save_error or release_error or pending,
             )
+        if kept is not None and pending is not None:
+            return kept
+        if release_error is not None and pending is None and kept is None:
+            raise release_error
 
 
 def _front_plane(planes):

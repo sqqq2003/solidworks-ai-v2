@@ -307,3 +307,11 @@
 - 本轮：`ActiveDoc` 只读属性，不走会触发 MEMBERNOTFOUND 的 callable 路径。读不到时按保存路径用 `GetOpenDocumentByName`，再 `OpenDoc6`，`ActiveDoc()` 只作最后兜底。SaveAs3 已写出非空 SLDPRT 时，重绑失败记 `partial_rebind_failed`（`generation` 不是 null，`exit_code=0`），不调用 `abort`，不做 `staging_removed`。真正的断连仍是 `saved_com_disconnected_after_generation`。轴路径同一套重绑，失败也不把已保存文件盖成异常。
 - 离线：`python3 work/run_cloud_tests.py` → 544 ran / 540 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
 - 实机判据：同一张 DXF。若 SaveAs3 已写出零件，随后 ActiveDoc `DISP_E_MEMBERNOTFOUND` 不得把 `generation` 记成 null，不得 `staging_removed`，`status` 应为 `partial_rebind_failed`（或重绑按路径成功后继续重开）。零件文件留在磁盘。这仍不是实机通过。
+
+## P0-DDD-3a927e8：轴保存后 cleanup/inventory 断连不得整单 exit 1
+
+- 证据是 DDD 在 `3a927e8` 上的抽测（`D:\工程\钣金导入\ddd_plate_shaft_20261026_001909\`）。钣金 live 已通过。板/支架 offline TYPEMISMATCH 契约通过，live `DISP_E_TYPEMISMATCH` 已被 helper 拦住（未见 -2147352571）。板 live `FeatureCut3` 仍可能返回 `None`，本轮不修。轴 offline 重绑/断连契约通过，但 live 保存后仍 `fail_repro`：零件已落盘约 61KB，清理/inventory COM 失败，CLI exit 1。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：轴 `generate_turned_part` 的收尾仍用 `_com_read` 读标题，且 `finally` 里的异常会盖掉已返回的路径。owned cleanup 只把已识别的 `CO_E_OBJNOTCONNECTED` 收成 `saved_com_disconnected_after_generation`。`document inventory unavailable; refusing writes` 不在该名单里，上下文抛 `owned session cleanup failed`，CLI `except Exception` 变成 exit 1。文件留在磁盘，但整单被记成失败。
+- 本轮：轴与钣金对齐。SaveAs 之后仍走 `rebind_model_after_save`（属性 ActiveDoc，再按路径 `GetOpenDocumentByName` / `OpenDoc6`）。CloseDoc 保活，不调用 ExitApp。文件已在磁盘时，重绑失败记 `partial_rebind_failed`，cleanup/inventory COM 失败记 `partial_com_disconnect`，`cleanup_error` 留空，不删 SLDPRT，不做 `staging_removed`。别人的未拥有文档仍然让清理失败。已分类的断连清理状态仍是 `saved_com_disconnected_after_generation`。轴 CLI 在「已保存且只是这类收尾失败」时 exit 0，事件里带路径和 `partial_com_disconnect`。`passed` 与 `sw_live_verified` 仍为 false。`post_save_status` 对断连仍不是建模通过。
+- 离线：`python3 work/run_cloud_tests.py` → 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：轴 live，SaveAs 已写出非空 SLDPRT 后，若只剩 cleanup/inventory COM 失败，进程 exit 0，`status` 为 `partial_com_disconnect`（或重绑失败时 `partial_rebind_failed`），路径保留，不调用 ExitApp。没有零件文件的断连仍然失败。这仍不是实机通过。

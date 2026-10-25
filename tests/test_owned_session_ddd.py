@@ -338,6 +338,166 @@ class DddOwnedSessionTests(unittest.TestCase):
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-list-disconnect")
 
+    def test_saved_part_inventory_failure_is_partial_not_a_hard_failure(self):
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: list(app.docs))
+            lease = sw_session.current_lease()
+            lease.generation_saved = True
+            lease.generation_path = r"D:\out\shaft.SLDPRT"
+            def inventory_hung(_app):
+                raise RuntimeError("COM inventory hung")
+
+            binding.list_titles = inventory_hung
+            finish_owned_session(lease, binding)
+            self.assertEqual(app.exit_calls, 0)
+            self.assertIsNone(binding.cleanup_error)
+            self.assertEqual(binding.cleanup_status, "partial_com_disconnect")
+            self.assertIn("inventory", binding.cleanup_disconnect.casefold())
+            self.assertNotIn("ExitApp", binding.cleanup_disconnect)
+            self.assertEqual(lease.post_save_outcome, "partial_com_disconnect")
+            self.assertEqual(lease.generation_path, r"D:\out\shaft.SLDPRT")
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-inventory-partial")
+
+    def test_foreign_documents_still_fail_cleanup_after_save(self):
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: list(app.docs))
+            app.docs.append("支架.SLDPRT")
+            lease = sw_session.current_lease()
+            lease.generation_saved = True
+            finish_owned_session(lease, binding)
+            self.assertEqual(app.exit_calls, 0)
+            self.assertEqual(binding.cleanup_status, "left_open_for_recovery")
+            self.assertIsNotNone(binding.cleanup_error)
+            self.assertIn("unowned", binding.cleanup_error.casefold())
+            self.assertIsNone(lease.post_save_outcome)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-foreign-after-save")
+
+    def test_suppress_clears_inventory_error_but_not_foreign_documents(self):
+        from sw_owned_launch import suppress_saved_cleanup_error
+
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.generation_saved = True
+            binding.cleanup_status = "left_open_for_recovery"
+            binding.cleanup_error = (
+                "SessionOwnershipError: document inventory unavailable; refusing writes"
+            )
+            self.assertTrue(suppress_saved_cleanup_error(binding, lease))
+            self.assertIsNone(binding.cleanup_error)
+            self.assertEqual(binding.cleanup_status, "partial_com_disconnect")
+            self.assertEqual(lease.post_save_outcome, "partial_com_disconnect")
+            self.assertEqual(app.exit_calls, 0)
+
+            binding.cleanup_error = (
+                "SessionOwnershipError: unowned documents remain; preserve session: 支架.SLDPRT"
+            )
+            binding.cleanup_status = "left_open_for_recovery"
+            lease.generation_saved = True
+            self.assertFalse(suppress_saved_cleanup_error(binding, lease))
+            self.assertIn("unowned", binding.cleanup_error.casefold())
+
+            lease.generation_saved = False
+            binding.cleanup_error = "document inventory unavailable; refusing writes"
+            self.assertFalse(suppress_saved_cleanup_error(binding, lease))
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-suppress-inventory")
+
+    def test_saved_turned_part_keeps_path_when_release_fails(self):
+        import tempfile
+        from types import SimpleNamespace
+
+        from part_verification import PostSaveRebindFailed, kept_after_save_exit
+        from turned_part import finish_turned_generation
+
+        source = (ROOT / "src" / "turned_part.py").read_text(encoding="utf-8")
+        self.assertNotIn('sw._com_read(model, "GetTitle")', source)
+        self.assertNotIn(".ExitApp(", source)
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "shaft.SLDPRT"
+            path.write_bytes(b"x" * 64)
+            lease = SimpleNamespace(
+                disconnected=False,
+                post_save_outcome=None,
+                generation_saved=True,
+                generation_path=str(path),
+            )
+            kept = finish_turned_generation(
+                path,
+                saved=True,
+                lease=lease,
+                post_save_error=None,
+                release_error=RuntimeError(
+                    "document inventory unavailable; refusing writes"
+                ),
+            )
+            self.assertEqual(kept, str(path))
+            self.assertEqual(path.stat().st_size, 64)
+            self.assertEqual(lease.post_save_outcome, "partial_com_disconnect")
+
+            rebound = SimpleNamespace(
+                disconnected=False,
+                post_save_outcome=None,
+                generation_saved=True,
+            )
+            kept_rebind = finish_turned_generation(
+                path,
+                saved=True,
+                lease=rebound,
+                post_save_error=PostSaveRebindFailed("ActiveDoc missing"),
+                release_error=None,
+            )
+            self.assertEqual(kept_rebind, str(path))
+            self.assertEqual(rebound.post_save_outcome, "partial_rebind_failed")
+
+            missing = Path(folder) / "missing.SLDPRT"
+            self.assertIsNone(
+                finish_turned_generation(
+                    missing,
+                    saved=True,
+                    lease=lease,
+                    post_save_error=RuntimeError("gone"),
+                    release_error=None,
+                )
+            )
+
+        self.assertEqual(
+            kept_after_save_exit(
+                3,
+                generation_saved=True,
+                cleanup_status="partial_com_disconnect",
+                post_save_outcome=None,
+            ),
+            0,
+        )
+        self.assertEqual(
+            kept_after_save_exit(
+                3,
+                generation_saved=True,
+                cleanup_status="left_open_keepalive",
+                post_save_outcome=None,
+            ),
+            3,
+        )
+        self.assertEqual(
+            kept_after_save_exit(
+                1,
+                generation_saved=False,
+                cleanup_status="partial_com_disconnect",
+                post_save_outcome="partial_com_disconnect",
+            ),
+            1,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -295,6 +295,31 @@ def run_turned(args: argparse.Namespace) -> int:
     if not args.out:
         raise ValueError('车件生成需要 --out 新零件路径')
     path = generate_turned_part(plan,args.out)
+    from part_verification import KEPT_AFTER_SAVE_STATUSES, execution_exit_code
+    from sw_session import current_lease
+    lease = current_lease()
+    outcome = getattr(lease, "post_save_outcome", None)
+    if outcome in KEPT_AFTER_SAVE_STATUSES:
+        emit(
+            "done",
+            kind="turned",
+            path=path,
+            status=outcome,
+            exit_code=execution_exit_code(outcome),
+            passed=False,
+            sw_live_verified=False,
+            native_acceptance="pending_windows_validation",
+            file_on_disk=True,
+            exit_app=False,
+            mechanical_acceptance="unverified",
+            warnings=list(build.warnings),
+            threads="cosmetic_or_pending_not_certified",
+            message=(
+                "saved part kept; post-save COM failure is not a hard failure; "
+                "ExitApp was not called"
+            ),
+        )
+        return execution_exit_code(outcome)
     verification = None
     if args.verify_reopen:
         from part_verification import verify_saved_part
@@ -320,10 +345,41 @@ def main(argv: list[str] | None = None) -> int:
             from sw_owned_launch import owned_solidworks
             from sw_session import run_on_task_sta
             def owned_job():
+                from part_verification import kept_after_save_exit
+                from sw_session import current_lease
                 with owned_solidworks(args.sw_exe) as binding:
                     emit("session", **binding.evidence())
                     rc = runner(args)
-                emit("session_end", **binding.evidence())
+                evidence = binding.evidence()
+                emit("session_end", **evidence)
+                lease = current_lease()
+                rc = kept_after_save_exit(
+                    rc,
+                    generation_saved=bool(getattr(lease, "generation_saved", False)),
+                    cleanup_status=evidence.get("cleanup_status"),
+                    post_save_outcome=getattr(lease, "post_save_outcome", None),
+                )
+                if evidence.get("cleanup_status") in {
+                    "partial_com_disconnect",
+                    "saved_com_disconnected_after_generation",
+                }:
+                    emit(
+                        "partial",
+                        status="partial_com_disconnect",
+                        path=getattr(lease, "generation_path", None),
+                        exit_code=0,
+                        passed=False,
+                        sw_live_verified=False,
+                        native_acceptance="pending_windows_validation",
+                        file_on_disk=True,
+                        exit_app=False,
+                        cleanup_status=evidence.get("cleanup_status"),
+                        cleanup_disconnect=evidence.get("cleanup_disconnect"),
+                        message=(
+                            "saved part kept; cleanup/inventory COM disconnect is not a hard failure; "
+                            "ExitApp was not called"
+                        ),
+                    )
                 return rc
             return run_on_task_sta(owned_job, timeout=300, task_name="owned-sheet-metal-cli")
         return runner(args)

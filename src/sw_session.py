@@ -113,6 +113,10 @@ class SessionLease:
     native_launch_attempt: Any = None
     keep_application_open: bool = False
     generation_saved: bool = False
+    generation_path: str | None = None
+    # partial_com_disconnect / partial_rebind_failed after a file is on disk.
+    # This is not a modeling pass and does not call ExitApp.
+    post_save_outcome: str | None = None
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)

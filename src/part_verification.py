@@ -24,7 +24,15 @@ def mark_session_disconnected(lease) -> None:
 
 
 SAVED_DISCONNECT_STATUS = "saved_com_disconnected_after_generation"
+PARTIAL_COM_DISCONNECT_STATUS = "partial_com_disconnect"
 PARTIAL_REBIND_STATUS = "partial_rebind_failed"
+KEPT_AFTER_SAVE_STATUSES = frozenset(
+    {
+        SAVED_DISCONNECT_STATUS,
+        PARTIAL_COM_DISCONNECT_STATUS,
+        PARTIAL_REBIND_STATUS,
+    }
+)
 # 0x80020003. Calling an ISldWorks propget as a method raises this.
 DISP_E_MEMBERNOTFOUND = -2147352573
 
@@ -161,13 +169,26 @@ class PostSaveRebindFailed(RuntimeError):
 
 def execution_exit_code(status) -> int:
     """CLI code for a sheet-metal run. A saved part is not exit 1."""
-    if status in {SAVED_DISCONNECT_STATUS, "partial_com_disconnect", PARTIAL_REBIND_STATUS}:
+    if status in KEPT_AFTER_SAVE_STATUSES:
         return 0
     if status == "failed":
         return 1
     if status == "pending":
         return 3
     return 0
+
+
+def kept_after_save_exit(rc, *, generation_saved, cleanup_status=None, post_save_outcome=None) -> int:
+    """Exit 0 when a saved part's only failure is post-save cleanup or rebind.
+
+    An unverified success with no COM failure keeps ``rc`` (often 3). A hard
+    failure before any file is written also keeps ``rc``.
+    """
+    if not generation_saved:
+        return rc
+    if cleanup_status in KEPT_AFTER_SAVE_STATUSES or post_save_outcome in KEPT_AFTER_SAVE_STATUSES:
+        return 0
+    return rc
 
 
 def saved_generation_after_disconnect(generation, error):

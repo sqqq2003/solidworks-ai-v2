@@ -160,6 +160,20 @@ def _open_titles(binding) -> list[str]:
     return [str(title) for title in (raw or []) if str(title).strip()]
 
 
+def cleanup_mentions_foreign_documents(error) -> bool:
+    """True when cleanup found a document this task does not own.
+
+    That still fails the session. An inventory/COM drop after a saved part
+    does not.
+    """
+    folded = str(error or "").casefold()
+    return (
+        "unowned document" in folded
+        or "preserve session" in folded
+        or "does not own" in folded
+    )
+
+
 def _warn_and_leave(binding, exc):
     """Disconnect after save or during keep-alive. Do not raise and do not ExitApp."""
     binding.cleanup_status = "left_open_keepalive"
@@ -222,8 +236,24 @@ def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
             binding.cleanup_status = "saved_com_disconnected_after_generation"
             binding.cleanup_error = None
             binding.cleanup_disconnect = type(normalized).__name__ + ": " + str(normalized)
+            if getattr(lease, "post_save_outcome", None) is None:
+                lease.post_save_outcome = "partial_com_disconnect"
             logger.warning(
                 "COM disconnect after the part was saved; ExitApp was not called: %s",
+                binding.cleanup_disconnect,
+            )
+            return
+        if saved and not cleanup_mentions_foreign_documents(exc):
+            # Inventory/validate COM failures are not a disconnect HRESULT, but
+            # the part is already on disk. Do not replace the caller's result.
+            binding.cleanup_status = "partial_com_disconnect"
+            binding.cleanup_error = None
+            binding.cleanup_disconnect = type(exc).__name__ + ": " + str(exc)
+            if getattr(lease, "post_save_outcome", None) is None:
+                lease.post_save_outcome = "partial_com_disconnect"
+            logger.warning(
+                "saved part kept after cleanup/inventory COM failure; "
+                "ExitApp was not called: %s",
                 binding.cleanup_disconnect,
             )
             return

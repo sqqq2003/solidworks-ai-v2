@@ -246,6 +246,47 @@ def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump
     raise SessionOwnershipError(f'COM registration did not match spawned PID {lifetime.pid}; process left untouched')
 
 
+def suppress_saved_cleanup_error(binding, lease) -> bool:
+    """Clear a post-save cleanup error so the context does not discard the path.
+
+    Foreign documents still fail. A cleared error is ``partial_com_disconnect``
+    unless the disconnect status is already the sheet-metal saved name.
+    ExitApp is not called.
+    """
+    from owned_document_lifetime import cleanup_mentions_foreign_documents
+
+    if not getattr(binding, "cleanup_error", None) or not getattr(lease, "generation_saved", False):
+        return False
+    if cleanup_mentions_foreign_documents(binding.cleanup_error):
+        return False
+    marker = str(binding.cleanup_error)
+    folded = marker.casefold()
+    partial = (
+        binding.cleanup_status in {
+            "saved_com_disconnected_after_generation",
+            "partial_com_disconnect",
+        }
+        or "没有连接到服务器" in marker
+        or "-2147220995" in marker
+        or "objnotconnected" in folded
+        or "disconnected" in folded
+        or "com_error" in folded
+        or "ComSessionDisconnected" in marker
+        or "inventory unavailable" in folded
+        or "document enumeration failed" in folded
+        or "partial_com_disconnect" in folded
+    )
+    if not partial:
+        return False
+    binding.cleanup_disconnect = binding.cleanup_disconnect or marker
+    binding.cleanup_error = None
+    if binding.cleanup_status != "saved_com_disconnected_after_generation":
+        binding.cleanup_status = "partial_com_disconnect"
+    if getattr(lease, "post_save_outcome", None) is None:
+        lease.post_save_outcome = "partial_com_disconnect"
+    return True
+
+
 @contextmanager
 def owned_solidworks(executable, *, timeout=90):
     if sys.platform != 'win32':
@@ -281,28 +322,15 @@ def owned_solidworks(executable, *, timeout=90):
         from owned_document_lifetime import finish_owned_session, release_closed_session_references
         finish_owned_session(lease, binding)
         release_closed_session_references(lease, binding)
-        # A part already on disk must survive a dead GetProcessID in this finally.
-        # Raising here discards run_plan's result and the CLI exits 1.
-        if binding.cleanup_error and getattr(lease, "generation_saved", False):
-            marker = str(binding.cleanup_error)
-            folded = marker.casefold()
-            if (
-                binding.cleanup_status == "saved_com_disconnected_after_generation"
-                or "没有连接到服务器" in marker
-                or "-2147220995" in marker
-                or "objnotconnected" in folded
-                or "disconnected" in folded
-                or "com_error" in folded
-                or "ComSessionDisconnected" in marker
-            ):
-                binding.cleanup_disconnect = binding.cleanup_disconnect or marker
-                binding.cleanup_error = None
-                binding.cleanup_status = "saved_com_disconnected_after_generation"
-                import logging
-                logging.getLogger(__name__).warning(
-                    "saved part kept after cleanup GetProcessID disconnect: %s",
-                    binding.cleanup_disconnect,
-                )
+        # A part already on disk must survive a dead GetProcessID or a failed
+        # inventory in this finally. Raising here discards the result and the
+        # CLI exits 1.
+        if suppress_saved_cleanup_error(binding, lease):
+            import logging
+            logging.getLogger(__name__).warning(
+                "saved part kept after cleanup/inventory COM failure: %s",
+                binding.cleanup_disconnect,
+            )
         if binding.cleanup_error and not body_failed:
             import logging
             logging.getLogger(__name__).error(
