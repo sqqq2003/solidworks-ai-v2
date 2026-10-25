@@ -1,0 +1,246 @@
+{
+  "revision": "SYNTHETIC-DEV",
+  "snapshot": {
+    "machine": "synthetic roller fixture",
+    "documents": [
+      {
+        "path": "fixture-roller.SLDPRT",
+        "configuration": "Default",
+        "component_kind": "editable",
+        "dimensions": [
+          {
+            "name": "overall_length@Sketch1",
+            "feature": "Sketch1",
+            "value": 1000,
+            "unit": "mm",
+            "source": "synthetic fixture"
+          },
+          {
+            "name": "shaft_diameter@Sketch1",
+            "feature": "Sketch1",
+            "value": 12,
+            "unit": "mm",
+            "source": "synthetic fixture"
+          }
+        ]
+      }
+    ]
+  },
+  "parameters": [
+    "overall_length",
+    "shaft_diameter"
+  ],
+  "plan": {
+    "status": "ready_for_native",
+    "changes": [
+      {
+        "parameter": "barrel_length",
+        "before_mm": 945,
+        "after_mm": 745
+      }
+    ],
+    "affected_features": [
+      "Barrel"
+    ],
+    "affected_mates": [
+      "right_support"
+    ]
+  },
+  "intentions": {
+    "parameters": {
+      "barrel_length": {
+        "role": "adjustable",
+        "unit": "mm",
+        "allowed_range": [
+          100,
+          1500
+        ],
+        "review_status": "confirmed",
+        "source": "synthetic fixture"
+      },
+      "shaft_diameter": {
+        "role": "interface",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "review_status": "confirmed"
+      }
+    },
+    "dependency_graph": {}
+  },
+  "values": {
+    "shaft_diameter": {
+      "value": 12,
+      "unit": "mm"
+    },
+    "bearing_bore": {
+      "value": 12,
+      "unit": "mm"
+    }
+  },
+  "rules": [
+    {
+      "id": "fit",
+      "left": "shaft_diameter",
+      "right": "bearing_bore",
+      "unit": "mm",
+      "op": "equal",
+      "tolerance": 0,
+      "source": "synthetic fixture",
+      "reviewed": true
+    }
+  ],
+  "calculations": [
+    {
+      "kind": "shaft_deflection",
+      "inputs": {
+        "force": {
+          "value": 100,
+          "unit": "N",
+          "source": "synthetic fixture"
+        },
+        "span": {
+          "value": 745,
+          "unit": "mm",
+          "source": "synthetic fixture"
+        },
+        "diameter": {
+          "value": 12,
+          "unit": "mm",
+          "source": "synthetic fixture"
+        },
+        "elastic_modulus": {
+          "value": 210000,
+          "unit": "MPa",
+          "source": "synthetic fixture"
+        }
+      }
+    }
+  ],
+  "catalogue": {
+    "items": [
+      {
+        "id": "fixture-bearing",
+        "category": "bearing",
+        "model": "FIXTURE-ONLY",
+        "source": "synthetic catalogue",
+        "revision": "1",
+        "part_number": "FIXTURE-BEARING",
+        "material": "fixture steel",
+        "interfaces": {
+          "bore_mm": 12
+        },
+        "specifications": {
+          "bore": {
+            "value": 12,
+            "unit": "mm",
+            "source": "synthetic catalogue"
+          }
+        }
+      }
+    ]
+  },
+  "selection_requirements": [
+    {
+      "category": "bearing",
+      "requirements": [
+        {
+          "field": "bore",
+          "unit": "mm",
+          "equal": 12
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "roller",
+      "part_number": "FIXTURE-ROLLER",
+      "material": "fixture steel",
+      "quantity": 1
+    }
+  ],
+  "manufacturing_register": [
+    {
+      "part_number": "FIXTURE-ROLLER",
+      "kind": "part",
+      "material": "fixture steel",
+      "revision": "SYNTHETIC-DEV",
+      "source": "synthetic fixture",
+      "operations": [
+        "reviewed synthetic operation"
+      ]
+    }
+  ],
+  "template": {
+    "id": "fixture-machine",
+    "revision": "1",
+    "source": "synthetic fixture",
+    "parameters": {
+      "overall_length": {
+        "unit": "mm",
+        "allowed_range": [
+          100,
+          1500
+        ]
+      }
+    },
+    "payload": {
+      "modules": {
+        "roller": {
+          "length_mm": 1000
+        }
+      }
+    },
+    "bindings": [
+      {
+        "parameter": "overall_length",
+        "path": [
+          "modules",
+          "roller",
+          "length_mm"
+        ]
+      }
+    ]
+  },
+  "template_values": {
+    "overall_length": {
+      "value": 800,
+      "unit": "mm",
+      "source": "synthetic user target"
+    }
+  },
+  "previous_configuration": {
+    "modules": {
+      "roller": {
+        "length_mm": 1000
+      }
+    }
+  },
+  "configuration": {
+    "modules": {
+      "roller": {
+        "length_mm": 800
+      }
+    }
+  },
+  "binding_approvals": [
+    {
+      "parameter": "shaft_diameter",
+      "document_id": "499e8fed8ebfd853c155871e",
+      "dimension": "shaft_diameter@Sketch1",
+      "role": "interface",
+      "reviewed": true,
+      "source": "synthetic review",
+      "report_sha256": "080a09973861a0be2a1bdb1738cfdb7b08966e70ea8c1f649b4adb1fddb2bda7"
+    }
+  ],
+  "selections": [
+    {
+      "id": "fixture-bearing",
+      "quantity": 2,
+      "reviewed": true,
+      "source": "synthetic review",
+      "catalogue_sha256": "b6e9080bc993ded5453eae4ef448eb4f2e74f768de96ae9349c6197bc6a26250"
+    }
+  ]
+}
