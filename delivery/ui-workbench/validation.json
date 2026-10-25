@@ -1,0 +1,147 @@
+{
+  "scope": "UI revision over unified candidate; offline regression only",
+  "status": "passed",
+  "run": 792,
+  "passed": 783,
+  "skipped": 9,
+  "suites": [
+    {
+      "id": "repository",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "work/run_cloud_tests.py"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 709,
+      "passed": 700,
+      "skipped": 9,
+      "skip_reasons": [
+        {
+          "test": "test_export_cannot_overwrite_existing_request (test_desktop_ui.DesktopUITests.test_export_cannot_overwrite_existing_request)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_input_changes_clear_confirmation (test_desktop_ui.DesktopUITests.test_input_changes_clear_confirmation)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_instruction_creates_review_only (test_desktop_ui.DesktopUITests.test_instruction_creates_review_only)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_native_result_does_not_discard_pending_queue (test_desktop_ui.DesktopUITests.test_native_result_does_not_discard_pending_queue)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_settings_drawer_and_relevant_parameters (test_desktop_ui.DesktopUITests.test_settings_drawer_and_relevant_parameters)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+          "reason": "测试用滚筒 DWG 不在 uploads"
+        },
+        {
+          "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+          "reason": "本机未安装 LibreDWG dwg2dxf"
+        },
+        {
+          "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+          "reason": "Drawing1_e7b7.dwg 未上传"
+        },
+        {
+          "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+          "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+        }
+      ],
+      "failures": 0,
+      "errors": 0,
+      "cross_process_lock_passed": true,
+      "logs_sha256": {
+        "repository.stdout.log": "0243a109d122322e8303de9c49a08faf8443c39597fe1413b22a5d7740b2aa33",
+        "repository.stderr.log": "05ea5b2a9e92d1c1957f722f025e1a899c361ff0348c6e59bda5d19cba58d877"
+      }
+    },
+    {
+      "id": "original-feature-contracts",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/pending_features",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 36,
+      "skipped": 0,
+      "passed": 36,
+      "logs_sha256": {
+        "original-feature-contracts.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original-feature-contracts.stderr.log": "ec21259e19bdf6cdf8fbbdcbc386f507c09dda5e5bf3bce6d7285f761b98294b"
+      }
+    },
+    {
+      "id": "feature-tree",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "feature_tree/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 31,
+      "skipped": 0,
+      "passed": 31,
+      "logs_sha256": {
+        "feature-tree.stdout.log": "a558f7be00746979ff61aec56faee4ee99b6a4ddd683602a7ccb559102022268",
+        "feature-tree.stderr.log": "39378f1a61e9261eaab47dd7aadde4513a7eaf2a98c9b0ba2824e7dba09da2c1"
+      }
+    },
+    {
+      "id": "geometry-ir",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "geometry_ir/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 16,
+      "skipped": 0,
+      "passed": 16,
+      "logs_sha256": {
+        "geometry-ir.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "geometry-ir.stderr.log": "519616d75eb9edfd24604f76290f02cfc4a556f02827753c3b52602d638956ad"
+      }
+    }
+  ],
+  "solidworks_live_verified": false,
+  "native_acceptance": "pending_windows_validation",
+  "virtual_display_checks": {
+    "run": 5,
+    "passed": 5,
+    "platform": "Linux, system Tk8.6, virtual X display",
+    "solidworks_started": false,
+    "windows_tested": false
+  },
+  "backend_adapter_checks": {
+    "run": 6,
+    "passed": 6,
+    "included_in_regression": true
+  },
+  "ui_sizes_checked": [
+    "1360x900",
+    "1080x740"
+  ]
+}
