@@ -461,38 +461,73 @@ class Workbench:
 
     def configure_ai(self):
         from ai_assistant import AIConfig,AssistantSession,AssistantError
+        from ai_assistant.protocols import LABELS,BASES
+        from ai_assistant.client import scoped_api_key
         from tkinter import messagebox
-        win=self.tk.Toplevel(self.root);win.title('AI 连接');win.geometry('520x410');win.configure(bg=WHITE)
+        win=self.tk.Toplevel(self.root);win.title('AI 连接');win.geometry('610x720');win.configure(bg=WHITE)
         win.columnconfigure(0,weight=1)
-        self.label(win,'接入 OpenAI',size=18,bold=True).grid(row=0,column=0,sticky='w',padx=24,pady=(22,10))
-        self.label(win,'发送输入文本和当前对话，不自动上传附件或 CAD 文件。',size=9,color=MUTED,wraplength=460,justify='left').grid(row=1,column=0,sticky='w',padx=24,pady=(0,14))
-        env=AIConfig.from_env()
-        model=self.tk.StringVar(value=self.ai_session.config.model if self.ai_session else env.model)
-        key=self.tk.StringVar()
-        self.label(win,'模型名称 · 使用账号可访问的模型',size=9,color=MUTED).grid(row=2,column=0,sticky='w',padx=24)
-        self.ttk.Entry(win,textvariable=model).grid(row=3,column=0,sticky='ew',padx=24,pady=(5,12))
-        self.label(win,'API 密钥 · 留空沿用当前连接或本机环境变量',size=9,color=MUTED).grid(row=4,column=0,sticky='w',padx=24)
-        self.ttk.Entry(win,textvariable=key,show='*').grid(row=5,column=0,sticky='ew',padx=24,pady=(5,10))
-        self.label(win,'密钥仅在本次进程内使用，不保存到项目或日志。配置完成后，首次对话再验证连接。',size=9,color=MUTED,wraplength=460,justify='left').grid(row=6,column=0,sticky='w',padx=24,pady=(0,14))
-        actions=self.tk.Frame(win,bg=WHITE);actions.grid(row=7,column=0,sticky='ew',padx=24)
+        self.label(win,'连接模型服务',size=18,bold=True).grid(row=0,column=0,sticky='w',padx=24,pady=(20,8))
+        self.label(win,'选择 API 协议与服务地址。只发送对话文字，不自动上传 CAD 附件。',size=9,color=MUTED,wraplength=560,justify='left').grid(row=1,column=0,sticky='w',padx=24,pady=(0,12))
+        try:env=AIConfig.from_env();env.normalized_base()
+        except AssistantError:env=AIConfig(model='',api_key='')
+        current=self.ai_session.config if self.ai_session else env
+        model=self.tk.StringVar(value=current.model);key=self.tk.StringVar()
+        protocol=self.tk.StringVar(value=LABELS[current.protocol]);base=self.tk.StringVar(value=current.normalized_base())
+        use_tools=self.tk.BooleanVar(value=current.enable_tools);token_field=self.tk.StringVar(value=current.token_parameter)
+        presets={'自定义 / 当前配置':None,
+            'OpenAI':('responses',BASES['responses']),
+            'DeepSeek':('chat_completions','https://api.deepseek.com'),
+            '通用 OpenAI 兼容服务':('chat_completions','https://your-provider.example/v1'),
+            'Claude / Anthropic':('anthropic',BASES['anthropic']),
+            'Gemini / Google':('gemini',BASES['gemini']),
+            'Ollama · 本机':('chat_completions','http://localhost:11434/v1'),
+            'LM Studio · 本机':('chat_completions','http://localhost:1234/v1')}
+        preset=self.tk.StringVar(value='自定义 / 当前配置')
+        def caption(row,text):self.label(win,text,size=9,color=MUTED).grid(row=row,column=0,sticky='w',padx=24,pady=(5,4))
+        caption(2,'服务预设')
+        picker=self.ttk.Combobox(win,textvariable=preset,values=tuple(presets),state='readonly');picker.grid(row=3,column=0,sticky='ew',padx=24)
+        caption(4,'接口协议')
+        protocol_picker=self.ttk.Combobox(win,textvariable=protocol,values=tuple(LABELS.values()),state='readonly');protocol_picker.grid(row=5,column=0,sticky='ew',padx=24)
+        caption(6,'API 基础地址 · 例如 https://服务域名/v1')
+        self.ttk.Entry(win,textvariable=base).grid(row=7,column=0,sticky='ew',padx=24)
+        caption(8,'模型名称 · 使用服务商或本机提供的实际名称')
+        self.ttk.Entry(win,textvariable=model).grid(row=9,column=0,sticky='ew',padx=24)
+        caption(10,'API 密钥 · 不跨服务沿用，本机回环服务可留空')
+        self.ttk.Entry(win,textvariable=key,show='*').grid(row=11,column=0,sticky='ew',padx=24)
+        self.ttk.Checkbutton(win,text='启用受控工具（模型不支持时可关闭，仅对话）',variable=use_tools).grid(row=12,column=0,sticky='w',padx=24,pady=(10,4))
+        extra=self.tk.Frame(win,bg=WHITE);extra.grid(row=13,column=0,sticky='ew',padx=24)
+        self.label(extra,'兼容接口的输出额度字段',size=9,color=MUTED).pack(side='left')
+        self.ttk.Combobox(extra,textvariable=token_field,values=('max_tokens','max_completion_tokens'),state='readonly',width=22).pack(side='right')
+        self.label(win,'密钥只在本次运行内使用。新连接会重置模型上下文；首次对话才验证是否接通。',size=9,color=MUTED,wraplength=560,justify='left').grid(row=14,column=0,sticky='w',padx=24,pady=12)
+        actions=self.tk.Frame(win,bg=WHITE);actions.grid(row=15,column=0,sticky='ew',padx=24,pady=6)
+        def choose_preset(event=None):
+            value=presets[preset.get()]
+            if value:
+                protocol.set(LABELS[value[0]]);base.set(value[1]);model.set('');key.set('')
+        picker.bind('<<ComboboxSelected>>',choose_preset)
         def activate():
             if self.ai_busy:messagebox.showinfo('正在回复','请等待当前回复结束后再切换连接。',parent=win);return
             try:
-                config=AIConfig(model=model.get().strip(),api_key=key.get().strip() or (self.ai_session.config.api_key if self.ai_session else env.api_key))
+                selected=next(k for k,v in LABELS.items() if v==protocol.get())
+                probe=AIConfig(model=model.get().strip(),api_key='',protocol=selected,base_url=base.get().strip(),enable_tools=use_tools.get(),token_parameter=token_field.get())
+                saved=scoped_api_key(probe,key.get(),(self.ai_session.config if self.ai_session else None,env))
+                config=AIConfig(model=probe.model,api_key=saved,protocol=selected,base_url=probe.base_url,
+                                enable_tools=probe.enable_tools,token_parameter=probe.token_parameter)
                 session=AssistantSession(config)
-            except AssistantError as exc:messagebox.showerror('配置未完成',str(exc),parent=win);return
-            key.set('');self.ai_session=session;self.ai_generation+=1;self.ai_status.set('OpenAI 模式')
-            self.status.set('OpenAI 已配置 · 首次对话验证连接');win.destroy()
+            except (AssistantError,StopIteration) as exc:
+                messagebox.showerror('配置未完成',str(exc) or '请选择有效协议。',parent=win);return
+            key.set('');self.ai_session=session;self.ai_generation+=1;self.ai_status.set('本机模型' if config.is_local() else '在线模型')
+            self.status.set('模型服务已配置 · 首次对话验证连接');win.destroy()
         def local():
             if self.ai_busy:messagebox.showinfo('正在回复','请先停止或等待当前回复。',parent=win);return
             key.set('');self.ai_session=None;self.ai_generation+=1;self.ai_status.set('本地审核');self.status.set('已切换到本地审核');win.destroy()
         self.button(actions,'使用本地审核',local).pack(side='left')
-        self.button(actions,'启用 OpenAI',activate,primary=True).pack(side='right')
+        self.button(actions,'启用连接',activate,primary=True).pack(side='right')
 
     def _start_ai(self,text):
         self.ai_cancel=threading.Event();self.ai_generation+=1;token=self.ai_generation
         session=self.ai_session;cancel=self.ai_cancel
-        self.ai_busy=True;self.add_message('你',text);self.status.set('正在请求 OpenAI…')
+        self.ai_busy=True;self.add_message('你',text);self.status.set('正在请求模型服务…')
         self.composer.delete('1.0','end');self._composer_blur();self._sync_buttons()
         def worker():
             from ai_assistant import AssistantError

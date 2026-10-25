@@ -1,5 +1,7 @@
 # OpenAI 接入与 Gork 验证
 
+> 本页记录PR55的OpenAI初版。后续通用服务地址、Claude/Gemini和本地模型配置，请以 [多服务接入](multi-provider-ai.md) 为准。
+
 基于界面PR54的48d5fb2e451d321d5c8f886f7d50a044c5612498增量开发；原界面/统一实机测试pin不移动。当前ChatGPT会话不是软件的远程后端，这里接入的是操作者自己配置的OpenAI API模型。
 
 ## 桌面启用

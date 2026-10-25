@@ -1,4 +1,4 @@
-"""OpenAI configuration status or explicitly requested advisory chat."""
+"""Model-provider configuration status or explicitly requested advisory chat."""
 import argparse
 import json
 from pathlib import Path
