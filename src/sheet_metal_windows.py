@@ -23,9 +23,10 @@ class WindowsSheetMetalPort:
         """Probe the owned application before Open, Save, Close, or readback.
 
         ``require_model_write`` calls ``GetProcessID`` on the bound IDispatch.
-        ``CO_E_OBJNOTCONNECTED`` rediscovers that same PID once. If the process
-        is gone and a part was already saved, the pipeline records
-        ``partial_com_disconnect`` instead of failing the whole job.
+        ``CO_E_OBJNOTCONNECTED`` is normalized to ``ComSessionDisconnected`` and
+        rediscovers that same PID once. If the part is already on disk, the
+        pipeline records ``saved_com_disconnected_after_generation`` (exit 0)
+        instead of failing the whole job.
         """
         if sys.platform != 'win32':
             raise RuntimeError('SolidWorks native execution requires Windows')

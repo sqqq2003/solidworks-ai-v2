@@ -34,6 +34,7 @@ from sw_session import (
     connect_application,
     current_lease,
     on_task_sta,
+    is_com_server_disconnect,
     release_task_documents,
     require_model_write,
     ensure_application_keepalive,
@@ -300,50 +301,9 @@ class ComDisconnectedBendError(BendRejectedError):
         self.timed_out = bool(timed_out)
 
 
-# RPC_E_DISCONNECTED / RPC_S_SERVER_UNAVAILABLE 等常见断连 HRESULT
-_COM_DISCONNECT_HRESULTS = frozenset(
-    {
-        -2147417848,  # 0x80010108 RPC_E_DISCONNECTED
-        -2147023174,  # 0x800706BA RPC_S_SERVER_UNAVAILABLE
-        -2147418111,  # 0x80010001 RPC_E_CALL_REJECTED（偶发，当断连处理）
-        -2147467261,  # 0x80004003 E_POINTER（对象已释放）
-        -2147220995,  # 0x800401FD CO_E_OBJNOTCONNECTED（保存后对象未连接服务器）
-    }
-)
-
-
 def _is_com_disconnect_error(error: BaseException | None) -> bool:
     """判断是否为 SolidWorks/COM 对象与客户端断开。"""
-
-    if error is None:
-        return False
-    current: BaseException | None = error
-    seen: set[int] = set()
-    while current is not None and id(current) not in seen:
-        seen.add(id(current))
-        args = getattr(current, "args", ())
-        if args:
-            hr = args[0]
-            if isinstance(hr, int):
-                # signed / unsigned HRESULT
-                if hr in _COM_DISCONNECT_HRESULTS or (hr & 0xFFFFFFFF) in {
-                    h & 0xFFFFFFFF for h in _COM_DISCONNECT_HRESULTS
-                }:
-                    return True
-            elif isinstance(hr, BaseException) and id(hr) not in seen:
-                current = hr
-                continue
-        message = str(current)
-        folded = message.casefold()
-        if (
-            "断开连接" in message
-            or "没有连接到服务器" in message
-            or "not connected to server" in folded
-            or "disconnected" in folded
-        ):
-            return True
-        current = current.__cause__ or current.__context__
-    return False
+    return is_com_server_disconnect(error)
 
 
 def _set_sw_automation_mode(solidworks: Any, enabled: bool) -> None:

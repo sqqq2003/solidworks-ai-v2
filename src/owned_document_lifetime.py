@@ -179,10 +179,8 @@ def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
     ends with a warning. The caller's generation result stays intact.
     """
     from sw_session import (
-        ComSessionDisconnected,
         SessionOwnershipError,
         close_owned_document,
-        is_com_server_disconnect,
     )
 
     if exit_poll_seconds is None:
@@ -215,12 +213,22 @@ def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
             getattr(lease, "spawned_pid", None),
         )
     except Exception as exc:
-        disconnected = isinstance(exc, ComSessionDisconnected) or is_com_server_disconnect(exc)
-        if disconnected and not binding.rebind_attempted:
+        from sw_session import normalize_com_disconnect
+        normalized = normalize_com_disconnect(exc)
+        if normalized is not None and not binding.rebind_attempted:
             binding.rebind_owned_pid(lease)
         saved = bool(getattr(lease, "generation_saved", False))
-        if disconnected and (saved or lease.keep_application_open):
-            _warn_and_leave(binding, exc)
+        if normalized is not None and saved:
+            binding.cleanup_status = "saved_com_disconnected_after_generation"
+            binding.cleanup_error = None
+            binding.cleanup_disconnect = type(normalized).__name__ + ": " + str(normalized)
+            logger.warning(
+                "COM disconnect after the part was saved; ExitApp was not called: %s",
+                binding.cleanup_disconnect,
+            )
+            return
+        if normalized is not None and lease.keep_application_open:
+            _warn_and_leave(binding, normalized)
             return
         binding.cleanup_status = "left_open_for_recovery"
         binding.cleanup_error = type(exc).__name__ + ": " + str(exc)

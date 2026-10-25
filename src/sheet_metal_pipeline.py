@@ -276,6 +276,11 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
                              code_sha256=plan['code_sha256'],
                              products=[{'name': part.name, 'sha256': file_hash(part)}],
                              evidence=s1_evidence)
+            if not port.simulated:
+                from sw_session import current_lease
+                live_lease = current_lease()
+                if live_lease is not None:
+                    live_lease.generation_saved = True
             checkpoints = read_checkpoints(ckpt_dir)
         run_lock.heartbeat()
         if resume_stage in (None, 'S0', 'S1'):
@@ -381,12 +386,14 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
             disconnect_after_saved_product,
             saved_generation_after_disconnect,
         )
-        if disconnect_after_saved_product(exc, part):
-            # Feature create and SaveAs already landed. A later CloseDoc or
-            # keep-alive disconnect must not delete the part or report the
-            # run as if generation never happened. ExitApp stays unused.
+        from sw_session import normalize_com_disconnect
+        reported = normalize_com_disconnect(exc) or exc
+        if disconnect_after_saved_product(reported, part):
+            # Feature create and SaveAs already landed. A later CloseDoc,
+            # validate/GetProcessID, or keep-alive disconnect must not delete
+            # the part or report the run as failed. ExitApp stays unused.
             # native_acceptance remains pending_windows_validation.
-            kept = saved_generation_after_disconnect(generated, exc)
+            kept = saved_generation_after_disconnect(generated, reported)
             crash_file = None
             if ckpt_dir is not None and Path(ckpt_dir).is_dir():
                 try:

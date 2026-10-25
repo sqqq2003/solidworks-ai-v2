@@ -921,39 +921,84 @@ def exit_owned_application(lease: SessionLease, app: Any) -> None:
     app.ExitApp()
 
 
+def _hresult_is_disconnect(value: Any) -> bool:
+    if isinstance(value, bool) or not isinstance(value, int):
+        return False
+    unsigned = {code & 0xFFFFFFFF for code in _DISCONNECT_HRESULTS}
+    return value in _DISCONNECT_HRESULTS or (value & 0xFFFFFFFF) in unsigned
+
+
+def _text_is_disconnect(text: str) -> bool:
+    folded = text.casefold()
+    return (
+        "断开连接" in text
+        or "没有连接到服务器" in text
+        or "not connected to server" in folded
+        or "disconnected" in folded
+        or "objnotconnected" in folded
+        or "-2147220995" in text
+        or "2147746301" in text
+        or "800401fd" in folded
+    )
+
+
+def _value_is_disconnect(value: Any, seen: set[int]) -> bool:
+    """Walk HRESULT, excepinfo tuples, and pywintypes.com_error args."""
+    if value is None or isinstance(value, (bool, int, float)):
+        return _hresult_is_disconnect(value)
+    if isinstance(value, str):
+        return _text_is_disconnect(value)
+    if isinstance(value, bytes):
+        return _text_is_disconnect(value.decode("utf-8", "replace"))
+    ident = id(value)
+    if ident in seen:
+        return False
+    seen.add(ident)
+    if isinstance(value, BaseException):
+        if _hresult_is_disconnect(getattr(value, "hresult", None)):
+            return True
+        if _value_is_disconnect(getattr(value, "args", ()), seen):
+            return True
+        if _value_is_disconnect(getattr(value, "excepinfo", None), seen):
+            return True
+        if _text_is_disconnect(str(value)):
+            return True
+        return _value_is_disconnect(value.__cause__, seen) or _value_is_disconnect(
+            value.__context__, seen
+        )
+    if isinstance(value, (tuple, list)):
+        return any(_value_is_disconnect(item, seen) for item in value)
+    return False
+
+
 def _exception_is_disconnect(error: BaseException | None) -> bool:
     if error is None:
         return False
-    unsigned = {code & 0xFFFFFFFF for code in _DISCONNECT_HRESULTS}
-    current: BaseException | None = error
-    seen: set[int] = set()
-    while current is not None and id(current) not in seen:
-        seen.add(id(current))
-        args = getattr(current, "args", ())
-        if args and isinstance(args[0], int):
-            hr = args[0]
-            if hr in _DISCONNECT_HRESULTS or (hr & 0xFFFFFFFF) in unsigned:
-                return True
-        text = str(current)
-        folded = text.casefold()
-        if (
-            "断开连接" in text
-            or "没有连接到服务器" in text
-            or "not connected to server" in folded
-            or "disconnected" in folded
-        ):
-            return True
-        nested = args[0] if args and isinstance(args[0], BaseException) else None
-        if nested is not None and id(nested) not in seen:
-            current = nested
-            continue
-        current = current.__cause__ or current.__context__
-    return False
+    return _value_is_disconnect(error, set())
 
 
 def is_com_server_disconnect(error: BaseException | None) -> bool:
     """True for RPC disconnects and CO_E_OBJNOTCONNECTED after a dead proxy."""
     return _exception_is_disconnect(error)
+
+
+def normalize_com_disconnect(error: BaseException | None) -> ComSessionDisconnected | None:
+    """Turn a raw pywintypes.com_error(-2147220995) into ComSessionDisconnected.
+
+    failure.json must not keep error_kind=com_error and the bare HRESULT tuple
+    once generation has already saved a part.
+    """
+    if error is None:
+        return None
+    if isinstance(error, ComSessionDisconnected):
+        return error
+    if not is_com_server_disconnect(error):
+        return None
+    normalized = ComSessionDisconnected(
+        "owned COM server disconnected; writes refused; ExitApp was not called"
+    )
+    normalized.hresult = -2147220995  # type: ignore[attr-defined]
+    return normalized
 
 
 def release_task_documents(

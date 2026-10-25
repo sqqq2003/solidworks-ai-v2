@@ -141,8 +141,10 @@ class PipelineTests(unittest.TestCase):
                 raise AssertionError("saved part must stay after a post-generation disconnect")
 
         report = run_plan(self.analysis, self.plan(), self.root / "out", SavedThenDisconnect())
-        self.assertEqual(report["status"], "partial_com_disconnect")
+        self.assertEqual(report["status"], "saved_com_disconnected_after_generation")
         self.assertNotEqual(report["status"], "failed")
+        self.assertEqual(report["exit_code"], 0)
+        self.assertEqual(report["error_kind"], "ComSessionDisconnected")
         self.assertFalse(report["sw_live_verified"])
         self.assertFalse(report["passed"])
         self.assertFalse(report["exit_app"])
@@ -152,6 +154,73 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(report["generation"]["auto_bent"])
         artifact = Path(report["diagnostic_stage"]) / "part.SLDPRT"
         self.assertEqual(artifact.read_bytes(), b"SLDPRT-artifact")
+
+    def test_getprocessid_com_error_after_save_is_not_a_failed_run(self):
+        class com_error(Exception):
+            """Stand-in for pywintypes.com_error(-2147220995)."""
+
+        class SavedThenRawGetProcessId(MockSheetMetalPort):
+            simulated = False
+
+            def generate(self, analysis, plan, part):
+                part.write_bytes(b"SLDPRT-artifact")
+                return {
+                    "path": part.name,
+                    "auto_bent": True,
+                    "bend_count": 1,
+                    "auto_bend_failed_count": 0,
+                    "auto_bend_abandoned": False,
+                    "k_factor_readback": 0.36,
+                    "bend_attempts": [{"status": "completed", "completed_bend_count": 1}],
+                }
+
+            def reopen_inspect(self, part):
+                raise com_error(-2147220995, "对象没有连接到服务器", None, None)
+
+            def abort(self, stage):
+                raise AssertionError("abort must not run after a saved part")
+
+        report = run_plan(self.analysis, self.plan(), self.root / "out", SavedThenRawGetProcessId())
+        self.assertEqual(report["status"], "saved_com_disconnected_after_generation")
+        self.assertNotEqual(report["status"], "failed")
+        self.assertEqual(report["exit_code"], 0)
+        self.assertEqual(report["error_kind"], "ComSessionDisconnected")
+        self.assertNotIn("(-2147220995", report["error"])
+        self.assertEqual(report["generation"]["k_factor_readback"], 0.36)
+        self.assertEqual(report["recovery"], "products_kept")
+        artifact = Path(report["diagnostic_stage"]) / "part.SLDPRT"
+        self.assertEqual(artifact.read_bytes(), b"SLDPRT-artifact")
+        from part_verification import execution_exit_code
+        self.assertEqual(execution_exit_code(report["status"]), 0)
+        self.assertEqual(execution_exit_code("failed"), 1)
+
+    def test_locked_stat_after_save_still_counts_as_saved(self):
+        import sw_session
+        from unittest.mock import patch
+        from part_verification import disconnect_after_saved_product, product_file_ready
+
+        path = self.root / "part.SLDPRT"
+        path.write_bytes(b"SLDPRT-artifact")
+        real_stat = Path.stat
+
+        def locked(self_path):
+            if self_path.name == "part.SLDPRT":
+                raise PermissionError("locked by SolidWorks")
+            return real_stat(self_path)
+
+        class com_error(Exception):
+            pass
+
+        def job():
+            sw_session.current_lease().generation_saved = True
+            with patch.object(Path, "stat", locked):
+                self.assertTrue(product_file_ready(path))
+                self.assertTrue(disconnect_after_saved_product(
+                    com_error(-2147220995, "对象没有连接到服务器", None, None),
+                    path,
+                ))
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="locked-stat")
 
     def test_disconnect_without_a_saved_part_still_fails(self):
         from sw_session import ComSessionDisconnected

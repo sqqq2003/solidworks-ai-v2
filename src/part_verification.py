@@ -23,18 +23,43 @@ def mark_session_disconnected(lease) -> None:
     lease.verified_exclusive = False
 
 
+SAVED_DISCONNECT_STATUS = "saved_com_disconnected_after_generation"
+
+
+def product_file_ready(product) -> bool:
+    """True when a saved part is still on disk.
+
+    SolidWorks can hold the file so ``stat`` raises ``PermissionError`` after
+    SaveAs. That lock is not "no product". A missing path stays false.
+    """
+    if product is None:
+        return False
+    path = Path(product)
+    try:
+        info = path.stat()
+    except FileNotFoundError:
+        return False
+    except OSError:
+        # SaveAs can leave the file locked so stat fails. The lease flag is
+        # set only after that save (or the S1 checkpoint) succeeded.
+        from sw_session import current_lease
+        lease = current_lease()
+        if bool(getattr(lease, "generation_saved", False)):
+            return True
+        try:
+            return path.exists()
+        except OSError:
+            return False
+    return info.st_size > 0
+
+
 def disconnect_after_saved_product(error, product) -> bool:
     """True when a later COM drop must not erase a part already on disk."""
-    path = Path(product) if product is not None else None
-    try:
-        ready = path is not None and path.is_file() and path.stat().st_size > 0
-    except OSError:
-        ready = False
-    if not ready:
+    if not product_file_ready(product):
         return False
-    if isinstance(error, ComSessionDisconnected) or is_com_server_disconnect(error):
+    from sw_session import SessionOwnershipError, normalize_com_disconnect
+    if normalize_com_disconnect(error) is not None:
         return True
-    from sw_session import SessionOwnershipError
     if not isinstance(error, SessionOwnershipError):
         return False
     text = str(error)
@@ -44,17 +69,33 @@ def disconnect_after_saved_product(error, product) -> bool:
         or "没有连接到服务器" in text
         or "not connected to server" in folded
         or "writes refused" in folded
+        or "-2147220995" in text
     )
+
+
+def execution_exit_code(status) -> int:
+    """CLI code for a sheet-metal run. A saved disconnect is not exit 1."""
+    if status in {SAVED_DISCONNECT_STATUS, "partial_com_disconnect"}:
+        return 0
+    if status == "failed":
+        return 1
+    if status == "pending":
+        return 3
+    return 0
 
 
 def saved_generation_after_disconnect(generation, error):
     """Keep a finished save visible. This is not a SolidWorks live pass."""
+    from sw_session import normalize_com_disconnect
+    reported = normalize_com_disconnect(error) or error
     return {
-        "status": "partial_com_disconnect",
+        "status": SAVED_DISCONNECT_STATUS,
+        "exit_code": 0,
         "warning": (
             "owned COM server disconnected after the part was saved; "
             "ExitApp was not called"
         ),
+        "error": str(reported),
         "modeling": "saved_pending_reopen",
         "native_acceptance": "pending_windows_validation",
         "sw_live_verified": False,
@@ -63,8 +104,9 @@ def saved_generation_after_disconnect(generation, error):
         "exit_app": False,
         "process_killed": False,
         "generation": generation,
-        "post_save_disconnect": str(error),
-        "error_kind": type(error).__name__,
+        "post_save_disconnect": str(reported),
+        "error_kind": type(reported).__name__,
+        "hresult": -2147220995,
         "recovery": "products_kept",
     }
 

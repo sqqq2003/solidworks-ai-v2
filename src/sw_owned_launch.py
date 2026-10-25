@@ -72,8 +72,16 @@ def _native_candidate(pid):
 
 
 def _read_pid(app):
-    value = getattr(app, 'GetProcessID')
-    return int(value() if callable(value) else value)
+    """Read the owned PID. A dead IDispatch becomes ComSessionDisconnected."""
+    from sw_session import normalize_com_disconnect
+    try:
+        value = getattr(app, 'GetProcessID')
+        return int(value() if callable(value) else value)
+    except Exception as exc:
+        normalized = normalize_com_disconnect(exc)
+        if normalized is not None:
+            raise normalized from exc
+        raise
 
 
 class OwnedBinding:
@@ -115,27 +123,28 @@ class OwnedBinding:
             lease.verified_exclusive = True
         return True
 
-    def validate(self, lease, *, documents=True):
-        from sw_session import ComSessionDisconnected, is_com_server_disconnect
+    def _read_connection_or_rebind(self, lease):
+        from sw_session import normalize_com_disconnect
         try:
-            image_ok, com_pid = self._read_connection()
+            return self._read_connection()
         except Exception as exc:
-            if is_com_server_disconnect(exc) and self.rebind_owned_pid(lease):
+            normalized = normalize_com_disconnect(exc)
+            if normalized is not None and self.rebind_owned_pid(lease):
                 try:
-                    image_ok, com_pid = self._read_connection()
+                    return self._read_connection()
                 except Exception as again:
                     exc = again
-                else:
-                    exc = None
-            if exc is not None and is_com_server_disconnect(exc):
-                lease.verified_exclusive = False
-                lease.writes_blocked = True
-                lease.disconnected = True
-                raise ComSessionDisconnected(
-                    'owned COM server disconnected; writes refused; ExitApp was not called'
-                ) from exc
-            if exc is not None:
+                    normalized = normalize_com_disconnect(again) or normalized
+            if normalized is None:
                 raise
+            lease.verified_exclusive = False
+            lease.writes_blocked = True
+            lease.disconnected = True
+            raise normalized from exc
+
+    def validate(self, lease, *, documents=True):
+        from sw_session import normalize_com_disconnect
+        image_ok, com_pid = self._read_connection_or_rebind(lease)
         if not image_ok or com_pid != self.lifetime.pid:
             lease.verified_exclusive = False
             lease.writes_blocked = True
@@ -146,20 +155,21 @@ class OwnedBinding:
                 # Default blanks (零件N / PartN) are adopted and closed here.
                 titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
             except Exception as exc:
-                if is_com_server_disconnect(exc) and self.rebind_owned_pid(lease):
+                normalized = normalize_com_disconnect(exc)
+                if normalized is not None and self.rebind_owned_pid(lease):
                     try:
                         titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
                         exc = None
+                        normalized = None
                     except Exception as again:
                         exc = again
+                        normalized = normalize_com_disconnect(again)
                 if exc is not None:
                     lease.writes_blocked = True
-                    if is_com_server_disconnect(exc):
+                    if normalized is not None:
                         lease.verified_exclusive = False
                         lease.disconnected = True
-                        raise ComSessionDisconnected(
-                            'owned COM server disconnected while listing documents; ExitApp was not called'
-                        ) from exc
+                        raise normalized from exc
                     raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
             foreign = titles - set(lease.owned_docs)
             if foreign:
@@ -271,6 +281,28 @@ def owned_solidworks(executable, *, timeout=90):
         from owned_document_lifetime import finish_owned_session, release_closed_session_references
         finish_owned_session(lease, binding)
         release_closed_session_references(lease, binding)
+        # A part already on disk must survive a dead GetProcessID in this finally.
+        # Raising here discards run_plan's result and the CLI exits 1.
+        if binding.cleanup_error and getattr(lease, "generation_saved", False):
+            marker = str(binding.cleanup_error)
+            folded = marker.casefold()
+            if (
+                binding.cleanup_status == "saved_com_disconnected_after_generation"
+                or "没有连接到服务器" in marker
+                or "-2147220995" in marker
+                or "objnotconnected" in folded
+                or "disconnected" in folded
+                or "com_error" in folded
+                or "ComSessionDisconnected" in marker
+            ):
+                binding.cleanup_disconnect = binding.cleanup_disconnect or marker
+                binding.cleanup_error = None
+                binding.cleanup_status = "saved_com_disconnected_after_generation"
+                import logging
+                logging.getLogger(__name__).warning(
+                    "saved part kept after cleanup GetProcessID disconnect: %s",
+                    binding.cleanup_disconnect,
+                )
         if binding.cleanup_error and not body_failed:
             import logging
             logging.getLogger(__name__).error(

@@ -292,3 +292,10 @@
 - 本轮：`OwnedBinding.validate` 在 `CO_E_OBJNOTCONNECTED` 时按本任务 PID 重绑一次；重绑到的进程必须是同一个 PID。重绑失败且零件已保存时，流水线状态是 `partial_com_disconnect`（带 `warning`，`generation` 里仍有路径和 K），不是 `failed`，不删 SLDPRT，不调用 ExitApp。`finish_owned_session` 只 CloseDoc，源码里不再调用 `exit_owned_application`。断连后记 `cleanup_disconnect` 警告并离开上下文。没有零件文件的断连仍然失败并清暂存。
 - 板/支架切除仍走 `solid_blind_cut`（`NormalCut=False`，深度是 double）。钣金孔仍走 `sheet_metal_through_cut`（`NormalCut=True`）。轴保存后同样先重绑；文件已在磁盘时，收尾断连只记警告，不把返回值盖成异常。
 - 离线：`python3 work/run_cloud_tests.py` → 537 ran / 533 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。实机判据：同一张 DXF 再跑时，若零件和 K 已写出，随后断连的 `status` 应为 `partial_com_disconnect`，`generation.k_factor_readback` 仍是 0.36，清理不抛 `owned session cleanup failed`，且不调用 ExitApp。这仍不是实机通过。
+
+## P0-DDD-24e79dd：GetProcessID 裸 com_error 不得整单 failed
+
+- 证据是 DDD 在 `24e79dd` 上清场单实例复测。`part.SLDPRT` 78892 bytes，`SM3dBend` created，`k_factor_readback=0.36`，bend completed。随后 `binding.validate` / cleanup 的 `GetProcessID` 抛裸 `pywintypes.com_error (-2147220995, '对象没有连接到服务器', None, None)`。`execution.status=failed`，`error_kind=com_error`，`cleanup_status=left_open_for_recovery`，进程 exit 1。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 本轮：`GetProcessID` 与 `validate` 把 `CO_E_OBJNOTCONNECTED`（含 excepinfo 里的 HRESULT）收成 `ComSessionDisconnected`，不再把裸元组写进 `error` / `error_kind`。零件已在磁盘（或 SaveAs 之后 `stat` 被锁、但 `generation_saved` 已置位）时，流水线状态是 `saved_com_disconnected_after_generation`，`exit_code=0`，`generation` 仍带 K。不调用 `abort`，不删 staging。`finish_owned_session` 把这次清理记为同一状态和 `cleanup_disconnect`，`cleanup_error` 留空，上下文不抛。CLI `execution_exit_code` 对这个状态返回 0，不是 1。没有零件文件的断连仍然是 `failed`。
+- 离线：`python3 work/run_cloud_tests.py` → 541 ran / 537 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：同一张 `synthetic-s2-100x80.dxf`（t=2.5，r=1，k=0.36）。若零件和 K 已写出，随后 `GetProcessID` 断连的 `status` 应为 `saved_com_disconnected_after_generation`，`error_kind` 不是 `com_error`，`generation.k_factor_readback` 仍是 0.36，清理不抛 `owned session cleanup failed`，进程 exit 0。`passed` 与 `sw_live_verified` 仍为 false。这仍不是实机通过。

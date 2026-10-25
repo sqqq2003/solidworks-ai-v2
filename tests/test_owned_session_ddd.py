@@ -154,12 +154,49 @@ class DddOwnedSessionTests(unittest.TestCase):
             finish_owned_session(lease, binding)
             self.assertEqual(app.exit_calls, 0)
             self.assertIsNone(binding.cleanup_error)
-            self.assertEqual(binding.cleanup_status, "left_open_keepalive")
+            self.assertEqual(binding.cleanup_status, "saved_com_disconnected_after_generation")
             self.assertIn("ExitApp was not called", binding.cleanup_disconnect)
             self.assertEqual(binding.rebind_attempted, True)
             self.assertEqual(calls["n"], 1)
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-saved-disconnect")
+
+    def test_raw_com_error_on_getprocessid_is_not_a_bare_tuple(self):
+        class com_error(Exception):
+            pass
+
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+
+            def dead(_app):
+                raise com_error(-2147220995, "对象没有连接到服务器", None, None)
+
+            binding.read_pid = dead
+            with self.assertRaises(ComSessionDisconnected) as caught:
+                sw_session.require_model_write(lease)
+            self.assertEqual(type(caught.exception).__name__, "ComSessionDisconnected")
+            self.assertNotIn("(-2147220995", str(caught.exception))
+            self.assertIn("ExitApp was not called", str(caught.exception))
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-normalize-com-error")
+
+    def test_excepinfo_objnotconnected_is_a_disconnect(self):
+        class com_error(Exception):
+            pass
+
+        exc = com_error(
+            -2147352567,
+            "Exception occurred.",
+            (0, "SldWorks", "CO_E_OBJNOTCONNECTED", None, 0, -2147220995),
+            None,
+        )
+        self.assertTrue(sw_session.is_com_server_disconnect(exc))
+        normalized = sw_session.normalize_com_disconnect(exc)
+        self.assertIsInstance(normalized, ComSessionDisconnected)
+        self.assertNotIn("(-2147352567", str(normalized))
 
     def test_one_pid_rebind_restores_the_owned_application(self):
         def job():
