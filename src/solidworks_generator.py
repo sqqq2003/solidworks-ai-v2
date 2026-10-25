@@ -5038,6 +5038,8 @@ def generate_sheet_metal(
                 f"SolidWorks 未能保存有效的 SLDPRT 文件（错误代码：{save_errors}）。"
             )
         saved = True
+        if lease is not None:
+            lease.generation_saved = True
         logger.info("钣金零件已保存：%s", output)
         from part_verification import PostSaveComDisconnect, rebind_model_after_save
 

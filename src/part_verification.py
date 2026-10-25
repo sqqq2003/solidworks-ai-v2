@@ -50,7 +50,11 @@ def disconnect_after_saved_product(error, product) -> bool:
 def saved_generation_after_disconnect(generation, error):
     """Keep a finished save visible. This is not a SolidWorks live pass."""
     return {
-        "status": "saved_com_disconnected_after_generation",
+        "status": "partial_com_disconnect",
+        "warning": (
+            "owned COM server disconnected after the part was saved; "
+            "ExitApp was not called"
+        ),
         "modeling": "saved_pending_reopen",
         "native_acceptance": "pending_windows_validation",
         "sw_live_verified": False,

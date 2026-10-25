@@ -112,6 +112,7 @@ class SessionLease:
     native_launch: Any = None
     native_launch_attempt: Any = None
     keep_application_open: bool = False
+    generation_saved: bool = False
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)
@@ -1031,7 +1032,11 @@ def release_task_documents(
             logger.exception("failed to close owned document %r", active_title)
     if lease.disconnected:
         return
-    if lease.verified_exclusive and not lease.keep_application_open:
+    if (
+        lease.verified_exclusive
+        and not lease.keep_application_open
+        and not lease.generation_saved
+    ):
         try:
             exit_owned_application(lease, app)
         except SessionOwnershipError:

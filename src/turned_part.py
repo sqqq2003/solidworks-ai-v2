@@ -908,6 +908,8 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         )
         assert_native_save(output, errors)
         saved = True
+        if lease is not None:
+            lease.generation_saved = True
 
         def _active_model(app):
             raw = sw._com_read(app, "ActiveDoc")
@@ -924,7 +926,14 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
             )
         except PostSaveComDisconnect as error:
             post_save_error = error
-            raise
+            if not output.is_file() or output.stat().st_size == 0:
+                raise
+            import logging
+            logging.getLogger(__name__).warning(
+                "post-save rebind disconnected; keeping %s; ExitApp was not called: %s",
+                output,
+                error,
+            )
         if (
             lease is not None
             and document_title
@@ -955,11 +964,12 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                 lease.keep_application_open = keep_previous
             if com_initialized:
                 pythoncom.CoUninitialize()
-        if saved and post_save_error is None and lease is not None and lease.disconnected:
-            from part_verification import PostSaveComDisconnect
-            raise PostSaveComDisconnect(
-                "COM disconnected after save while closing the owned document; "
-                "not a modeling pass; ExitApp was not called"
+        if saved and lease is not None and (post_save_error is not None or lease.disconnected):
+            import logging
+            logging.getLogger(__name__).warning(
+                "COM disconnected after the turned part was saved; "
+                "keeping %s; ExitApp was not called",
+                output,
             )
 
 

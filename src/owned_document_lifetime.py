@@ -160,125 +160,69 @@ def _open_titles(binding) -> list[str]:
     return [str(title) for title in (raw or []) if str(title).strip()]
 
 
-def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
-    """Finish a proved spawn without requiring ExitApp.
+def _warn_and_leave(binding, exc):
+    """Disconnect after save or during keep-alive. Do not raise and do not ExitApp."""
+    binding.cleanup_status = "left_open_keepalive"
+    binding.cleanup_error = None
+    binding.cleanup_disconnect = type(exc).__name__ + ": " + str(exc)
+    logger.warning(
+        "COM disconnect during CloseDoc keep-alive; left the owned process open: %s",
+        binding.cleanup_disconnect,
+    )
 
-    Keep-alive (CloseDoc only) is success. When ExitApp is requested, wait
-    ``exit_poll_seconds`` and treat exit code 0 as success. A still-running
-    process with an empty document list is left open and is not a probe failure.
-    Nonzero exits stay failures. Foreign documents stay failures.
+
+def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
+    """Close documents this task owns. Never call ExitApp.
+
+    A COM disconnect is probed once via the owned PID. If that rebind fails
+    and a part was already saved, or the session is keep-alive, the context
+    ends with a warning. The caller's generation result stays intact.
     """
     from sw_session import (
+        ComSessionDisconnected,
         SessionOwnershipError,
-        _exception_is_disconnect,
-        exit_owned_application,
-        require_model_write,
+        close_owned_document,
+        is_com_server_disconnect,
     )
 
     if exit_poll_seconds is None:
         exit_poll_seconds = DEFAULT_EXIT_POLL_SECONDS
-    exit_requested = False
+    # Cleanup does not call ExitApp. The argument remains so older callers
+    # still import; a nonzero code already on the process is reported below.
+    _ = exit_poll_seconds
+    code = poll_exit(binding)
+    if type(code) is int and code != 0:
+        binding.cleanup_status = "process_exit_failed"
+        binding.cleanup_error = "owned process exited abnormally: " + str(code)
+        return
+    if type(code) is int and code == 0:
+        binding.cleanup_status = "process_exited_cleanly"
+        binding.cleanup_error = None
+        return
     try:
         binding.validate(lease)
-        require_model_write(lease)
-        if lease.keep_application_open:
-            foreign = [title for title in _open_titles(binding) if title not in lease.owned_docs]
-            if foreign:
-                raise SessionOwnershipError(
-                    "unowned documents remain; preserve session: " + ", ".join(foreign)
-                )
-            binding.cleanup_status = "left_open_keepalive"
-            binding.cleanup_error = None
-            logger.info(
-                "owned session left open after CloseDoc; ExitApp not required pid=%s",
-                getattr(lease, "spawned_pid", None),
-            )
-            return
-        titles = set(_open_titles(binding))
-        anchor = getattr(lease, "keepalive_document_title", None)
-        extra = titles - ({anchor} if anchor else set())
-        if extra:
+        foreign = [title for title in _open_titles(binding) if title not in lease.owned_docs]
+        if foreign:
             raise SessionOwnershipError(
-                "task/foreign documents remain; no final cleanup or ExitApp"
+                "unowned documents remain; preserve session: " + ", ".join(foreign)
             )
-        if anchor:
-            if anchor not in titles or anchor not in lease.owned_docs:
-                raise SessionOwnershipError("keepalive document ownership/inventory differs")
-            from sw_session import close_owned_document
-
-            close_owned_document(lease, binding.app, anchor)
-            lease.keepalive_document_title = None
-            binding.anchor_closed = True
-            code = poll_exit(binding)
-            if code is not None:
-                if type(code) is not int or code != 0:
-                    raise RuntimeError(
-                        "owned process exited abnormally after anchor close: " + str(code)
-                    )
-                binding.cleanup_status = "process_exited_cleanly"
-                binding.cleanup_error = None
-                return
-        binding.validate(lease)
-        require_model_write(lease)
-        if _open_titles(binding):
-            raise SessionOwnershipError("documents remain; ExitApp refused")
-        code = poll_exit(binding)
-        if type(code) is int:
-            if code != 0:
-                raise RuntimeError("owned process exited abnormally: " + str(code))
-            binding.cleanup_status = "process_exited_cleanly"
-            binding.cleanup_error = None
-            return
-        exit_owned_application(lease, binding.app)
-        exit_requested = True
-        binding.cleanup_status = "exit_requested"
-        code = poll_exit(binding, timeout=exit_poll_seconds)
-        if type(code) is int:
-            if code != 0:
-                raise RuntimeError("owned process exited abnormally: " + str(code))
-            binding.cleanup_status = "process_exited_cleanly"
-            binding.cleanup_error = None
-            return
-        # Exit was requested but not observed yet. An empty inventory is the
-        # DDD keep-open case: the process can finish exiting after this call.
-        try:
-            still_open = _open_titles(binding)
-        except Exception:
-            still_open = ["<unlisted>"]
-        if not still_open:
-            binding.cleanup_status = "left_open_for_recovery"
-            binding.cleanup_error = None
-            logger.info(
-                "ExitApp exit code still unobserved; empty inventory is not a probe failure"
-            )
-            return
-        binding.cleanup_status = "left_open_for_recovery"
-        binding.cleanup_error = (
-            "owned process exit remains unobserved after exit request; preserve session"
+        for title in [name for name in list(lease.owned_docs) if name in set(_open_titles(binding))]:
+            close_owned_document(lease, binding.app, title)
+        binding.cleanup_status = "left_open_keepalive"
+        binding.cleanup_error = None
+        logger.info(
+            "owned session left open after CloseDoc; ExitApp was not called pid=%s",
+            getattr(lease, "spawned_pid", None),
         )
     except Exception as exc:
-        from sw_session import ComSessionDisconnected, is_com_server_disconnect
-        if lease.keep_application_open and (
-            isinstance(exc, ComSessionDisconnected) or is_com_server_disconnect(exc)
-        ):
-            # CloseDoc / keep-alive lost the proxy after the body finished.
-            # Leave the process alone. The caller keeps any saved part.
-            binding.cleanup_status = "left_open_keepalive"
-            binding.cleanup_error = None
-            binding.cleanup_disconnect = type(exc).__name__ + ": " + str(exc)
-            logger.info(
-                "COM disconnect during keep-alive; ExitApp was not called pid=%s",
-                getattr(lease, "spawned_pid", None),
-            )
+        disconnected = isinstance(exc, ComSessionDisconnected) or is_com_server_disconnect(exc)
+        if disconnected and not binding.rebind_attempted:
+            binding.rebind_owned_pid(lease)
+        saved = bool(getattr(lease, "generation_saved", False))
+        if disconnected and (saved or lease.keep_application_open):
+            _warn_and_leave(binding, exc)
             return
-        code = poll_exit(binding, timeout=exit_poll_seconds if exit_requested else 0)
-        if type(code) is int and code == 0 and (exit_requested or _exception_is_disconnect(exc)):
-            binding.cleanup_status = "process_exited_cleanly"
-            binding.cleanup_error = None
-            return
-        binding.cleanup_status = (
-            "left_open_for_recovery" if code is None else "process_exit_failed"
-        )
+        binding.cleanup_status = "left_open_for_recovery"
         binding.cleanup_error = type(exc).__name__ + ": " + str(exc)
 
 

@@ -284,3 +284,11 @@
 - 原因：保存之后的 CloseDoc / 保活再去 `require_model_write`，COM 代理已经断了。任务 STA 上再套一层 `CoUninitialize` 会把已经初始化的套间计数减掉。保存后的 `IModelDoc2` 也没有先换成 `ActiveDoc`。会话收尾把这次断连当成清理失败抛出，把已经成功的生成盖掉。
 - 本轮：钣金 `SaveAs3` 之后先 `rebind_model_after_save`。任务 STA 已初始化时，生成、重开、展开导出不再套 `CoUninitialize`。零件文件已经在磁盘上时，随后的 CloseDoc / 保活断连记为 `saved_com_disconnected_after_generation`（`modeling=saved_pending_reopen`，`passed=false`，`sw_live_verified=false`），不删零件，不调用 `abort`，不要求 ExitApp。保活清理遇到同一条断连时 `cleanup_error` 留空，证据放在 `cleanup_disconnect`，进程保持打开。没有零件文件的断连仍然是 `failed` 并清掉暂存。轴路径原来的「断连不是通过」不变。
 - 离线：`python3 work/run_cloud_tests.py` → 536 ran / 532 passed / 0 failures / 0 errors / 4 skipped（仍是原来的 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。
+
+## P0-DDD-1265353：生成已成功时，收尾断连不得整单 failed
+
+- 证据仍是 DDD 在 `1265353` 上的那次实机。owned spawn 通过。钣金 `synthetic-s2-100x80.dxf` 已写出 `part.SLDPRT`，折弯 `completed`，`k_factor_readback=0.36`。执行末尾仍是 `failed` / `ComSessionDisconnected: owned COM server disconnected; writes refused; ExitApp was not called`。`sw_live_verified=false`。`native_acceptance` 仍是 `pending_windows_validation`。这次云端修改不是实机通过。
+- 断连发生在生成返回之后。S2 重开和 `abort` 都再调 `require_model_write`，对已经死去的 IDispatch 调 `GetProcessID`。清理再把同一条异常抛成总失败。
+- 本轮：`OwnedBinding.validate` 在 `CO_E_OBJNOTCONNECTED` 时按本任务 PID 重绑一次；重绑到的进程必须是同一个 PID。重绑失败且零件已保存时，流水线状态是 `partial_com_disconnect`（带 `warning`，`generation` 里仍有路径和 K），不是 `failed`，不删 SLDPRT，不调用 ExitApp。`finish_owned_session` 只 CloseDoc，源码里不再调用 `exit_owned_application`。断连后记 `cleanup_disconnect` 警告并离开上下文。没有零件文件的断连仍然失败并清暂存。
+- 板/支架切除仍走 `solid_blind_cut`（`NormalCut=False`，深度是 double）。钣金孔仍走 `sheet_metal_through_cut`（`NormalCut=True`）。轴保存后同样先重绑；文件已在磁盘时，收尾断连只记警告，不把返回值盖成异常。
+- 离线：`python3 work/run_cloud_tests.py` → 537 ran / 533 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。实机判据：同一张 DXF 再跑时，若零件和 K 已写出，随后断连的 `status` 应为 `partial_com_disconnect`，`generation.k_factor_readback` 仍是 0.36，清理不抛 `owned session cleanup failed`，且不调用 ExitApp。这仍不是实机通过。

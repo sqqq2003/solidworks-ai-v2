@@ -86,21 +86,56 @@ class OwnedBinding:
         self.keepalive_verified = False
         self.anchor_created = False
         self.anchor_closed = False
+        self.rediscover = None
+        self.rebind_attempted = False
+
+    def _read_connection(self):
+        image_ok = self.lifetime.probe(self.lifetime.pid) is not None
+        return image_ok, self.read_pid(self.app)
+
+    def rebind_owned_pid(self, lease):
+        """One rediscovery of this task's PID. A dead IDispatch is not a new process."""
+        if self.rebind_attempted:
+            return False
+        self.rebind_attempted = True
+        discover = self.rediscover
+        if discover is None or self.lifetime.probe(self.lifetime.pid) is None:
+            return False
+        try:
+            app = discover(self.lifetime.pid)
+            if app is None or self.read_pid(app) != self.lifetime.pid:
+                return False
+        except Exception:
+            return False
+        self.app = app
+        lease.note_bound_application(app)
+        lease.disconnected = False
+        lease.writes_blocked = False
+        if not lease.poisoned and not lease.timed_out:
+            lease.verified_exclusive = True
+        return True
 
     def validate(self, lease, *, documents=True):
         from sw_session import ComSessionDisconnected, is_com_server_disconnect
         try:
-            image_ok = self.lifetime.probe(self.lifetime.pid) is not None
-            com_pid = self.read_pid(self.app)
+            image_ok, com_pid = self._read_connection()
         except Exception as exc:
-            if is_com_server_disconnect(exc):
+            if is_com_server_disconnect(exc) and self.rebind_owned_pid(lease):
+                try:
+                    image_ok, com_pid = self._read_connection()
+                except Exception as again:
+                    exc = again
+                else:
+                    exc = None
+            if exc is not None and is_com_server_disconnect(exc):
                 lease.verified_exclusive = False
                 lease.writes_blocked = True
                 lease.disconnected = True
                 raise ComSessionDisconnected(
                     'owned COM server disconnected; writes refused; ExitApp was not called'
                 ) from exc
-            raise
+            if exc is not None:
+                raise
         if not image_ok or com_pid != self.lifetime.pid:
             lease.verified_exclusive = False
             lease.writes_blocked = True
@@ -111,14 +146,21 @@ class OwnedBinding:
                 # Default blanks (零件N / PartN) are adopted and closed here.
                 titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
             except Exception as exc:
-                lease.writes_blocked = True
-                if is_com_server_disconnect(exc):
-                    lease.verified_exclusive = False
-                    lease.disconnected = True
-                    raise ComSessionDisconnected(
-                        'owned COM server disconnected while listing documents; ExitApp was not called'
-                    ) from exc
-                raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
+                if is_com_server_disconnect(exc) and self.rebind_owned_pid(lease):
+                    try:
+                        titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
+                        exc = None
+                    except Exception as again:
+                        exc = again
+                if exc is not None:
+                    lease.writes_blocked = True
+                    if is_com_server_disconnect(exc):
+                        lease.verified_exclusive = False
+                        lease.disconnected = True
+                        raise ComSessionDisconnected(
+                            'owned COM server disconnected while listing documents; ExitApp was not called'
+                        ) from exc
+                    raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
             foreign = titles - set(lease.owned_docs)
             if foreign:
                 lease.foreign_titles.update(foreign)
@@ -148,7 +190,8 @@ class OwnedBinding:
                 'keepalive_verified': self.keepalive_verified}
 
 
-def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump=None):
+def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump=None,
+        rediscover=None):
     """Injectable proof logic; must run under the real task STA/OS writer lock."""
     lease = current_lease()
     if lease is None or not on_task_sta():
@@ -172,6 +215,7 @@ def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump
             if unowned:
                 raise SessionOwnershipError('new process contains unowned documents; no writes allowed')
             binding = OwnedBinding(lifetime, app, read_pid, list_titles)
+            binding.rediscover = rediscover
             lease.attached_existing = False
             lease.created_by_task = True
             lease.shared_com_bound = True
@@ -210,7 +254,8 @@ def owned_solidworks(executable, *, timeout=90):
     lease.native_launch_attempt = lifetime  # Keep the lifetime handle even on failed proof.
     try:
         binding = bind_spawned(lifetime, _native_candidate, _read_pid,
-            _list_open_document_titles, timeout=timeout, pump=pythoncom.PumpWaitingMessages)
+            _list_open_document_titles, timeout=timeout, pump=pythoncom.PumpWaitingMessages,
+            rediscover=_native_candidate)
     except Exception as exc:
         lease.writes_blocked = True
         raise SessionOwnershipError(f"spawned PID {lifetime.pid} is unproven and left open: {exc}") from exc
@@ -221,9 +266,8 @@ def owned_solidworks(executable, *, timeout=90):
         body_failed = True
         raise
     finally:
-        # Keep-alive stays on. ExitApp is not required for a proved spawn.
-        # finish_owned_session polls a real ExitApp long enough to see code 0,
-        # and an empty left-open session does not fail the probe.
+        # CloseDoc only. finish_owned_session does not call ExitApp. A disconnect
+        # after a saved part is a warning, not a failed session.
         from owned_document_lifetime import finish_owned_session, release_closed_session_references
         finish_owned_session(lease, binding)
         release_closed_session_references(lease, binding)

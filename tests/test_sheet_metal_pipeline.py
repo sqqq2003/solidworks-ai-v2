@@ -141,7 +141,8 @@ class PipelineTests(unittest.TestCase):
                 raise AssertionError("saved part must stay after a post-generation disconnect")
 
         report = run_plan(self.analysis, self.plan(), self.root / "out", SavedThenDisconnect())
-        self.assertEqual(report["status"], "saved_com_disconnected_after_generation")
+        self.assertEqual(report["status"], "partial_com_disconnect")
+        self.assertNotEqual(report["status"], "failed")
         self.assertFalse(report["sw_live_verified"])
         self.assertFalse(report["passed"])
         self.assertFalse(report["exit_app"])

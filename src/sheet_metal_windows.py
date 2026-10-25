@@ -20,6 +20,13 @@ class WindowsSheetMetalPort:
         self.allow_relief_retries = bool(allow_relief_retries)
 
     def guard(self):
+        """Probe the owned application before Open, Save, Close, or readback.
+
+        ``require_model_write`` calls ``GetProcessID`` on the bound IDispatch.
+        ``CO_E_OBJNOTCONNECTED`` rediscovers that same PID once. If the process
+        is gone and a part was already saved, the pipeline records
+        ``partial_com_disconnect`` instead of failing the whole job.
+        """
         if sys.platform != 'win32':
             raise RuntimeError('SolidWorks native execution requires Windows')
         from sw_session import require_model_write
