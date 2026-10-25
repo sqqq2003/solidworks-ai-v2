@@ -1,0 +1,15 @@
+{
+  "tree_version": "feature-tree/1",
+  "name": "stepped shaft (geometry-IR revolve example)",
+  "units": "mm",
+  "features": [
+    {"id": "sketch-1", "type": "sketch", "depends_on": [],
+     "params": {"points": [[0, 0], [0, 10], [20, 10], [20, 20], [40, 20], [40, 0]]},
+     "sources": [], "status": "confirmed", "pending_reasons": []},
+    {"id": "revolve-1", "type": "revolve", "depends_on": ["sketch-1"],
+     "params": {"profile_sketch": "sketch-1",
+                "axis": {"origin": [0, 0], "direction": [1, 0]},
+                "angle_degrees": 360.0},
+     "sources": [], "status": "confirmed", "pending_reasons": []}
+  ]
+}
