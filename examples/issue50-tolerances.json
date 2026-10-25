@@ -1,0 +1,45 @@
+{
+  "datum": "bearing_fit_axis",
+  "dimensions": [
+    {
+      "id": "hole",
+      "datum": "bearing_fit_axis",
+      "value": 20,
+      "unit": "mm",
+      "source": "synthetic engineering example",
+      "tolerance": {
+        "lower": 0.01,
+        "upper": 0.03,
+        "unit": "mm",
+        "source": "synthetic specified tolerance"
+      }
+    },
+    {
+      "id": "shaft",
+      "datum": "bearing_fit_axis",
+      "value": 20,
+      "unit": "mm",
+      "source": "synthetic engineering example",
+      "tolerance": {
+        "lower": -0.02,
+        "upper": -0.01,
+        "unit": "mm",
+        "source": "synthetic specified tolerance"
+      }
+    }
+  ],
+  "terms": [
+    {
+      "dimension": "hole",
+      "direction": 1
+    },
+    {
+      "dimension": "shaft",
+      "direction": -1
+    }
+  ],
+  "required_interval_mm": [
+    0.02,
+    0.05
+  ]
+}

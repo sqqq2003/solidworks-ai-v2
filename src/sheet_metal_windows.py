@@ -46,10 +46,10 @@ class WindowsSheetMetalPort:
         lease = self.guard()
         import pythoncom
         import win32com.client
-        from sw_session import close_owned_document, require_model_write
+        from sw_session import close_owned_document, require_model_write, initialize_com_scope
         from solidworks_generator import (_connect_task_solidworks, ensure_solidworks_typelib,
             _as_interface, _features, _com_read)
-        pythoncom.CoInitialize()
+        local_com_initialized=initialize_com_scope(pythoncom,lease)
         _started = time.monotonic()
         _owned_before = list(lease.owned_docs)
         app = None
@@ -142,17 +142,19 @@ class WindowsSheetMetalPort:
                 if opened is not None:
                     order.append('release:opened')
                 custom = data = definition = None
+                feature = None
                 features = []
                 model = raw_model = opened = None
+                raw = None
                 gc.collect()
-                order.append('uninitialize')
+                order.append('uninitialize' if local_com_initialized else 'task_sta_com_retained')
                 assert_release_order(order)
                 logger.info('teardown S5 com_release order=%s owned_docs_before=%s '
                             'owned_docs_after=%s pid=%s elapsed_ms=%s',
                             order, _owned_before, list(lease.owned_docs),
                             lease.spawned_pid,
                             int((time.monotonic() - _started) * 1000))
-                pythoncom.CoUninitialize()
+                if local_com_initialized:pythoncom.CoUninitialize()
 
     def export_flat(self, part, dxf):
         self.guard()
@@ -205,4 +207,5 @@ def measure_folded_and_flat(model, module):
                 'flat_bounds': flat, 'axes': 'model_axes', 'saved': False}
     finally:
         set_flat(not suppressed)
+
 

@@ -24,3 +24,10 @@ python work/project.py batch runtime/whole-project-smoke/jobs.json
 装配配合/干涉/运动、原生工程图目前仍有骨架或未实现部分，工作台如实显示。36项原始pending特征合约不计通过；重开尺寸验证也不等于机械验收。
 
 源码测试包可用 work/prepare_test_handoff.py 创建，校验入口为 work/verify_test_handoff.py。不包含客户CAD、凭据、原生产程序和原生实机通过承诺。请在独立目录测试，不自动覆盖用户D盘程序。
+
+
+## 统一离线集成候选
+
+`python work/project.py release examples/unified-project.json --out <新目录>`
+
+统一入口、复现测试、来源版本及实机边界见 [docs/unified-integration.md](docs/unified-integration.md)。本候选未代表Windows/SolidWorks验收通过。

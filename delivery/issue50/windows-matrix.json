@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "native_status": "not_run",
+  "source_revision": "pin PR head before test; never reuse old pin evidence",
+  "checks": [
+    {
+      "id": "issue50-dimensions",
+      "priority": "P0",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py dimensions examples/issue50-dimensions.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-assembly",
+      "priority": "P0",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py assembly examples/issue50-assembly.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-changes",
+      "priority": "P0",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py changes examples/issue50-changes.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-tolerances",
+      "priority": "P0",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py tolerances examples/issue50-tolerances.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-review",
+      "priority": "P0",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py review examples/issue50-review.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-transmission",
+      "priority": "P1",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py transmission examples/issue50-transmission.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-weldments",
+      "priority": "P1",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py weldments examples/issue50-weldments.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-costs",
+      "priority": "P1",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py costs examples/issue50-costs.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-similarity",
+      "priority": "P1",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py similarity examples/issue50-similarity.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-change_report",
+      "priority": "P1",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py change_report examples/issue50-change_report.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-proposals",
+      "priority": "P2",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py proposals examples/issue50-proposals.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "issue50-instruction",
+      "priority": "P2",
+      "status": "not_run",
+      "entry": "python work/engineering_intelligence.py instruction examples/issue50-instruction.json",
+      "required_evidence": [
+        "actual Git SHA",
+        "actual input JSON/hash",
+        "result JSON/hash",
+        "independent engineering comparison"
+      ],
+      "native_scope": "requires_real_sample_review; offline CLI alone is insufficient"
+    },
+    {
+      "id": "native-roller-chain",
+      "priority": "P0",
+      "status": "not_run",
+      "requires": [
+        "real roller working copy",
+        "reviewed native bindings",
+        "named current approval",
+        "existing owned isolated port"
+      ],
+      "verify": [
+        "overall including both shaft ends=800 mm",
+        "shaft/shoulder/bearing geometry unchanged",
+        "derived_readback_required satisfied",
+        "feature tree and mates",
+        "rebuild/save/reopen",
+        "original hash unchanged",
+        "actual owned process exit0"
+      ],
+      "entry": "native_review.prepare_native_review then execute_native_review via existing owned host; no new COM session entry"
+    },
+    {
+      "id": "native-weldment-plan",
+      "priority": "P1",
+      "status": "not_run",
+      "verify": [
+        "compare cut lengths/allowances/kerf/material and member count to approved drawing",
+        "review weld procedure and joint references",
+        "implement/version-map structural member host separately before native execution"
+      ],
+      "limit": "this batch outputs feature plan only"
+    },
+    {
+      "id": "compatibility",
+      "priority": "P0",
+      "status": "not_run",
+      "verify": [
+        "existing PR45 mapping/catalogue/manufacturing workflows",
+        "existing QL assembly/mechanical/BOM contracts",
+        "PR48 integrity audit on explicitly normalized evidence",
+        "full offline regression separately from native pass"
+      ]
+    }
+  ],
+  "constraints": [
+    "continue #19/#24/#45 current acceptance first",
+    "no original CAD/program overwrite",
+    "no unknown process termination",
+    "single COM writer; isolate outputs",
+    "one evidence PR after batch"
+  ]
+}

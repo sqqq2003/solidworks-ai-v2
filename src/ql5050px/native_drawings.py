@@ -60,9 +60,12 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                         raise RuntimeError('projected view parent selection failed')
                     view = drawing.CreateUnfoldedViewAt3(x,y,0,False)
                 if view is None: raise RuntimeError('native view creation failed')
-                if item['kind']=='model' and task.get('configuration'):
-                    view.ReferencedConfiguration=task['configuration']
-                    if str(read_member(view,'ReferencedConfiguration'))!=task['configuration']:
+                if item['kind']=='model':
+                    configuration = assembly_receipt['documents'][task['node']]['configuration']
+                    if task.get('configuration') and task['configuration'] != configuration:
+                        raise ValueError('drawing task configuration conflicts with modified model receipt')
+                    view.ReferencedConfiguration = configuration
+                    if str(read_member(view,'ReferencedConfiguration')) != configuration:
                         raise RuntimeError('drawing model configuration readback mismatch')
                 views[item['id']] = view
                 drawing.ClearSelection2(True)

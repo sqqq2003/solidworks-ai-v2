@@ -1,0 +1,690 @@
+{
+  "modules": {
+    "dimensions": {
+      "dimensions": [
+        {
+          "id": "left",
+          "datum": "roller_axis_origin",
+          "role": "interface",
+          "minimum_mm": 1,
+          "value": 50,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        {
+          "id": "right",
+          "datum": "roller_axis_origin",
+          "role": "interface",
+          "minimum_mm": 1,
+          "value": 60,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        {
+          "id": "barrel",
+          "datum": "roller_axis_origin",
+          "role": "adjustable",
+          "minimum_mm": 1,
+          "value": 500,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        {
+          "id": "diameter",
+          "datum": "roller_axis_origin",
+          "role": "interface",
+          "minimum_mm": 1,
+          "value": 20,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        {
+          "id": "shoulder",
+          "datum": "roller_axis_origin",
+          "role": "interface",
+          "minimum_mm": 1,
+          "value": 5,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        {
+          "id": "bearing",
+          "datum": "roller_axis_origin",
+          "role": "interface",
+          "minimum_mm": 1,
+          "value": 20,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        {
+          "id": "overall",
+          "unit": "mm",
+          "datum": "roller_axis_origin",
+          "role": "adjustable",
+          "source": "explicit overall equation",
+          "terms": [
+            {
+              "dimension": "left",
+              "direction": 1
+            },
+            {
+              "dimension": "barrel",
+              "direction": 1
+            },
+            {
+              "dimension": "right",
+              "direction": 1
+            }
+          ],
+          "solve_for": "barrel"
+        }
+      ],
+      "targets": {
+        "overall": {
+          "value": 800,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        }
+      }
+    },
+    "assembly": {
+      "components": [
+        {
+          "id": "frame",
+          "fixed": true
+        },
+        {
+          "id": "roller",
+          "expected_dof": 1
+        }
+      ],
+      "mates": [
+        {
+          "id": "concentric",
+          "a": "frame",
+          "b": "roller",
+          "type": "concentric",
+          "moving": "roller"
+        },
+        {
+          "id": "axial",
+          "a": "frame",
+          "b": "roller",
+          "type": "distance",
+          "moving": "roller"
+        }
+      ],
+      "joints": [
+        {
+          "id": "lift",
+          "component": "roller",
+          "minimum": 0,
+          "maximum": 100,
+          "position": 20,
+          "unit": "mm",
+          "source": "synthetic travel"
+        }
+      ]
+    },
+    "changes": {
+      "before": [
+        {
+          "id": "roller",
+          "kind": "part",
+          "source": "isolated/roller.sldprt",
+          "revision": "A",
+          "depends_on": []
+        },
+        {
+          "id": "machine",
+          "kind": "assembly",
+          "source": "isolated/machine.sldasm",
+          "revision": "A",
+          "depends_on": [
+            "roller"
+          ]
+        },
+        {
+          "id": "drawing",
+          "kind": "drawing",
+          "source": "isolated/machine.slddrw",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        },
+        {
+          "id": "bom",
+          "kind": "bom",
+          "source": "bom.csv",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "roller",
+          "kind": "part",
+          "source": "isolated/roller.sldprt",
+          "revision": "B",
+          "depends_on": []
+        },
+        {
+          "id": "machine",
+          "kind": "assembly",
+          "source": "isolated/machine.sldasm",
+          "revision": "A",
+          "depends_on": [
+            "roller"
+          ]
+        },
+        {
+          "id": "drawing",
+          "kind": "drawing",
+          "source": "isolated/machine.slddrw",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        },
+        {
+          "id": "bom",
+          "kind": "bom",
+          "source": "bom.csv",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        }
+      ]
+    },
+    "tolerances": {
+      "datum": "bearing_fit_axis",
+      "dimensions": [
+        {
+          "id": "hole",
+          "datum": "bearing_fit_axis",
+          "value": 20,
+          "unit": "mm",
+          "source": "synthetic engineering example",
+          "tolerance": {
+            "lower": 0.01,
+            "upper": 0.03,
+            "unit": "mm",
+            "source": "synthetic specified tolerance"
+          }
+        },
+        {
+          "id": "shaft",
+          "datum": "bearing_fit_axis",
+          "value": 20,
+          "unit": "mm",
+          "source": "synthetic engineering example",
+          "tolerance": {
+            "lower": -0.02,
+            "upper": -0.01,
+            "unit": "mm",
+            "source": "synthetic specified tolerance"
+          }
+        }
+      ],
+      "terms": [
+        {
+          "dimension": "hole",
+          "direction": 1
+        },
+        {
+          "dimension": "shaft",
+          "direction": -1
+        }
+      ],
+      "required_interval_mm": [
+        0.02,
+        0.05
+      ]
+    },
+    "review": {
+      "scope": "roller_example",
+      "minimum_confidence": 0.9,
+      "values": {
+        "barrel": {
+          "value": 690,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        "minimum": {
+          "value": 200,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        }
+      },
+      "rules": [
+        {
+          "id": "barrel_min",
+          "left": "barrel",
+          "right": "minimum",
+          "op": "ge",
+          "unit": "mm",
+          "source": "synthetic design requirement",
+          "scope": "roller_example",
+          "confidence": 1,
+          "reviewed": true,
+          "suggestion": "review barrel target"
+        }
+      ]
+    },
+    "transmission": {
+      "inputs": {
+        "diameter": {
+          "value": 80,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        "speed": {
+          "value": 0.2,
+          "unit": "m/s",
+          "source": "synthetic engineering example"
+        },
+        "force": {
+          "value": 100,
+          "unit": "N",
+          "source": "synthetic engineering example"
+        },
+        "ratio": {
+          "value": 10,
+          "unit": "ratio",
+          "source": "synthetic engineering example"
+        },
+        "efficiency": {
+          "value": 0.8,
+          "unit": "ratio",
+          "source": "synthetic engineering example"
+        },
+        "safety": {
+          "value": 1.5,
+          "unit": "ratio",
+          "source": "synthetic engineering example"
+        }
+      }
+    },
+    "weldments": {
+      "kerf": {
+        "value": 3,
+        "unit": "mm",
+        "source": "synthetic engineering example"
+      },
+      "profiles": [
+        {
+          "id": "tube",
+          "source": "user synthetic profile table",
+          "revision": "A",
+          "material": "steel",
+          "area": {
+            "value": 300,
+            "unit": "mm^2",
+            "source": "synthetic engineering example"
+          },
+          "density": {
+            "value": 7850,
+            "unit": "kg/m^3",
+            "source": "synthetic engineering example"
+          },
+          "stock_length": {
+            "value": 6000,
+            "unit": "mm",
+            "source": "synthetic engineering example"
+          }
+        }
+      ],
+      "members": [
+        {
+          "id": "rail1",
+          "profile": "tube",
+          "start_mm": [
+            0,
+            0,
+            0
+          ],
+          "end_mm": [
+            1000,
+            0,
+            0
+          ],
+          "quantity": 2,
+          "end_allowance": {
+            "value": 1,
+            "unit": "mm",
+            "source": "synthetic engineering example"
+          },
+          "cut_type": "square",
+          "source": "synthetic frame"
+        },
+        {
+          "id": "rail2",
+          "profile": "tube",
+          "start_mm": [
+            0,
+            0,
+            0
+          ],
+          "end_mm": [
+            0,
+            500,
+            0
+          ],
+          "quantity": 2,
+          "end_allowance": {
+            "value": 1,
+            "unit": "mm",
+            "source": "synthetic engineering example"
+          },
+          "cut_type": "square",
+          "source": "synthetic frame"
+        }
+      ],
+      "connections": [
+        {
+          "id": "joint1",
+          "members": [
+            "rail1",
+            "rail2"
+          ],
+          "weld_spec": "pending welding engineer review",
+          "source": "synthetic connection"
+        }
+      ]
+    },
+    "costs": {
+      "currency": "CNY",
+      "as_of": "2026-10-25",
+      "exclusions": [
+        "tax",
+        "shipping"
+      ],
+      "items": [
+        {
+          "id": "steel",
+          "kind": "material",
+          "quantity": {
+            "value": 10,
+            "unit": "kg",
+            "source": "synthetic engineering example"
+          },
+          "quantity_unit": "kg",
+          "loss": {
+            "value": 0.1,
+            "unit": "ratio",
+            "source": "synthetic engineering example"
+          },
+          "quote": {
+            "value": 5,
+            "currency": "CNY",
+            "per_unit": "kg",
+            "source": "synthetic quote, not vendor pricing",
+            "date": "2026-10-25"
+          }
+        }
+      ]
+    },
+    "similarity": {
+      "dimension_tolerance_mm": 0.01,
+      "parts": [
+        {
+          "unit": "mm",
+          "source": "synthetic snapshot",
+          "dimensions": {
+            "length": 100,
+            "diameter": 20
+          },
+          "material": "steel",
+          "features": [
+            "extrude"
+          ],
+          "interfaces": [
+            "bearing20"
+          ],
+          "id": "a"
+        },
+        {
+          "unit": "mm",
+          "source": "synthetic snapshot",
+          "dimensions": {
+            "length": 100,
+            "diameter": 20
+          },
+          "material": "steel",
+          "features": [
+            "extrude"
+          ],
+          "interfaces": [
+            "bearing20"
+          ],
+          "id": "b"
+        }
+      ]
+    },
+    "change_report": {
+      "before": [
+        {
+          "id": "roller",
+          "kind": "part",
+          "source": "isolated/roller.sldprt",
+          "revision": "A",
+          "depends_on": []
+        },
+        {
+          "id": "machine",
+          "kind": "assembly",
+          "source": "isolated/machine.sldasm",
+          "revision": "A",
+          "depends_on": [
+            "roller"
+          ]
+        },
+        {
+          "id": "drawing",
+          "kind": "drawing",
+          "source": "isolated/machine.slddrw",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        },
+        {
+          "id": "bom",
+          "kind": "bom",
+          "source": "bom.csv",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "roller",
+          "kind": "part",
+          "source": "isolated/roller.sldprt",
+          "revision": "B",
+          "depends_on": []
+        },
+        {
+          "id": "machine",
+          "kind": "assembly",
+          "source": "isolated/machine.sldasm",
+          "revision": "A",
+          "depends_on": [
+            "roller"
+          ]
+        },
+        {
+          "id": "drawing",
+          "kind": "drawing",
+          "source": "isolated/machine.slddrw",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        },
+        {
+          "id": "bom",
+          "kind": "bom",
+          "source": "bom.csv",
+          "revision": "A",
+          "depends_on": [
+            "machine"
+          ]
+        }
+      ],
+      "evidence": [],
+      "parameter_differences": [
+        {
+          "parameter": "overall",
+          "before": 610,
+          "after": 800,
+          "unit": "mm"
+        }
+      ],
+      "validation_status": "review_required"
+    },
+    "proposals": {
+      "metrics": [
+        {
+          "id": "load",
+          "unit": "kg",
+          "weight": 1,
+          "preference": "max",
+          "source": "synthetic design comparison"
+        },
+        {
+          "id": "speed",
+          "unit": "m/s",
+          "weight": 1,
+          "preference": "max",
+          "source": "synthetic design comparison"
+        },
+        {
+          "id": "cost",
+          "unit": "CNY",
+          "weight": 1,
+          "preference": "min",
+          "source": "synthetic design comparison"
+        },
+        {
+          "id": "space",
+          "unit": "mm",
+          "weight": 1,
+          "preference": "min",
+          "source": "synthetic design comparison"
+        },
+        {
+          "id": "maintenance",
+          "unit": "h/year",
+          "weight": 1,
+          "preference": "min",
+          "source": "synthetic design comparison"
+        }
+      ],
+      "alternatives": [
+        {
+          "id": "gravity",
+          "kind": "gravity",
+          "metrics": {
+            "load": {
+              "value": 100,
+              "unit": "kg",
+              "source": "synthetic engineering example"
+            },
+            "speed": {
+              "value": 0.1,
+              "unit": "m/s",
+              "source": "synthetic engineering example"
+            },
+            "cost": {
+              "value": 1000,
+              "unit": "CNY",
+              "source": "synthetic engineering example"
+            },
+            "space": {
+              "value": 2000,
+              "unit": "mm",
+              "source": "synthetic engineering example"
+            },
+            "maintenance": {
+              "value": 2,
+              "unit": "h/year",
+              "source": "synthetic engineering example"
+            }
+          }
+        },
+        {
+          "id": "chain",
+          "kind": "chain",
+          "metrics": {
+            "load": {
+              "value": 100,
+              "unit": "kg",
+              "source": "synthetic engineering example"
+            },
+            "speed": {
+              "value": 0.3,
+              "unit": "m/s",
+              "source": "synthetic engineering example"
+            },
+            "cost": {
+              "value": 3000,
+              "unit": "CNY",
+              "source": "synthetic engineering example"
+            },
+            "space": {
+              "value": 2000,
+              "unit": "mm",
+              "source": "synthetic engineering example"
+            },
+            "maintenance": {
+              "value": 10,
+              "unit": "h/year",
+              "source": "synthetic engineering example"
+            }
+          }
+        },
+        {
+          "id": "belt",
+          "kind": "belt",
+          "metrics": {
+            "load": {
+              "value": 100,
+              "unit": "kg",
+              "source": "synthetic engineering example"
+            },
+            "speed": {
+              "value": 0.4,
+              "unit": "m/s",
+              "source": "synthetic engineering example"
+            },
+            "cost": {
+              "value": 3500,
+              "unit": "CNY",
+              "source": "synthetic engineering example"
+            },
+            "space": {
+              "value": 2000,
+              "unit": "mm",
+              "source": "synthetic engineering example"
+            },
+            "maintenance": {
+              "value": 5,
+              "unit": "h/year",
+              "source": "synthetic engineering example"
+            }
+          }
+        }
+      ]
+    },
+    "instruction": {
+      "text": "把这个滚筒总长度改成800 mm，轴径不变，两端安装结构不变。"
+    }
+  }
+}

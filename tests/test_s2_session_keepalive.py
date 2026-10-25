@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 import unittest
+import tempfile
+from types import SimpleNamespace
 from unittest.mock import patch
 import sw_session as session
 from sw_owned_launch import bind_spawned
@@ -24,6 +26,12 @@ class BackgroundApp:
         self.CommandInProgress=False
         self.docs=[]
         self.closed=[]
+    def GetUserPreferenceStringValue(self, preference):
+        return self.template
+    def NewDocument(self, template, *args):
+        title="owned-anchor.SLDPRT"
+        self.docs.append(title)
+        return SimpleNamespace(GetTitle=lambda:title,GetType=lambda:1)
     def ExitApp(self):
         self.lifetime.alive=False
     def CloseDoc(self,title):
@@ -41,6 +49,8 @@ class S2SessionKeepaliveTests(unittest.TestCase):
     def job(self,callback,app_class=BackgroundApp):
         def run():
             life=Lifetime(); app=app_class(life)
+            temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup)
+            template=Path(temp.name)/"part.prtdot";template.touch();app.template=str(template)
             binding=bind_spawned(life,lambda pid:app,lambda app:life.pid,lambda app:app.docs,timeout=1)
             lease=session.current_lease()
             app.docs.append('task.SLDPRT');lease.note_owned_document('task.SLDPRT')
@@ -55,7 +65,8 @@ class S2SessionKeepaliveTests(unittest.TestCase):
             self.assertIs(app.UserControl,True)
             self.assertIs(app.CommandInProgress,True)
             binding.reconnect(lease)  # same application, no active-object takeover
-            self.assertEqual(app.docs,[])
+            self.assertEqual(app.docs,[lease.keepalive_document_title])
+            self.assertTrue(binding.anchor_created)
         self.job(check)
 
     def test_close_reasserts_keepalive_if_another_owned_operation_reset_mode(self):

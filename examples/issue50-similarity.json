@@ -1,0 +1,37 @@
+{
+  "dimension_tolerance_mm": 0.01,
+  "parts": [
+    {
+      "unit": "mm",
+      "source": "synthetic snapshot",
+      "dimensions": {
+        "length": 100,
+        "diameter": 20
+      },
+      "material": "steel",
+      "features": [
+        "extrude"
+      ],
+      "interfaces": [
+        "bearing20"
+      ],
+      "id": "a"
+    },
+    {
+      "unit": "mm",
+      "source": "synthetic snapshot",
+      "dimensions": {
+        "length": 100,
+        "diameter": 20
+      },
+      "material": "steel",
+      "features": [
+        "extrude"
+      ],
+      "interfaces": [
+        "bearing20"
+      ],
+      "id": "b"
+    }
+  ]
+}

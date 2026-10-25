@@ -1,0 +1,86 @@
+[
+  {
+    "id": "MAP-01",
+    "case": "snapshot candidates, explicit SI kind, ambiguous and changed-report refusal",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "MAP-02",
+    "case": "GUI table selection, role/source/range confirmation, approval roundtrip",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "RULE-01",
+    "case": "protected interfaces, allowed ranges, unit checks and dependency impact",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "NATIVE-01",
+    "case": "owned isolated host port, reviewed targets, stale baseline refusal, saved/reopened protected readback",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "VERIFY-01",
+    "case": "native/offline evidence, numeric tolerances, file hashes, four states and actual process exit",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "PART-01",
+    "case": "catalogue category/rating/interface constraints, sourced selection and BOM identity",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "CALC-01",
+    "case": "formula inputs/units, assumptions and preliminary result boundaries",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "DRW-01",
+    "case": "revision/material mismatch, BOM quantities, process list and native linked drawing host",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "SHEET-01",
+    "case": "no per-job t/R/angle/K defaults, real flatten/DXF and manufacturing parameters",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "TEMPLATE-01",
+    "case": "parameter range/protected fields, unresolved values, module diff and existing assembly propagation",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "HISTORY-01",
+    "case": "capture hash consistency, manifest tamper, restore-new-only and untouched originals",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "CASE-01",
+    "case": "case grade/provenance/evidence hash and applicability-filtered nonautomatic retrieval",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "UI-01",
+    "case": "bounded Chinese input, unsupported requests, JSON loading and package export",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  },
+  {
+    "id": "PKG-01",
+    "case": "all module reports, continued offline work after module error and HANDOFF hashes",
+    "status": "not_run",
+    "native_validation": "pending_windows_validation"
+  }
+]

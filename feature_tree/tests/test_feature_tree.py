@@ -86,8 +86,11 @@ class TestOrderingAndRefusal(unittest.TestCase):
             _tree([_sketch(), _sketch()])
 
     def test_unknown_type_refused(self):
+        # "revolve" was the probe here until the completion batch made
+        # it a supported type; "sweep" is still unknown, so it keeps
+        # probing the same refusal.
         with self.assertRaises(UnknownTypeError):
-            _tree([{"id": "x", "type": "revolve", "params": {}}])
+            _tree([{"id": "x", "type": "sweep", "params": {}}])
 
     def test_units_must_be_explicit_mm(self):
         with self.assertRaises(Exception):

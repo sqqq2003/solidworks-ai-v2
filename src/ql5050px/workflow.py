@@ -8,7 +8,7 @@ from .parameters import build_plan
 from .assembly import inspect_assembly
 from .drawing_bom import build_bom, drawing_model, export_bom_csv, export_drawing_json
 
-ACTIONS = {'integrated','plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence'}
+ACTIONS = {'production_package','integrated','plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence','modeling_batch','modeling_delivery','cad_features'}
 
 
 @dataclass(frozen=True)
@@ -91,6 +91,20 @@ def native_mechanical_checks(document, request, port: NativeMechanicalPort):
 
 
 def run_workflow(action, config, *, output_dir=None, resume=False):
+    if action=='production_package':
+        if resume or output_dir is None:raise ValueError('production package requires a new output directory')
+        from .production import write_production_package
+        return write_production_package(config,output_dir)
+    if action=='cad_features':
+        from .cad_features import run_cad_features
+        return run_cad_features(config,output_dir)
+    if action=='modeling_delivery':
+        from .modeling_delivery import export_delivery
+        if not output_dir:raise ValueError('delivery requires a new output directory')
+        return export_delivery(config,output_dir)
+    if action=='modeling_batch':
+        from .staged_modeling import modeling_batch
+        return modeling_batch(config,output_dir)
     if action=='integrated':
         if resume: raise ValueError('integrated requires a new output directory')
         from .integrated import run_integrated
@@ -156,3 +170,4 @@ def run_workflow(action, config, *, output_dir=None, resume=False):
             json.dump(result,stream,ensure_ascii=False,indent=2,allow_nan=False)
         result['output_dir'] = str(folder)
     return result
+

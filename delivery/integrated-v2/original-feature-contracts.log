@@ -1,0 +1,43 @@
+Cannot create cache home directory: '/home/agent/.cache/ezdxf', cache files will not be saved.
+See also issue https://github.com/mozman/ezdxf/issues/923.
+test_border_hole_becomes_notch (test_border_relief_notch.BorderHoleToNotchTests.test_border_hole_becomes_notch) ... ok
+test_expansion_converts_border_hole_and_drops_it (test_border_relief_notch.BorderHoleToNotchTests.test_expansion_converts_border_hole_and_drops_it) ... ok
+test_interior_hole_not_converted (test_border_relief_notch.BorderHoleToNotchTests.test_interior_hole_not_converted) ... ok
+test_notch_grows_with_extra (test_border_relief_notch.BorderHoleToNotchTests.test_notch_grows_with_extra) ... ok
+test_partial_edge_touch_is_kept_as_hole (test_border_relief_notch.BorderHoleToNotchTests.test_partial_edge_touch_is_kept_as_hole) ... ok
+test_gap_to_border_is_stretched_into_notch (test_border_relief_notch.NearBorderHoleTests.test_gap_to_border_is_stretched_into_notch) ... ok
+test_intersection_in_panel_interior_still_adds_hole (test_border_relief_notch.NearBorderIntersectionTests.test_intersection_in_panel_interior_still_adds_hole) ... ok
+test_intersection_near_border_cuts_notch (test_border_relief_notch.NearBorderIntersectionTests.test_intersection_near_border_cuts_notch) ... ok
+test_border_notch_deepens_toward_panel (test_border_relief_notch.NotchDirectionTests.test_border_notch_deepens_toward_panel) ... ok
+test_arrow_head_triangle_is_artifact (test_spur_segments.ArtifactLoopTests.test_arrow_head_triangle_is_artifact) ... ok
+test_small_but_real_hole_is_kept (test_spur_segments.ArtifactLoopTests.test_small_but_real_hole_is_kept) ... ok
+test_three_mm_square_is_kept (test_spur_segments.ArtifactLoopTests.test_three_mm_square_is_kept) ... ok
+test_out_and_back_pair_is_removed (test_spur_segments.SpurSegmentTests.test_out_and_back_pair_is_removed) ... ok
+test_remaining_segments_stay_connected (test_spur_segments.SpurSegmentTests.test_remaining_segments_stay_connected) ... ok
+test_diameter_dimensions_become_radius_ladder (test_turned_part.DimensionLadderTests.test_diameter_dimensions_become_radius_ladder) ... ok
+test_only_along_axis_lengths_are_used (test_turned_part.DimensionLadderTests.test_only_along_axis_lengths_are_used) ... ok
+test_outlier_radius_is_dropped (test_turned_part.DimensionLadderTests.test_outlier_radius_is_dropped) ... ok
+test_lists_each_drawing_once (test_turned_part.FolderImportTests.test_lists_each_drawing_once) ... ok
+test_explicit_centerline_is_the_axis (test_turned_part.HalfProfileTests.test_explicit_centerline_is_the_axis) ... ok
+test_symmetry_keeps_upper_half (test_turned_part.HalfProfileTests.test_symmetry_keeps_upper_half) ... ok
+test_two_shafts_are_separate_parts (test_turned_part.OnePartExportTests.test_two_shafts_are_separate_parts) ... ok
+test_both_ends_are_stepped_three_millimetres (test_turned_part.SteppedEndThreadBoreTests.test_both_ends_are_stepped_three_millimetres) ... ok
+test_split_end_lines_are_not_a_through_bore (test_turned_part.SteppedEndThreadBoreTests.test_split_end_lines_are_not_a_through_bore) ... ok
+test_tap_drill_from_major_diameter (test_turned_part.SteppedEndThreadBoreTests.test_tap_drill_from_major_diameter) ... ok
+test_thread_hole_is_blind_with_drill_point (test_turned_part.SteppedEndThreadBoreTests.test_thread_hole_is_blind_with_drill_point) ... ok
+test_both_ends_keep_their_step (test_turned_part.SteppedShaftTests.test_both_ends_keep_their_step) ... ok
+test_profile_starts_and_ends_on_axis (test_turned_part.SteppedShaftTests.test_profile_starts_and_ends_on_axis) ... ok
+test_discovery_keeps_thread_bore (test_turned_part.ThreadSyncTests.test_discovery_keeps_thread_bore) ... ok
+test_plan_carries_bore_and_thread_geometry (test_turned_part.ThreadSyncTests.test_plan_carries_bore_and_thread_geometry) ... ok
+test_thread_depth_reads_note_or_falls_back_to_bore (test_turned_part.ThreadSyncTests.test_thread_depth_reads_note_or_falls_back_to_bore) ... ok
+test_world_point_maps_sketch_to_model_space (test_turned_part.ThreadSyncTests.test_world_point_maps_sketch_to_model_space) ... ok
+test_axis_comes_from_dimension_midpoints (test_turned_part.TubeBoreTests.test_axis_comes_from_dimension_midpoints) ... ok
+test_bore_is_detected_not_stepped (test_turned_part.TubeBoreTests.test_bore_is_detected_not_stepped) ... ok
+test_internal_thread_read_from_dimension (test_turned_part.TubeBoreTests.test_internal_thread_read_from_dimension) ... ok
+test_long_thin_section_is_not_mistaken_for_bore (test_turned_part.TubeBoreTests.test_long_thin_section_is_not_mistaken_for_bore) ... ok
+test_reads_thread_and_drill_depth (test_turned_part.TurnedNoteTests.test_reads_thread_and_drill_depth) ... ok
+
+----------------------------------------------------------------------
+Ran 36 tests in 0.060s
+
+OK
