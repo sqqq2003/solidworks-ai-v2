@@ -1,0 +1,30 @@
+{
+  "scope": "roller_example",
+  "minimum_confidence": 0.9,
+  "values": {
+    "barrel": {
+      "value": 690,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    "minimum": {
+      "value": 200,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    }
+  },
+  "rules": [
+    {
+      "id": "barrel_min",
+      "left": "barrel",
+      "right": "minimum",
+      "op": "ge",
+      "unit": "mm",
+      "source": "synthetic design requirement",
+      "scope": "roller_example",
+      "confidence": 1,
+      "reviewed": true,
+      "suggestion": "review barrel target"
+    }
+  ]
+}

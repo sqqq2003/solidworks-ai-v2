@@ -1,0 +1,74 @@
+{
+  "before": [
+    {
+      "id": "roller",
+      "kind": "part",
+      "source": "isolated/roller.sldprt",
+      "revision": "A",
+      "depends_on": []
+    },
+    {
+      "id": "machine",
+      "kind": "assembly",
+      "source": "isolated/machine.sldasm",
+      "revision": "A",
+      "depends_on": [
+        "roller"
+      ]
+    },
+    {
+      "id": "drawing",
+      "kind": "drawing",
+      "source": "isolated/machine.slddrw",
+      "revision": "A",
+      "depends_on": [
+        "machine"
+      ]
+    },
+    {
+      "id": "bom",
+      "kind": "bom",
+      "source": "bom.csv",
+      "revision": "A",
+      "depends_on": [
+        "machine"
+      ]
+    }
+  ],
+  "after": [
+    {
+      "id": "roller",
+      "kind": "part",
+      "source": "isolated/roller.sldprt",
+      "revision": "B",
+      "depends_on": []
+    },
+    {
+      "id": "machine",
+      "kind": "assembly",
+      "source": "isolated/machine.sldasm",
+      "revision": "A",
+      "depends_on": [
+        "roller"
+      ]
+    },
+    {
+      "id": "drawing",
+      "kind": "drawing",
+      "source": "isolated/machine.slddrw",
+      "revision": "A",
+      "depends_on": [
+        "machine"
+      ]
+    },
+    {
+      "id": "bom",
+      "kind": "bom",
+      "source": "bom.csv",
+      "revision": "A",
+      "depends_on": [
+        "machine"
+      ]
+    }
+  ]
+}

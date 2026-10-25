@@ -1,0 +1,79 @@
+{
+  "datum": "roller_axis_origin",
+  "dimensions": [
+    {
+      "id": "support_span",
+      "datum": "roller_axis_origin",
+      "value": 850,
+      "unit": "mm",
+      "source": "synthetic assembly dimension",
+      "tolerance": {
+        "lower": -0.1,
+        "upper": 0.1,
+        "unit": "mm",
+        "source": "synthetic specified manufacture tolerance"
+      }
+    },
+    {
+      "id": "barrel",
+      "datum": "roller_axis_origin",
+      "value": 690,
+      "unit": "mm",
+      "source": "synthetic assembly dimension",
+      "tolerance": {
+        "lower": -0.2,
+        "upper": 0.2,
+        "unit": "mm",
+        "source": "synthetic specified manufacture tolerance"
+      }
+    },
+    {
+      "id": "left",
+      "datum": "roller_axis_origin",
+      "value": 50,
+      "unit": "mm",
+      "source": "synthetic assembly dimension",
+      "tolerance": {
+        "lower": -0.02,
+        "upper": 0.02,
+        "unit": "mm",
+        "source": "synthetic specified manufacture tolerance"
+      }
+    },
+    {
+      "id": "right",
+      "datum": "roller_axis_origin",
+      "value": 60,
+      "unit": "mm",
+      "source": "synthetic assembly dimension",
+      "tolerance": {
+        "lower": -0.02,
+        "upper": 0.02,
+        "unit": "mm",
+        "source": "synthetic specified manufacture tolerance"
+      }
+    }
+  ],
+  "terms": [
+    {
+      "dimension": "support_span",
+      "direction": 1
+    },
+    {
+      "dimension": "barrel",
+      "direction": -1
+    },
+    {
+      "dimension": "left",
+      "direction": -1
+    },
+    {
+      "dimension": "right",
+      "direction": -1
+    }
+  ],
+  "required_interval_mm": [
+    49.5,
+    50.5
+  ]
+}

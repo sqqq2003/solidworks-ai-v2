@@ -1,0 +1,28 @@
+{
+  "parameters": {
+    "barrel_length": {
+      "role": "adjustable",
+      "unit": "mm",
+      "allowed_range": [
+        100,
+        1500
+      ],
+      "review_status": "confirmed",
+      "source": "synthetic fixture"
+    },
+    "shaft_diameter": {
+      "role": "interface",
+      "unit": "mm",
+      "review_status": "confirmed",
+      "source": "synthetic fixture"
+    }
+  },
+  "dependency_graph": {
+    "shaft_length": [
+      "barrel_length"
+    ],
+    "right_support": [
+      "shaft_length"
+    ]
+  }
+}
