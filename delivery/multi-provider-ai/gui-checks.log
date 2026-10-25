@@ -1,0 +1,13 @@
+test_api_reply_uses_worker_and_remains_advisory (test_desktop_ui.DesktopUITests.test_api_reply_uses_worker_and_remains_advisory) ... ok
+test_export_cannot_overwrite_existing_request (test_desktop_ui.DesktopUITests.test_export_cannot_overwrite_existing_request) ... ok
+test_input_changes_clear_confirmation (test_desktop_ui.DesktopUITests.test_input_changes_clear_confirmation) ... ok
+test_instruction_creates_review_only (test_desktop_ui.DesktopUITests.test_instruction_creates_review_only) ... ok
+test_native_result_does_not_discard_pending_queue (test_desktop_ui.DesktopUITests.test_native_result_does_not_discard_pending_queue) ... ok
+test_new_task_discards_late_api_reply (test_desktop_ui.DesktopUITests.test_new_task_discards_late_api_reply) ... ok
+test_provider_change_does_not_reuse_previous_key (test_desktop_ui.DesktopUITests.test_provider_change_does_not_reuse_previous_key) ... ok
+test_settings_drawer_and_relevant_parameters (test_desktop_ui.DesktopUITests.test_settings_drawer_and_relevant_parameters) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.922s
+
+OK

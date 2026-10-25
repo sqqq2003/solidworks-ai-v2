@@ -45,6 +45,7 @@ class DesktopUITests(unittest.TestCase):
     def test_native_result_does_not_discard_pending_queue(self):
         pending={'kind':'unified'};self.view.state['jobs']=[pending]
         self.view.messages.put(({'status':'review_required','native_batch':{}},None))
+        self.root.after_cancel(self.view.poll_id)
         self.view.poll()
         self.assertEqual(self.view.state['jobs'],[pending])
 
@@ -77,3 +78,22 @@ class DesktopUITests(unittest.TestCase):
         while time.monotonic()<deadline:self.root.update();time.sleep(.01)
         self.assertEqual(self.view.chat_cards,[])
         self.assertFalse(self.view.ai_busy)
+
+    def test_provider_change_does_not_reuse_previous_key(self):
+        from ai_assistant import AIConfig,AssistantSession
+        old=AssistantSession(AIConfig('fixture-model','old-fixture-key'),transport=lambda p:{})
+        self.view.ai_session=old
+        with patch.dict('os.environ',{},clear=True):self.view.configure_ai()
+        self.root.update()
+        dialog=[w for w in self.root.winfo_children() if w.winfo_class()=='Toplevel' and w.title()=='AI 连接'][-1]
+        combos=[w for w in dialog.winfo_children() if w.winfo_class()=='TCombobox']
+        entries=[w for w in dialog.winfo_children() if w.winfo_class()=='TEntry']
+        combos[0].set('DeepSeek');combos[0].event_generate('<<ComboboxSelected>>');self.root.update()
+        entries[1].insert(0,'fixture-model')
+        action_frame=next(w for w in dialog.winfo_children() if w.winfo_class()=='Frame' and any(getattr(c,'cget',lambda x:'')('text')=='启用连接' for c in w.winfo_children()))
+        button=next(c for c in action_frame.winfo_children() if c.cget('text')=='启用连接')
+        with patch('tkinter.messagebox.showerror') as error:button.invoke()
+        error.assert_called_once();self.assertIs(self.view.ai_session,old)
+        entries[2].insert(0,'new-fixture-key');button.invoke()
+        self.assertEqual(self.view.ai_session.config.api_key,'new-fixture-key')
+        self.assertEqual(self.view.ai_session.config.protocol,'chat_completions')

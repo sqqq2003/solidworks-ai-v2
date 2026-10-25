@@ -46,7 +46,7 @@ class AssistantSession:
             if cancelled():raise AssistantError('本次回复已取消。')
             payload={'model':self.config.model,'instructions':INSTRUCTIONS,'input':deepcopy(inputs),
                      'store':False,'max_output_tokens':self.config.max_output_tokens,
-                     'tools':tool_definitions(),'parallel_tool_calls':False,'include':['reasoning.encrypted_content']}
+                     'tools':tool_definitions() if self.config.enable_tools else [],'parallel_tool_calls':False,'include':['reasoning.encrypted_content']}
             response=self.transport(payload)
             if cancelled():raise AssistantError('本次回复已取消。')
             if not isinstance(response,dict) or not isinstance(response.get('output'),list):raise AssistantError('模型响应结构不完整。')
@@ -54,6 +54,7 @@ class AssistantSession:
             if any(not isinstance(row,dict) for row in output):raise AssistantError('模型响应条目格式不正确。')
             calls=[row for row in output if row.get('type')=='function_call']
             if calls:
+                if not self.config.enable_tools:raise AssistantError('当前连接已关闭工具调用，未执行工具请求。')
                 if response.get('status')=='incomplete':raise AssistantError('模型的工具请求未完整返回，请重试。')
                 if count+len(calls)>self.max_tool_calls:raise AssistantError('本次工具调用达到上限，请缩小任务范围。')
                 # Preserve reasoning/function items for stateless continuation, never log them.
@@ -88,7 +89,7 @@ class AssistantSession:
             if not answer:raise AssistantError('模型未返回可显示的回复，请重试。')
             incomplete=response.get('status')=='incomplete'
             self.history=(self.history+[{'role':'user','content':text},{'role':'assistant','content':answer}])[-12:]
-            return {'status':'degraded' if incomplete else 'review_required','text':answer,'model':self.config.model,
+            return {'status':'degraded' if incomplete else 'review_required','text':answer,'model':self.config.model,'protocol':self.config.protocol,
                     'tool_trace':traces,'review_requests':reviews,'response_id':response.get('id'),
                     'incomplete':incomplete,'cad_executed':False,'native_write_allowed':False,'engineering_approved':False}
         raise AssistantError('本次推理达到轮次上限，请缩小任务范围。')
