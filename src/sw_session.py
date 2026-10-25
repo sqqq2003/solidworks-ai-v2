@@ -1006,9 +1006,19 @@ def release_task_documents(
                     active_title = None
     if close and active_title:
         try:
+            from owned_document_lifetime import is_startup_blank_title
+            if (
+                is_startup_blank_title(active_title)
+                and active_title not in lease.owned_docs
+                and active_title not in lease.foreign_titles
+                and lease.verified_exclusive
+                and lease.spawned_pid is not None
+            ):
+                lease.note_owned_document(str(active_title).strip())
+                active_title = str(active_title).strip()
             close_owned_document(lease, app, active_title)
-        except SessionOwnershipError:
-            logger.error("skipped close of unowned document %r", active_title)
+        except SessionOwnershipError as error:
+            logger.error("skipped close of unowned document %r: %s", active_title, error)
         except Exception as error:
             if _exception_is_disconnect(error):
                 lease.disconnected = True

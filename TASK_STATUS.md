@@ -266,3 +266,12 @@
 - 未做（P1，本 PR 不做）：Codex 风格 UI（PR #54）不合并；装配配合/干涉/运动和原生工程图仍是骨架；36 个 `pending_features` 不计通过；A01 几何跟随 / Pack and Go 不在本 PR；p248 钣金加深和释放槽另 PR，说明仍在 `docs/p0-sheet-metal.md`。
 - 建议 Gork 在干净单实例 Windows 上复测：plate、bracket、shaft，以及 owned-launch。看 SelectByID2 / 固体切除是否还报类型不匹配，shaft 保存后是否还能重开；断连必须是失败证据，不是通过。`two_bend` 上次是 `not_run`，等前一件收尾明确后再跑。
 - 离线：`python work/run_cloud_tests.py` → 524 ran / 520 passed / 0 failures / 0 errors / 4 skipped（原有 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。
+
+## P0-DDD-20261025：ExitApp 短轮询误失败、启动空白零件挡住写入
+
+- 实机证据来自用户机器 DDD（2026-10-25，Asia/Shanghai）。当时被测的是 `feat/codex-style-workbench` @ `48d5fb2`，SolidWorks 为 `D:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe`。修复加在本 P0 PR，不新开 PR，不合并。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
+- Bug A：`owned_keepopen` 探针里 spawn 和 claim 已经成功（`ownership=spawned_pid_and_live_handle`，pid 47828）。`finish_owned_session` 在 ExitApp 之后只等约 2 秒，就把状态写成 `left_open_for_recovery`，错误原文是 `owned process exit remains unobserved after exit request; preserve session`。之后 SLDWORKS.exe 已经退出，探针仍失败。这是观察窗口短于进程退出，不是 spawn 失败。
+- Bug A 的策略：保活优先，成功只要求 CloseDoc，不要求 ExitApp。上下文结束时不再把 `keep_application_open` 清掉后强制 ExitApp。若调用方明确要退出，ExitApp 之后的观察窗口改为 20 秒；退出码 0 记为 `process_exited_cleanly`，包括 wait 超时瞬间才写上的退出码。清单已空，或仍保持 `keep_application_open` 时，进程还活着也不让一次已经证明的 spawn 失败。退出码 139 及其他非 0 仍是 `process_exit_failed`。不调用 taskkill，不按进程名结束。
+- Bug B：钣金 `synthetic-s2-100x80.dxf`（厚度 2.5、半径 1、K 0.36，方向和折弯都是操作者给定的）owned spawn 成功（pid 69456），生成之前失败，原文 `document inventory unavailable; refusing writes`，写入被挡住。同一会话日志有 `skipped close of unowned document '零件2'`，这是 SolidWorks 启动时自己打开的默认空白零件。崩溃包只到 S0 `plan_locked`，`generation=null`，`bend_group_attempts=[]`。claim 当时清单是空的；空白零件出现后，枚举会因 count 和标题不一致而抛错，闸门把这一次抛错记成 `writes_blocked`。`零件2` 不在 owned 集合里，关闭被跳过。
+- Bug B 的修复：瞬态枚举（空标题、count 与链表不一致）先重试，仍失败才挡写入。只把本进程里未保存的默认名 `零件N` / `PartN`（可带未保存星号，不带扩展名）收进 owned，并在 CloseDoc 前把 UserControl 设为 True。用户文件（带扩展名、装配体、非默认名）仍然拒绝。第二实例和 PID 不符的会话仍然拒绝。COM 断连仍然是 `ComSessionDisconnected`，不 ExitApp。
+- 未把 Codex 风格 UI（PR #54）并进来。离线：`python3 work/run_cloud_tests.py` → 533 ran / 529 passed / 0 failures / 0 errors / 4 skipped（仍是原来的 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。Gork 复测时在干净单实例上再跑 owned-launch 探针和这张钣金；本次云端结果不能当作实机通过。

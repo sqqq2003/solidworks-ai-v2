@@ -11,8 +11,11 @@ import subprocess
 import sys
 import time
 
+from owned_document_lifetime import (
+    DEFAULT_EXIT_POLL_SECONDS, prepare_owned_inventory,
+)
 from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
-    on_task_sta, claim_spawned_process, require_model_write, exit_owned_application)
+    on_task_sta, claim_spawned_process, require_model_write)
 
 
 class WindowsProcessLifetime:
@@ -80,6 +83,8 @@ class OwnedBinding:
         self.cleanup_status = 'not_attempted'
         self.cleanup_error = None
         self.keepalive_verified = False
+        self.anchor_created = False
+        self.anchor_closed = False
 
     def validate(self, lease, *, documents=True):
         from sw_session import ComSessionDisconnected, is_com_server_disconnect
@@ -101,7 +106,9 @@ class OwnedBinding:
             raise SessionOwnershipError('launched process lifetime/COM PID no longer matches')
         if documents:
             try:
-                titles = set(self.list_titles(self.app))
+                # Retry racy startup enumeration before poisoning the lease.
+                # Default blanks (零件N / PartN) are adopted and closed here.
+                titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
             except Exception as exc:
                 lease.writes_blocked = True
                 if is_com_server_disconnect(exc):
@@ -133,7 +140,9 @@ class OwnedBinding:
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
                 'cleanup_exit_code': self.lifetime.process.poll(),
-                'keepalive_policy': 'user_control_true_before_intermediate_close',
+                'keepalive_policy': 'close_doc_only_keep_alive_exit_not_required',
+                'exit_poll_seconds': DEFAULT_EXIT_POLL_SECONDS,
+                'anchor_created': self.anchor_created, 'anchor_closed': self.anchor_closed,
                 'keepalive_verified': self.keepalive_verified}
 
 
@@ -154,9 +163,11 @@ def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump
         except Exception:
             matches = False
         if matches:
-            # Failure or nonempty inventory is a hard failure, not an empty list.
-            titles = list_titles(app)
-            if titles:
+            # User documents are a hard failure. Startup blanks of this PID are
+            # adopted and closed; a racy empty title is retried, not a claim miss.
+            titles = prepare_owned_inventory(lease, app, list_titles)
+            unowned = [title for title in titles if title not in lease.owned_docs]
+            if unowned:
                 raise SessionOwnershipError('new process contains unowned documents; no writes allowed')
             binding = OwnedBinding(lifetime, app, read_pid, list_titles)
             lease.attached_existing = False
@@ -201,22 +212,25 @@ def owned_solidworks(executable, *, timeout=90):
     except Exception as exc:
         lease.writes_blocked = True
         raise SessionOwnershipError(f"spawned PID {lifetime.pid} is unproven and left open: {exc}") from exc
+    body_failed = False
     try:
         yield binding
+    except BaseException:
+        body_failed = True
+        raise
     finally:
-        lease.keep_application_open = False
-        # Never terminate a process or close any unknown document on failure.
-        # Exit only if lifetime, PID, lease and zero-document inventory still prove it.
-        try:
-            binding.validate(lease)
-            require_model_write(lease)
-            if binding.list_titles(binding.app):
-                raise SessionOwnershipError('task documents remain; process left open for recovery')
-            exit_owned_application(lease, binding.app)
-            binding.cleanup_status = 'exit_requested'
-        except Exception as exc:
-            binding.cleanup_status = 'left_open_for_recovery'
-            binding.cleanup_error = str(exc)
+        # Keep-alive stays on. ExitApp is not required for a proved spawn.
+        # finish_owned_session polls a real ExitApp long enough to see code 0,
+        # and an empty left-open session does not fail the probe.
+        from owned_document_lifetime import finish_owned_session, release_closed_session_references
+        finish_owned_session(lease, binding)
+        release_closed_session_references(lease, binding)
+        if binding.cleanup_error and not body_failed:
             import logging
-            logging.getLogger(__name__).exception('owned process left open; no forced cleanup')
+            logging.getLogger(__name__).error(
+                'owned cleanup requires review: %s', binding.cleanup_error)
+            error = SessionOwnershipError(
+                'owned session cleanup failed: ' + binding.cleanup_error)
+            error.native_session_evidence = binding.evidence()
+            raise error
 
