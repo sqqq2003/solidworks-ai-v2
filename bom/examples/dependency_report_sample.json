@@ -1,0 +1,1 @@
+{"format":"dependency-engine-report/1","name":"sealer_frame","parts":[{"feature_refs":[],"id":"column_left","label":"左立柱","uses_parameters":[]},{"feature_refs":[],"id":"beam_front","label":"前横梁","uses_parameters":[]},{"feature_refs":[],"id":"roller_a","label":"滚筒A","uses_parameters":[]}]}

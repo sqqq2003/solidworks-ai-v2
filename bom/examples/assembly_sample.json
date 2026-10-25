@@ -1,0 +1,1 @@
+{"assembly_name":"sealer_frame","parts":[{"id":"column_left","mass_kg":4.5,"material":"Q235","name":"左立柱","quantity":2},{"depends_on":["column_left"],"id":"beam_front","mass_kg":6.0,"material":"Q235","name":"前横梁","quantity":1},{"depends_on":["beam_front"],"id":"roller_a","mass_kg":1.25,"material":"45钢","name":"滚筒A","quantity":4}]}

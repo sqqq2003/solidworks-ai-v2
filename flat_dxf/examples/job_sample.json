@@ -1,0 +1,1 @@
+{"bends":[{"angle_degrees":90,"bend_id":"b1","direction":"up","k_factor":0.38,"process":"air_bending","radius_mm":1.5,"sequence":1,"thickness_mm":2.0,"v_opening_mm":12},{"angle_degrees":90,"bend_id":"b2","direction":"down","k_factor":0.38,"process":"air_bending","radius_mm":1.5,"sequence":2,"thickness_mm":2.0,"v_opening_mm":12}],"blank_width_mm":80.0}
