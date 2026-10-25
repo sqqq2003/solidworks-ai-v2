@@ -47,3 +47,33 @@ class DesktopUITests(unittest.TestCase):
         self.view.messages.put(({'status':'review_required','native_batch':{}},None))
         self.view.poll()
         self.assertEqual(self.view.state['jobs'],[pending])
+
+    def test_api_reply_uses_worker_and_remains_advisory(self):
+        import time
+        from ai_assistant import AIConfig,AssistantSession
+        response={'output':[{'type':'message','content':[{'type':'output_text','text':'请先核对轴径与接口。'}]}]}
+        self.view.ai_session=AssistantSession(AIConfig('fixture-model','fixture-api-key'),transport=lambda payload:response)
+        self.view._composer_focus();self.view.composer.insert('1.0','核对滚筒改型')
+        self.view.send_instruction()
+        deadline=time.monotonic()+2
+        while self.view.ai_busy and time.monotonic()<deadline:
+            self.root.update();time.sleep(.01)
+        self.assertFalse(self.view.ai_busy)
+        self.assertIn('待工程审核',self.view.chat_cards[-1].winfo_children()[0].cget('text'))
+        self.assertEqual(self.view.state['jobs'],[])
+        self.assertNotIn('fixture-api-key',self.view.report_text)
+
+    def test_new_task_discards_late_api_reply(self):
+        import time,threading
+        from ai_assistant import AIConfig,AssistantSession
+        entered=threading.Event();release=threading.Event()
+        def fake(payload):
+            entered.set();release.wait(timeout=2)
+            return {'output':[{'type':'message','content':[{'type':'output_text','text':'old reply'}]}]}
+        self.view.ai_session=AssistantSession(AIConfig('fixture-model','fixture-api-key'),transport=fake)
+        self.view._start_ai('old request');self.assertTrue(entered.wait(timeout=1))
+        self.view.new_task();release.set()
+        deadline=time.monotonic()+.3
+        while time.monotonic()<deadline:self.root.update();time.sleep(.01)
+        self.assertEqual(self.view.chat_cards,[])
+        self.assertFalse(self.view.ai_busy)
