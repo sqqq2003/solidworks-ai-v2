@@ -49,7 +49,9 @@ class WindowsSheetMetalPort:
         from sw_session import close_owned_document, require_model_write
         from solidworks_generator import (_connect_task_solidworks, ensure_solidworks_typelib,
             _as_interface, _features, _com_read)
-        pythoncom.CoInitialize()
+        apartment_owned = bool(getattr(lease, "com_initialized", False))
+        if not apartment_owned:
+            pythoncom.CoInitialize()
         _started = time.monotonic()
         _owned_before = list(lease.owned_docs)
         app = None
@@ -145,14 +147,15 @@ class WindowsSheetMetalPort:
                 features = []
                 model = raw_model = opened = None
                 gc.collect()
-                order.append('uninitialize')
+                if not apartment_owned:
+                    order.append('uninitialize')
+                    pythoncom.CoUninitialize()
                 assert_release_order(order)
                 logger.info('teardown S5 com_release order=%s owned_docs_before=%s '
                             'owned_docs_after=%s pid=%s elapsed_ms=%s',
                             order, _owned_before, list(lease.owned_docs),
                             lease.spawned_pid,
                             int((time.monotonic() - _started) * 1000))
-                pythoncom.CoUninitialize()
 
     def export_flat(self, part, dxf):
         self.guard()

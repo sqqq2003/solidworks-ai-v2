@@ -502,6 +502,8 @@ class GenerationResult:
     relief_step_used: int = 0
     bend_attempts: tuple[dict, ...] = ()
     bend_group_attempts: tuple[dict, ...] = ()
+    # Set when SaveAs left a file and a later rebind saw a dead proxy.
+    post_save_disconnect: str = ""
 
 
 @dataclass(frozen=True)
@@ -4421,10 +4423,14 @@ def generate_sheet_metal(
     model = None
     lease = None
     bend_phase = False
+    post_save_note = ""
     try:
         lease = current_lease()
-        pythoncom.CoInitialize()
-        com_initialized = True
+        # The task STA already owns the apartment. A nested CoUninitialize
+        # drops that count and the next post-save call sees a dead proxy.
+        if not getattr(lease, "com_initialized", False):
+            pythoncom.CoInitialize()
+            com_initialized = True
         solidworks, started_solidworks = _connect_task_solidworks(
             lease, win32com, pythoncom
         )
@@ -5033,6 +5039,39 @@ def generate_sheet_metal(
             )
         saved = True
         logger.info("钣金零件已保存：%s", output)
+        from part_verification import PostSaveComDisconnect, rebind_model_after_save
+
+        def _active_model(app):
+            raw = _com_read(app, "ActiveDoc")
+            if raw is None:
+                return None
+            return _as_interface(type_library, raw, "IModelDoc2")
+
+        try:
+            model, rebound_title = rebind_model_after_save(
+                typed_solidworks,
+                _active_model,
+                lambda rebound: _com_read(rebound, "GetTitle"),
+                lease=lease,
+            )
+        except PostSaveComDisconnect as error:
+            if not output.is_file() or output.stat().st_size == 0:
+                raise
+            post_save_note = str(error)
+            logger.warning(
+                "post-save rebind disconnected; keeping %s; ExitApp was not called: %s",
+                output,
+                error,
+            )
+        else:
+            if (
+                lease is not None
+                and document_title
+                and rebound_title != document_title
+                and lease.is_owned_title(document_title)
+            ):
+                lease.rename_owned(document_title, rebound_title)
+            document_title = rebound_title
         return GenerationResult(
             output,
             profile_index,
@@ -5049,6 +5088,7 @@ def generate_sheet_metal(
             k_factor_readback=allowance_readback if bend_allowance is not None and bend_allowance.mode == "k_factor" else None,
             relief_step_used=relief_step,
             bend_group_attempts=tuple(group_attempts),
+            post_save_disconnect=post_save_note,
         )
     except BendRejectedError as error:
         if not error.bend_group_attempts:
@@ -5085,7 +5125,7 @@ def generate_sheet_metal(
                     and (not saved or started_solidworks or CLOSE_SAVED_DOCS or close_saved_document)
                 ),
                 saved=saved,
-                model=model,
+                model=None if post_save_note else model,
             )
         finally:
             if com_initialized:
@@ -5206,8 +5246,9 @@ def export_flat_pattern_dxf(
     titles_enumerated = False
     try:
         lease = current_lease()
-        pythoncom.CoInitialize()
-        com_initialized = True
+        if not getattr(lease, "com_initialized", False):
+            pythoncom.CoInitialize()
+            com_initialized = True
         solidworks, _created_here = _connect_task_solidworks(
             lease, win32com, pythoncom
         )

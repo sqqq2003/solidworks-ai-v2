@@ -275,3 +275,12 @@
 - Bug B：钣金 `synthetic-s2-100x80.dxf`（厚度 2.5、半径 1、K 0.36，方向和折弯都是操作者给定的）owned spawn 成功（pid 69456），生成之前失败，原文 `document inventory unavailable; refusing writes`，写入被挡住。同一会话日志有 `skipped close of unowned document '零件2'`，这是 SolidWorks 启动时自己打开的默认空白零件。崩溃包只到 S0 `plan_locked`，`generation=null`，`bend_group_attempts=[]`。claim 当时清单是空的；空白零件出现后，枚举会因 count 和标题不一致而抛错，闸门把这一次抛错记成 `writes_blocked`。`零件2` 不在 owned 集合里，关闭被跳过。
 - Bug B 的修复：瞬态枚举（空标题、count 与链表不一致）先重试，仍失败才挡写入。只把本进程里未保存的默认名 `零件N` / `PartN`（可带未保存星号，不带扩展名）收进 owned，并在 CloseDoc 前把 UserControl 设为 True。用户文件（带扩展名、装配体、非默认名）仍然拒绝。第二实例和 PID 不符的会话仍然拒绝。COM 断连仍然是 `ComSessionDisconnected`，不 ExitApp。
 - 未把 Codex 风格 UI（PR #54）并进来。离线：`python3 work/run_cloud_tests.py` → 533 ran / 529 passed / 0 failures / 0 errors / 4 skipped（仍是原来的 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。Gork 复测时在干净单实例上再跑 owned-launch 探针和这张钣金；本次云端结果不能当作实机通过。
+
+## P0-DDD-RETEST-20261025：保存后的 COM 断连不再抹掉已生成零件
+
+- 复测机器仍是 DDD，干净单实例，分支 PR #57 head `1265353`，同一张 `synthetic-s2-100x80.dxf`（厚度 2.5、半径 1、K 0.36，方向已给定）。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
+- 已在实机上过去的两项：owned 探针 `session_verified`，`cleanup_status=left_open_keepalive`（pid 23136）。空白零件闸门已放过，原生生成真正跑起来了。
+- 仍失败的是生成之后：`part.SLDPRT` 已写出（约 79334 字节，S1 检查点里有 sha256），`SM3dBend` 已创建，`k_factor_readback=0.36`，`auto_bent=true`，折弯尝试 `completed`。总状态仍是 `failed`，错误是 `ComSessionDisconnected: owned COM server disconnected; writes refused; ExitApp was not called`。清理再报同一条断连。`sw_live_verified=false`。崩溃包只有 S0 和 S1，S2 重开没有开始。
+- 原因：保存之后的 CloseDoc / 保活再去 `require_model_write`，COM 代理已经断了。任务 STA 上再套一层 `CoUninitialize` 会把已经初始化的套间计数减掉。保存后的 `IModelDoc2` 也没有先换成 `ActiveDoc`。会话收尾把这次断连当成清理失败抛出，把已经成功的生成盖掉。
+- 本轮：钣金 `SaveAs3` 之后先 `rebind_model_after_save`。任务 STA 已初始化时，生成、重开、展开导出不再套 `CoUninitialize`。零件文件已经在磁盘上时，随后的 CloseDoc / 保活断连记为 `saved_com_disconnected_after_generation`（`modeling=saved_pending_reopen`，`passed=false`，`sw_live_verified=false`），不删零件，不调用 `abort`，不要求 ExitApp。保活清理遇到同一条断连时 `cleanup_error` 留空，证据放在 `cleanup_disconnect`，进程保持打开。没有零件文件的断连仍然是 `failed` 并清掉暂存。轴路径原来的「断连不是通过」不变。
+- 离线：`python3 work/run_cloud_tests.py` → 536 ran / 532 passed / 0 failures / 0 errors / 4 skipped（仍是原来的 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。

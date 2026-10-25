@@ -23,6 +23,48 @@ def mark_session_disconnected(lease) -> None:
     lease.verified_exclusive = False
 
 
+def disconnect_after_saved_product(error, product) -> bool:
+    """True when a later COM drop must not erase a part already on disk."""
+    path = Path(product) if product is not None else None
+    try:
+        ready = path is not None and path.is_file() and path.stat().st_size > 0
+    except OSError:
+        ready = False
+    if not ready:
+        return False
+    if isinstance(error, ComSessionDisconnected) or is_com_server_disconnect(error):
+        return True
+    from sw_session import SessionOwnershipError
+    if not isinstance(error, SessionOwnershipError):
+        return False
+    text = str(error)
+    folded = text.casefold()
+    return (
+        "disconnected" in folded
+        or "没有连接到服务器" in text
+        or "not connected to server" in folded
+        or "writes refused" in folded
+    )
+
+
+def saved_generation_after_disconnect(generation, error):
+    """Keep a finished save visible. This is not a SolidWorks live pass."""
+    return {
+        "status": "saved_com_disconnected_after_generation",
+        "modeling": "saved_pending_reopen",
+        "native_acceptance": "pending_windows_validation",
+        "sw_live_verified": False,
+        "passed": False,
+        "file_on_disk": True,
+        "exit_app": False,
+        "process_killed": False,
+        "generation": generation,
+        "post_save_disconnect": str(error),
+        "error_kind": type(error).__name__,
+        "recovery": "products_kept",
+    }
+
+
 def post_save_status(*, saved, disconnected, exit_app=False, killed=False):
     """Offline contract for the shaft r2 failure. Never reports a native pass."""
     if exit_app or killed:

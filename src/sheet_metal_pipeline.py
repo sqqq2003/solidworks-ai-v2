@@ -178,6 +178,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
     stage = None
     generated = None
     evidence = None
+    part = None
     ckpt_dir = None
     checkpoints = {}
     resume_stage = None
@@ -376,6 +377,36 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
                          evidence=s5_evidence)
         return {**result, 'resumed': resume_stage is not None, 'output_dir': str(destination)}
     except Exception as exc:
+        from part_verification import (
+            disconnect_after_saved_product,
+            saved_generation_after_disconnect,
+        )
+        if disconnect_after_saved_product(exc, part):
+            # Feature create and SaveAs already landed. A later CloseDoc or
+            # keep-alive disconnect must not delete the part or report the
+            # run as if generation never happened. ExitApp stays unused.
+            # native_acceptance remains pending_windows_validation.
+            kept = saved_generation_after_disconnect(generated, exc)
+            crash_file = None
+            if ckpt_dir is not None and Path(ckpt_dir).is_dir():
+                try:
+                    products = [{'name': p.name, 'size': p.stat().st_size}
+                                for p in Path(stage).iterdir() if p.is_file()] \
+                        if stage is not None and Path(stage).is_dir() else []
+                    crash_file = write_crash_package(
+                        root, plan_id=plan_id, error=exc,
+                        checkpoints=read_checkpoints(ckpt_dir), products=products)
+                except Exception:
+                    crash_file = None
+            kept.update({
+                'plan_id': plan_id,
+                'diagnostic_stage': str(stage) if stage is not None and Path(stage).exists() else None,
+            })
+            if crash_file is not None:
+                kept['crash_package'] = str(crash_file)
+            diagnostic = root / ('failure-' + uuid.uuid4().hex + '.json')
+            diagnostic.write_text(json.dumps(kept, ensure_ascii=False, indent=2, default=str)+'\n')
+            return {**kept, 'diagnostic_file': str(diagnostic)}
         recovery = 'not_needed'
         crash_file = None
         if ckpt_dir is not None and Path(ckpt_dir).is_dir():

@@ -82,6 +82,7 @@ class OwnedBinding:
         self.read_pid, self.list_titles = read_pid, list_titles
         self.cleanup_status = 'not_attempted'
         self.cleanup_error = None
+        self.cleanup_disconnect = None
         self.keepalive_verified = False
         self.anchor_created = False
         self.anchor_closed = False
@@ -139,6 +140,7 @@ class OwnedBinding:
                 'image': self.lifetime.executable, 'attached_existing': False,
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
+                'cleanup_disconnect': self.cleanup_disconnect,
                 'cleanup_exit_code': self.lifetime.process.poll(),
                 'keepalive_policy': 'close_doc_only_keep_alive_exit_not_required',
                 'exit_poll_seconds': DEFAULT_EXIT_POLL_SECONDS,

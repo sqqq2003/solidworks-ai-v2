@@ -235,6 +235,28 @@ class DddOwnedSessionTests(unittest.TestCase):
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-release-blank")
 
+    def test_keepalive_disconnect_after_body_does_not_fail_cleanup(self):
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: list(app.docs))
+            lease = sw_session.current_lease()
+
+            def dead_pid(_app):
+                raise RuntimeError(-2147220995, "对象没有连接到服务器")
+
+            binding.read_pid = dead_pid
+            self.assertTrue(lease.keep_application_open)
+            finish_owned_session(lease, binding)
+            self.assertEqual(binding.cleanup_status, "left_open_keepalive")
+            self.assertIsNone(binding.cleanup_error)
+            self.assertIn("ExitApp was not called", binding.cleanup_disconnect)
+            self.assertEqual(app.exit_calls, 0)
+            self.assertIsNone(binding.evidence()["cleanup_error"])
+            self.assertIsNotNone(binding.evidence()["cleanup_disconnect"])
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-keepalive-disconnect")
+
     def test_disconnect_while_listing_does_not_exit(self):
         def job():
             life = Lifetime()

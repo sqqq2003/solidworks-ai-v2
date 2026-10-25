@@ -114,6 +114,60 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(len(list(out.iterdir())), 3)
             self.assertEqual(original.read_text(), 'keep')
 
+    def test_post_save_disconnect_keeps_generation_artifact(self):
+        from sw_session import ComSessionDisconnected
+
+        class SavedThenDisconnect(MockSheetMetalPort):
+            simulated = False
+
+            def generate(self, analysis, plan, part):
+                part.write_bytes(b"SLDPRT-artifact")
+                return {
+                    "path": part.name,
+                    "auto_bent": True,
+                    "bend_count": 1,
+                    "auto_bend_failed_count": 0,
+                    "auto_bend_abandoned": False,
+                    "k_factor_readback": 0.36,
+                    "bend_attempts": [{"status": "completed", "completed_bend_count": 1}],
+                }
+
+            def reopen_inspect(self, part):
+                raise ComSessionDisconnected(
+                    "owned COM server disconnected; writes refused; ExitApp was not called"
+                )
+
+            def abort(self, stage):
+                raise AssertionError("saved part must stay after a post-generation disconnect")
+
+        report = run_plan(self.analysis, self.plan(), self.root / "out", SavedThenDisconnect())
+        self.assertEqual(report["status"], "saved_com_disconnected_after_generation")
+        self.assertFalse(report["sw_live_verified"])
+        self.assertFalse(report["passed"])
+        self.assertFalse(report["exit_app"])
+        self.assertEqual(report["native_acceptance"], "pending_windows_validation")
+        self.assertEqual(report["recovery"], "products_kept")
+        self.assertEqual(report["generation"]["k_factor_readback"], 0.36)
+        self.assertTrue(report["generation"]["auto_bent"])
+        artifact = Path(report["diagnostic_stage"]) / "part.SLDPRT"
+        self.assertEqual(artifact.read_bytes(), b"SLDPRT-artifact")
+
+    def test_disconnect_without_a_saved_part_still_fails(self):
+        from sw_session import ComSessionDisconnected
+
+        class DisconnectBeforeSave(MockSheetMetalPort):
+            simulated = False
+
+            def generate(self, analysis, plan, part):
+                raise ComSessionDisconnected(
+                    "owned COM server disconnected; writes refused; ExitApp was not called"
+                )
+
+        report = run_plan(self.analysis, self.plan(), self.root / "out", DisconnectBeforeSave())
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["recovery"], "staging_removed")
+        self.assertFalse(report["sw_live_verified"])
+
     def test_recovery_failure_is_explicit(self):
         class Broken(MockSheetMetalPort):
             def export_flat(self, *args):

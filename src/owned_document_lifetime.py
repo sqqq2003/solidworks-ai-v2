@@ -257,6 +257,20 @@ def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
             "owned process exit remains unobserved after exit request; preserve session"
         )
     except Exception as exc:
+        from sw_session import ComSessionDisconnected, is_com_server_disconnect
+        if lease.keep_application_open and (
+            isinstance(exc, ComSessionDisconnected) or is_com_server_disconnect(exc)
+        ):
+            # CloseDoc / keep-alive lost the proxy after the body finished.
+            # Leave the process alone. The caller keeps any saved part.
+            binding.cleanup_status = "left_open_keepalive"
+            binding.cleanup_error = None
+            binding.cleanup_disconnect = type(exc).__name__ + ": " + str(exc)
+            logger.info(
+                "COM disconnect during keep-alive; ExitApp was not called pid=%s",
+                getattr(lease, "spawned_pid", None),
+            )
+            return
         code = poll_exit(binding, timeout=exit_poll_seconds if exit_requested else 0)
         if type(code) is int and code == 0 and (exit_requested or _exception_is_disconnect(exc)):
             binding.cleanup_status = "process_exited_cleanly"
