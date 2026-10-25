@@ -26,6 +26,11 @@ hole derived from its circle entity when one exists. A plan feature
 type this converter does not know is refused (ConverterError), never
 silently dropped: dropping a feature would change the part.
 
+No plan type maps to revolve: module 3 plans carry no revolve
+candidates, so a revolve tree is authored as tree JSON directly
+(see README). Inventing a plan->revolve mapping would guess geometry.
+
+
 Job params are an explicit per-job input dict, e.g.:
 {"thickness_mm": 2.0, "radius_mm": 1.5, "angle_degrees": 90.0,
  "k_factor": 0.38, "hole_depth_spec": {"mode": "through_all"}}
