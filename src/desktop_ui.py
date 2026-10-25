@@ -25,6 +25,9 @@ class Workbench:
         self.report_text='';self.inputs=[];self.nav_buttons={};self.row_ids=[]
         self.running_rows=[];self.queue_running=False;self.last_request=None
         self.settings_open=False;self.chat_cards=[]
+        self.ai_session=None;self.ai_busy=False;self.ai_generation=0
+        self.ai_events=queue.Queue();self.ai_cancel=threading.Event()
+        self.ai_status=tk.StringVar(value='本地审核')
         self.action=tk.StringVar(value='生成计划');self.ql_action=tk.StringVar(value='参数计划')
         self.status=tk.StringVar(value='就绪');self.queue_count=tk.StringVar(value='0 项待运行')
         self.summary=tk.StringVar(value='添加任务后，可在这里查看进度和结果。')
@@ -77,6 +80,7 @@ class Workbench:
         tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=20)
         self.button(nav,'任务队列',self.show_queue).pack(fill='x',padx=12,pady=2)
         self.button(nav,'环境与版本',self.show_environment).pack(fill='x',padx=12,pady=2)
+        self.button(nav,'AI 连接',self.configure_ai).pack(fill='x',padx=12,pady=2)
         self.label(nav,'V2  ·  本地工作副本',size=9,bg=NAV,color=MUTED).pack(side='bottom',anchor='w',padx=22,pady=24)
         shell=tk.Frame(self.root,bg=WHITE);shell.pack(side='left',fill='both',expand=True)
         bar=tk.Frame(shell,bg=WHITE,padx=24,pady=16);bar.pack(fill='x')
@@ -132,6 +136,7 @@ class Workbench:
         self.composer.bind('<Command-Return>',lambda e:self.send_instruction())
         tools=tk.Frame(self.composer_panel,bg=BG);tools.pack(fill='x',pady=(10,0))
         attach=self.button(tools,'＋ 添加文件',lambda:self.choose('source'));attach.configure(bg=BG);attach.pack(side='left')
+        self.tk.Label(tools,textvariable=self.ai_status,bg=BG,fg=MUTED,font=(self.family,9)).pack(side='left',padx=6)
         self.attachment=tk.StringVar(value='')
         self.tk.Label(tools,textvariable=self.attachment,bg=BG,fg=MUTED,font=(self.family,9)).pack(side='left',padx=8)
         self.send_button=self.button(tools,'↑',self.send_instruction,primary=True);self.send_button.configure(padx=14,pady=5);self.send_button.pack(side='right')
@@ -322,7 +327,7 @@ class Workbench:
     def _sync_buttons(self):
         busy=self.state['busy'];has_jobs=bool(self.state['jobs'])
         self.queue_button.configure(text=f'任务队列 · {len(self.state["jobs"])}' if has_jobs else '任务队列')
-        self.send_button.configure(state='disabled' if busy else 'normal')
+        self.send_button.configure(state='disabled' if busy else 'normal',text='■' if self.ai_busy else '↑')
         self.add_button.configure(state='disabled' if busy else 'normal')
         self.start_button.configure(state='normal' if has_jobs and not busy else 'disabled')
         self.clear_button.configure(state='disabled' if busy or not self.table.get_children() else 'normal')
@@ -350,6 +355,7 @@ class Workbench:
         self.stop.set();self.summary.set('已请求停止；等待当前任务结束，不强制关闭 SolidWorks。')
 
     def poll(self):
+        self._poll_ai()
         try:
             while True:
                 report,path=self.messages.get_nowait()
@@ -397,6 +403,11 @@ class Workbench:
 
     def new_task(self):
         if self.state['busy']:return
+        self.ai_cancel.set();self.ai_generation+=1;self.ai_busy=False
+        if self.ai_session is not None:
+            from ai_assistant import AssistantSession
+            self.ai_session=AssistantSession(self.ai_session.config)
+        self._sync_buttons()
         for card in self.chat_cards:card.destroy()
         self.chat_cards=[];self.last_request=None
         for key in ('source','output','thickness','radius','angle','k_factor'):self.values[key].set('')
@@ -422,9 +433,14 @@ class Workbench:
         self.root.update_idletasks();self.feed_canvas.yview_moveto(1)
 
     def send_instruction(self):
-        if self.state['busy'] or self.placeholder_visible:return 'break'
+        if self.state['busy']:return 'break'
+        if self.ai_busy:
+            self.ai_cancel.set();self.status.set('已请求停止，等待当前 API 调用结束。');return 'break'
+        if self.placeholder_visible:return 'break'
         text=self.composer.get('1.0','end').strip()
         if not text:return 'break'
+        if self.ai_session is not None:
+            self._start_ai(text);return 'break'
         from engineering_intelligence.proposals import instruction_request
         from tkinter import messagebox
         try:request=instruction_request({'text':text})
@@ -442,6 +458,65 @@ class Workbench:
         self.add_message('方案待审核',summary,request=request)
         self.composer.delete('1.0','end');self._composer_blur();self.status.set('审核请求已生成 · 未执行模型修改')
         return 'break'
+
+    def configure_ai(self):
+        from ai_assistant import AIConfig,AssistantSession,AssistantError
+        from tkinter import messagebox
+        win=self.tk.Toplevel(self.root);win.title('AI 连接');win.geometry('520x410');win.configure(bg=WHITE)
+        win.columnconfigure(0,weight=1)
+        self.label(win,'接入 OpenAI',size=18,bold=True).grid(row=0,column=0,sticky='w',padx=24,pady=(22,10))
+        self.label(win,'发送输入文本和当前对话，不自动上传附件或 CAD 文件。',size=9,color=MUTED,wraplength=460,justify='left').grid(row=1,column=0,sticky='w',padx=24,pady=(0,14))
+        env=AIConfig.from_env()
+        model=self.tk.StringVar(value=self.ai_session.config.model if self.ai_session else env.model)
+        key=self.tk.StringVar()
+        self.label(win,'模型名称 · 使用账号可访问的模型',size=9,color=MUTED).grid(row=2,column=0,sticky='w',padx=24)
+        self.ttk.Entry(win,textvariable=model).grid(row=3,column=0,sticky='ew',padx=24,pady=(5,12))
+        self.label(win,'API 密钥 · 留空沿用当前连接或本机环境变量',size=9,color=MUTED).grid(row=4,column=0,sticky='w',padx=24)
+        self.ttk.Entry(win,textvariable=key,show='*').grid(row=5,column=0,sticky='ew',padx=24,pady=(5,10))
+        self.label(win,'密钥仅在本次进程内使用，不保存到项目或日志。配置完成后，首次对话再验证连接。',size=9,color=MUTED,wraplength=460,justify='left').grid(row=6,column=0,sticky='w',padx=24,pady=(0,14))
+        actions=self.tk.Frame(win,bg=WHITE);actions.grid(row=7,column=0,sticky='ew',padx=24)
+        def activate():
+            if self.ai_busy:messagebox.showinfo('正在回复','请等待当前回复结束后再切换连接。',parent=win);return
+            try:
+                config=AIConfig(model=model.get().strip(),api_key=key.get().strip() or (self.ai_session.config.api_key if self.ai_session else env.api_key))
+                session=AssistantSession(config)
+            except AssistantError as exc:messagebox.showerror('配置未完成',str(exc),parent=win);return
+            key.set('');self.ai_session=session;self.ai_generation+=1;self.ai_status.set('OpenAI 模式')
+            self.status.set('OpenAI 已配置 · 首次对话验证连接');win.destroy()
+        def local():
+            if self.ai_busy:messagebox.showinfo('正在回复','请先停止或等待当前回复。',parent=win);return
+            key.set('');self.ai_session=None;self.ai_generation+=1;self.ai_status.set('本地审核');self.status.set('已切换到本地审核');win.destroy()
+        self.button(actions,'使用本地审核',local).pack(side='left')
+        self.button(actions,'启用 OpenAI',activate,primary=True).pack(side='right')
+
+    def _start_ai(self,text):
+        self.ai_cancel=threading.Event();self.ai_generation+=1;token=self.ai_generation
+        session=self.ai_session;cancel=self.ai_cancel
+        self.ai_busy=True;self.add_message('你',text);self.status.set('正在请求 OpenAI…')
+        self.composer.delete('1.0','end');self._composer_blur();self._sync_buttons()
+        def worker():
+            from ai_assistant import AssistantError
+            try:self.ai_events.put((token,session.chat(text,cancel=cancel),None))
+            except AssistantError as exc:self.ai_events.put((token,None,str(exc)))
+            except Exception:self.ai_events.put((token,None,'AI 回复未完成，请检查连接后重试。'))
+        threading.Thread(target=worker,daemon=True).start()
+
+    def _poll_ai(self):
+        try:
+            while True:
+                token,report,error=self.ai_events.get_nowait()
+                if token!=self.ai_generation:continue
+                self.ai_busy=False
+                if error:
+                    self.add_message('AI 回复未完成',error);self.status.set('AI 回复未完成')
+                else:
+                    self.add_message('AI 建议 · 待工程审核',report['text'])
+                    for request in report.get('review_requests',[]):
+                        self.last_request=request;self.add_message('可保存的审核请求','请核对目标尺寸与保护接口，保存请求不会执行模型修改。',request=request)
+                    self.report_text+=json.dumps(report,ensure_ascii=False,indent=2)+'\n\n';self._update_log()
+                    self.status.set('回复未完整 · 可缩小问题后重试' if report.get('incomplete') else 'AI 建议已返回 · 未执行模型修改')
+                self._sync_buttons()
+        except queue.Empty:pass
 
     def save_request(self,request):
         from tkinter import filedialog,messagebox
@@ -479,6 +554,7 @@ class Workbench:
         if self.state['busy']:
             self.stop.set();messagebox.showinfo('等待当前任务结束','已停止后续排队。请等待当前任务结束再关闭，不会强制结束 CAD 进程。',parent=self.root)
         else:
+            self.ai_cancel.set();self.ai_generation+=1
             self.root.after_cancel(self.poll_id);self.root.destroy()
 
 
