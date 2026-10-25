@@ -37,6 +37,7 @@ from sw_session import (
     release_task_documents,
     require_model_write,
     ensure_application_keepalive,
+    initialize_com_scope,
     run_on_task_sta,
 )
 
@@ -303,6 +304,7 @@ class ComDisconnectedBendError(BendRejectedError):
 # RPC_E_DISCONNECTED / RPC_S_SERVER_UNAVAILABLE 等常见断连 HRESULT
 _COM_DISCONNECT_HRESULTS = frozenset(
     {
+        -2147220995,  # CO_E_OBJNOTCONNECTED (Issue39 native evidence)
         -2147417848,  # 0x80010108 RPC_E_DISCONNECTED
         -2147023174,  # 0x800706BA RPC_S_SERVER_UNAVAILABLE
         -2147418111,  # 0x80010001 RPC_E_CALL_REJECTED（偶发，当断连处理）
@@ -4416,8 +4418,7 @@ def generate_sheet_metal(
     bend_phase = False
     try:
         lease = current_lease()
-        pythoncom.CoInitialize()
-        com_initialized = True
+        com_initialized = initialize_com_scope(pythoncom,lease)
         solidworks, started_solidworks = _connect_task_solidworks(
             lease, win32com, pythoncom
         )
@@ -5223,8 +5224,7 @@ def export_flat_pattern_dxf(
     titles_enumerated = False
     try:
         lease = current_lease()
-        pythoncom.CoInitialize()
-        com_initialized = True
+        com_initialized = initialize_com_scope(pythoncom,lease)
         solidworks, _created_here = _connect_task_solidworks(
             lease, win32com, pythoncom
         )
@@ -5353,8 +5353,7 @@ def generate_roller_part(
     lease = None
     try:
         lease = current_lease()
-        pythoncom.CoInitialize()
-        com_initialized = True
+        com_initialized = initialize_com_scope(pythoncom,lease)
         solidworks, started_solidworks = _connect_task_solidworks(
             lease, win32com, pythoncom
         )
@@ -6094,5 +6093,6 @@ def generate_roller_part(
         finally:
             if com_initialized:
                 pythoncom.CoUninitialize()
+
 
 

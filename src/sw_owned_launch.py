@@ -15,6 +15,21 @@ from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
     on_task_sta, claim_spawned_process, require_model_write, exit_owned_application)
 
 
+def refuse_registered_instance(lookup):
+    app=lookup()
+    if app is not None:
+        raise SessionOwnershipError('existing registered SolidWorks instance; no process spawned; preserve work and prepare a dedicated environment')
+
+
+def _registered_application():
+    import pythoncom
+    import win32com.client
+    try:return win32com.client.GetActiveObject('SldWorks.Application')
+    except pythoncom.com_error as exc:
+        if getattr(exc,'hresult',None)==-2147221021:return None
+        raise SessionOwnershipError('active COM registration probe failed; no process spawned') from exc
+
+
 class WindowsProcessLifetime:
     def __init__(self, executable):
         self.executable = str(executable)
@@ -80,6 +95,8 @@ class OwnedBinding:
         self.cleanup_status = 'not_attempted'
         self.cleanup_error = None
         self.keepalive_verified = False
+        self.anchor_created = False
+        self.anchor_closed = False
 
     def validate(self, lease, *, documents=True):
         if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
@@ -114,7 +131,8 @@ class OwnedBinding:
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
                 'cleanup_exit_code': self.lifetime.process.poll(),
-                'keepalive_policy': 'user_control_true_before_intermediate_close',
+                'keepalive_policy': 'owned_blank_document_before_last_intermediate_close',
+                'anchor_created':self.anchor_created,'anchor_closed':self.anchor_closed,
                 'keepalive_verified': self.keepalive_verified}
 
 
@@ -152,6 +170,7 @@ def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump
                 raise SessionOwnershipError('spawn/PID/image/document proof failed')
             lease.native_launch = binding
             lease.keep_application_open = True
+            lease.keepalive_document_enabled = True
             require_model_write(lease)
             return binding
         if pump:
@@ -174,6 +193,7 @@ def owned_solidworks(executable, *, timeout=90):
         raise ValueError('provide the installed SLDWORKS.exe absolute path')
     import pythoncom
     from solidworks_generator import _list_open_document_titles
+    refuse_registered_instance(_registered_application)
     lifetime = WindowsProcessLifetime(path)
     lease.native_launch_attempt = lifetime  # Keep the lifetime handle even on failed proof.
     try:
@@ -182,22 +202,21 @@ def owned_solidworks(executable, *, timeout=90):
     except Exception as exc:
         lease.writes_blocked = True
         raise SessionOwnershipError(f"spawned PID {lifetime.pid} is unproven and left open: {exc}") from exc
+    body_failed=False
     try:
         yield binding
+    except BaseException:
+        body_failed=True
+        raise
     finally:
         lease.keep_application_open = False
-        # Never terminate a process or close any unknown document on failure.
-        # Exit only if lifetime, PID, lease and zero-document inventory still prove it.
-        try:
-            binding.validate(lease)
-            require_model_write(lease)
-            if binding.list_titles(binding.app):
-                raise SessionOwnershipError('task documents remain; process left open for recovery')
-            exit_owned_application(lease, binding.app)
-            binding.cleanup_status = 'exit_requested'
-        except Exception as exc:
-            binding.cleanup_status = 'left_open_for_recovery'
-            binding.cleanup_error = str(exc)
+        from owned_document_lifetime import finish_owned_session,release_closed_session_references
+        finish_owned_session(lease,binding)
+        release_closed_session_references(lease,binding)
+        if binding.cleanup_error:
             import logging
-            logging.getLogger(__name__).exception('owned process left open; no forced cleanup')
-
+            logging.getLogger(__name__).error('owned cleanup requires review: %s',binding.cleanup_error)
+            if not body_failed:
+                error=SessionOwnershipError('owned session cleanup failed: '+binding.cleanup_error)
+                error.native_session_evidence=binding.evidence()
+                raise error

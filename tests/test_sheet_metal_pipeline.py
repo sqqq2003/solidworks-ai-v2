@@ -36,6 +36,24 @@ class PipelineTests(unittest.TestCase):
         params.update(kwargs)
         return build_plan(self.analysis, **params)
 
+    def test_native_failure_keeps_saved_artifact_and_blocks_silent_resume(self):
+        calls=[]
+        class NativeFailure:
+            simulated=False
+            def generate(self,analysis,plan,part):
+                calls.append('generate');part.write_bytes(b'fake native artifact for failure retention only')
+                return {'auto_bent':True,'auto_bend_failed_count':0}
+            def reopen_inspect(self,part):raise RuntimeError('fixture S2 disconnect')
+            def abort(self,stage):pass
+        plan=self.plan();root=self.root/'native-failure'
+        result=run_plan(self.analysis,plan,root,NativeFailure())
+        self.assertEqual(result['status'],'failed')
+        stage=Path(result['diagnostic_stage'])
+        self.assertTrue((stage/'part.SLDPRT').is_file())
+        self.assertTrue((stage/'RECOVERY_REQUIRED.json').is_file())
+        again=run_plan(self.analysis,plan,root,NativeFailure())
+        self.assertEqual(again['status'],'failed');self.assertEqual(calls,['generate'])
+
     def test_native_feature_plan_reuses_holes_bends_and_relief_rules(self):
         plan = self.plan(relief_bend_indices=(0,))
         self.assertEqual(plan['status'], 'ready_for_windows')
@@ -203,3 +221,4 @@ class WindowsBridgeContractTests(unittest.TestCase):
         self.assertEqual(report['k_factor'], .4)
         self.assertEqual(report['bend_feature_count'], 1)
         close.assert_called_once_with(lease, app, 'part.SLDPRT')
+

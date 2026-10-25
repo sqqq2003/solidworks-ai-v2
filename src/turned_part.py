@@ -650,8 +650,7 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     saved = False
     model = None
     try:
-        pythoncom.CoInitialize()
-        com_initialized = True
+        com_initialized = session.initialize_com_scope(pythoncom,lease)
 
         solidworks, _created_here = sw._connect_task_solidworks(lease, win32com, pythoncom)
         # 目标机装的 SolidWorks 版本未必和开发机一致，主版本号要现探测。
@@ -1790,3 +1789,4 @@ def _write_turned_properties(
             manager.Add3("需手修", 30, "；".join(hand), 1)
     except Exception:
         return
+
