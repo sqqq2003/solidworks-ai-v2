@@ -1,0 +1,1125 @@
+{
+  "schema_version": 1,
+  "development_base": "aca899b2d7daf2d0b9a2edabda48a56a477b1711",
+  "sources": "source-versions.json",
+  "files": [
+    {
+      "path": "CODEX_REVIEW.md",
+      "git_blob_sha1": "d6d669bfaf727d77aa65602ee0793fe54c169cfe",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha1": "35bf2a3b60e84b7603d8784afbfb91b613f87995",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "TASK_STATUS.md",
+      "git_blob_sha1": "edb29ae1cae0f307377fd1b77f42ad7d19969336",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "app.py",
+      "git_blob_sha1": "eee1d53733e6372f9324eeecee4dc8860e594545",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/design-platform/windows-matrix.json",
+      "git_blob_sha1": "20e740aec513f3e8b13d8be0fbbf8b52115d1761",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/integrated-v2/feature-tree.log",
+      "git_blob_sha1": "be33b9c22a92cb21d76e524ca604abc012c56263",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/geometry-ir.log",
+      "git_blob_sha1": "0dd0f4e956d33cea22e7e5bf99524eeb80474cc7",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/merge-decisions.json",
+      "git_blob_sha1": "4be33f9397683d051ad2cbf712417a227af6de91",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/offline-checks.json",
+      "git_blob_sha1": "0a8c002fbcb45b8fd339febbe75de3bc7e15a423",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/original-feature-contracts.log",
+      "git_blob_sha1": "55d583a730976d6ad501237347fc7616c2d7f296",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/repository.log",
+      "git_blob_sha1": "f8f3f23e983276052faae76cdb37c5317aa8a505",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/source-versions.json",
+      "git_blob_sha1": "4be9e49fa6016f1ca05134a20b693882696e9214",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/integrated-v2/windows-matrix.json",
+      "git_blob_sha1": "f92f194b3cb23cbf6eb3e5e18c8e591c19ffa237",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "delivery/issue19-unified/capabilities.json",
+      "git_blob_sha1": "f999cbbcdd6fb62524309b97584167ea0787c8f3",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/compiled-jobs.json",
+      "git_blob_sha1": "5cb91eea0f5eb324670fec5b17376917caa9f696",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/golden-gate-checks.json",
+      "git_blob_sha1": "2f5095541677f16ebcd605089d3a8fce389b0d47",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/issue19-unified-source-and-gork.zip",
+      "git_blob_sha1": "2f8d9e5d34ff129bb54106248ecff808cc983bc9",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/offline-checks.json",
+      "git_blob_sha1": "3ce60c1a09ea0897838b18b6235d37b31d9c4237",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/offline-report.json",
+      "git_blob_sha1": "e18f758688faed20e989f9d45527a200af1195b7",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/p248-golden.json",
+      "git_blob_sha1": "da9d408cb3aa310de2f0f6cfbeb053085d93bd0f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/source-manifest.json",
+      "git_blob_sha1": "477e7f7e9220dd9a59aba55483e1721321db8ed0",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/supervisor-checks.json",
+      "git_blob_sha1": "35c95b895f3f32ad9352756ad0309c5f8eb92286",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/two-bend-mock-summary.json",
+      "git_blob_sha1": "f7e9c988dd6171a50a04036e3e69c53044f422f2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue19-unified/windows-matrix.json",
+      "git_blob_sha1": "6272fe109a1bba1cedf996a3fdaef2eccf3bec2c",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue39-unified/offline-checks.json",
+      "git_blob_sha1": "454d3d437d28a915b88ab8bf7055d4363b835ce5",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue39-unified/source-manifest.json",
+      "git_blob_sha1": "d64f6c86c343a2f22c2c999e1a38932d9c0c8832",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue50/offline-checks.json",
+      "git_blob_sha1": "ff762a65b71ff1a719d8054563fe1ef9f34bd4e2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue50/source-manifest.json",
+      "git_blob_sha1": "c930d23dc7468d082b22091c379a2e9e209066f5",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/issue50/windows-matrix.json",
+      "git_blob_sha1": "32391be687439936ccdbd5dfd8293681e9169866",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/pr21/manifest.json",
+      "git_blob_sha1": "446cd0ec71565a716ea11ff88019651c4995ddb7",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "delivery/pr21/sw2022-interface-patch.zip",
+      "git_blob_sha1": "798fd958919958dcc603a3f65af77556230ed3c1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/bend-relief-research.md",
+      "git_blob_sha1": "32829891854b87fa3df99e1b4a69da3376b6a1a3",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/design-platform-batch.md",
+      "git_blob_sha1": "57fc23cf8a05120834c2e8d164320bf3c7ee5044",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue19-batch-delivery.md",
+      "git_blob_sha1": "341f0b984af75964510c0021413a26e6698f5d2d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue19-capability-checklist.json",
+      "git_blob_sha1": "1b3227e8816d1682b0ff256c010028e6483123ee",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue19-completion-boundaries.md",
+      "git_blob_sha1": "71b76d87cf6c1bf2470032ab2c2e0d52a989a8c0",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue19-review.md",
+      "git_blob_sha1": "cf0b0fbccc6385c0ec59febdb88ac35895bcdc94",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue19-unified-runbook.md",
+      "git_blob_sha1": "87b193a902c635e9415865ec95c4506dd0dc7afb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue24-roller800-handoff.md",
+      "git_blob_sha1": "9b0829a23d8261048fbdb2d004de2edf675374f2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue39-unified-patch.md",
+      "git_blob_sha1": "ad55a67c029b1f54eb0fab9c82ee56351f288112",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue50-gap-analysis.md",
+      "git_blob_sha1": "02c12b3633876bff2026f89ef386524258e88c29",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/issue50-handoff.md",
+      "git_blob_sha1": "75086f10a643883718e52af7d30d69d125a6b1ff",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/native-acceptance-recovery.md",
+      "git_blob_sha1": "06bec1b1418e3e66cedbc7b53cef559c51fcbbad",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/native-preflight-audit.md",
+      "git_blob_sha1": "4721cde2c99f23adbce01d33ffe046ce017a4124",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/plan-conformance-review.md",
+      "git_blob_sha1": "acefee0c8e172817d24d50f2278c337f80536e0f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/platform-development-order.md",
+      "git_blob_sha1": "6d08fc3d18b5686d1700266d2b0154c19a2ed0e4",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/pr21-validation-review.md",
+      "git_blob_sha1": "840bd926046fdb33497546dbc2ebe05f692629c4",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/pr22-export-recheck.json",
+      "git_blob_sha1": "488e7263553dacae3cbd915a5de57cc34fbdfbfa",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/pr22-r2-review.md",
+      "git_blob_sha1": "c8b65ba081f58b330d40f09deb94e27e14b4156d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/pr22-validation-review.md",
+      "git_blob_sha1": "3232f82568d45eeb3dbf2f409625addb68f5128a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/production-file-review.md",
+      "git_blob_sha1": "a18b0ad180d6f9f3c6b75e6a39614ea809e70e23",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/production-flow-handoff.md",
+      "git_blob_sha1": "ec57c093be8617570d572f0d7d699b1f3d4f1957",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/test-handoff-audit.md",
+      "git_blob_sha1": "3af06939e6ce67e209521e4a9621ac671b9cdf42",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "docs/unified-integration.md",
+      "git_blob_sha1": "2acfedc108b3053b46e20f05961ac6c05e605232",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "examples/design-platform-batch.json",
+      "git_blob_sha1": "af384421f44de2fed76fb6d11be2a53a522b95a8",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/gork46-audit-matrix.json",
+      "git_blob_sha1": "07d5414802d4c95dd5b3911c916a92f076e76643",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/gork46-empty-submission.json",
+      "git_blob_sha1": "940eb0234d8ed97d2b402b91630b7492e58e7eff",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-assembly.json",
+      "git_blob_sha1": "a0f67b29776e3ac9a3f61b74e517fd0c21192f89",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-batch.json",
+      "git_blob_sha1": "3f360fa456b1d9f0af55de13d9d1104e443ff6c3",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-change_report.json",
+      "git_blob_sha1": "6ee6ef6e1e693e6d63518884ad053918c4b7e71e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-changes.json",
+      "git_blob_sha1": "de56fd04d5ee6191cfcec819ad55c99c7f712a4e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-costs.json",
+      "git_blob_sha1": "440adbde6ce2dd0212ae27010094472773c89708",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-dimensions.json",
+      "git_blob_sha1": "1ef41180d2065a8fda44269ad217cd9cbf65ba9f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-instruction.json",
+      "git_blob_sha1": "013923fd246e0afddb536ec50cc80b293c78c9dd",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-native-review.json",
+      "git_blob_sha1": "9d5321743be276cfbdcd76a318e9ea652a28c61e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-proposals.json",
+      "git_blob_sha1": "c3f1ef18792e53708f8f230efd85d7bb090ff562",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-review.json",
+      "git_blob_sha1": "26ba1ed428cd5a436cd166650f1dcc53ef20314c",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-similarity.json",
+      "git_blob_sha1": "b51b83bb49785ef83bfb99149292cd16772acc14",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-tolerance-axial-gap.json",
+      "git_blob_sha1": "4b8fa3ce958c3cf6dbcf1eff02df061792e8bac1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-tolerance-roller-installation.json",
+      "git_blob_sha1": "5bc3bb03443d4fe1b4d63132f650a98750ba221f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-tolerances.json",
+      "git_blob_sha1": "525111124d12c5f42afc065160405d3ce1ef2bcb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-transmission.json",
+      "git_blob_sha1": "41011b8c990d8bc96993800b13d8dcc445dd3967",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/issue50-weldments.json",
+      "git_blob_sha1": "5f5c9f1a2281ccdae37e9b78ae39654868f054d1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/make_issue50_examples.py",
+      "git_blob_sha1": "4efecae333e076a12067caaa57a48657cf553bbd",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/modeling_batch.json",
+      "git_blob_sha1": "769b60518fb836e44e3a578cbcd7d0123e22ea1d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/offline-result.json",
+      "git_blob_sha1": "18663b7ad983123b0f6662825cae16aac00a295c",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/p248_golden.json",
+      "git_blob_sha1": "da9d408cb3aa310de2f0f6cfbeb053085d93bd0f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/production_recipes.json",
+      "git_blob_sha1": "be325957df689faee3dbdc3cfeb16db365c25149",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/ql5050px_production.json",
+      "git_blob_sha1": "56210fd0919a21c5a922ad78408569706dd6b07d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/roller-design-intent.json",
+      "git_blob_sha1": "26632a5a4cd7fd48c85686013e8cd5e26c661ff5",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/roller-impact-plan.json",
+      "git_blob_sha1": "486209cfcbb19d4ce1f15198d526c4adf2e776d8",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/roller800-pending.json",
+      "git_blob_sha1": "3163df486e5cb45abdb1a13716e96590356add51",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/roller800-synthetic.json",
+      "git_blob_sha1": "8e9be23e0d5a96cf5e3c4cc61b869db5d556fe1a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "examples/unified-project.json",
+      "git_blob_sha1": "c59026599d4f45bba3eef6ab5e8104900ca538bd",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "feature_tree/README.md",
+      "git_blob_sha1": "b7851304f6edefaf8bb818b0ec7d5727d0ade734",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/__init__.py",
+      "git_blob_sha1": "0a8c25633f0e09420fda392eabfcf9a617b400fb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/examples/l_bracket_tree.json",
+      "git_blob_sha1": "567fe1596cc796ac8b3947c079f2be4e078be9e1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/examples/sheetmetal_unfold_tree.json",
+      "git_blob_sha1": "64325c4844d3467a05e66f701d44578913133939",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/mock_backend.py",
+      "git_blob_sha1": "3c27f48e02bf5f91232824ac459810e72a40c0ad",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/plan_convert.py",
+      "git_blob_sha1": "b008b35809949eca8c0ab6f015ff8376a39efa00",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/tests/test_feature_tree.py",
+      "git_blob_sha1": "40a0ad9d88262b47e13d0dd3904ff7b2aa2fd472",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/tests/test_feature_tree_completion.py",
+      "git_blob_sha1": "77b3bd63afcdc12f7db7a9d2a9874726b9822605",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/tree.py",
+      "git_blob_sha1": "706c21369e97d6b34f9e2057c321a0b1cb14fbbb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "feature_tree/unfold.py",
+      "git_blob_sha1": "03f3372f8fda598bcca054a604b2756c97517d23",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/README.md",
+      "git_blob_sha1": "1b5325039a5638499f0d3ae358cce01f5c09410c",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/__init__.py",
+      "git_blob_sha1": "88d5c922ce505c659cec66f203691359a8ec42ff",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/build.py",
+      "git_blob_sha1": "c026ce234e879a7129973b90051f6535d6674876",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/cli.py",
+      "git_blob_sha1": "77688760476da33c7055ad938047684ec380957d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/examples/revolve_tree.json",
+      "git_blob_sha1": "59092ff42923610b46f6be8c2118ce1c32cd43ac",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/examples/sheetmetal_ir_example.json",
+      "git_blob_sha1": "054755c80f771cdc6f08427d954792aac61ac4e1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/examples/sheetmetal_tree.json",
+      "git_blob_sha1": "f208c2fc7e4217541482fe6997d7a1fb779ed17f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/ir.py",
+      "git_blob_sha1": "ec544b0a9156f2c9e3f8f428ab89e6c41764558f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/mock.py",
+      "git_blob_sha1": "f7798778f7537c56c041fb2a75e7f405f2f418bb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/tests/__init__.py",
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/tests/test_geometry_ir.py",
+      "git_blob_sha1": "a9e9e9f20d07b21410668f9bce39e6bc8707b98e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "geometry_ir/validate.py",
+      "git_blob_sha1": "dd8b3ea87196b73273db15a38fa007eff6267dcc",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "results/windows/p248_wb_20261025_attempt1.log",
+      "git_blob_sha1": "90e2411a7ff9db013eefbffc381204de1e74bdbd",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "results/windows/p248_wb_20261025_attempt2.log",
+      "git_blob_sha1": "9a1fcaff4c0209165f71f4f152c5cd3ea79e9f0a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "results/windows/p248_wb_retest_20261025.md",
+      "git_blob_sha1": "b790ccf8bf7732b0f88bde9fd521e4c238560e53",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/cad_analyzer.py",
+      "git_blob_sha1": "0e1097877b314ec409595b88744df097a9988cc6",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/__init__.py",
+      "git_blob_sha1": "df154c18e20b3184347e032e5cf5dd0bb1219ed4",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/assistant.py",
+      "git_blob_sha1": "7dd7043ae36168635f2e241234a4c3b6bf841151",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/calculations.py",
+      "git_blob_sha1": "ee2fcb80c13da59d4ff9e3d8cc097b98f41127d1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/catalogue.py",
+      "git_blob_sha1": "0235a7f754d06e24dea9d820d551fee4c7b3979b",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/desktop.py",
+      "git_blob_sha1": "4606e800390bdd58612c0dd62b6965c8b130551f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/knowledge.py",
+      "git_blob_sha1": "5653d2ce77ef41ee16cfbe1297e4c2e1320da130",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/manufacturing.py",
+      "git_blob_sha1": "33940f90809a5ee99b7aab1e57a3ea46f17146e7",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/mapping.py",
+      "git_blob_sha1": "3671694f210beb86a0ecf03b82f98d85f001bc41",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/native.py",
+      "git_blob_sha1": "e01003082f1ebf856939aa46237bd626fdf97f5b",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/projects.py",
+      "git_blob_sha1": "6d4d5c13c63d978d9fa8592c37adfa0a933626c5",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/rules.py",
+      "git_blob_sha1": "ed1117152c8717497d5989bffc82d6ce99455f52",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/templates.py",
+      "git_blob_sha1": "1e591852627e0b971052b04493703ce2929eab0e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_platform/workflow.py",
+      "git_blob_sha1": "566ece2474dad5d7cd4b4047945b2a2da36f470e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_review/__init__.py",
+      "git_blob_sha1": "27bfc6b3b558376f0a4fb1b7a4b41941cec14405",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_review/acceptance.py",
+      "git_blob_sha1": "c3c5373c69caba8a30b6f172d7d5cb22a96253d2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_review/impact.py",
+      "git_blob_sha1": "600e86677c5cebcd4d0447cb1513690037b7081f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/design_review/repair.py",
+      "git_blob_sha1": "07c7d9b46e1d1362606d83e00e975d3a1e9d9191",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/dwg_converter.py",
+      "git_blob_sha1": "9535116ac6f813076d93f334992f68bddfdc8761",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/__init__.py",
+      "git_blob_sha1": "4061e8b1fff5df028f8c8bf1c3d9b74e6a471674",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/assembly.py",
+      "git_blob_sha1": "21f4a91a51660c53211fa06fd15df054cc95e75d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/changes.py",
+      "git_blob_sha1": "c5dbe0d725e8b3d6533796e7d863fd3233cf1c52",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/common.py",
+      "git_blob_sha1": "01a4f13f3157819abf49962cf1b0a19d9f56b865",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/costs.py",
+      "git_blob_sha1": "6d2e42e99c250ea5bcf781c6233e6f188fde3d89",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/dimensions.py",
+      "git_blob_sha1": "b4a84b81d6bc072956e90d14927eb61e1bb41c9d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/native_review.py",
+      "git_blob_sha1": "22b9c4f933714a6ba0415e54955daaee4466093f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/proposals.py",
+      "git_blob_sha1": "710c8965d49414b819988a60fac7fbde0193bf49",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/review.py",
+      "git_blob_sha1": "ff1b97771ef414f4ebe34178c3057a2870b1e817",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/similarity.py",
+      "git_blob_sha1": "bbcc878a177bf04705c79f2dfd4aaf02366ba2ae",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/transmission.py",
+      "git_blob_sha1": "e7c54e60d70889542c6505def0cd21090132a5b1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/weldments.py",
+      "git_blob_sha1": "4a3ebac4d800c7e6ef59d8736904af127951e0d4",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/engineering_intelligence/workflow.py",
+      "git_blob_sha1": "21e4fd52cbc4c5808409a0e8f8cdfdd312e50006",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/minimal_session_batch.py",
+      "git_blob_sha1": "039c232f34c3ca90ce558e8d211eb10016d3a777",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/owned_document_lifetime.py",
+      "git_blob_sha1": "2bce94a5c43ec6ec43c3d816111fb11b788f01d1",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/part_verification.py",
+      "git_blob_sha1": "2ce6a9e531afbb9908103a28cdc6b60dfa4b42fd",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/project_workbench.py",
+      "git_blob_sha1": "cc714b825124d83fbe3823a06c28d1c816eab535",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/ql5050px/acceptance_report.py",
+      "git_blob_sha1": "9edbd1f448398f823ac2cfe665e68ad7cd9c6ac2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/cad_features.py",
+      "git_blob_sha1": "adf9567f8f00ece8e1077d34ebcd98a24f1e145b",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/cad_topology.py",
+      "git_blob_sha1": "35e23ffdd32d44d522d909ce79320baf5965b761",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/com_selection.py",
+      "git_blob_sha1": "db55206b32e07930e4ca12304c6c7c03771dea2f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/editable_features.py",
+      "git_blob_sha1": "f00225425374ad30ed79324ae42a9c92c495b750",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/feature_operations.py",
+      "git_blob_sha1": "b7a57cfdb85ae43f46df851bc077b81486a391f0",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/golden_gate.py",
+      "git_blob_sha1": "e879a635987cf710d44882e12bc21401ed646ec6",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/modeling_delivery.py",
+      "git_blob_sha1": "1563bafd48b7e7e051a9869dbdbb6f8fc265c912",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/modeling_gui.py",
+      "git_blob_sha1": "04e1fcd89ef08ab196beac50cf683e5996ddd238",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/modeling_recovery.py",
+      "git_blob_sha1": "bc42dbd2b8aa0e128c8ea2be75bbca465256cc2f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/modeling_supervisor.py",
+      "git_blob_sha1": "703531a4fa943cb0a02f4574b6d7415aed627490",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/ql5050px/modeling_validation.py",
+      "git_blob_sha1": "88540a548fa822b2095ab933c53c36133f9534cd",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/modeling_worker.py",
+      "git_blob_sha1": "60628d4fc471ad20d53e3fcec57b3f171b30ea5e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/native_drawings.py",
+      "git_blob_sha1": "1762d557824beffb0ef9184f830b24a98368f400",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/ql5050px/native_environment.py",
+      "git_blob_sha1": "cc8809da97e622fdb14416cfc8ec055e591de233",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/native_machine.py",
+      "git_blob_sha1": "47345a1d458d4b8e64bd918d78fe0f2f0b5974f5",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/native_part_host.py",
+      "git_blob_sha1": "9194e3149ab6df408def614cfd11c8260fa7229a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/part_recipes.py",
+      "git_blob_sha1": "14b1b2ea019970b6dbad923aa5eb6d878a12595a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/production.py",
+      "git_blob_sha1": "c1e1644fed011f84e85f4537918844a1d6366b5e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/production_acceptance.py",
+      "git_blob_sha1": "577eee829c2ada1fbe4cec29445dedf88969d22b",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/production_review.py",
+      "git_blob_sha1": "601516ac68e702710cd170f5b96510a0ea48bbf0",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/ql5050px/recipe_worker.py",
+      "git_blob_sha1": "d01e9f83dd449618c25f417b8110c1412a177a9d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/sheet_feature_data.py",
+      "git_blob_sha1": "9e9b3063db7a606c301f18466d6afb6418faab81",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/staged_modeling.py",
+      "git_blob_sha1": "79f2a68ef7e2bbbc741718ddda888dbbb51dd37f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/ql5050px/workflow.py",
+      "git_blob_sha1": "27bcb19fe6eaa7bb0ef366ad3198b55d9966c92c",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/roller_variant/__init__.py",
+      "git_blob_sha1": "84aba10bef546ee3068cc728b049c83eaf820709",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/roller_variant/delivery.py",
+      "git_blob_sha1": "7890fde1f4cda3a227dd2a659f4f028e8ff5ab93",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/roller_variant/execution.py",
+      "git_blob_sha1": "ed6e1e16fa1c2052ca9c454a27ae31dfb671d258",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/roller_variant/native.py",
+      "git_blob_sha1": "f6235a2ec1438fbe94a4edf8d7346ddcdca49a6b",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/roller_variant/planning.py",
+      "git_blob_sha1": "a75e42dc04283ca82fc76ee86dc608d6e5653eba",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/run_recovery.py",
+      "git_blob_sha1": "39d9fe0bd11d1071c6a6db484e04c06a585d1597",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/sheet_metal_pipeline.py",
+      "git_blob_sha1": "a478bb561e822f225328d6906226427853c64fb2",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/sheet_metal_windows.py",
+      "git_blob_sha1": "688481bc6bdba289cfbd01b7b307a116954763ab",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/solidworks_generator.py",
+      "git_blob_sha1": "803cba29f8637b63371f4d2f97f32faf83356d16",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/sw_compat/__init__.py",
+      "git_blob_sha1": "df48141f067077e878810a082bcfb6a8ec72fe4d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/sw_compat/dispatch.py",
+      "git_blob_sha1": "da0f5cdaea0bc884fb74a68d6ea6fe09ab1da3b8",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/sw_compat/typelib.py",
+      "git_blob_sha1": "1d66ec5afd95cdde0f3e69ce5e68b6c52f38a120",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/sw_math_arrays.py",
+      "git_blob_sha1": "720db1ae14665a7bfed6b810eac341c33e2a661d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/sw_owned_launch.py",
+      "git_blob_sha1": "125d24753907d915d6ac5a3a5653d31e0d589396",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/sw_session.py",
+      "git_blob_sha1": "63b2d6f8b87e1a979c00a2e35127df4e03e163b3",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/test_handoff_audit.py",
+      "git_blob_sha1": "dc1a75180e81949eac780ede101136b7b456a96d",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "src/turned_part.py",
+      "git_blob_sha1": "d7dcc7c3f3e7f2ecbb2f4e17637303fe01d7598e",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "src/unified_project.py",
+      "git_blob_sha1": "7a21aa5e17e1e571909616a9baa0dd82273103c5",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "tests/pending_features/README.md",
+      "git_blob_sha1": "603ca3dc371ca5561644bc06bd501302e2fc40bf",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/pending_features/test_border_relief_notch.py",
+      "git_blob_sha1": "a21fc3f7376a2bb25fd11a2670c0c1d625adeb41",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/pending_features/test_spur_segments.py",
+      "git_blob_sha1": "9283527c35539eff56c4058388317712244cadaa",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/pending_features/test_turned_part.py",
+      "git_blob_sha1": "40ec0b569bf70e7923348263a40bcac7e753bfb6",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_acceptance_recovery.py",
+      "git_blob_sha1": "ca6b4667ad793002e563aae34817258d6746baf8",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_bend_geometry.py",
+      "git_blob_sha1": "7acbc493d439899b0170db508a3ff319a4ff0191",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_design_review.py",
+      "git_blob_sha1": "1c116dae7afaa982235703700b98ec482a96c3e2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_engineering_intelligence.py",
+      "git_blob_sha1": "3eafeee6c50509228dea695598728a1cb13f465e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_manufacturing_release_audit.py",
+      "git_blob_sha1": "740c949bb889a338a83fb9086d20d43dbd5f519a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_minimal_session_batch.py",
+      "git_blob_sha1": "2e49071cedde4d0a3746dfa28e355f4aa95c9d25",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_modeling_validation.py",
+      "git_blob_sha1": "2798717e0a1aad7437b641811a3261a0a3224e1f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_modeling_worker_lifecycle.py",
+      "git_blob_sha1": "8daff537fc54c0ccf24f91f5c2420ceb787f366a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_owned_document_lifetime.py",
+      "git_blob_sha1": "94f291a41a99ad9890dbee541c58d2897d88d24a",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_owned_launch_preflight.py",
+      "git_blob_sha1": "850994b84fd719006de87567da9851ac024c21fb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_production_delivery.py",
+      "git_blob_sha1": "e1ab0a6870aa41d03d528e4cd05cd52c637c41d6",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_production_flow.py",
+      "git_blob_sha1": "5283951705b87cb572cb41a9fa08718ab90572d3",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_r2_feature_diagnostics.py",
+      "git_blob_sha1": "1ea0f214f6fd9a9e05959cb2a0060246fa3c2d52",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_roller_variant.py",
+      "git_blob_sha1": "ef05c5744513622de4aee8fdeccdd6c24b426caf",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_s2_session_keepalive.py",
+      "git_blob_sha1": "8ca8438de7cd52b9727771a17b3857e7db573356",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "tests/test_sheet_metal_pipeline.py",
+      "git_blob_sha1": "4fdd41741d7cacda57c52c87229ae2d57a8fe146",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_sw2022_feature_interfaces.py",
+      "git_blob_sha1": "f3c10fdbd1329bd5133668af6351d4d0f7ed8a8e",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_test_handoff_audit.py",
+      "git_blob_sha1": "044d8c27a234a6f1156bf5a914b7d9b94cba2062",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "tests/test_unified_project.py",
+      "git_blob_sha1": "c951812c6128a5b1ad439e5ddca867b2e1a78ece",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "work/audit_test_handoff.py",
+      "git_blob_sha1": "345f5372a7e5d17076e5dfef25f273d5620b5f03",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/design_platform.py",
+      "git_blob_sha1": "a579063291e81ca29d41682fe6fd2c585f3cd44f",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/design_review.py",
+      "git_blob_sha1": "3183de748514e520292e98fa63280be622619cc2",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/engineering_intelligence.py",
+      "git_blob_sha1": "ad7bb01dd8871b7c7e87457b5de2345dd69d51ca",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/prepare_issue39_retest.py",
+      "git_blob_sha1": "9ef500eafd3ba02cc28f36ec6789e16008fe53c6",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/prepare_modeling_delivery.py",
+      "git_blob_sha1": "1d27e826595e1f9bec3bb560fdd3796b3c692fdb",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/project.py",
+      "git_blob_sha1": "8aff0f574b2e0609ee4fff876aec776c1a6299d7",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "work/roller_variant.py",
+      "git_blob_sha1": "8639d9cf3c75f2b3eb2c1d8db6d723bbf5937cf8",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/run_cloud_tests.py",
+      "git_blob_sha1": "806e152c13db0085020c59120035033793b55386",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "work/run_integrated_tests.py",
+      "git_blob_sha1": "8b029df5fc360ab12c6169128b10744f9c5325d4",
+      "origin": "integration_edit"
+    },
+    {
+      "path": "work/run_reviewed_parts.py",
+      "git_blob_sha1": "ab70ab1fa4e8b41e814cf694637b378bd8a3875c",
+      "origin": "existing_remote_blob"
+    },
+    {
+      "path": "work/run_sheet_metal.py",
+      "git_blob_sha1": "cfd0981e5aa4b6d6de441335ed3b9030335480e7",
+      "origin": "existing_remote_blob"
+    }
+  ],
+  "source_manifest_self_excluded": true,
+  "native_acceptance": "not_run",
+  "no_original_program_or_cad_overwritten": true
+}

@@ -216,6 +216,11 @@ def _axis_of(outline: Primitive, analysis: DrawingAnalysis) -> tuple[str, float,
     explicit = _explicit_axis(analysis, outline)
     if explicit is not None:
         return explicit[0], explicit[1], "centerline"
+    if analysis.dimensions:
+        # 直径标注的中点比剖面杂弧圆心/几何中线更稳，优先用它定轴线。
+        dimension_axis = _dimension_axis(analysis)
+        if dimension_axis is not None:
+            return dimension_axis[0], dimension_axis[1], "dimensions"
     points = _ring(outline)
     xs = [point[0] for point in points]
     ys = [point[1] for point in points]
@@ -557,6 +562,10 @@ def _plan_from_silhouette(analysis: DrawingAnalysis, silhouette) -> TurnedPartPl
 
 
 def plan_turned_part(analysis: DrawingAnalysis) -> TurnedPartPlan:
+    if analysis.dimensions:
+        # 有标注时走尺寸驱动规划（分段/内孔/钻尖/螺纹由标注定）；
+        # 无标注保持既有几何+文字路径，旧行为不变。
+        return _plan_with_dimensions(analysis)
     from turned_outline import select_turned_silhouettes, apply_dimension_overrides
 
     silhouettes = select_turned_silhouettes(analysis)
@@ -575,6 +584,8 @@ def discover_turned_parts(analysis: DrawingAnalysis) -> tuple[TurnedPartPlan, ..
     有中心线时走半边包络，避免把图框矩形旋成零件。
     """
 
+    if analysis.dimensions:
+        return _discover_with_dimensions(analysis)
     from turned_outline import select_turned_silhouettes
 
     found: list[tuple[tuple[float, float, float, float], TurnedPartPlan]] = []
@@ -604,6 +615,516 @@ def discover_turned_parts(analysis: DrawingAnalysis) -> tuple[TurnedPartPlan, ..
     if not labeled:
         raise ValueError("图上没有可用于旋转的闭合外形。")
     return tuple(labeled)
+
+
+# ---------------------------------------------------------------------------
+# 尺寸驱动车件（仅 analysis.dimensions 非空时启用）
+#
+# 与既有「几何+文字」路径分离：标注驱动半径档位、沿轴长度、轴线中点、
+# 内孔（通孔/盲孔）、钻尖与螺纹底孔。未知值不猜，没有内部孔壁证据就不挖孔。
+# ---------------------------------------------------------------------------
+
+# 公制粗牙螺距表（mm）：用于底孔直径与螺纹深度估算。
+_COARSE_PITCH_MM = {
+    3.0: 0.5,
+    4.0: 0.7,
+    5.0: 0.8,
+    6.0: 1.0,
+    8.0: 1.25,
+    10.0: 1.5,
+    12.0: 1.75,
+    14.0: 2.0,
+    16.0: 2.0,
+    18.0: 2.5,
+    20.0: 2.5,
+    22.0: 2.5,
+    24.0: 3.0,
+}
+# 公制内螺纹小径（≈攻丝前底孔直径）系数：D1 = D - 1.082532 * P。
+_THREAD_MINOR_FACTOR = 1.082532
+_DIM_DIAMETER_MARKERS = ("%%c", "Φ", "φ", "Ø", "ø", "⌀", "∅")
+
+
+@dataclass(frozen=True)
+class TurnedBore:
+    """内螺纹盲孔的几何与螺纹参数（生成钻孔/装饰螺纹用）。
+
+    radius_mm 是攻丝前底孔半径（不是公称半径）；opening/bottom/apex 分别是
+    孔口、直壁孔底、钻尖尖点的轴向坐标（mm），side 表示孔口在轴向哪一端。
+    """
+
+    radius_mm: float
+    designation: str
+    major_mm: float
+    pitch_mm: float
+    thread_depth_mm: float
+    opening_mm: float
+    bottom_mm: float
+    apex_mm: float
+    side: str = "high"
+
+
+def _coarse_pitch(major_mm: float) -> float | None:
+    return _COARSE_PITCH_MM.get(round(float(major_mm), 3))
+
+
+def _tap_drill_diameter(major_mm: float) -> float:
+    """攻丝前底孔直径：粗牙按小径 D-1.082532P，非标按 0.85D 估算。"""
+
+    pitch = _coarse_pitch(major_mm)
+    if pitch is None:
+        return round(0.85 * major_mm, 2)
+    return round(major_mm - _THREAD_MINOR_FACTOR * pitch, 2)
+
+
+def _thread_depth(major_mm: float, text: str, bore_depth_mm: float) -> float:
+    """有效螺纹深度：优先读标注（深18 / 内M12-25深），
+    没写就从孔深里留出 2.5 倍螺距的钻尖余量。"""
+
+    if text:
+        match = re.search(r"(?:钻孔)?深\s*(\d+(?:\.\d+)?)", text)
+        if match is None:
+            match = re.search(r"(\d+(?:\.\d+)?)\s*深", text)
+        if match is not None:
+            return float(match.group(1))
+    pitch = _coarse_pitch(major_mm) or 1.0
+    return bore_depth_mm - 2.5 * pitch
+
+
+def _world_point(frame, axial_mm: float, radius_mm: float):
+    """把 (轴向 mm, 半径 mm) 的旋转草图点映射到模型空间（米）。
+
+    frame = (轴向单位向量, 径向单位向量, 原点)，均为三维向量。
+    """
+
+    axis_dir, radial_dir, origin = frame
+    axial_m = axial_mm / 1000.0
+    radial_m = radius_mm / 1000.0
+    return tuple(
+        origin[index] + axis_dir[index] * axial_m + radial_dir[index] * radial_m
+        for index in range(3)
+    )
+
+
+def _radius_ladder(analysis: DrawingAnalysis) -> list[float]:
+    """直径/半径标注 → 半径档位（降序）。剔除图框圆角等夸张半径。"""
+
+    width = abs(analysis.bounds[2] - analysis.bounds[0])
+    height = abs(analysis.bounds[3] - analysis.bounds[1])
+    # 图框圆角（如 R10248）不可能比整个视图还大，按视图对角线剔除。
+    reference = max(math.hypot(width, height), 1.0)
+    radii: set[float] = set()
+    for dim in analysis.dimensions:
+        if dim.kind == "diameter":
+            radius = dim.value / 2.0
+        elif dim.kind == "radius":
+            radius = dim.value
+        else:
+            continue
+        if radius <= 0.0 or radius > reference:
+            continue
+        radii.add(round(radius, 6))
+    return sorted(radii, reverse=True)
+
+
+def _axial_lengths(analysis: DrawingAnalysis, axis: str) -> list[float]:
+    """只取沿轴方向的线性标注值（垂直方向的直径/台阶高度不算）。"""
+
+    lengths: list[float] = []
+    for dim in analysis.dimensions:
+        if dim.kind != "linear" or dim.start is None or dim.end is None:
+            continue
+        dx = abs(dim.end[0] - dim.start[0])
+        dy = abs(dim.end[1] - dim.start[1])
+        if axis == "horizontal" and dx >= dy and dx > 1e-9:
+            lengths.append(dim.value)
+        elif axis == "vertical" and dy > dx and dy > 1e-9:
+            lengths.append(dim.value)
+    return lengths
+
+
+def _dimension_axis(analysis: DrawingAnalysis) -> tuple[str, float] | None:
+    """按直径类标注的中点定轴线。返回 (axis, position) 或 None。"""
+
+    horizontal: list[float] = []  # 竖直方向量直径 → 轴水平，取 mid_y
+    vertical: list[float] = []  # 水平方向量直径 → 轴竖直，取 mid_x
+    for dim in analysis.dimensions:
+        if dim.start is None or dim.end is None:
+            continue
+        is_diameter = dim.kind == "diameter" or any(
+            marker in dim.text for marker in _DIM_DIAMETER_MARKERS
+        )
+        if not is_diameter:
+            continue
+        dx = abs(dim.end[0] - dim.start[0])
+        dy = abs(dim.end[1] - dim.start[1])
+        if dy > dx and dy > 1e-9:
+            horizontal.append((dim.start[1] + dim.end[1]) / 2.0)
+        elif dx > dy and dx > 1e-9:
+            vertical.append((dim.start[0] + dim.end[0]) / 2.0)
+
+    def _consistent(values: list[float]) -> bool:
+        return bool(values) and (max(values) - min(values) <= 0.5)
+
+    # 支持标注多的一侧优先；两侧一致时取水平轴（车件多为横放）。
+    if _consistent(horizontal) and len(horizontal) >= len(vertical):
+        return "horizontal", sum(horizontal) / len(horizontal)
+    if _consistent(vertical):
+        return "vertical", sum(vertical) / len(vertical)
+    if _consistent(horizontal):
+        return "horizontal", sum(horizontal) / len(horizontal)
+    return None
+
+
+def _point_axial(point: Point, axis: str) -> float:
+    return point[0] if axis == "horizontal" else point[1]
+
+
+def _point_signed_radius(point: Point, axis: str, position: float) -> float:
+    return (point[1] - position) if axis == "horizontal" else (point[0] - position)
+
+
+def _matching_segments(
+    analysis: DrawingAnalysis,
+    axis: str,
+    position: float,
+    radii: list[float],
+) -> list[tuple[float, float, float, bool]]:
+    """按半径收集与轴平行的线段 → [(radius, x0, x1, internal), ...]。
+
+    internal=True 表示非外轮廓的内部实线（孔壁）；False 表示外轮廓边。
+    外径台阶与内孔壁就靠这个 internal 标记区分，避免把细长外台阶当孔。
+    """
+
+    records: list[tuple[float, float, float, bool]] = []
+    outline_ids = {id(profile) for profile in analysis.profiles}
+    tol = 0.05
+    for prim in analysis.primitives:
+        internal = not prim.closed and id(prim) not in outline_ids
+        if prim.closed and id(prim) not in outline_ids:
+            continue  # 其他闭合环暂不纳入
+        points = list(prim.points)
+        for a, b in zip(points, points[1:]):
+            ra = _point_signed_radius(a, axis, position)
+            rb = _point_signed_radius(b, axis, position)
+            if abs(ra - rb) > tol:
+                continue  # 不与轴平行
+            radius = abs((ra + rb) / 2.0)
+            for target in radii:
+                if abs(radius - target) <= tol:
+                    xa = _point_axial(a, axis)
+                    xb = _point_axial(b, axis)
+                    records.append((target, min(xa, xb), max(xa, xb), internal))
+                    break
+    return records
+
+
+def _spans_continuous(spans: list[tuple[float, float]], length: float) -> bool:
+    """孔壁跨度是否基本连续（中间没有明显断开）。"""
+
+    if not spans:
+        return False
+    intervals = sorted(spans)
+    _start, current_end = intervals[0]
+    gap_tol = max(0.05 * length, 0.5)
+    for start, end in intervals[1:]:
+        if start > current_end + gap_tol:
+            return False
+        current_end = max(current_end, end)
+    return True
+
+
+def _detect_bore(
+    segments: list[tuple[float, float, float, bool]],
+    radii: list[float],
+) -> tuple[float | None, tuple[float, float] | None]:
+    """识别贯穿内孔：返回 (bore_radius, (x0, x1)) 或 (None, None)。
+
+    必须有内部孔壁线（不是外轮廓）、该半径小于最大外径档位、且孔壁基本
+    贯穿零件全长。细长外径台阶没有内部孔壁线，不会被误判成孔。
+    """
+
+    if not segments or not radii:
+        return None, None
+    outer_max = max(radii)
+    outer_spans = [(x0, x1) for _r, x0, x1, internal in segments if not internal]
+    if outer_spans:
+        part_min = min(x0 for x0, _x1 in outer_spans)
+        part_max = max(x1 for _x0, x1 in outer_spans)
+    else:
+        part_min = min(x0 for _r, x0, _x1, _i in segments)
+        part_max = max(x1 for _r, _x0, x1, _i in segments)
+    length = part_max - part_min
+    if length <= 1e-6:
+        return None, None
+    best: tuple[float, tuple[float, float]] | None = None
+    for radius in sorted(set(radii)):
+        if radius >= outer_max - 1e-9:
+            continue
+        internal_spans = [
+            (x0, x1)
+            for r, x0, x1, internal in segments
+            if internal and abs(r - radius) <= 1e-9
+        ]
+        if not internal_spans:
+            continue
+        span_min = min(x0 for x0, _x1 in internal_spans)
+        span_max = max(x1 for _x0, x1 in internal_spans)
+        if (span_max - span_min) / length < 0.85:
+            continue
+        if not _spans_continuous(internal_spans, length):
+            continue
+        if best is None or radius < best[0]:
+            best = (radius, (span_min, span_max))
+    if best is None:
+        return None, None
+    return best
+
+
+def _threads_from_dimensions(analysis: DrawingAnalysis) -> tuple[TurnedThread, ...]:
+    """从标注文本读螺纹（内M<>-25深 → 占位替换为真实数值）。"""
+
+    found: list[TurnedThread] = []
+    seen: set[str] = set()
+    for dim in analysis.dimensions:
+        text = dim.text or ""
+        if not text:
+            continue
+        filled = text.replace("<>", f"{dim.value:g}")
+        for match in _THREAD.finditer(filled):
+            size = match.group(1)
+            pitch = float(match.group(2)) if match.group(2) else None
+            designation = f"M{size}" if pitch is None else f"M{size}×{pitch:g}"
+            if designation in seen:
+                continue
+            seen.add(designation)
+            found.append(TurnedThread(designation, pitch, filled))
+    return tuple(found)
+
+
+def _merge_threads(
+    base: tuple[TurnedThread, ...],
+    extra: tuple[TurnedThread, ...],
+) -> tuple[TurnedThread, ...]:
+    merged = list(base)
+    seen = {thread.designation for thread in base}
+    for thread in extra:
+        if thread.designation not in seen:
+            seen.add(thread.designation)
+            merged.append(thread)
+    return tuple(merged)
+
+
+def _thread_for_bore(
+    analysis: DrawingAnalysis, radius: float
+) -> tuple[str, float, str] | None:
+    """找公称直径≈2*radius 且带 M 的标注，返回 (designation, major, text)。"""
+
+    for dim in analysis.dimensions:
+        text = dim.text or ""
+        if not text or abs(dim.value - 2.0 * radius) > 0.2:
+            continue
+        filled = text.replace("<>", f"{dim.value:g}")
+        match = _THREAD.search(filled)
+        if match is None:
+            continue
+        size = match.group(1)
+        return f"M{size}", float(size), filled
+    return None
+
+
+def _apply_blind_bore_high(
+    solid_profile: tuple[Point, ...], bore: TurnedBore
+) -> tuple[Point, ...]:
+    """高端（轴向最大）开口的盲孔：把高端轴点替换成「孔壁+钻尖」 recess。"""
+
+    points = list(solid_profile)
+    if len(points) > 1 and math.dist(points[0], points[-1]) <= 1e-6:
+        points = points[:-1]
+    if not points:
+        return solid_profile
+    last = points[-1]
+    # 结构不符（高端轴点不在开口处）时保持实心，不产出错误几何。
+    if abs(last[0] - bore.opening_mm) > 0.05 or abs(last[1]) > 0.05:
+        return solid_profile
+    recess = [
+        (bore.opening_mm, bore.radius_mm),
+        (bore.bottom_mm, bore.radius_mm),
+        (bore.apex_mm, 0.0),
+    ]
+    new_points = points[:-1] + recess
+    new_points.append(new_points[0])
+    return tuple(new_points)
+
+
+def _detect_blind_bore(
+    analysis: DrawingAnalysis,
+    axis: str,
+    position: float,
+    solid_profile: tuple[Point, ...],
+) -> tuple[TurnedBore, tuple[Point, ...]] | None:
+    """识别一端开口的内螺纹盲孔，返回 (bore, 新profile) 或 None。
+
+    依据：内部孔壁直线的轴向跨度只覆盖一端且不到全长，另有指向轴线的
+    钻尖斜线给出尖点，螺纹规格从「内M..」标注读。低端开口暂未实现。
+    """
+
+    xs = [x for x, _radius in solid_profile]
+    part_min, part_max = min(xs), max(xs)
+    part_length = part_max - part_min
+    if part_length <= 1e-6:
+        return None
+    outline_ids = {id(profile) for profile in analysis.profiles}
+    walls: list[tuple[float, float, float]] = []  # (radius, x0, x1)
+    slopes: list[tuple[float, float, float]] = []  # (radius, wall_axial, apex_axial)
+    for prim in analysis.primitives:
+        if prim.closed or id(prim) in outline_ids:
+            continue
+        if len(prim.points) < 2:
+            continue
+        a, b = prim.points[0], prim.points[-1]
+        ra = _point_signed_radius(a, axis, position)
+        rb = _point_signed_radius(b, axis, position)
+        xa = _point_axial(a, axis)
+        xb = _point_axial(b, axis)
+        if abs(ra - rb) <= 0.05 and abs(ra) > 0.5:
+            walls.append((abs(ra), min(xa, xb), max(xa, xb)))
+        elif (abs(ra) <= 0.05) != (abs(rb) <= 0.05):
+            if abs(ra) <= 0.05:
+                slopes.append((abs(rb), xb, xa))
+            else:
+                slopes.append((abs(ra), xa, xb))
+    if not walls:
+        return None
+    by_radius: dict[float, list[tuple[float, float]]] = {}
+    for radius, x0, x1 in walls:
+        by_radius.setdefault(round(radius, 3), []).append((x0, x1))
+    for radius, spans in by_radius.items():
+        span_min = min(x0 for x0, _x1 in spans)
+        span_max = max(x1 for _x0, x1 in spans)
+        if (span_max - span_min) / part_length >= 0.85:
+            continue  # 接近全长的是通孔，不在此处理
+        if abs(span_max - part_max) <= 0.05:
+            side, opening, bottom = "high", part_max, span_min
+        elif abs(span_min - part_min) <= 0.05:
+            side, opening, bottom = "low", part_min, span_max
+        else:
+            continue  # 孔壁不贴端面，不是端部盲孔
+        apex = None
+        for wall_r, wall_x, apex_x in slopes:
+            if abs(wall_r - radius) <= 0.05 and abs(wall_x - bottom) <= 0.5:
+                apex = apex_x
+                break
+        if apex is None:
+            continue
+        thread = _thread_for_bore(analysis, radius)
+        if thread is None:
+            continue
+        designation, major, text = thread
+        pitch = _coarse_pitch(major)
+        if pitch is None:
+            continue
+        bore_depth = abs(opening - bottom)
+        bore = TurnedBore(
+            radius_mm=_tap_drill_diameter(major) / 2.0,
+            designation=designation,
+            major_mm=major,
+            pitch_mm=pitch,
+            thread_depth_mm=_thread_depth(major, text, bore_depth),
+            opening_mm=opening,
+            bottom_mm=bottom,
+            apex_mm=apex,
+            side=side,
+        )
+        if side != "high":
+            continue  # 低端开口暂未实现，不产出错误几何
+        return bore, _apply_blind_bore_high(solid_profile, bore)
+    return None
+
+
+def _plan_outline_with_dimensions(
+    analysis: DrawingAnalysis,
+    outline: Primitive,
+    *,
+    profile_index: int = 0,
+    label: str = "件01",
+) -> TurnedPartPlan:
+    axis, position, source = _axis_of(outline, analysis)
+    solid = half_profile(outline, axis, position)
+    radii = _radius_ladder(analysis)
+    segments = _matching_segments(analysis, axis, position, radii)
+    through_radius, _window = _detect_bore(segments, radii)
+    threads, holes = read_turned_notes(analysis, outline)
+    all_threads = _merge_threads(threads, _threads_from_dimensions(analysis))
+    bores: tuple[TurnedBore, ...] = ()
+    if through_radius is not None:
+        # 通孔 → 环形剖面：把轴心一侧的半径抬到孔半径，不再落回轴线。
+        profile = tuple(
+            (x, through_radius if radius <= 1e-6 else radius) for x, radius in solid
+        )
+    else:
+        blind = _detect_blind_bore(analysis, axis, position, solid)
+        if blind is not None:
+            bore, profile = blind
+            bores = (bore,)
+        else:
+            profile = solid
+    plan = TurnedPartPlan(
+        axis,
+        position,
+        source,
+        tuple(profile),
+        all_threads,
+        holes,
+        profile_index,
+        label,
+        primitive_bounds(outline),
+    )
+    return replace(plan, bores=bores)
+
+
+def _dimension_outline(analysis: DrawingAnalysis) -> Primitive:
+    """尺寸驱动路径选轮廓：不做图框启发式过滤。
+
+    筒件/光轴的外轮廓可能就是个普通矩形，若按「矩形且贴近图幅」当图框
+    过滤会误杀零件。单闭合轮廓直接用，多轮廓取面积最大者。
+    """
+
+    closed = [
+        profile
+        for profile in analysis.profiles
+        if profile.closed and not profile.is_bend and len(profile.points) >= 4
+    ]
+    if not closed:
+        raise ValueError("图上没有可用于旋转的闭合外形。")
+    if len(closed) == 1:
+        return closed[0]
+    return max(closed, key=lambda profile: _profile_area(_ring(profile)))
+
+
+def _plan_with_dimensions(analysis: DrawingAnalysis) -> TurnedPartPlan:
+    outline = _dimension_outline(analysis)
+    return _plan_outline_with_dimensions(analysis, outline)
+
+
+def _discover_with_dimensions(analysis: DrawingAnalysis) -> tuple[TurnedPartPlan, ...]:
+    found: list[tuple[tuple[float, float, float, float], TurnedPartPlan]] = []
+    for index in _fallback_outline_indexes(analysis):
+        outline = analysis.profiles[index]
+        try:
+            plan = _plan_outline_with_dimensions(
+                analysis, outline, profile_index=index
+            )
+        except ValueError:
+            continue
+        found.append((plan.bounds, plan))
+    if not found:
+        return (replace(_plan_with_dimensions(analysis), label="件01"),)
+    found.sort(key=lambda item: (-item[0][3], item[0][0]))
+    return tuple(
+        replace(plan, label=f"件{sequence:02d}")
+        for sequence, (_bounds, plan) in enumerate(found, start=1)
+    )
 
 
 def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
@@ -650,8 +1171,7 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     saved = False
     model = None
     try:
-        pythoncom.CoInitialize()
-        com_initialized = True
+        com_initialized = session.initialize_com_scope(pythoncom,lease)
 
         solidworks, _created_here = sw._connect_task_solidworks(lease, win32com, pythoncom)
         # 目标机装的 SolidWorks 版本未必和开发机一致，主版本号要现探测。
@@ -1790,3 +2310,4 @@ def _write_turned_properties(
             manager.Add3("需手修", 30, "；".join(hand), 1)
     except Exception:
         return
+

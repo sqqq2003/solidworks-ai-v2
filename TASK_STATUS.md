@@ -254,3 +254,11 @@
   - Issue #39：7c787deb（`Keep owned SolidWorks alive across S1 close and S2 reopen`）已在代码侧修复 S1→S2 保活根因（UserControl=True + 严格读回、CloseDoc 前再核验、显式 SAFEARRAY(double)），并附 `docs/s2-retest-20261024.md` 精确串行重测跑法；但新补丁实机通过仍待 WB/Qoder 串行重测（同一受控 PID 跨 S1 关最后文档 → S2 重开 → 重建读回 → 展开导出，`keepalive_verified=true`）；`_pid_alive` 的 Windows 分支已用 `_windows_pid_alive`（属 def70f3 一批）；WB-TEST-001 的同名测试在 dev 树内无对应项，修复认领以 def70f3 为据，待重测确认；#39 本身仍 open，不急于关闭。
   - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
   - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。
+
+
+## Unified integration candidate
+
+- Independent branch `integration/unified-v2-offline`; source pins: delivery/integrated-v2/source-versions.json. Existing source branches unchanged.
+- One project CLI / desktop serial queue calls linked QL, roller, engineering and manufacturing reports. Original programs/CAD are not overwritten.
+- Offline regression: 781 run / 777 passed / 4 explicit skips / 0 failures/errors; OS writer lock passed. Independent original-feature, feature-tree and geometry-IR suites included. Reproduce with work/run_integrated_tests.py.
+- Windows/SolidWorks/GUI clicks not tested. Full native acceptance remains pending; see docs/unified-integration.md and delivery/integrated-v2/windows-matrix.json.

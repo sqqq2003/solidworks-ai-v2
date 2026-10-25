@@ -36,17 +36,17 @@ def main():
     tabs.add(overview,text='项目状态 / 环境')
     form = ttk.LabelFrame(jobs_tab,text='工作副本与参数（钣金轮廓从 1 开始，滚筒/车件规格从 0 开始）')
     form.pack(fill='x',pady=6)
-    modes = ttk.Combobox(form,textvariable=values['kind'],values=('sheet','roller','turned','parametric','ql5050px'),state='readonly')
+    modes = ttk.Combobox(form,textvariable=values['kind'],values=('sheet','roller','turned','parametric','ql5050px','unified'),state='readonly')
     modes.grid(row=0,column=1,sticky='ew',padx=6,pady=3)
     ttk.Label(form,text='类型：钣金 / 滚筒 / 车件 / 整机参数').grid(row=0,column=0,sticky='w')
     def choose(key):
-        if key == 'output' and values['kind'].get()=='ql5050px':
+        if key == 'output' and values['kind'].get() in {'ql5050px','unified'}:
             parent = filedialog.askdirectory(title='选择父目录；将在其中新建 QL 输出目录')
             path = str(Path(parent)/'ql-output') if parent else ''
         elif key == 'output':
             path = filedialog.asksaveasfilename(defaultextension='.SLDPRT',filetypes=[('SolidWorks part','*.SLDPRT')])
         else:
-            pattern = '*.exe' if key=='sw_exe' else ('*.json' if values['kind'].get()=='ql5050px' else '*.dxf *.dwg')
+            pattern = '*.exe' if key=='sw_exe' else ('*.json' if values['kind'].get() in {'ql5050px','unified'} else '*.dxf *.dwg')
             path = filedialog.askopenfilename(filetypes=[('文件',pattern),('All','*.*')])
         if path:
             values[key].set(path)
@@ -63,7 +63,7 @@ def main():
     machine.grid(row=5,column=0,columnspan=3,sticky='w',pady=4)
     ttk.Combobox(machine,textvariable=values['machine'],values=('QL-5050PX','GT-ZX'),state='readonly',width=14).grid(row=1,column=0,columnspan=2)
     ttk.Label(machine,text='QL 专用任务：选择 ql5050px 类型及 JSON 配置').grid(row=1,column=2,columnspan=4)
-    ttk.Combobox(machine,textvariable=values['ql_action'],values=('plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence','integrated'),state='readonly',width=20).grid(row=2,column=0,columnspan=2)
+    ttk.Combobox(machine,textvariable=values['ql_action'],values=('plan','assembly','bom','drawing','pipeline','auto_assembly','drive','manufacturing','machine_package','intelligence','modeling_batch','modeling_delivery','cad_features','integrated','production_package'),state='readonly',width=20).grid(row=2,column=0,columnspan=2)
     ttk.Label(machine,text='QL：装配计划 / 传动改型 / 制造图任务 / 统一交接包（离线）').grid(row=2,column=2,columnspan=4)
     for col,key in enumerate(('length','width','height')):
         ttk.Label(machine,text=key+' mm').grid(row=0,column=col*2)
@@ -89,6 +89,8 @@ def main():
             kind = values['kind'].get()
             if kind == 'parametric':
                 job = {'kind':kind,'machine':values['machine'].get(),**{k:float(values[k].get()) for k in ('length','width','height')}}
+            elif kind == 'unified':
+                job={'kind':'unified','config':values['source'].get(),'output_dir':values['output'].get(),'name':'统一离线项目包'}
             elif kind == 'ql5050px':
                 job = {'kind':kind,'action':values['ql_action'].get(),'machine':'QL-5050PX',
                        'config':values['source'].get(),'name':'QL '+values['ql_action'].get()}
@@ -141,7 +143,7 @@ def main():
             pass
         root.after(150,poll)
     for label,command in (('加入识别',lambda:append('analyze')),('加入计划 / 参数预检',lambda:append('plan')),
-        ('加入原生生成',lambda:append('generate')),('加入 QL 任务',lambda:append('plan')),('开始队列',run),('当前任务后停止',stop.set)):
+        ('加入原生生成',lambda:append('generate')),('加入 QL / 统一任务',lambda:append('plan')),('开始队列',run),('当前任务后停止',stop.set)):
         ttk.Button(controls,text=label,command=command).pack(side='left',padx=3)
     def clear():
         if not state['busy']:
@@ -149,6 +151,10 @@ def main():
             for item in table.get_children():
                 table.delete(item)
     ttk.Button(controls,text='清空队列',command=clear).pack(side='left',padx=3)
+    def native_review():
+        from ql5050px.modeling_gui import open_review
+        open_review(root,state,messages,stop)
+    ttk.Button(controls,text='审核并运行原生配方',command=native_review).pack(side='left',padx=3)
     overview_text = tk.Text(overview,wrap='word')
     overview_text.pack(fill='both',expand=True)
     overview_text.insert('end',json.dumps({'environment':doctor(),'project':capabilities()},ensure_ascii=False,indent=2))
@@ -166,4 +172,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

@@ -37,7 +37,7 @@ except Exception as exc:  # reported, not hidden
 report = dict(scope='portable_simulation_only', platform=platform.system(), python=platform.python_version(),
               tests_run=result.testsRun, passed=result.testsRun-len(result.errors)-len(result.failures)-len(result.skipped),
               failures=len(result.failures), errors=len(result.errors), skipped=[dict(test=str(test), reason=reason) for test, reason in result.skipped],
-              pending_feature_cases=pending, cross_process_lock_passed=probe.returncode == 0,
+              pending_feature_cases={}, separate_feature_contract_cases=pending, cross_process_lock_passed=probe.returncode == 0,
               solidworks_live_verified=False, sw_live='not_applicable_on_linux',
               a01_parametric=a01_parametric)
 from project_workbench import capabilities, doctor

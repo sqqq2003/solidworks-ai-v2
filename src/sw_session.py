@@ -38,6 +38,7 @@ SW_SESSION_CALL_TIMEOUT_SEC = 600.0
 
 _DISCONNECT_HRESULTS = frozenset(
     {
+        -2147220995,  # CO_E_OBJNOTCONNECTED (Issue39 native evidence)
         -2147417848,  # RPC_E_DISCONNECTED
         -2147023174,  # RPC_S_SERVER_UNAVAILABLE
         -2147418111,  # RPC_E_CALL_REJECTED
@@ -104,6 +105,9 @@ class SessionLease:
     native_launch: Any = None
     native_launch_attempt: Any = None
     keep_application_open: bool = False
+    keepalive_document_enabled: bool = False
+    keepalive_document_title: str | None = None
+    keepalive_part_template_path: str | None = None
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)
@@ -803,6 +807,15 @@ def require_model_write(lease: SessionLease | None = None) -> SessionLease:
     return lease
 
 
+def initialize_com_scope(pythoncom,lease=None):
+    """Return True only if this helper actually initialized COM itself."""
+    lease=lease or current_lease()
+    if lease is not None and on_task_sta() and lease.com_initialized:
+        return False
+    pythoncom.CoInitialize()
+    return True
+
+
 def ensure_application_keepalive(lease: SessionLease, app: Any) -> None:
     """Prevent background SW from exiting on the last intermediate CloseDoc.
 
@@ -822,6 +835,8 @@ def ensure_application_keepalive(lease: SessionLease, app: Any) -> None:
     except Exception as error:
         lease.writes_blocked = True
         raise SessionOwnershipError("owned application keepalive could not be verified; CloseDoc refused") from error
+    from owned_document_lifetime import ensure_anchor
+    ensure_anchor(lease,app)
     binding = getattr(lease, "native_launch", None)
     if binding is not None:
         binding.keepalive_verified = True
@@ -841,6 +856,8 @@ def close_owned_document(lease: SessionLease, app: Any, title: str) -> None:
         raise SessionOwnershipError(
             f"refusing to close document {title!r}: this task cannot prove it owns that document"
         )
+    if lease.keep_application_open and title==lease.keepalive_document_title:
+        raise SessionOwnershipError("intermediate close of keepalive anchor refused")
     ensure_application_keepalive(lease, app)
     app.CloseDoc(title)
     # Drop the title and its handle only after CloseDoc returns. A replacement
@@ -869,6 +886,10 @@ def close_all_documents(lease: SessionLease, app: Any, open_titles: Any) -> None
             "refusing CloseAllDocuments while documents this task does not own are open: "
             + ", ".join(foreign)
         )
+    if lease.keep_application_open and lease.keepalive_document_enabled:
+        for title in titles:
+            if title!=lease.keepalive_document_title:close_owned_document(lease,app,title)
+        return
     ensure_application_keepalive(lease, app)
     app.CloseAllDocuments(True)
 
@@ -1258,5 +1279,6 @@ def call_with_watchdog(
     finally:
         finished.set()
         watcher.join(timeout=1.0)
+
 
 

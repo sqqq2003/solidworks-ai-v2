@@ -1,0 +1,32 @@
+{
+  "scope": "targeted_offline_patch_contracts_only",
+  "run": 118,
+  "passed": 117,
+  "failed": 0,
+  "skipped": 1,
+  "skip_reason": "original results/cursor/baseline/src not present in cloud source",
+  "native_test_status": "not_run",
+  "native_acceptance": "pending_windows_validation",
+  "commands": [
+    "PYTHONPATH=src:work python -m unittest discover -s tests -v (only the listed materialized suite files were run in cloud)",
+    "python -m compileall -q src work"
+  ],
+  "note": "not the full repository regression suite; fake COM/process tests do not prove native SW stability",
+  "suite_files": [
+    "test_acceptance_recovery.py",
+    "test_framework_review_fixes.py",
+    "test_issue19_ckpt_teardown.py",
+    "test_minimal_session_batch.py",
+    "test_modeling_validation.py",
+    "test_modeling_worker_lifecycle.py",
+    "test_native_bend_batch.py",
+    "test_owned_document_lifetime.py",
+    "test_owned_launch_preflight.py",
+    "test_r2_feature_diagnostics.py",
+    "test_recovery_review_guards.py",
+    "test_sheet_metal_pipeline.py",
+    "test_sw2022_feature_interfaces.py",
+    "test_sw_owned_launch.py",
+    "test_sw_session_safety.py"
+  ]
+}

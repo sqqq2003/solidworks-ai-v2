@@ -1,0 +1,21 @@
+test_flip_direction_has_no_default (test_geometry_ir.TestBuildRequest.test_flip_direction_has_no_default) ... ok
+test_no_defaults_in_module_source (test_geometry_ir.TestBuildRequest.test_no_defaults_in_module_source) ... ok
+test_non_uniform_bends_withheld (test_geometry_ir.TestBuildRequest.test_non_uniform_bends_withheld) ... ok
+test_revolve_tree_cannot_use_sheetmetal_build (test_geometry_ir.TestBuildRequest.test_revolve_tree_cannot_use_sheetmetal_build) ... ok
+test_section12_field_alignment (test_geometry_ir.TestBuildRequest.test_section12_field_alignment) ... ok
+test_cli_bad_json_exits_2 (test_geometry_ir.TestCli.test_cli_bad_json_exits_2) ... ok
+test_cli_end_to_end_with_build (test_geometry_ir.TestCli.test_cli_end_to_end_with_build) ... ok
+test_cli_pending_tree_exits_1_without_build (test_geometry_ir.TestCli.test_cli_pending_tree_exits_1_without_build) ... ok
+test_revolve_roundtrip_ok (test_geometry_ir.TestRoundtrip.test_revolve_roundtrip_ok) ... ok
+test_roundtrip_fails_cleanly_on_pending_tree (test_geometry_ir.TestRoundtrip.test_roundtrip_fails_cleanly_on_pending_tree) ... ok
+test_sheetmetal_roundtrip_ok (test_geometry_ir.TestRoundtrip.test_sheetmetal_roundtrip_ok) ... ok
+test_cycle_and_dangling_dependency_refused (test_geometry_ir.TestValidation.test_cycle_and_dangling_dependency_refused) ... ok
+test_derived_section_is_cross_check_only (test_geometry_ir.TestValidation.test_derived_section_is_cross_check_only) ... ok
+test_missing_bend_param_is_pending_not_error (test_geometry_ir.TestValidation.test_missing_bend_param_is_pending_not_error) ... ok
+test_units_must_be_explicit_mm (test_geometry_ir.TestValidation.test_units_must_be_explicit_mm) ... ok
+test_unknown_feature_type_refused (test_geometry_ir.TestValidation.test_unknown_feature_type_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.090s
+
+OK

@@ -1,0 +1,204 @@
+[
+  {
+    "id": "plate",
+    "kind": "plate",
+    "backend": "feature_ir",
+    "feature_sequence": [
+      "sketch",
+      "extrude",
+      "sketch",
+      "cut"
+    ],
+    "payload": {
+      "outline_mm": [
+        [
+          0,
+          0
+        ],
+        [
+          120.0,
+          0
+        ],
+        [
+          120.0,
+          80.0
+        ],
+        [
+          0,
+          80.0
+        ]
+      ],
+      "thickness_mm": 4.0,
+      "holes": [
+        {
+          "center_mm": [
+            25,
+            25
+          ],
+          "diameter_mm": 10
+        },
+        {
+          "center_mm": [
+            95,
+            55
+          ],
+          "diameter_mm": 10
+        }
+      ]
+    },
+    "pending_confirmation": [
+      "template_sketch_plane",
+      "part_template"
+    ],
+    "status": "offline_plan_generated",
+    "cad_executed": false,
+    "native_acceptance": "pending_windows_validation"
+  },
+  {
+    "id": "bracket",
+    "kind": "bracket",
+    "backend": "feature_ir",
+    "feature_sequence": [
+      "sketch",
+      "extrude",
+      "sketch",
+      "cut"
+    ],
+    "payload": {
+      "outline_mm": [
+        [
+          0,
+          0
+        ],
+        [
+          100.0,
+          0
+        ],
+        [
+          100.0,
+          25.0
+        ],
+        [
+          25.0,
+          25.0
+        ],
+        [
+          25.0,
+          70.0
+        ],
+        [
+          0,
+          70.0
+        ]
+      ],
+      "thickness_mm": 6.0,
+      "holes": [
+        {
+          "center_mm": [
+            15,
+            50
+          ],
+          "diameter_mm": 8
+        },
+        {
+          "center_mm": [
+            75,
+            12
+          ],
+          "diameter_mm": 8
+        }
+      ]
+    },
+    "pending_confirmation": [
+      "template_sketch_plane",
+      "part_template"
+    ],
+    "status": "offline_plan_generated",
+    "cad_executed": false,
+    "native_acceptance": "pending_windows_validation"
+  },
+  {
+    "id": "shaft",
+    "kind": "shaft",
+    "backend": "turned_generator",
+    "feature_sequence": [
+      "sketch",
+      "revolve"
+    ],
+    "payload": {
+      "profile_mm": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          10.0
+        ],
+        [
+          25.0,
+          10.0
+        ],
+        [
+          25.0,
+          15.0
+        ],
+        [
+          85.0,
+          15.0
+        ],
+        [
+          85.0,
+          10.0
+        ],
+        [
+          110.0,
+          10.0
+        ],
+        [
+          110.0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "axis": "horizontal",
+      "axis_position": 0
+    },
+    "pending_confirmation": [],
+    "status": "offline_plan_generated",
+    "cad_executed": false,
+    "native_acceptance": "pending_windows_validation"
+  },
+  {
+    "id": "two_bend_sheet",
+    "kind": "two_bend_sheet",
+    "backend": "sheet_pipeline",
+    "feature_sequence": [
+      "sketch",
+      "base_flange",
+      "sketched_bend",
+      "sketched_bend"
+    ],
+    "payload": {
+      "length_mm": 180.0,
+      "width_mm": 80.0,
+      "thickness_mm": 2.0,
+      "radius_mm": 2.0,
+      "k_factor": 0.4,
+      "angle_deg": 90.0,
+      "bend_positions_mm": [
+        30,
+        150
+      ],
+      "flip_direction": false,
+      "relief_bend_indices": []
+    },
+    "pending_confirmation": [],
+    "status": "offline_plan_generated",
+    "cad_executed": false,
+    "native_acceptance": "pending_windows_validation"
+  }
+]

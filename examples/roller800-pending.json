@@ -1,0 +1,9 @@
+{
+  "units": "mm",
+  "target_overall_mm": 800,
+  "source_kind": "OEM_mapping_required",
+  "mappings": {
+    "schema_version": 1,
+    "parameters": []
+  }
+}

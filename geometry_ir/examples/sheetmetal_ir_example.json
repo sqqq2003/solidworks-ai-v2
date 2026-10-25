@@ -1,0 +1,214 @@
+{
+  "format": "geometry-ir/1",
+  "units": "mm",
+  "angles_unit": "degrees",
+  "source": {
+    "tree_name": "two-bend sheet-metal part (geometry-IR example)",
+    "tree_version": "feature-tree/1",
+    "units": "mm"
+  },
+  "features": [
+    {
+      "id": "sketch-1",
+      "type": "sketch",
+      "depends_on": [],
+      "sources": [],
+      "params": {
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            116,
+            0
+          ],
+          [
+            116,
+            60
+          ],
+          [
+            0,
+            60
+          ]
+        ]
+      },
+      "status": "confirmed",
+      "pending_reasons": [],
+      "geometry": {
+        "points": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            116.0,
+            0.0
+          ],
+          [
+            116.0,
+            60.0
+          ],
+          [
+            0.0,
+            60.0
+          ]
+        ],
+        "closed": true,
+        "segments": [
+          {
+            "start": [
+              0.0,
+              0.0
+            ],
+            "end": [
+              116.0,
+              0.0
+            ]
+          },
+          {
+            "start": [
+              116.0,
+              0.0
+            ],
+            "end": [
+              116.0,
+              60.0
+            ]
+          },
+          {
+            "start": [
+              116.0,
+              60.0
+            ],
+            "end": [
+              0.0,
+              60.0
+            ]
+          },
+          {
+            "start": [
+              0.0,
+              60.0
+            ],
+            "end": [
+              0.0,
+              0.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "bend-1",
+      "type": "bend",
+      "depends_on": [
+        "sketch-1"
+      ],
+      "sources": [],
+      "params": {
+        "line": {
+          "start": [
+            38,
+            0
+          ],
+          "end": [
+            38,
+            60
+          ]
+        },
+        "thickness_mm": 2.0,
+        "radius_mm": 1.5,
+        "angle_degrees": 90.0,
+        "k_factor": 0.38,
+        "length_mm": 60.0
+      },
+      "status": "confirmed",
+      "pending_reasons": []
+    },
+    {
+      "id": "bend-2",
+      "type": "bend",
+      "depends_on": [
+        "sketch-1"
+      ],
+      "sources": [],
+      "params": {
+        "line": {
+          "start": [
+            78,
+            0
+          ],
+          "end": [
+            78,
+            60
+          ]
+        },
+        "thickness_mm": 2.0,
+        "radius_mm": 1.5,
+        "angle_degrees": 90.0,
+        "k_factor": 0.38,
+        "length_mm": 60.0
+      },
+      "status": "confirmed",
+      "pending_reasons": []
+    },
+    {
+      "id": "sheetmetal-1",
+      "type": "sheetmetal",
+      "depends_on": [
+        "sketch-1",
+        "bend-1",
+        "bend-2"
+      ],
+      "sources": [],
+      "params": {
+        "outline_ref": "sketch-1",
+        "bend_refs": [
+          "bend-1",
+          "bend-2"
+        ],
+        "straight_lengths_mm": [
+          30.0,
+          40.0,
+          30.0
+        ],
+        "note": "straight lengths measured to bend tangent points (BA method), supplied explicitly"
+      },
+      "status": "confirmed",
+      "pending_reasons": []
+    }
+  ],
+  "execution_order": [
+    "sketch-1",
+    "bend-1",
+    "bend-2",
+    "sheetmetal-1"
+  ],
+  "derived": {
+    "derived_not_input": true,
+    "note": "Derived from the feature inputs for cross-check only; never feed derived values back as inputs.",
+    "bends": {
+      "bend-1": {
+        "bend_allowance_mm": 3.5499996985564657,
+        "bend_deduction_mm": 3.4500003014435334
+      },
+      "bend-2": {
+        "bend_allowance_mm": 3.5499996985564657,
+        "bend_deduction_mm": 3.4500003014435334
+      }
+    },
+    "uncomputed_bends": [],
+    "unfold": {
+      "unfold_length_mm": 107.09999939711292,
+      "straight_total_mm": 100.0,
+      "total_bend_allowance_mm": 7.099999397112931,
+      "bend_ids": [
+        "bend-1",
+        "bend-2"
+      ]
+    },
+    "revolves": {},
+    "uncomputed_revolves": []
+  }
+}

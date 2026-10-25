@@ -1,0 +1,87 @@
+{
+  "dimensions": [
+    {
+      "id": "left",
+      "datum": "roller_axis_origin",
+      "role": "interface",
+      "minimum_mm": 1,
+      "value": 50,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    {
+      "id": "right",
+      "datum": "roller_axis_origin",
+      "role": "interface",
+      "minimum_mm": 1,
+      "value": 60,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    {
+      "id": "barrel",
+      "datum": "roller_axis_origin",
+      "role": "adjustable",
+      "minimum_mm": 1,
+      "value": 500,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    {
+      "id": "diameter",
+      "datum": "roller_axis_origin",
+      "role": "interface",
+      "minimum_mm": 1,
+      "value": 20,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    {
+      "id": "shoulder",
+      "datum": "roller_axis_origin",
+      "role": "interface",
+      "minimum_mm": 1,
+      "value": 5,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    {
+      "id": "bearing",
+      "datum": "roller_axis_origin",
+      "role": "interface",
+      "minimum_mm": 1,
+      "value": 20,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    },
+    {
+      "id": "overall",
+      "unit": "mm",
+      "datum": "roller_axis_origin",
+      "role": "adjustable",
+      "source": "explicit overall equation",
+      "terms": [
+        {
+          "dimension": "left",
+          "direction": 1
+        },
+        {
+          "dimension": "barrel",
+          "direction": 1
+        },
+        {
+          "dimension": "right",
+          "direction": 1
+        }
+      ],
+      "solve_for": "barrel"
+    }
+  ],
+  "targets": {
+    "overall": {
+      "value": 800,
+      "unit": "mm",
+      "source": "synthetic engineering example"
+    }
+  }
+}

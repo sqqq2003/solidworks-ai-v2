@@ -1,0 +1,76 @@
+{
+  "scope": "focused_offline_only",
+  "tests_run": 51,
+  "passed": 51,
+  "failed": 0,
+  "skipped": 0,
+  "full_regression": "not_run",
+  "native": "not_run",
+  "cli_smokes": [
+    {
+      "module": "dimensions",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "assembly",
+      "exit_code": 3,
+      "status": "review_required"
+    },
+    {
+      "module": "changes",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "tolerances",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "review",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "transmission",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "weldments",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "costs",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "similarity",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "change_report",
+      "exit_code": 3,
+      "status": "review_required"
+    },
+    {
+      "module": "proposals",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "module": "instruction",
+      "exit_code": 3,
+      "status": "review_required"
+    }
+  ],
+  "commands": [
+    "PYTHONPATH=src python -m unittest discover -s tests -p test_engineering_intelligence.py -v",
+    "python -m compileall -q src/engineering_intelligence work/engineering_intelligence.py",
+    "python work/engineering_intelligence.py batch examples/issue50-batch.json --out <fresh-directory>"
+  ]
+}

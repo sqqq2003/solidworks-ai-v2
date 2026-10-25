@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic fixtures, not OEM manufacturing data",
+  "jobs": [
+    {"id":"plate","recipe":{"kind":"plate","units":"mm","source":"synthetic plate fixture","dimensions_confirmed":true,"length_mm":120,"width_mm":80,"thickness_mm":4,"holes":[{"center_mm":[25,25],"diameter_mm":10},{"center_mm":[95,55],"diameter_mm":10}]}},
+    {"id":"bracket","recipe":{"kind":"bracket","units":"mm","source":"synthetic L bracket fixture","dimensions_confirmed":true,"length_mm":100,"width_mm":70,"leg_mm":25,"thickness_mm":6,"holes":[{"center_mm":[15,50],"diameter_mm":8},{"center_mm":[75,12],"diameter_mm":8}]}},
+    {"id":"shaft","recipe":{"kind":"shaft","units":"mm","source":"synthetic stepped shaft fixture","dimensions_confirmed":true,"stages":[{"length_mm":25,"diameter_mm":20},{"length_mm":60,"diameter_mm":30},{"length_mm":25,"diameter_mm":20}]}},
+    {"id":"two_bend_sheet","recipe":{"kind":"two_bend_sheet","units":"mm","source":"synthetic two-bend blank fixture","dimensions_confirmed":true,"length_mm":180,"width_mm":80,"thickness_mm":2,"radius_mm":2,"k_factor":0.4,"angle_deg":90,"bend_positions_mm":[30,150],"flip_direction":false,"relief_bend_indices":[]}}
+  ]
+}
+

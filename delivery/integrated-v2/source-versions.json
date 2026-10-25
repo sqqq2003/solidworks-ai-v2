@@ -1,0 +1,13 @@
+{
+  "development_base": "aca899b2d7daf2d0b9a2edabda48a56a477b1711",
+  "features": {
+    "PR20": "092eb0bbeffc03b46502945095c76a64d7c22545",
+    "PR28": "e865b3dbbccbeef414f6ce41ba54bfea22923445",
+    "PR43": "d422f697ff3ff40f3df59d61fd775b227bccd764",
+    "PR44": "c883d978c7d7e54661fde1fe9764d447bfd61333",
+    "PR45": "758b1e533a11958784508736f3c05fc83abe0295",
+    "PR47": "9229517de6511218fca6ada050872d6f4cef72ea",
+    "PR48": "1ab7e8e9539f971cf8c59067300fdf6f60ef8643",
+    "PR52": "72d3de13b70f95d16d193237823130da6b5656a0"
+  }
+}

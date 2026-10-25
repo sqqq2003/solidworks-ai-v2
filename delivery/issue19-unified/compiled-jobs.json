@@ -1,0 +1,844 @@
+{
+  "jobs": [
+    {
+      "id": "plate",
+      "recipe": {
+        "kind": "plate",
+        "units": "mm",
+        "source": "synthetic plate fixture",
+        "dimensions_confirmed": true,
+        "length_mm": 120,
+        "width_mm": 80,
+        "thickness_mm": 4,
+        "holes": [
+          {
+            "center_mm": [
+              25,
+              25
+            ],
+            "diameter_mm": 10
+          },
+          {
+            "center_mm": [
+              95,
+              55
+            ],
+            "diameter_mm": 10
+          }
+        ]
+      },
+      "bindings": {},
+      "compiled_plan": {
+        "recipe": {
+          "kind": "plate",
+          "units": "mm",
+          "source": "synthetic plate fixture",
+          "dimensions_confirmed": true,
+          "length_mm": 120,
+          "width_mm": 80,
+          "thickness_mm": 4,
+          "holes": [
+            {
+              "center_mm": [
+                25,
+                25
+              ],
+              "diameter_mm": 10
+            },
+            {
+              "center_mm": [
+                95,
+                55
+              ],
+              "diameter_mm": 10
+            }
+          ]
+        },
+        "bindings": {},
+        "backend": "feature_ir",
+        "features": [
+          {
+            "id": "outline",
+            "kind": "sketch",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic plate fixture"
+            ],
+            "depends_on": [],
+            "parameters": {
+              "plane": null,
+              "entities": [
+                {
+                  "type": "line",
+                  "start": [
+                    0,
+                    0
+                  ],
+                  "end": [
+                    120.0,
+                    0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    120.0,
+                    0
+                  ],
+                  "end": [
+                    120.0,
+                    80.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    120.0,
+                    80.0
+                  ],
+                  "end": [
+                    0,
+                    80.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    0,
+                    80.0
+                  ],
+                  "end": [
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "body",
+            "kind": "extrude",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic plate fixture"
+            ],
+            "depends_on": [
+              "outline"
+            ],
+            "parameters": {
+              "sketch": "outline",
+              "depth_mm": 4.0
+            }
+          },
+          {
+            "id": "hole_sketch",
+            "kind": "sketch",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic plate fixture"
+            ],
+            "depends_on": [
+              "body"
+            ],
+            "parameters": {
+              "plane": null,
+              "entities": [
+                {
+                  "type": "circle",
+                  "center": [
+                    25,
+                    25
+                  ],
+                  "radius": 5.0
+                },
+                {
+                  "type": "circle",
+                  "center": [
+                    95,
+                    55
+                  ],
+                  "radius": 5.0
+                }
+              ]
+            }
+          },
+          {
+            "id": "holes",
+            "kind": "cut",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic plate fixture"
+            ],
+            "depends_on": [
+              "hole_sketch"
+            ],
+            "parameters": {
+              "sketch": "hole_sketch",
+              "depth_mm": 4.0,
+              "reverse": true
+            }
+          }
+        ],
+        "payload": {
+          "outline_mm": [
+            [
+              0,
+              0
+            ],
+            [
+              120.0,
+              0
+            ],
+            [
+              120.0,
+              80.0
+            ],
+            [
+              0,
+              80.0
+            ]
+          ],
+          "thickness_mm": 4.0,
+          "holes": [
+            {
+              "center_mm": [
+                25,
+                25
+              ],
+              "diameter_mm": 10
+            },
+            {
+              "center_mm": [
+                95,
+                55
+              ],
+              "diameter_mm": 10
+            }
+          ]
+        },
+        "expected_dims_mm": [
+          120.0,
+          80.0,
+          4.0
+        ],
+        "expected_body_count": 1,
+        "pending_confirmation": [
+          "template_sketch_plane",
+          "part_template"
+        ],
+        "status": "pending_confirmation",
+        "native_acceptance": "pending_windows_validation",
+        "approval_digest": "66a1c133e9401a1496370d9d76b1aa8f5a5aa05694debc58da1006028c0a4c71"
+      }
+    },
+    {
+      "id": "bracket",
+      "recipe": {
+        "kind": "bracket",
+        "units": "mm",
+        "source": "synthetic L bracket fixture",
+        "dimensions_confirmed": true,
+        "length_mm": 100,
+        "width_mm": 70,
+        "leg_mm": 25,
+        "thickness_mm": 6,
+        "holes": [
+          {
+            "center_mm": [
+              15,
+              50
+            ],
+            "diameter_mm": 8
+          },
+          {
+            "center_mm": [
+              75,
+              12
+            ],
+            "diameter_mm": 8
+          }
+        ]
+      },
+      "bindings": {},
+      "compiled_plan": {
+        "recipe": {
+          "kind": "bracket",
+          "units": "mm",
+          "source": "synthetic L bracket fixture",
+          "dimensions_confirmed": true,
+          "length_mm": 100,
+          "width_mm": 70,
+          "leg_mm": 25,
+          "thickness_mm": 6,
+          "holes": [
+            {
+              "center_mm": [
+                15,
+                50
+              ],
+              "diameter_mm": 8
+            },
+            {
+              "center_mm": [
+                75,
+                12
+              ],
+              "diameter_mm": 8
+            }
+          ]
+        },
+        "bindings": {},
+        "backend": "feature_ir",
+        "features": [
+          {
+            "id": "outline",
+            "kind": "sketch",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic L bracket fixture"
+            ],
+            "depends_on": [],
+            "parameters": {
+              "plane": null,
+              "entities": [
+                {
+                  "type": "line",
+                  "start": [
+                    0,
+                    0
+                  ],
+                  "end": [
+                    100.0,
+                    0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    100.0,
+                    0
+                  ],
+                  "end": [
+                    100.0,
+                    25.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    100.0,
+                    25.0
+                  ],
+                  "end": [
+                    25.0,
+                    25.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    25.0,
+                    25.0
+                  ],
+                  "end": [
+                    25.0,
+                    70.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    25.0,
+                    70.0
+                  ],
+                  "end": [
+                    0,
+                    70.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    0,
+                    70.0
+                  ],
+                  "end": [
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "body",
+            "kind": "extrude",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic L bracket fixture"
+            ],
+            "depends_on": [
+              "outline"
+            ],
+            "parameters": {
+              "sketch": "outline",
+              "depth_mm": 6.0
+            }
+          },
+          {
+            "id": "hole_sketch",
+            "kind": "sketch",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic L bracket fixture"
+            ],
+            "depends_on": [
+              "body"
+            ],
+            "parameters": {
+              "plane": null,
+              "entities": [
+                {
+                  "type": "circle",
+                  "center": [
+                    15,
+                    50
+                  ],
+                  "radius": 4.0
+                },
+                {
+                  "type": "circle",
+                  "center": [
+                    75,
+                    12
+                  ],
+                  "radius": 4.0
+                }
+              ]
+            }
+          },
+          {
+            "id": "holes",
+            "kind": "cut",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic L bracket fixture"
+            ],
+            "depends_on": [
+              "hole_sketch"
+            ],
+            "parameters": {
+              "sketch": "hole_sketch",
+              "depth_mm": 6.0,
+              "reverse": true
+            }
+          }
+        ],
+        "payload": {
+          "outline_mm": [
+            [
+              0,
+              0
+            ],
+            [
+              100.0,
+              0
+            ],
+            [
+              100.0,
+              25.0
+            ],
+            [
+              25.0,
+              25.0
+            ],
+            [
+              25.0,
+              70.0
+            ],
+            [
+              0,
+              70.0
+            ]
+          ],
+          "thickness_mm": 6.0,
+          "holes": [
+            {
+              "center_mm": [
+                15,
+                50
+              ],
+              "diameter_mm": 8
+            },
+            {
+              "center_mm": [
+                75,
+                12
+              ],
+              "diameter_mm": 8
+            }
+          ]
+        },
+        "expected_dims_mm": [
+          100.0,
+          70.0,
+          6.0
+        ],
+        "expected_body_count": 1,
+        "pending_confirmation": [
+          "template_sketch_plane",
+          "part_template"
+        ],
+        "status": "pending_confirmation",
+        "native_acceptance": "pending_windows_validation",
+        "approval_digest": "c443caa2c2fe16576df9142fab81b8fc2f25f9535ed6d4b8cc256c8b96a2e793"
+      }
+    },
+    {
+      "id": "shaft",
+      "recipe": {
+        "kind": "shaft",
+        "units": "mm",
+        "source": "synthetic stepped shaft fixture",
+        "dimensions_confirmed": true,
+        "stages": [
+          {
+            "length_mm": 25,
+            "diameter_mm": 20
+          },
+          {
+            "length_mm": 60,
+            "diameter_mm": 30
+          },
+          {
+            "length_mm": 25,
+            "diameter_mm": 20
+          }
+        ]
+      },
+      "bindings": {},
+      "compiled_plan": {
+        "recipe": {
+          "kind": "shaft",
+          "units": "mm",
+          "source": "synthetic stepped shaft fixture",
+          "dimensions_confirmed": true,
+          "stages": [
+            {
+              "length_mm": 25,
+              "diameter_mm": 20
+            },
+            {
+              "length_mm": 60,
+              "diameter_mm": 30
+            },
+            {
+              "length_mm": 25,
+              "diameter_mm": 20
+            }
+          ]
+        },
+        "bindings": {},
+        "backend": "turned_generator",
+        "features": [
+          {
+            "id": "half_profile",
+            "kind": "sketch",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic stepped shaft fixture"
+            ],
+            "depends_on": [],
+            "parameters": {
+              "profile_mm": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  10.0
+                ],
+                [
+                  25.0,
+                  10.0
+                ],
+                [
+                  25.0,
+                  15.0
+                ],
+                [
+                  85.0,
+                  15.0
+                ],
+                [
+                  85.0,
+                  10.0
+                ],
+                [
+                  110.0,
+                  10.0
+                ],
+                [
+                  110.0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "axis": "horizontal"
+            }
+          },
+          {
+            "id": "shaft",
+            "kind": "revolve",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic stepped shaft fixture"
+            ],
+            "depends_on": [
+              "half_profile"
+            ],
+            "parameters": {
+              "angle_deg": 360,
+              "profile": "half_profile"
+            }
+          }
+        ],
+        "payload": {
+          "profile_mm": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              10.0
+            ],
+            [
+              25.0,
+              10.0
+            ],
+            [
+              25.0,
+              15.0
+            ],
+            [
+              85.0,
+              15.0
+            ],
+            [
+              85.0,
+              10.0
+            ],
+            [
+              110.0,
+              10.0
+            ],
+            [
+              110.0,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "axis": "horizontal",
+          "axis_position": 0
+        },
+        "expected_dims_mm": null,
+        "expected_body_count": 1,
+        "pending_confirmation": [],
+        "status": "ready_for_native_review",
+        "native_acceptance": "pending_windows_validation",
+        "approval_digest": "d744bb237a0101561a2e2d35685eec4e4c61f09b415b7d16ae6ba8462afd24dc"
+      }
+    },
+    {
+      "id": "two_bend_sheet",
+      "recipe": {
+        "kind": "two_bend_sheet",
+        "units": "mm",
+        "source": "synthetic two-bend blank fixture",
+        "dimensions_confirmed": true,
+        "length_mm": 180,
+        "width_mm": 80,
+        "thickness_mm": 2,
+        "radius_mm": 2,
+        "k_factor": 0.4,
+        "angle_deg": 90,
+        "bend_positions_mm": [
+          30,
+          150
+        ],
+        "flip_direction": false,
+        "relief_bend_indices": []
+      },
+      "bindings": {},
+      "compiled_plan": {
+        "recipe": {
+          "kind": "two_bend_sheet",
+          "units": "mm",
+          "source": "synthetic two-bend blank fixture",
+          "dimensions_confirmed": true,
+          "length_mm": 180,
+          "width_mm": 80,
+          "thickness_mm": 2,
+          "radius_mm": 2,
+          "k_factor": 0.4,
+          "angle_deg": 90,
+          "bend_positions_mm": [
+            30,
+            150
+          ],
+          "flip_direction": false,
+          "relief_bend_indices": []
+        },
+        "bindings": {},
+        "backend": "sheet_pipeline",
+        "features": [
+          {
+            "id": "blank",
+            "kind": "sketch",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic two-bend blank fixture"
+            ],
+            "depends_on": [],
+            "parameters": {
+              "entities": [
+                {
+                  "type": "line",
+                  "start": [
+                    0,
+                    0
+                  ],
+                  "end": [
+                    180.0,
+                    0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    180.0,
+                    0
+                  ],
+                  "end": [
+                    180.0,
+                    80.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    180.0,
+                    80.0
+                  ],
+                  "end": [
+                    0,
+                    80.0
+                  ]
+                },
+                {
+                  "type": "line",
+                  "start": [
+                    0,
+                    80.0
+                  ],
+                  "end": [
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "sheet",
+            "kind": "base_flange",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic two-bend blank fixture"
+            ],
+            "depends_on": [
+              "blank"
+            ],
+            "parameters": {
+              "thickness_mm": 2.0,
+              "radius_mm": 2.0,
+              "k_factor": 0.4
+            }
+          },
+          {
+            "id": "bend_1",
+            "kind": "sketched_bend",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic two-bend blank fixture"
+            ],
+            "depends_on": [
+              "sheet"
+            ],
+            "parameters": {
+              "position_mm": 30,
+              "angle_deg": 90.0
+            }
+          },
+          {
+            "id": "bend_2",
+            "kind": "sketched_bend",
+            "unit": "mm",
+            "confirmed": true,
+            "evidence": [
+              "synthetic two-bend blank fixture"
+            ],
+            "depends_on": [
+              "bend_1"
+            ],
+            "parameters": {
+              "position_mm": 150,
+              "angle_deg": 90.0
+            }
+          }
+        ],
+        "payload": {
+          "length_mm": 180.0,
+          "width_mm": 80.0,
+          "thickness_mm": 2.0,
+          "radius_mm": 2.0,
+          "k_factor": 0.4,
+          "angle_deg": 90.0,
+          "bend_positions_mm": [
+            30,
+            150
+          ],
+          "flip_direction": false,
+          "relief_bend_indices": []
+        },
+        "expected_dims_mm": null,
+        "expected_body_count": 1,
+        "pending_confirmation": [],
+        "status": "ready_for_native_review",
+        "native_acceptance": "pending_windows_validation",
+        "approval_digest": "73fba39ca61bf828bc703cd3d82c7ac9a1b04211376862fecf06208295d547f0"
+      }
+    }
+  ]
+}

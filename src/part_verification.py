@@ -34,7 +34,7 @@ def solid_inventory(part, sw, module):
 
 
 def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
-    from sw_session import require_model_write, close_owned_document
+    from sw_session import require_model_write, close_owned_document, initialize_com_scope
     import solidworks_generator as sw
     import pythoncom
     import win32com.client
@@ -42,7 +42,7 @@ def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
     path = Path(path).resolve()
     if not path.is_file() or path.stat().st_size == 0:
         raise RuntimeError('generated part is missing or empty')
-    pythoncom.CoInitialize()
+    local_com_initialized=initialize_com_scope(pythoncom,lease)
     app = None
     title = None
     try:
@@ -92,5 +92,6 @@ def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
             if title and app is not None and title in lease.owned_docs:
                 close_owned_document(lease,app,title)
         finally:
-            pythoncom.CoUninitialize()
+            if local_com_initialized:pythoncom.CoUninitialize()
+
 

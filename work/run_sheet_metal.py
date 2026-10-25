@@ -28,6 +28,7 @@ def main():
     group.add_argument('--dry-run', action='store_true')
     group.add_argument('--live', action='store_true')
     args = p.parse_args()
+    report = {}
     try:
         if args.diagnostic_log is not None:
             args.diagnostic_log.parent.mkdir(parents=True, exist_ok=True)
@@ -53,18 +54,26 @@ def main():
                 with owned_solidworks(args.sw_exe) as binding:
                     report['session'] = binding.evidence()
                     result = run_plan(analysis, plan, args.out, WindowsSheetMetalPort(allow_relief_retries=not args.no_relief_retries))
+                    report['execution'] = result
                 report['session'] = binding.evidence()
                 return result
             report['execution'] = run_on_task_sta(live_job,
                 timeout=300, task_name='p0-sheet-metal')
+        if args.live:
+            evidence=report.get('session',{})
+            code=evidence.get('cleanup_exit_code')
+            report['process_exit_verified']=type(code) is int and code==0 and not evidence.get('cleanup_error')
         print(json.dumps(report, indent=2, ensure_ascii=False, default=str, allow_nan=False))
         status = report.get('execution', plan)['status']
-        return 1 if status == 'failed' else (3 if status == 'pending' else 0)
+        return 1 if status == 'failed' else (3 if status == 'pending' or (args.live and not report.get('process_exit_verified')) else 0)
     except (OSError, ValueError, RuntimeError, IndexError) as exc:
-        print(json.dumps({'status':'failed', 'error':str(exc), 'sw_live_verified':False}, ensure_ascii=False))
+        report.update(status='failed',error=str(exc),sw_live_verified=False,process_exit_verified=False)
+        if getattr(exc,'native_session_evidence',None):report['session']=exc.native_session_evidence
+        print(json.dumps(report,ensure_ascii=False,default=str))
         return 1
 
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
 
