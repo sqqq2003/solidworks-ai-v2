@@ -1571,21 +1571,6 @@ def expand_axis_aligned_rect_profile(
     return _polyline_from_ring(profile, ring)
 
 
-def _distance_point_to_segment(
-    point: tuple[float, float],
-    start: tuple[float, float],
-    end: tuple[float, float],
-) -> float:
-    dx = end[0] - start[0]
-    dy = end[1] - start[1]
-    length_sq = dx * dx + dy * dy
-    if length_sq <= 1e-18:
-        return math.dist(point, start)
-    factor = ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / length_sq
-    factor = min(1.0, max(0.0, factor))
-    return math.dist(point, (start[0] + factor * dx, start[1] + factor * dy))
-
-
 def _panel_sign_from_bends(
     axis: str,
     cx: float,
