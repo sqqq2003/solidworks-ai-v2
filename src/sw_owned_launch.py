@@ -13,6 +13,7 @@ import time
 
 from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
     on_task_sta, claim_spawned_process, require_model_write, exit_owned_application)
+from sw_compat.dispatch import unwrap
 
 
 class WindowsProcessLifetime:
@@ -69,8 +70,7 @@ def _native_candidate(pid):
 
 
 def _read_pid(app):
-    value = getattr(app, 'GetProcessID')
-    return int(value() if callable(value) else value)
+    return int(unwrap(getattr(app, 'GetProcessID')))
 
 
 class OwnedBinding:

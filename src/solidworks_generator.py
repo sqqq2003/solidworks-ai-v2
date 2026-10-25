@@ -40,13 +40,13 @@ from sw_session import (
 )
 
 
+# SolidWorks COM 版本适配层：类型库探测、属性/方法二义性、接口强转
+# 已收敛到 sw_compat，此处保留原名别名，保证既有调用点零改动。
+from sw_compat import ensure_solidworks_typelib, typelib_major
+from sw_compat.dispatch import as_interface as _as_interface, com_read as _com_read
+
 SOLIDWORKS_TYPELIB_ID = "{83A33D31-27C5-11CE-BFD4-00400513BB57}"
-# 33 对应 SW2025。以前这个数是写死的，换一台装了别的版本 SolidWorks 的机器，
-# EnsureModule 就会失败、整个生成功能直接不可用。现在只在探测不到时当兜底。
 SOLIDWORKS_TYPELIB_MAJOR = 33
-# 装了多个版本时按新到旧试；探测不到已装版本就按这张表回退。
-_TRY_TYPELIB_MAJORS = (33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23)
-_TYPELIB_MAJOR_CACHE: int | None = None
 SW_DEFAULT_TEMPLATE_PART = 8
 SW_BODY_TYPE_SOLID = 0
 # swDocumentTypes_e：零件=1，装配=2，工程图=3。
@@ -73,90 +73,6 @@ SW_START_CONDITION_OFFSET = 3
 DEFAULT_CHAIN_PITCH_MM = 12.7
 # 4 分（12.7 mm）链常用 08B 滚子，滚子直径约为节距的 0.67 倍。
 CHAIN_ROLLER_DIAMETER_RATIO = 0.67
-
-
-def _com_read(instance: Any, name: str) -> Any:
-    """pywin32 may expose parameterless COM members as properties or methods."""
-    value = getattr(instance, name)
-    return value() if callable(value) else value
-
-
-def _installed_typelib_majors() -> tuple[int, ...]:
-    """从注册表读出本机已注册的 SolidWorks 类型库主版本号。
-
-    SolidWorks 的类型库 GUID 是跨版本稳定的，变的是 HKCR\\TypeLib\\{GUID} 下的
-    版本子键（形如 "33.0"）。装了几个版本这里就有几个子键。
-    """
-
-    try:
-        import winreg
-    except ImportError:  # 非 Windows 上根本连不了 SolidWorks
-        return ()
-    try:
-        with winreg.OpenKey(
-            winreg.HKEY_CLASSES_ROOT,
-            f"TypeLib\\{SOLIDWORKS_TYPELIB_ID}",
-        ) as key:
-            count = winreg.QueryInfoKey(key)[0]
-            names = [winreg.EnumKey(key, index) for index in range(count)]
-    except OSError:
-        return ()
-    majors: list[int] = []
-    for name in names:
-        head = name.split(".", 1)[0]
-        if head.isdigit():
-            majors.append(int(head))
-    return tuple(sorted(set(majors), reverse=True))
-
-
-def typelib_major() -> int:
-    """挑一个本机真能加载的类型库主版本号，结果缓存下来。
-
-    顺序：注册表里已装的（新→旧）→ 兜底表里逐个试（新→旧）→ 写死的 33。
-    """
-
-    global _TYPELIB_MAJOR_CACHE
-    if _TYPELIB_MAJOR_CACHE is not None:
-        return _TYPELIB_MAJOR_CACHE
-
-    # 注册表子键并不可靠（本机枚举出 21、1，而实际装的是 33），
-    # 所以只把它当候选来源之一，最终一律按版本号从高到低试、取第一个能加载的。
-    # 能加载说明这个版本的类型库确实注册了，取最高即最新安装的那版。
-    candidates = set(_installed_typelib_majors())
-    candidates.update(_TRY_TYPELIB_MAJORS)
-    candidates.add(SOLIDWORKS_TYPELIB_MAJOR)
-
-    try:
-        import win32com.client
-    except ImportError:
-        _TYPELIB_MAJOR_CACHE = SOLIDWORKS_TYPELIB_MAJOR
-        return _TYPELIB_MAJOR_CACHE
-
-    for major in sorted(candidates, reverse=True):
-        try:
-            win32com.client.gencache.EnsureModule(
-                SOLIDWORKS_TYPELIB_ID, 0, major, 0
-            )
-        except Exception:  # noqa: BLE001 - EnsureModule 失败就换下一个版本
-            logger.debug("SolidWorks 类型库主版本 %d 不可用", major)
-            continue
-        logger.info("SolidWorks 类型库主版本 %d 加载成功", major)
-        _TYPELIB_MAJOR_CACHE = major
-        return major
-
-    # 一个都加载不了时仍返回兜底值，让调用方拿到原本的报错，而不是这里静默吞掉。
-    _TYPELIB_MAJOR_CACHE = SOLIDWORKS_TYPELIB_MAJOR
-    return _TYPELIB_MAJOR_CACHE
-
-
-def ensure_solidworks_typelib() -> Any:
-    """拿到 SolidWorks 强类型模块，自动适配当前装的版本。"""
-
-    import win32com.client
-
-    return win32com.client.gencache.EnsureModule(
-        SOLIDWORKS_TYPELIB_ID, 0, typelib_major(), 0
-    )
 # 参考件《201不锈钢滚筒-动力-壁厚1.2mm-双排链轮4分14齿-Φ50x280》草图1 / 草图6 实测。
 SPROCKET_SEAT_HALF_ANGLE_DEG = 67.5
 SPROCKET_SEAT_RADIUS_FACTOR = 0.529
@@ -1526,6 +1442,44 @@ def _profile_ring_points(
     return points
 
 
+ARTIFACT_LOOP_MAX_EDGE_MM = 2.0
+ARTIFACT_LOOP_MAX_AREA_MM2 = 0.6
+
+
+def _closed_loop_metrics(
+    profile: Primitive,
+) -> tuple[float, float] | None:
+    """闭环的最大边长与面积（mm / mm²）；开环或不足三点时返回 None。"""
+
+    if not profile.closed:
+        return None
+    ring = _profile_ring_points(profile)
+    if len(ring) < 3:
+        return None
+    edges = list(zip(ring, ring[1:] + ring[:1]))
+    max_edge = max(math.dist(start, end) for start, end in edges)
+    area = abs(
+        sum(start[0] * end[1] - end[0] * start[1] for start, end in edges)
+    ) / 2.0
+    return max_edge, area
+
+
+def _is_drawing_artifact_loop(profile: Primitive) -> bool:
+    """尺寸箭头之类的图纸标注残留：闭环最大边 ≤2 mm 且面积 ≤0.6 mm²。
+
+    Φ2 孔面积 3.14 mm²，3×3 mm 方孔最大边 3 mm，两者都照常切。
+    """
+
+    metrics = _closed_loop_metrics(profile)
+    if metrics is None:
+        return False
+    max_edge, area = metrics
+    return (
+        max_edge <= ARTIFACT_LOOP_MAX_EDGE_MM
+        and area <= ARTIFACT_LOOP_MAX_AREA_MM2
+    )
+
+
 def _polyline_from_ring(
     profile: Primitive,
     ring: list[tuple[float, float]],
@@ -1615,21 +1569,6 @@ def expand_axis_aligned_rect_profile(
         (center[0] - half_w, center[1] + half_h),
     ]
     return _polyline_from_ring(profile, ring)
-
-
-def _distance_point_to_segment(
-    point: tuple[float, float],
-    start: tuple[float, float],
-    end: tuple[float, float],
-) -> float:
-    dx = end[0] - start[0]
-    dy = end[1] - start[1]
-    length_sq = dx * dx + dy * dy
-    if length_sq <= 1e-18:
-        return math.dist(point, start)
-    factor = ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / length_sq
-    factor = min(1.0, max(0.0, factor))
-    return math.dist(point, (start[0] + factor * dx, start[1] + factor * dy))
 
 
 def _panel_sign_from_bends(
@@ -1913,6 +1852,224 @@ def _rect_hole_growth_signs(
     return sign_x, sign_y
 
 
+# 贴边孔转缺口：与外轮廓边共线（或只剩 ≤0.75mm 细缝）才转；搭边覆盖 <80%
+# 时保持为孔，因为转缺口会切不干净。口部沿板边加宽后 clamp 在外边端点内，
+# 不把轮廓顶点推出自交。三边直角，不斜切。
+BORDER_NOTCH_MIN_COVERAGE = 0.8
+BORDER_NOTCH_MAX_GAP_MM = 0.75
+BORDER_NOTCH_EDGE_TOL_MM = 1e-6
+# 折弯交汇点/端头距板边 ≤2mm 时，补槽直接从板边伸进材料并转为缺口。
+BORDER_RELIEF_MAX_DISTANCE_MM = 2.0
+
+
+def _ring_orientation_ccw(ring: list[tuple[float, float]]) -> bool:
+    area = 0.0
+    for index in range(len(ring)):
+        x1, y1 = ring[index]
+        x2, y2 = ring[(index + 1) % len(ring)]
+        area += x1 * y2 - x2 * y1
+    return area > 0
+
+
+def _border_edge_candidates(
+    profile: Primitive,
+) -> tuple[
+    tuple[int, tuple[float, float], tuple[float, float], tuple[float, float], float],
+    ...,
+]:
+    """外轮廓的轴对齐边：(边序号, 起点, 单位方向, 内法向, 边长)。"""
+
+    ring = _profile_ring_points(profile)
+    if len(ring) < 3:
+        return ()
+    ccw = _ring_orientation_ccw(ring)
+    edges = []
+    for index in range(len(ring)):
+        start = ring[index]
+        end = ring[(index + 1) % len(ring)]
+        if not _is_axis_aligned_pair(start, end):
+            continue
+        length = math.dist(start, end)
+        if length <= 1e-9:
+            continue
+        u = ((end[0] - start[0]) / length, (end[1] - start[1]) / length)
+        normal = (-u[1], u[0]) if ccw else (u[1], -u[0])
+        edges.append((index, start, u, normal, length))
+    return tuple(edges)
+
+
+def _cut_border_notch(
+    profile: Primitive,
+    edge_index: int,
+    mouth_start_s: float,
+    mouth_end_s: float,
+    depth_mm: float,
+) -> Primitive:
+    """把外轮廓第 edge_index 条边挖成三边直角缺口，其余曲线段原样保留。"""
+
+    ring = _profile_ring_points(profile)
+    count = len(ring)
+    if not 0 <= edge_index < count or depth_mm <= 1e-9:
+        return profile
+    start = ring[edge_index]
+    end = ring[(edge_index + 1) % count]
+    length = math.dist(start, end)
+    if length <= 1e-9:
+        return profile
+    u = ((end[0] - start[0]) / length, (end[1] - start[1]) / length)
+    normal = (-u[1], u[0]) if _ring_orientation_ccw(ring) else (u[1], -u[0])
+    mouth_start = min(max(mouth_start_s, 0.0), length)
+    mouth_end = min(max(mouth_end_s, 0.0), length)
+    if mouth_end - mouth_start <= 1e-9:
+        return profile
+
+    def _at(along: float, depth: float) -> tuple[float, float]:
+        return (
+            start[0] + u[0] * along + normal[0] * depth,
+            start[1] + u[1] * along + normal[1] * depth,
+        )
+
+    inserts: list[tuple[float, float]] = []
+    if mouth_start > BORDER_NOTCH_EDGE_TOL_MM:
+        inserts.append(_at(mouth_start, 0.0))
+    inserts.append(_at(mouth_start, depth_mm))
+    inserts.append(_at(mouth_end, depth_mm))
+    if mouth_end < length - BORDER_NOTCH_EDGE_TOL_MM:
+        inserts.append(_at(mouth_end, 0.0))
+    new_ring = list(ring[: edge_index + 1]) + inserts + list(ring[edge_index + 1 :])
+
+    if profile.curve_segments:
+        rebuilt: list[SketchSegment] = []
+        replaced = False
+        for segment in profile.curve_segments:
+            if (
+                not replaced
+                and segment.center is None
+                and math.dist(segment.start, start) <= 1e-9
+                and math.dist(segment.end, end) <= 1e-9
+            ):
+                chain = [start, *inserts, end]
+                rebuilt.extend(
+                    SketchSegment(a, b)
+                    for a, b in zip(chain, chain[1:])
+                    if math.dist(a, b) > 1e-12
+                )
+                replaced = True
+                continue
+            rebuilt.append(segment)
+        if replaced:
+            return replace(
+                profile,
+                points=tuple(new_ring) + (new_ring[0],),
+                curve_segments=tuple(rebuilt),
+            )
+    return _polyline_from_ring(profile, new_ring)
+
+
+def convert_border_hole_to_notch(
+    outer: Primitive,
+    hole: Primitive,
+    grow: float = 0.0,
+) -> Primitive | None:
+    """贴板边的矩形槽孔 → 外轮廓缺口；不贴边或搭边不足时返回 None。
+
+    与外环相交的内环 SolidWorks 不接受，越过板边的部分也没有材料可切，
+    所以这种孔要挖成板边缺口并从孔列表删除。孔离板边只剩 ≤0.75mm 细缝
+    （图纸画法/浮点误差）时先把那一侧拉伸到板边，不留悬空窄条。
+    """
+
+    if grow < 0:
+        raise ValueError("缺口扩量不能为负数")
+    if not outer.closed or not hole.closed:
+        return None
+    bounds = axis_aligned_rect_bounds(hole)
+    if bounds is None:
+        return None
+    corners = (
+        (bounds[0], bounds[1]),
+        (bounds[2], bounds[1]),
+        (bounds[2], bounds[3]),
+        (bounds[0], bounds[3]),
+    )
+    best: tuple[tuple[float, float], int, float, float, float] | None = None
+    for edge_index, start, u, normal, length in _border_edge_candidates(outer):
+        across = tuple(
+            (point[0] - start[0]) * normal[0] + (point[1] - start[1]) * normal[1]
+            for point in corners
+        )
+        along = tuple(
+            (point[0] - start[0]) * u[0] + (point[1] - start[1]) * u[1]
+            for point in corners
+        )
+        if min(across) < -BORDER_NOTCH_EDGE_TOL_MM:
+            continue  # 孔越过板边：不是贴边孔
+        if min(across) > BORDER_NOTCH_MAX_GAP_MM:
+            continue  # 离板边太远：仍是内孔
+        span = max(along) - min(along)
+        if span <= 1e-9:
+            continue
+        overlap = min(max(along), length) - max(min(along), 0.0)
+        if overlap < BORDER_NOTCH_MIN_COVERAGE * span - 1e-9:
+            continue  # 搭边不足 80%：转缺口切不干净，保持为孔
+        depth = max(across) + grow
+        if depth <= 1e-9:
+            continue
+        # 角部孔会同时贴两条边：先比搭边比例，再比实际贴合长度（缺口开在
+        # 孔真正沿着走的那条边上），仍相同则按轮廓边顺序，保证结果确定。
+        candidate = (
+            (overlap / span, overlap),
+            edge_index,
+            min(along) - grow / 2.0,
+            max(along) + grow / 2.0,
+            depth,
+        )
+        if best is None or candidate[0] > best[0]:
+            best = candidate
+    if best is None:
+        return None
+    _rank, edge_index, mouth_start, mouth_end, depth = best
+    notch = _cut_border_notch(outer, edge_index, mouth_start, mouth_end, depth)
+    return None if notch.points == outer.points else notch
+
+
+def _border_intersection_notch(
+    profile: Primitive,
+    point: tuple[float, float],
+    extent_x: float,
+    extent_y: float,
+) -> Primitive | None:
+    """交汇点距板边 ≤2mm 时，补槽从板边伸进材料并转成缺口。
+
+    深度 = 到板边的距离 + 本级增量（跨过端头），宽度 = 另一轴增量，
+    以交汇点为中心。找不到可贴的直角边就返回 None，退回板内孔。
+    """
+
+    best: tuple[float, int, float, float, float] | None = None
+    for edge_index, start, u, normal, length in _border_edge_candidates(profile):
+        across = (point[0] - start[0]) * normal[0] + (point[1] - start[1]) * normal[1]
+        along = (point[0] - start[0]) * u[0] + (point[1] - start[1]) * u[1]
+        if across < -BORDER_NOTCH_EDGE_TOL_MM:
+            continue
+        if across > BORDER_RELIEF_MAX_DISTANCE_MM:
+            continue
+        if not 0.0 <= along <= length:
+            continue
+        vertical_edge = abs(u[0]) <= 1e-12
+        depth = across + (extent_x if vertical_edge else extent_y)
+        width = extent_y if vertical_edge else extent_x
+        if depth <= 1e-9 or width <= 1e-9:
+            continue
+        distance = abs(across)
+        candidate = (-distance, edge_index, along - width / 2.0, along + width / 2.0, depth)
+        if best is None or candidate[0] > best[0]:
+            best = candidate
+    if best is None:
+        return None
+    _rank, edge_index, mouth_start, mouth_end, depth = best
+    notch = _cut_border_notch(profile, edge_index, mouth_start, mouth_end, depth)
+    return None if notch.points == profile.points else notch
+
+
 def apply_rectangular_relief_expansion(
     profile: Primitive,
     hole_profiles: tuple[tuple[Primitive, tuple[tuple[float, float], ...]], ...],
@@ -1944,6 +2101,12 @@ def apply_rectangular_relief_expansion(
     new_holes: list[tuple[Primitive, tuple[tuple[float, float], ...]]] = []
     for hole, hole_points in hole_profiles:
         if is_small_rectangular_relief_hole(hole, profile):
+            notch = convert_border_hole_to_notch(profile, hole, grow=extra)
+            if notch is not None:
+                # 贴边槽孔转成外轮廓缺口，并从孔列表删除该孔。
+                profile = notch
+                changed += 1
+                continue
             sign_x, sign_y = _rect_hole_growth_signs(hole, bend_lines, profile)
             grown = expand_rect_hole_one_side(hole, extra, sign_x, sign_y)
             if grown.points != hole.points:
@@ -2111,6 +2274,16 @@ def ensure_intersection_reliefs(
                     blocked = True
                     break
             if blocked:
+                continue
+            notch_profile = _border_intersection_notch(
+                profile, point, extent_x, extent_y
+            )
+            if notch_profile is not None:
+                # 距板边 ≤2mm：补槽跨过端头从板边伸进材料，直接开成缺口，
+                # 不再留与外环相交的内孔。找不到可贴的直角边才退回板内孔。
+                profile = notch_profile
+                bounds = primitive_bounds(profile)
+                seen.append(point)
                 continue
             added.append(_rectangle_hole(min_x, min_y, max_x, max_y))
             seen.append(point)
@@ -2304,10 +2477,6 @@ def profile_bend_indices(
         ):
             matches.append(index)
     return tuple(matches)
-
-
-def _as_interface(module: Any, instance: Any, interface: str) -> Any:
-    return getattr(module, interface)(instance._oleobj_)
 
 
 def _features(model: Any, module: Any) -> list[Any]:
@@ -4261,6 +4430,17 @@ def generate_sheet_metal(
             analysis.profiles[index],
             min_edge_mm=min_edge_mm,
         )
+        if _is_drawing_artifact_loop(hole):
+            metrics = _closed_loop_metrics(hole)
+            max_edge, area = metrics if metrics is not None else (0.0, 0.0)
+            logger.warning(
+                "轮廓 #%d 判为图纸标注残留（最大边 %.3f mm、面积 %.3f mm²），"
+                "不切材料；若确为小孔请检查图纸标注",
+                index + 1,
+                max_edge,
+                area,
+            )
+            continue
         hole_profiles_list.append((hole, _closed_points(hole)))
     hole_profiles = tuple(hole_profiles_list)
     selected_bends = tuple(dict.fromkeys(int(index) for index in bend_indices))
@@ -5199,8 +5379,7 @@ def export_flat_pattern_dxf(
             raise SolidWorksGenerationError(
                 f"SolidWorks 打不开零件：{part.name}（可能正被其他版本占用）"
             )
-        title = raw_model.GetTitle
-        model_title = str(title() if callable(title) else title)
+        model_title = str(_com_read(raw_model, "GetTitle"))
         opened_here = bool(
             titles_enumerated and model_title not in open_titles_before
         )

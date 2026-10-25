@@ -1,0 +1,225 @@
+2026-10-25 12:36:38,422 INFO    [MainThread] sw_session: running owned-sheet-metal-cli on task STA sw-task-d13f890e11f8
+{"ownership": "spawned_pid_and_live_handle", "pid": 44076, "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe", "attached_existing": false, "native_verification": "session_only_not_cad_acceptance", "cleanup_status": "not_attempted", "cleanup_error": null, "event": "session"}
+{"message": "正在识别图纸…", "event": "progress"}
+2026-10-25 12:36:45,475 INFO    [sw-task-sta] ezdxf: creating ACAD_COLOR dictionary
+2026-10-25 12:36:45,476 INFO    [sw-task-sta] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-25 12:36:45,477 INFO    [sw-task-sta] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-25 12:36:45,477 INFO    [sw-task-sta] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-25 12:36:45,477 INFO    [sw-task-sta] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-25 12:36:46,020 INFO    [sw-task-sta] cad_analyzer: 图纸判定为滚筒尺寸图：QL-5050_sheetmetal_work.dxf（规格 1 种，折弯线 143 条）
+{"message": "轮廓 #248，折弯线 4 条，开始生成钣金…", "event": "progress"}
+2026-10-25 12:36:46,084 INFO    [sw-task-sta] solidworks_generator: 生成钣金零件：图纸=C:\sw-p248-test-20261025\QL-5050_sheetmetal_work.dxf 轮廓=#248 折弯=4 条 板厚=2.500 半径=1.000 角度=90.000 反向=False 释放槽级别=0 输出=C:\sw-p248-test-20261025\out\p248_attempt2.SLDPRT
+2026-10-25 12:36:46,092 INFO    [sw-task-sta] solidworks_generator: 已连接 SolidWorks（本次由程序激活且尚未证明独占：created_by_task=True）
+2026-10-25 12:36:52,209 INFO    [sw-task-sta] solidworks_generator: 基体法兰创建成功：尝试=正向圆弧 加厚方向=True
+2026-10-25 12:36:52,212 INFO    [sw-task-sta] solidworks_generator: 基体法兰已创建：基体-法兰1
+2026-10-25 12:36:53,843 INFO    [sw-task-sta] solidworks_generator: 孔/槽切除：草图曲线 1 条，切除前实体面 36 个，切除后 37 个
+2026-10-25 12:36:53,843 INFO    [sw-task-sta] solidworks_generator: 孔/槽切除完成：1 个轮廓
+2026-10-25 12:36:53,853 INFO    [sw-task-sta] solidworks_generator: Fixed panel pinned for all bend groups: xy=(275.4327977756461, 5595.010852622654) bends=(106, 107, 108, 109)
+2026-10-25 12:36:54,191 INFO    [sw-task-sta] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 34, 'not_planar': 1}
+2026-10-25 12:36:54,877 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=106 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02569999999999999, -0.016176000000000385, -0.0025)->(0.025700000000000046, -0.016176000000000385, -0.0025) sketch=(0.02569999999999999, -0.016176000000000385)->(-0.025700000000000046, -0.016176000000000385)
+2026-10-25 12:36:54,888 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=107 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02569999999999999, 0.016175999999999476, -0.0025)->(0.025700000000000046, 0.016175999999999476, -0.0025) sketch=(0.02569999999999999, 0.016175999999999476)->(-0.025700000000000046, 0.016175999999999476)
+2026-10-25 12:36:54,900 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=108 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02617799999999997, -0.01575600000000031, -0.0025)->(-0.02617799999999997, 0.015755999999999402, -0.0025) sketch=(0.02617799999999997, -0.01575600000000031)->(0.02617799999999997, 0.015755999999999402)
+2026-10-25 12:36:54,908 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=109 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(0.026177999999999996, 0.015755999999999402, -0.0025)->(0.026177999999999996, -0.01575600000000031, -0.0025) sketch=(-0.026177999999999996, 0.015755999999999402)->(-0.026177999999999996, -0.01575600000000031)
+2026-10-25 12:36:55,267 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-25 12:36:56,843 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=106 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(-0.02569999999999999, -0.016176000000000385, 0.0)->(0.025700000000000046, -0.016176000000000385, 0.0) sketch=(-0.02569999999999999, -0.016176000000000385)->(0.025700000000000046, -0.016176000000000385)
+2026-10-25 12:36:56,854 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=107 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(-0.02569999999999999, 0.016175999999999476, 0.0)->(0.025700000000000046, 0.016175999999999476, 0.0) sketch=(-0.02569999999999999, 0.016175999999999476)->(0.025700000000000046, 0.016175999999999476)
+2026-10-25 12:36:56,866 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=108 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(-0.02617799999999997, -0.01575600000000031, 0.0)->(-0.02617799999999997, 0.015755999999999402, 0.0) sketch=(-0.02617799999999997, -0.01575600000000031)->(-0.02617799999999997, 0.015755999999999402)
+2026-10-25 12:36:56,875 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=109 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(0.026177999999999996, 0.015755999999999402, 0.0)->(0.026177999999999996, -0.01575600000000031, 0.0) sketch=(0.026177999999999996, 0.015755999999999402)->(0.026177999999999996, -0.01575600000000031)
+2026-10-25 12:36:57,228 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-25 12:36:58,084 WARNING [sw-task-sta] solidworks_generator: 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-25 12:36:58,084 WARNING [sw-task-sta] solidworks_generator: 同草图一次折弯失败 bends=(106, 107, 108, 109)，改为平行分组再逐条
+2026-10-25 12:36:58,416 INFO    [sw-task-sta] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 34, 'not_planar': 1}
+2026-10-25 12:36:59,138 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=106 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02569999999999999, -0.016176000000000385, -0.0025)->(0.025700000000000046, -0.016176000000000385, -0.0025) sketch=(0.02569999999999999, -0.016176000000000385)->(-0.025700000000000046, -0.016176000000000385)
+2026-10-25 12:36:59,149 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=107 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02569999999999999, 0.016175999999999476, -0.0025)->(0.025700000000000046, 0.016175999999999476, -0.0025) sketch=(0.02569999999999999, 0.016175999999999476)->(-0.025700000000000046, 0.016175999999999476)
+2026-10-25 12:36:59,503 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-25 12:37:00,532 INFO    [sw-task-sta] solidworks_generator: 自动折弯成功：bends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)
+2026-10-25 12:37:00,981 INFO    [sw-task-sta] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 40, 'not_planar': 5, 'not_fixed_blank_level': 6}
+2026-10-25 12:37:01,700 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=108 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02617799999999997, -0.01575600000000031, -0.0025)->(-0.02617799999999997, 0.015755999999999402, -0.0025) sketch=(0.02617799999999997, -0.01575600000000031)->(0.02617799999999997, 0.015755999999999402)
+2026-10-25 12:37:01,709 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=109 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(0.026177999999999996, 0.015755999999999402, -0.0025)->(0.026177999999999996, -0.01575600000000031, -0.0025) sketch=(-0.026177999999999996, 0.015755999999999402)->(-0.026177999999999996, -0.01575600000000031)
+2026-10-25 12:37:02,115 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-25 12:37:03,623 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=108 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(-0.02617799999999997, -0.01575600000000031, 0.0)->(-0.02617799999999997, 0.015755999999999402, 0.0) sketch=(-0.02617799999999997, -0.01575600000000031)->(-0.02617799999999997, 0.015755999999999402)
+2026-10-25 12:37:03,635 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=109 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(0.026177999999999996, 0.015755999999999402, 0.0)->(0.026177999999999996, -0.01575600000000031, 0.0) sketch=(0.026177999999999996, 0.015755999999999402)->(0.026177999999999996, -0.01575600000000031)
+2026-10-25 12:37:04,003 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-25 12:37:04,817 WARNING [sw-task-sta] solidworks_generator: 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-25 12:37:05,262 INFO    [sw-task-sta] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 40, 'not_planar': 5, 'not_fixed_blank_level': 6}
+2026-10-25 12:37:05,969 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=108 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.02617799999999997, -0.01575600000000031, -0.0025)->(-0.02617799999999997, 0.015755999999999402, -0.0025) sketch=(0.02617799999999997, -0.01575600000000031)->(0.02617799999999997, 0.015755999999999402)
+2026-10-25 12:37:06,357 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-25 12:37:07,839 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=108 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(-0.02617799999999997, -0.01575600000000031, 0.0)->(-0.02617799999999997, 0.015755999999999402, 0.0) sketch=(-0.02617799999999997, -0.01575600000000031)->(-0.02617799999999997, 0.015755999999999402)
+2026-10-25 12:37:08,194 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-25 12:37:08,976 WARNING [sw-task-sta] solidworks_generator: 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-25 12:37:09,416 INFO    [sw-task-sta] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 40, 'not_planar': 5, 'not_fixed_blank_level': 6}
+2026-10-25 12:37:10,133 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=109 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(0.026177999999999996, 0.015755999999999402, -0.0025)->(0.026177999999999996, -0.01575600000000031, -0.0025) sketch=(-0.026177999999999996, 0.015755999999999402)->(-0.026177999999999996, -0.01575600000000031)
+2026-10-25 12:37:10,493 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-25 12:37:11,986 INFO    [sw-task-sta] solidworks_generator: Bend sketch coordinates: bend=109 transform=(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0) model=(0.026177999999999996, 0.015755999999999402, 0.0)->(0.026177999999999996, -0.01575600000000031, 0.0) sketch=(0.026177999999999996, 0.015755999999999402)->(0.026177999999999996, -0.01575600000000031)
+2026-10-25 12:37:12,342 INFO    [sw-task-sta] solidworks_generator: InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-25 12:37:13,183 WARNING [sw-task-sta] solidworks_generator: 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-25 12:37:13,303 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-25 12:37:13,342 WARNING [sw-task-sta] solidworks_generator: auto bend rejected attempt=1 relief_step=0 failed=(107, 108) completed=2
+2026-10-25 12:37:13,362 INFO    [sw-task-sta] solidworks_generator: 生成钣金零件：图纸=C:\sw-p248-test-20261025\QL-5050_sheetmetal_work.dxf 轮廓=#248 折弯=4 条 板厚=2.500 半径=1.000 角度=90.000 反向=False 释放槽级别=1 输出=C:\sw-p248-test-20261025\out\p248_attempt2.SLDPRT
+2026-10-25 12:37:13,362 INFO    [sw-task-sta] solidworks_generator: 矩形释放槽扩大：级别=1 边长各+1.0mm 改动=1
+2026-10-25 12:37:13,364 ERROR   [sw-task-sta] solidworks_generator: SolidWorks 创建钣金零件时出错
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 4538, in generate_sheet_metal
+    solidworks, started_solidworks = _connect_task_solidworks(
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~^
+        lease, win32com, pythoncom
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 312, in _connect_task_solidworks
+    return lease.native_launch.reconnect(lease)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 102, in reconnect
+    require_model_write(lease)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_session.py", line 802, in require_model_write
+    lease.native_launch.validate(lease)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 84, in validate
+    if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+                                                         ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 73, in _read_pid
+    return int(unwrap(getattr(app, 'GetProcessID')))
+               ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_compat\dispatch.py", line 28, in unwrap
+    return value() if callable(value) else value
+           ~~~~~^^
+  File "C:\Users\yue\AppData\Local\Temp\gen_py\3.13\83A33D31-27C5-11CE-BFD4-00400513BB57x0x33x0.py", line 59407, in GetProcessID
+    return self._oleobj_.InvokeTypes(166, LCID, 1, (3, 0), (),)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147220995, '对象没有连接到服务器', None, None)
+2026-10-25 12:37:13,392 ERROR   [sw-task-sta] sw_session: no lease or application; skipping SolidWorks teardown
+2026-10-25 12:37:13,392 ERROR   [sw-task-sta] sw_owned_launch: owned process left open; no forced cleanup
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 4538, in generate_sheet_metal
+    solidworks, started_solidworks = _connect_task_solidworks(
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~^
+        lease, win32com, pythoncom
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 312, in _connect_task_solidworks
+    return lease.native_launch.reconnect(lease)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 102, in reconnect
+    require_model_write(lease)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_session.py", line 802, in require_model_write
+    lease.native_launch.validate(lease)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 84, in validate
+    if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+                                                         ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 73, in _read_pid
+    return int(unwrap(getattr(app, 'GetProcessID')))
+               ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_compat\dispatch.py", line 28, in unwrap
+    return value() if callable(value) else value
+           ~~~~~^^
+  File "C:\Users\yue\AppData\Local\Temp\gen_py\3.13\83A33D31-27C5-11CE-BFD4-00400513BB57x0x33x0.py", line 59407, in GetProcessID
+    return self._oleobj_.InvokeTypes(166, LCID, 1, (3, 0), (),)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147220995, '对象没有连接到服务器', None, None)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 178, in owned_solidworks
+    yield binding
+  File "C:\sw-ai-v2-work\src\sw_tool_cli.py", line 324, in owned_job
+    rc = runner(args)
+  File "C:\sw-ai-v2-work\src\sw_tool_cli.py", line 174, in run_sheet
+    result = generate_sheet_metal_with_relief_retries(
+        analysis,
+    ...<8 lines>...
+        bend_allowance=allowance,
+    )
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 5265, in generate_sheet_metal_with_relief_retries
+    result = generate_sheet_metal(*args, auto_bend=True,
+        relief_bend_indices=relief, relief_step=step, **common)
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 5206, in generate_sheet_metal
+    raise SolidWorksGenerationError(
+        f"SolidWorks 创建钣金零件时出错：{error}"
+    ) from error
+solidworks_generator.SolidWorksGenerationError: SolidWorks 创建钣金零件时出错：(-2147220995, '对象没有连接到服务器', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 184, in owned_solidworks
+    binding.validate(lease)
+    ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 84, in validate
+    if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+                                                         ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 73, in _read_pid
+    return int(unwrap(getattr(app, 'GetProcessID')))
+               ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_compat\dispatch.py", line 28, in unwrap
+    return value() if callable(value) else value
+           ~~~~~^^
+  File "C:\Users\yue\AppData\Local\Temp\gen_py\3.13\83A33D31-27C5-11CE-BFD4-00400513BB57x0x33x0.py", line 59407, in GetProcessID
+    return self._oleobj_.InvokeTypes(166, LCID, 1, (3, 0), (),)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147220995, '对象没有连接到服务器', None, None)
+2026-10-25 12:37:13,397 ERROR   [MainThread] sw_tool_cli: 生成失败
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 4538, in generate_sheet_metal
+    solidworks, started_solidworks = _connect_task_solidworks(
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~^
+        lease, win32com, pythoncom
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 312, in _connect_task_solidworks
+    return lease.native_launch.reconnect(lease)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 102, in reconnect
+    require_model_write(lease)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_session.py", line 802, in require_model_write
+    lease.native_launch.validate(lease)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 84, in validate
+    if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+                                                         ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 73, in _read_pid
+    return int(unwrap(getattr(app, 'GetProcessID')))
+               ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_compat\dispatch.py", line 28, in unwrap
+    return value() if callable(value) else value
+           ~~~~~^^
+  File "C:\Users\yue\AppData\Local\Temp\gen_py\3.13\83A33D31-27C5-11CE-BFD4-00400513BB57x0x33x0.py", line 59407, in GetProcessID
+    return self._oleobj_.InvokeTypes(166, LCID, 1, (3, 0), (),)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147220995, '对象没有连接到服务器', None, None)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\sw_tool_cli.py", line 327, in main
+    return run_on_task_sta(owned_job, timeout=300, task_name="owned-sheet-metal-cli")
+  File "C:\sw-ai-v2-work\src\sw_session.py", line 598, in run_on_task_sta
+    return worker.call(fn, timeout=timeout, lock_token=token)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_session.py", line 371, in call
+    raise job.error
+  File "C:\sw-ai-v2-work\src\sw_session.py", line 294, in _loop
+    result = job.fn(*job.args, **job.kwargs)
+  File "C:\sw-ai-v2-work\src\sw_tool_cli.py", line 324, in owned_job
+    rc = runner(args)
+  File "C:\sw-ai-v2-work\src\sw_tool_cli.py", line 174, in run_sheet
+    result = generate_sheet_metal_with_relief_retries(
+        analysis,
+    ...<8 lines>...
+        bend_allowance=allowance,
+    )
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 5265, in generate_sheet_metal_with_relief_retries
+    result = generate_sheet_metal(*args, auto_bend=True,
+        relief_bend_indices=relief, relief_step=step, **common)
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 5206, in generate_sheet_metal
+    raise SolidWorksGenerationError(
+        f"SolidWorks 创建钣金零件时出错：{error}"
+    ) from error
+solidworks_generator.SolidWorksGenerationError: SolidWorks 创建钣金零件时出错：(-2147220995, '对象没有连接到服务器', None, None)
+{"message": "SolidWorks 创建钣金零件时出错：(-2147220995, '对象没有连接到服务器', None, None)", "detail": "SolidWorksGenerationError", "event": "error"}
