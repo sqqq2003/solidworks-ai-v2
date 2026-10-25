@@ -5001,27 +5001,77 @@ def generate_sheet_metal(
         if lease is not None:
             lease.generation_saved = True
         logger.info("钣金零件已保存：%s", output)
-        from part_verification import PostSaveComDisconnect, rebind_model_after_save
+        from part_verification import (
+            PostSaveComDisconnect,
+            PostSaveRebindFailed,
+            read_active_document,
+            read_com_property,
+            rebind_model_after_save,
+        )
 
-        def _active_model(app):
-            raw = _com_read(app, "ActiveDoc")
+        def _wrap_model(raw):
             if raw is None:
                 return None
             return _as_interface(type_library, raw, "IModelDoc2")
+
+        def _active_model(app):
+            # Property only. Calling ActiveDoc on an ISldWorks wrapper is
+            # DISP_E_MEMBERNOTFOUND and must not fail the saved part.
+            return _wrap_model(read_active_document(app))
+
+        def _open_saved(app):
+            from part_verification import is_member_not_found
+            saved_path = str(output.resolve())
+            found = None
+            by_name = getattr(app, "GetOpenDocumentByName", None)
+            if callable(by_name):
+                try:
+                    found = by_name(saved_path)
+                except Exception as error:
+                    if not is_member_not_found(error):
+                        raise
+                    found = None
+            if found is None:
+                opener = getattr(app, "OpenDoc6", None)
+                if callable(opener):
+                    opened = opener(
+                        saved_path, SW_DOCUMENT_TYPE_PART, SW_OPEN_DOC_SILENT, "", 0, 0
+                    )
+                    found = opened[0] if isinstance(opened, tuple) else opened
+            if found is None:
+                # Dynamic Dispatch still needs ActiveDoc(). An early-bound
+                # wrapper raises DISP_E_MEMBERNOTFOUND here; that is not fatal.
+                try:
+                    found = read_com_property(app, "ActiveDoc")
+                except Exception as error:
+                    if not is_member_not_found(error):
+                        raise
+                    found = None
+            return _wrap_model(found)
+
+        def _saved_title(rebound):
+            try:
+                return read_com_property(rebound, "GetTitle")
+            except Exception as error:
+                from part_verification import is_member_not_found
+                if is_member_not_found(error):
+                    return output.name
+                raise
 
         try:
             model, rebound_title = rebind_model_after_save(
                 typed_solidworks,
                 _active_model,
-                lambda rebound: _com_read(rebound, "GetTitle"),
+                _saved_title,
                 lease=lease,
+                open_saved=_open_saved,
             )
-        except PostSaveComDisconnect as error:
+        except (PostSaveComDisconnect, PostSaveRebindFailed) as error:
             if not output.is_file() or output.stat().st_size == 0:
                 raise
             post_save_note = str(error)
             logger.warning(
-                "post-save rebind disconnected; keeping %s; ExitApp was not called: %s",
+                "post-save rebind failed; keeping %s; ExitApp was not called: %s",
                 output,
                 error,
             )

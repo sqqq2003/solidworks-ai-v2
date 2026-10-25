@@ -384,16 +384,29 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
     except Exception as exc:
         from part_verification import (
             disconnect_after_saved_product,
+            partial_rebind_after_save,
+            rebind_failure_after_save,
             saved_generation_after_disconnect,
         )
         from sw_session import normalize_com_disconnect
         reported = normalize_com_disconnect(exc) or exc
-        if disconnect_after_saved_product(reported, part):
-            # Feature create and SaveAs already landed. A later CloseDoc,
-            # validate/GetProcessID, or keep-alive disconnect must not delete
-            # the part or report the run as failed. ExitApp stays unused.
-            # native_acceptance remains pending_windows_validation.
-            kept = saved_generation_after_disconnect(generated, reported)
+        keep_disconnect = disconnect_after_saved_product(reported, part)
+        keep_rebind = (not keep_disconnect) and rebind_failure_after_save(exc, part)
+        if keep_disconnect or keep_rebind:
+            # SaveAs3 already wrote the part. A later ActiveDoc
+            # MEMBERNOTFOUND or COM drop must not delete it or report
+            # generation as null. ExitApp stays unused.
+            if generated is None and part is not None:
+                generated = {
+                    "path": Path(part).name,
+                    "file_on_disk": True,
+                    "saved_before_rebind": True,
+                }
+            kept = (
+                saved_generation_after_disconnect(generated, reported)
+                if keep_disconnect
+                else partial_rebind_after_save(generated, exc)
+            )
             crash_file = None
             if ckpt_dir is not None and Path(ckpt_dir).is_dir():
                 try:

@@ -222,6 +222,35 @@ class PipelineTests(unittest.TestCase):
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="locked-stat")
 
+    def test_save_then_activedoc_member_not_found_keeps_the_part(self):
+        from solidworks_generator import SolidWorksGenerationError
+
+        class SavedThenMemberNotFound(MockSheetMetalPort):
+            simulated = False
+
+            def generate(self, analysis, plan, part):
+                part.write_bytes(b"SLDPRT-artifact")
+                raise SolidWorksGenerationError(
+                    "SolidWorks 创建钣金零件时出错：(-2147352573, '找不到成员。', None, None)"
+                )
+
+            def abort(self, stage):
+                raise AssertionError("saved part must stay after ActiveDoc rebind failed")
+
+        report = run_plan(
+            self.analysis, self.plan(), self.root / "out", SavedThenMemberNotFound()
+        )
+        self.assertEqual(report["status"], "partial_rebind_failed")
+        self.assertNotEqual(report["status"], "failed")
+        self.assertNotEqual(report["recovery"], "staging_removed")
+        self.assertEqual(report["recovery"], "products_kept")
+        self.assertEqual(report["exit_code"], 0)
+        self.assertIsNotNone(report["generation"])
+        self.assertEqual(report["generation"]["path"], "part.SLDPRT")
+        self.assertFalse(report["sw_live_verified"])
+        artifact = Path(report["diagnostic_stage"]) / "part.SLDPRT"
+        self.assertEqual(artifact.read_bytes(), b"SLDPRT-artifact")
+
     def test_disconnect_without_a_saved_part_still_fails(self):
         from sw_session import ComSessionDisconnected
 

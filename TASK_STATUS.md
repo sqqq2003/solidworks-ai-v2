@@ -299,3 +299,11 @@
 - 本轮：`GetProcessID` 与 `validate` 把 `CO_E_OBJNOTCONNECTED`（含 excepinfo 里的 HRESULT）收成 `ComSessionDisconnected`，不再把裸元组写进 `error` / `error_kind`。零件已在磁盘（或 SaveAs 之后 `stat` 被锁、但 `generation_saved` 已置位）时，流水线状态是 `saved_com_disconnected_after_generation`，`exit_code=0`，`generation` 仍带 K。不调用 `abort`，不删 staging。`finish_owned_session` 把这次清理记为同一状态和 `cleanup_disconnect`，`cleanup_error` 留空，上下文不抛。CLI `execution_exit_code` 对这个状态返回 0，不是 1。没有零件文件的断连仍然是 `failed`。
 - 离线：`python3 work/run_cloud_tests.py` → 541 ran / 537 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
 - 实机判据：同一张 `synthetic-s2-100x80.dxf`（t=2.5，r=1，k=0.36）。若零件和 K 已写出，随后 `GetProcessID` 断连的 `status` 应为 `saved_com_disconnected_after_generation`，`error_kind` 不是 `com_error`，`generation.k_factor_readback` 仍是 0.36，清理不抛 `owned session cleanup failed`，进程 exit 0。`passed` 与 `sw_live_verified` 仍为 false。这仍不是实机通过。
+
+## P0-DDD-96a228f：SaveAs 后 ActiveDoc MEMBERNOTFOUND 不得删零件
+
+- 证据是 DDD 在 `96a228f` 上清场单实例复测。owned cleanup 已是 `left_open_keepalive`，`keepalive_verified=true`，`cleanup_disconnect=null`。整单仍 `failed`。断点在 `generate_sheet_metal` → `rebind_model_after_save` → `_com_read(app, "ActiveDoc")`：`pywintypes.com_error (-2147352573, DISP_E_MEMBERNOTFOUND, 找不到成员)`。异常被包成 `SolidWorksGenerationError`，`generation=null`，`recovery=staging_removed`，磁盘上的 SLDPRT 被清掉。崩溃包里当时零件还有 78672 bytes。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：已包装的 `ISldWorks.ActiveDoc` 是属性。`_com_read` 把它当成方法调用，Invoke 种类不对，得到 `DISP_E_MEMBERNOTFOUND`。这不是 COM 断连，所以上一轮「断连才保留零件」的分支没有接住，暂存被删。
+- 本轮：`ActiveDoc` 只读属性，不走会触发 MEMBERNOTFOUND 的 callable 路径。读不到时按保存路径用 `GetOpenDocumentByName`，再 `OpenDoc6`，`ActiveDoc()` 只作最后兜底。SaveAs3 已写出非空 SLDPRT 时，重绑失败记 `partial_rebind_failed`（`generation` 不是 null，`exit_code=0`），不调用 `abort`，不做 `staging_removed`。真正的断连仍是 `saved_com_disconnected_after_generation`。轴路径同一套重绑，失败也不把已保存文件盖成异常。
+- 离线：`python3 work/run_cloud_tests.py` → 544 ran / 540 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：同一张 DXF。若 SaveAs3 已写出零件，随后 ActiveDoc `DISP_E_MEMBERNOTFOUND` 不得把 `generation` 记成 null，不得 `staging_removed`，`status` 应为 `partial_rebind_failed`（或重绑按路径成功后继续重开）。零件文件留在磁盘。这仍不是实机通过。

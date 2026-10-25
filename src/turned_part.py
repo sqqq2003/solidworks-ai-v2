@@ -911,32 +911,78 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         if lease is not None:
             lease.generation_saved = True
 
-        def _active_model(app):
-            raw = sw._com_read(app, "ActiveDoc")
+        from part_verification import (
+            PostSaveRebindFailed,
+            read_active_document,
+            read_com_property,
+        )
+
+        def _wrap_model(raw):
             if raw is None:
                 return None
             return sw._as_interface(type_library, raw, "IModelDoc2")
 
+        def _active_model(app):
+            return _wrap_model(read_active_document(app))
+
+        def _open_saved(app):
+            from part_verification import is_member_not_found
+            saved_path = str(output.resolve())
+            found = None
+            by_name = getattr(app, "GetOpenDocumentByName", None)
+            if callable(by_name):
+                try:
+                    found = by_name(saved_path)
+                except Exception as error:
+                    if not is_member_not_found(error):
+                        raise
+                    found = None
+            if found is None:
+                opener = getattr(app, "OpenDoc6", None)
+                if callable(opener):
+                    opened = opener(saved_path, 1, 1, "", 0, 0)
+                    found = opened[0] if isinstance(opened, tuple) else opened
+            if found is None:
+                try:
+                    found = read_com_property(app, "ActiveDoc")
+                except Exception as error:
+                    if not is_member_not_found(error):
+                        raise
+                    found = None
+            return _wrap_model(found)
+
+        def _saved_title(rebound):
+            try:
+                return read_com_property(rebound, "GetTitle")
+            except Exception as error:
+                from part_verification import is_member_not_found
+                if is_member_not_found(error):
+                    return output.name
+                raise
+
+        rebound_title = document_title
         try:
             model, rebound_title = rebind_model_after_save(
                 typed_solidworks,
                 _active_model,
-                lambda rebound: sw._com_read(rebound, "GetTitle"),
+                _saved_title,
                 lease=lease,
+                open_saved=_open_saved,
             )
-        except PostSaveComDisconnect as error:
+        except (PostSaveComDisconnect, PostSaveRebindFailed) as error:
             post_save_error = error
             if not output.is_file() or output.stat().st_size == 0:
                 raise
             import logging
             logging.getLogger(__name__).warning(
-                "post-save rebind disconnected; keeping %s; ExitApp was not called: %s",
+                "post-save rebind failed; keeping %s; ExitApp was not called: %s",
                 output,
                 error,
             )
         if (
             lease is not None
             and document_title
+            and rebound_title
             and rebound_title != document_title
             and lease.is_owned_title(document_title)
         ):

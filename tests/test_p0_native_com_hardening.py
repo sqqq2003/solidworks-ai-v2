@@ -11,7 +11,9 @@ sys.path.insert(0, str(ROOT / "src"))
 import sw_session
 from part_verification import (
     PostSaveComDisconnect,
+    PostSaveRebindFailed,
     post_save_status,
+    read_active_document,
     rebind_model_after_save,
 )
 from ql5050px.com_selection import select_by_id
@@ -209,6 +211,58 @@ class ShaftRebindTests(unittest.TestCase):
         pending = post_save_status(saved=True, disconnected=False)
         self.assertFalse(pending["passed"])
         self.assertEqual(pending["status"], "saved_pending_reopen")
+
+    def test_member_not_found_uses_path_not_the_callable_activedoc(self):
+        class com_error(Exception):
+            pass
+
+        class App:
+            def __init__(self):
+                self.calls = 0
+                self.doc = SimpleNamespace(GetTitle="SavedPart")
+
+            def ActiveDoc(self):
+                self.calls += 1
+                raise com_error(-2147352573, "找不到成员。", None, None)
+
+            def GetOpenDocumentByName(self, _path):
+                return self.doc
+
+        app = App()
+        self.assertIsNone(read_active_document(app))
+        self.assertEqual(app.calls, 0)
+        model, title = rebind_model_after_save(
+            app,
+            lambda application: read_active_document(application),
+            lambda rebound: rebound.GetTitle,
+            open_saved=lambda application: application.GetOpenDocumentByName("part.SLDPRT"),
+        )
+        self.assertEqual(app.calls, 0)
+        self.assertIs(model, app.doc)
+        self.assertEqual(title, "SavedPart")
+
+    def test_member_not_found_without_a_reopen_is_not_a_disconnect(self):
+        class com_error(Exception):
+            pass
+
+        lease = SimpleNamespace(disconnected=False, writes_blocked=False, verified_exclusive=True)
+
+        def fetch(_app):
+            raise com_error(-2147352573, "找不到成员。", None, None)
+
+        def open_saved(_app):
+            raise com_error(-2147352573, "找不到成员。", None, None)
+
+        with self.assertRaises(PostSaveRebindFailed):
+            rebind_model_after_save(
+                object(),
+                fetch,
+                lambda _model: "SavedPart",
+                lease=lease,
+                open_saved=open_saved,
+            )
+        self.assertFalse(lease.disconnected)
+        self.assertFalse(lease.writes_blocked)
 
     def test_close_after_objnotconnected_does_not_exit_app(self):
         class App:

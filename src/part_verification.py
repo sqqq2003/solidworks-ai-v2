@@ -24,6 +24,9 @@ def mark_session_disconnected(lease) -> None:
 
 
 SAVED_DISCONNECT_STATUS = "saved_com_disconnected_after_generation"
+PARTIAL_REBIND_STATUS = "partial_rebind_failed"
+# 0x80020003. Calling an ISldWorks propget as a method raises this.
+DISP_E_MEMBERNOTFOUND = -2147352573
 
 
 def product_file_ready(product) -> bool:
@@ -73,9 +76,92 @@ def disconnect_after_saved_product(error, product) -> bool:
     )
 
 
+def is_member_not_found(error) -> bool:
+    """True for DISP_E_MEMBERNOTFOUND, including a wrapped SolidWorksGenerationError."""
+    if error is None:
+        return False
+    unsigned = DISP_E_MEMBERNOTFOUND & 0xFFFFFFFF
+    seen: set[int] = set()
+
+    def walk(value) -> bool:
+        if value is None or isinstance(value, bool):
+            return False
+        if isinstance(value, int):
+            return value == DISP_E_MEMBERNOTFOUND or (value & 0xFFFFFFFF) == unsigned
+        if isinstance(value, str):
+            folded = value.casefold()
+            return (
+                "找不到成员" in value
+                or "membernotfound" in folded
+                or "-2147352573" in value
+            )
+        ident = id(value)
+        if ident in seen:
+            return False
+        seen.add(ident)
+        if isinstance(value, BaseException):
+            if walk(getattr(value, "args", ())):
+                return True
+            if walk(str(value)):
+                return True
+            return walk(value.__cause__) or walk(value.__context__)
+        if isinstance(value, (tuple, list)):
+            return any(walk(item) for item in value)
+        return False
+
+    return walk(error)
+
+
+def read_com_property(instance, name: str):
+    """Read a COM propget.
+
+    A Python property or a non-callable attribute is returned as-is. A callable
+    is invoked only for dynamic Dispatch. ``DISP_E_MEMBERNOTFOUND`` means this
+    object is an early-bound wrapper and the call was the wrong invoke kind.
+    """
+    descriptor = getattr(type(instance), name, None)
+    if isinstance(descriptor, property):
+        return descriptor.fget(instance)
+    value = getattr(instance, name)
+    if not callable(value):
+        return value
+    try:
+        return value()
+    except Exception as error:
+        if is_member_not_found(error):
+            raise
+        raise
+
+
+def read_active_document(app):
+    """Read ``ISldWorks.ActiveDoc`` without calling a wrapped propget.
+
+    Early-bound wrappers expose ``ActiveDoc`` as a callable. Invoking it is
+    ``DISP_E_MEMBERNOTFOUND``. Path reopen is the fallback; this function does
+    not make that call.
+    """
+    descriptor = getattr(type(app), "ActiveDoc", None)
+    if isinstance(descriptor, property):
+        got = descriptor.fget(app)
+        if callable(got):
+            return None
+        return got
+    value = getattr(app, "ActiveDoc", None)
+    if value is None or callable(value):
+        return None
+    return value
+
+
+class PostSaveRebindFailed(RuntimeError):
+    """SaveAs wrote a file, then ActiveDoc/path rebind did not return a model.
+
+    This is not a COM disconnect and must not delete the part.
+    """
+
+
 def execution_exit_code(status) -> int:
-    """CLI code for a sheet-metal run. A saved disconnect is not exit 1."""
-    if status in {SAVED_DISCONNECT_STATUS, "partial_com_disconnect"}:
+    """CLI code for a sheet-metal run. A saved part is not exit 1."""
+    if status in {SAVED_DISCONNECT_STATUS, "partial_com_disconnect", PARTIAL_REBIND_STATUS}:
         return 0
     if status == "failed":
         return 1
@@ -136,14 +222,86 @@ def post_save_status(*, saved, disconnected, exit_app=False, killed=False):
     }
 
 
-def rebind_model_after_save(app, fetch_active, read_title, *, lease=None):
-    """Drop the pre-save model pointer and resolve the document that is open now."""
+def rebind_failure_after_save(error, product) -> bool:
+    """True when SaveAs left a SLDPRT and rebind failed without a disconnect."""
+    if product is None or Path(product).suffix.casefold() != ".sldprt":
+        return False
+    if not product_file_ready(product):
+        return False
+    if isinstance(error, PostSaveRebindFailed):
+        return True
+    return is_member_not_found(error)
+
+
+def partial_rebind_after_save(generation, error):
+    """Keep the saved part. This is not a SolidWorks live pass."""
+    return {
+        "status": PARTIAL_REBIND_STATUS,
+        "exit_code": 0,
+        "warning": (
+            "SaveAs3 wrote the part; ActiveDoc rebind failed; "
+            "the file was kept and ExitApp was not called"
+        ),
+        "error": str(error),
+        "error_kind": type(error).__name__,
+        "modeling": "saved_pending_reopen",
+        "native_acceptance": "pending_windows_validation",
+        "sw_live_verified": False,
+        "passed": False,
+        "file_on_disk": True,
+        "exit_app": False,
+        "process_killed": False,
+        "generation": generation,
+        "recovery": "products_kept",
+    }
+
+
+def rebind_model_after_save(app, fetch_active, read_title, *, lease=None, open_saved=None):
+    """Drop the pre-save model pointer and resolve the document that is open now.
+
+    ``fetch_active`` should read ``ActiveDoc`` as a property. A
+    ``DISP_E_MEMBERNOTFOUND`` from calling that property is not a disconnect:
+    ``open_saved`` (GetOpenDocumentByName / OpenDoc6 by path) runs next. If the
+    file is already on disk the caller keeps it.
+    """
+    member_error = None
     try:
         model = fetch_active(app)
-        if model is None:
+    except PostSaveComDisconnect:
+        mark_session_disconnected(lease)
+        raise
+    except Exception as error:
+        if is_com_server_disconnect(error):
+            mark_session_disconnected(lease)
             raise PostSaveComDisconnect(
-                "post-save rebind found no ActiveDoc; the save is not a live-session pass"
-            )
+                "post-save COM disconnect while rebinding the open document: " + str(error)
+            ) from error
+        if not is_member_not_found(error):
+            raise
+        member_error = error
+        model = None
+    if model is None and open_saved is not None:
+        try:
+            model = open_saved(app)
+        except Exception as error:
+            if is_com_server_disconnect(error):
+                mark_session_disconnected(lease)
+                raise PostSaveComDisconnect(
+                    "post-save COM disconnect while reopening the saved part: " + str(error)
+                ) from error
+            if member_error is None:
+                member_error = error
+            model = None
+    if model is None:
+        if member_error is not None:
+            raise PostSaveRebindFailed(
+                "post-save ActiveDoc rebind failed; SaveAs file is kept; "
+                "ExitApp was not called: " + str(member_error)
+            ) from member_error
+        raise PostSaveComDisconnect(
+            "post-save rebind found no ActiveDoc; the save is not a live-session pass"
+        )
+    try:
         title = read_title(model)
     except PostSaveComDisconnect:
         mark_session_disconnected(lease)
@@ -153,6 +311,11 @@ def rebind_model_after_save(app, fetch_active, read_title, *, lease=None):
             mark_session_disconnected(lease)
             raise PostSaveComDisconnect(
                 "post-save COM disconnect while rebinding the open document: " + str(error)
+            ) from error
+        if is_member_not_found(error):
+            raise PostSaveRebindFailed(
+                "post-save title read failed with DISP_E_MEMBERNOTFOUND; "
+                "SaveAs file is kept; ExitApp was not called: " + str(error)
             ) from error
         raise
     if not title:
