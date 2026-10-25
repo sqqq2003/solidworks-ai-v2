@@ -32,6 +32,7 @@ class NativeMachineDriver:
             import solidworks_generator as sw
             raw,_ = sw._connect_task_solidworks(self.lease,win32com,pythoncom)
             self.app = sw._as_interface(sw.ensure_solidworks_typelib(),raw,'ISldWorks')
+            self.lease.note_bound_application(self.app)
         return self.app
 
     def owned_path(self,path):
@@ -342,3 +343,4 @@ def run_owned_native(sw_exe,work_root,operation,payload):
                 return driver.inspect_native(copied,payload.get('motion_samples',[]))
             raise ValueError('unknown native machine operation')
     return run_on_task_sta(job,timeout=900,task_name='ql-machine-native')
+
