@@ -82,7 +82,20 @@ class OwnedBinding:
         self.keepalive_verified = False
 
     def validate(self, lease, *, documents=True):
-        if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+        from sw_session import ComSessionDisconnected, is_com_server_disconnect
+        try:
+            image_ok = self.lifetime.probe(self.lifetime.pid) is not None
+            com_pid = self.read_pid(self.app)
+        except Exception as exc:
+            if is_com_server_disconnect(exc):
+                lease.verified_exclusive = False
+                lease.writes_blocked = True
+                lease.disconnected = True
+                raise ComSessionDisconnected(
+                    'owned COM server disconnected; writes refused; ExitApp was not called'
+                ) from exc
+            raise
+        if not image_ok or com_pid != self.lifetime.pid:
             lease.verified_exclusive = False
             lease.writes_blocked = True
             raise SessionOwnershipError('launched process lifetime/COM PID no longer matches')
@@ -91,6 +104,12 @@ class OwnedBinding:
                 titles = set(self.list_titles(self.app))
             except Exception as exc:
                 lease.writes_blocked = True
+                if is_com_server_disconnect(exc):
+                    lease.verified_exclusive = False
+                    lease.disconnected = True
+                    raise ComSessionDisconnected(
+                        'owned COM server disconnected while listing documents; ExitApp was not called'
+                    ) from exc
                 raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
             foreign = titles - set(lease.owned_docs)
             if foreign:

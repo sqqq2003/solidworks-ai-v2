@@ -15,6 +15,12 @@ def read_member(obj,name):
     return value() if callable(value) else value
 
 
+def math_transform(utility, array):
+    """CreateTransform argument must be SAFEARRAY(double), not a raw list."""
+    from sw_math_arrays import double_array
+    return utility.CreateTransform(double_array(array, 16))
+
+
 class NativeMachineDriver:
     def __init__(self,lease,work_root):
         self.lease = lease
@@ -31,7 +37,10 @@ class NativeMachineDriver:
             import win32com.client
             import solidworks_generator as sw
             raw,_ = sw._connect_task_solidworks(self.lease,win32com,pythoncom)
+            self.lease.note_bound_application(raw)
             self.app = sw._as_interface(sw.ensure_solidworks_typelib(),raw,'ISldWorks')
+            # Typed wrappers are a different Python identity. Bind this one and reuse it.
+            self.lease.note_bound_application(self.app)
         return self.app
 
     def owned_path(self,path):
@@ -197,7 +206,7 @@ class NativeMachineDriver:
                 component.ReferencedConfiguration = child['configuration']
                 array = transform[:]
                 array[9:12] = [v/1000 for v in array[9:12]]
-                component.Transform2 = self.app.GetMathUtility().CreateTransform(array)
+                component.Transform2 = math_transform(self.app.GetMathUtility(), array)
                 if catalog[item['ref']].get('component_kind')=='fixed':
                     if not component.Select4(False,None,False): raise RuntimeError('fixed component selection failed')
                     model.FixComponent()
@@ -234,7 +243,7 @@ class NativeMachineDriver:
                     axis = target['axis']
                     if type(axis) is not int or axis not in (0,1,2): raise ValueError('translation axis must be 0/1/2')
                     array[9+axis] = edit['after']/1000
-                    part.Transform2 = self.app.GetMathUtility().CreateTransform(array)
+                    part.Transform2 = math_transform(self.app.GetMathUtility(), array)
                     if abs(list(part.Transform2.ArrayData)[9+axis]-array[9+axis])>1e-8:
                         raise RuntimeError('component transform readback mismatch')
                 else:

@@ -254,3 +254,15 @@
   - Issue #39：7c787deb（`Keep owned SolidWorks alive across S1 close and S2 reopen`）已在代码侧修复 S1→S2 保活根因（UserControl=True + 严格读回、CloseDoc 前再核验、显式 SAFEARRAY(double)），并附 `docs/s2-retest-20261024.md` 精确串行重测跑法；但新补丁实机通过仍待 WB/Qoder 串行重测（同一受控 PID 跨 S1 关最后文档 → S2 重开 → 重建读回 → 展开导出，`keepalive_verified=true`）；`_pid_alive` 的 Windows 分支已用 `_windows_pid_alive`（属 def70f3 一批）；WB-TEST-001 的同名测试在 dev 树内无对应项，修复认领以 def70f3 为据，待重测确认；#39 本身仍 open，不急于关闭。
   - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
   - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。
+
+
+## P0-NATIVE-COM-20261025：SAFEARRAY、板/支架类型、轴保存后断连
+
+- 基线 `aca899b`（`dev/cloud-ai`）。本轮只做 Windows r2（证据 pin `36729775`，干净主机）对应的 P0。云端只跑离线/模拟。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
+- 板/支架：文档创建后约 75ms 失败，`com_error -2147352571`（DISP_E_TYPEMISMATCH），`argErr=8`。这与 `SelectByID2` 的 Callout 传了裸 `None` 的已知签名一致，发生在切除之前。Callout 改为 `VARIANT(VT_DISPATCH, None)`，坐标为 `0.0`。固体切除/拉伸的深度、拔模角、起始偏移改为 double；`NormalCut` 在固体路径显式为 False，钣金通孔仍为 True，不把钣金孔参数抄到固体。空零件第一刀拉伸先试 `Merge=False`。
+- 轴：保存已写出 `part.SLDPRT`，下一次 COM 是 `CO_E_OBJNOTCONNECTED`（-2147220995，中文「对象没有连接到服务器」）。该 HRESULT 原先不在断连表里，收尾会把它当成普通失败并可能继续 ExitApp；保存后的 `IModelDoc2` 也继续被用。现已列入断连，保存后先重新取 `ActiveDoc`，再只 `CloseDoc` 当前文档。断连记为 `post_save_com_disconnected`，不标通过，不 ExitApp，不杀进程。任务 STA 已初始化时，生成函数不再套一层 `CoUninitialize`。
+- 数学数组：沿用 PR #17 的 `src/sw_math_arrays.py`（`double_array` / `CreatePoint` / `CreateTransform`），草图点与装配 `CreateTransform` 走这一处。不另写一套编组。
+- 独占启动：仍要 `--sw-exe`、PID/句柄、空文档清单后才 claim。拒绝第二实例和 PID 不符的会话。没有 `P0_RETEST_ATTACH`，没有温复用验收路径。
+- 未做（P1，本 PR 不做）：Codex 风格 UI（PR #54）不合并；装配配合/干涉/运动和原生工程图仍是骨架；36 个 `pending_features` 不计通过；A01 几何跟随 / Pack and Go 不在本 PR；p248 钣金加深和释放槽另 PR，说明仍在 `docs/p0-sheet-metal.md`。
+- 建议 Gork 在干净单实例 Windows 上复测：plate、bracket、shaft，以及 owned-launch。看 SelectByID2 / 固体切除是否还报类型不匹配，shaft 保存后是否还能重开；断连必须是失败证据，不是通过。`two_bend` 上次是 `not_run`，等前一件收尾明确后再跑。
+- 离线：`python work/run_cloud_tests.py` → 524 ran / 520 passed / 0 failures / 0 errors / 4 skipped（原有 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。

@@ -42,12 +42,20 @@ _DISCONNECT_HRESULTS = frozenset(
         -2147023174,  # RPC_S_SERVER_UNAVAILABLE
         -2147418111,  # RPC_E_CALL_REJECTED
         -2147467261,  # E_POINTER
+        -2147220995,  # CO_E_OBJNOTCONNECTED (0x800401FD)
     }
 )
 
 
 class SessionOwnershipError(RuntimeError):
     """Dangerous SolidWorks operation refused because ownership is not proven."""
+
+
+class ComSessionDisconnected(SessionOwnershipError):
+    """Owned COM server dropped. This is not a modeling pass and does not call ExitApp."""
+
+    status = "com_disconnected"
+    native_acceptance = "pending_windows_validation"
 
 
 class SwCallTimeoutError(TimeoutError):
@@ -926,7 +934,13 @@ def _exception_is_disconnect(error: BaseException | None) -> bool:
             if hr in _DISCONNECT_HRESULTS or (hr & 0xFFFFFFFF) in unsigned:
                 return True
         text = str(current)
-        if "断开连接" in text or "disconnected" in text.casefold():
+        folded = text.casefold()
+        if (
+            "断开连接" in text
+            or "没有连接到服务器" in text
+            or "not connected to server" in folded
+            or "disconnected" in folded
+        ):
             return True
         nested = args[0] if args and isinstance(args[0], BaseException) else None
         if nested is not None and id(nested) not in seen:
@@ -934,6 +948,11 @@ def _exception_is_disconnect(error: BaseException | None) -> bool:
             continue
         current = current.__cause__ or current.__context__
     return False
+
+
+def is_com_server_disconnect(error: BaseException | None) -> bool:
+    """True for RPC disconnects and CO_E_OBJNOTCONNECTED after a dead proxy."""
+    return _exception_is_disconnect(error)
 
 
 def release_task_documents(

@@ -307,6 +307,7 @@ _COM_DISCONNECT_HRESULTS = frozenset(
         -2147023174,  # 0x800706BA RPC_S_SERVER_UNAVAILABLE
         -2147418111,  # 0x80010001 RPC_E_CALL_REJECTED（偶发，当断连处理）
         -2147467261,  # 0x80004003 E_POINTER（对象已释放）
+        -2147220995,  # 0x800401FD CO_E_OBJNOTCONNECTED（保存后对象未连接服务器）
     }
 )
 
@@ -333,7 +334,13 @@ def _is_com_disconnect_error(error: BaseException | None) -> bool:
                 current = hr
                 continue
         message = str(current)
-        if "断开连接" in message or "disconnected" in message.casefold():
+        folded = message.casefold()
+        if (
+            "断开连接" in message
+            or "没有连接到服务器" in message
+            or "not connected to server" in folded
+            or "disconnected" in folded
+        ):
             return True
         current = current.__cause__ or current.__context__
     return False
@@ -2559,7 +2566,7 @@ def _try_extrude_thin_solid(
                 use_scope,
                 auto_select,
                 0,
-                0,
+                0.0,
                 False,
             )
         except Exception:  # noqa: BLE001
@@ -3158,13 +3165,13 @@ class NativeSketchTransformError(SolidWorksGenerationError):
 
 
 def _native_point_array(point):
-    """Explicit SAFEARRAY(double); tuple VARIANT arrays can fail in SW2022."""
-    values = tuple(float(v) for v in point)
-    if len(values) != 3 or not all(math.isfinite(v) for v in values):
-        raise NativeSketchTransformError("invalid native point array")
-    import pythoncom
-    from win32com.client import VARIANT
-    return VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, values)
+    """Explicit SAFEARRAY(double) via sw_math_arrays (PR #17). Raw tuples fail on SW2022."""
+    from sw_math_arrays import double_array
+
+    try:
+        return double_array(point, 3)
+    except ValueError as error:
+        raise NativeSketchTransformError("invalid native point array") from error
 
 
 def _verified_bend_sketch_point(module, transform_object, point):
@@ -4866,34 +4873,10 @@ def generate_sheet_metal(
                 cut_sketch.Name, "SKETCH", 0.0, 0.0, 0.0, False, 0, None, 0
             ):
                 raise SolidWorksGenerationError("无法选择孔位草图。")
-            hole_cut = feature_manager.FeatureCut3(
-                False,
-                False,
-                False,
-                SW_END_CONDITION_THROUGH_ALL,
-                0,
-                0.005,
-                0.005,
-                False,
-                False,
-                False,
-                False,
-                0.0,
-                0.0,
-                False,
-                False,
-                False,
-                False,
-                True,
-                False,
-                True,
-                False,
-                False,
-                False,
-                0,
-                0.0,
-                False,
-            )
+            from sw_feature_calls import sheet_metal_through_cut
+
+            # NormalCut=True only on this sheet-metal hole. Solid cuts use solid_blind_cut.
+            hole_cut = sheet_metal_through_cut(feature_manager)
             if hole_cut is None:
                 raise SolidWorksGenerationError(
                     f"SolidWorks 拒绝创建包含 {len(hole_profiles)} 个轮廓的孔位切除。"

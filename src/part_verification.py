@@ -2,6 +2,78 @@
 import math
 from pathlib import Path
 
+from sw_session import ComSessionDisconnected, is_com_server_disconnect
+
+
+class PostSaveComDisconnect(ComSessionDisconnected):
+    """Save returned, then the COM server or document pointer was gone.
+
+    A file on disk is not a modeling pass. ExitApp and process kill are not
+    recovery. Native acceptance stays pending until a Windows reopen.
+    """
+
+    status = "post_save_com_disconnected"
+
+
+def mark_session_disconnected(lease) -> None:
+    if lease is None:
+        return
+    lease.disconnected = True
+    lease.writes_blocked = True
+    lease.verified_exclusive = False
+
+
+def post_save_status(*, saved, disconnected, exit_app=False, killed=False):
+    """Offline contract for the shaft r2 failure. Never reports a native pass."""
+    if exit_app or killed:
+        raise AssertionError("ExitApp and process kill are forbidden after generation")
+    if disconnected:
+        return {
+            "modeling": "failed",
+            "status": PostSaveComDisconnect.status,
+            "native_acceptance": "pending_windows_validation",
+            "passed": False,
+            "file_on_disk": bool(saved),
+            "exit_app": False,
+            "process_killed": False,
+        }
+    return {
+        "modeling": "saved_pending_reopen",
+        "status": "saved_pending_reopen",
+        "native_acceptance": "pending_windows_validation",
+        "passed": False,
+        "file_on_disk": bool(saved),
+        "exit_app": False,
+        "process_killed": False,
+    }
+
+
+def rebind_model_after_save(app, fetch_active, read_title, *, lease=None):
+    """Drop the pre-save model pointer and resolve the document that is open now."""
+    try:
+        model = fetch_active(app)
+        if model is None:
+            raise PostSaveComDisconnect(
+                "post-save rebind found no ActiveDoc; the save is not a live-session pass"
+            )
+        title = read_title(model)
+    except PostSaveComDisconnect:
+        mark_session_disconnected(lease)
+        raise
+    except Exception as error:
+        if is_com_server_disconnect(error):
+            mark_session_disconnected(lease)
+            raise PostSaveComDisconnect(
+                "post-save COM disconnect while rebinding the open document: " + str(error)
+            ) from error
+        raise
+    if not title:
+        mark_session_disconnected(lease)
+        raise PostSaveComDisconnect(
+            "rebound document has an empty title; refusing to treat the save as success"
+        )
+    return model, str(title)
+
 
 def assert_native_save(path, error_code):
     path = Path(path)
@@ -38,15 +110,36 @@ def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
     import solidworks_generator as sw
     import pythoncom
     import win32com.client
-    lease = require_model_write()
+    try:
+        lease = require_model_write()
+    except ComSessionDisconnected as error:
+        raise PostSaveComDisconnect(
+            "post-save reopen refused because the owned COM session is disconnected; not a pass: "
+            + str(error)
+        ) from error
     path = Path(path).resolve()
     if not path.is_file() or path.stat().st_size == 0:
         raise RuntimeError('generated part is missing or empty')
-    pythoncom.CoInitialize()
+    apartment_owned = bool(getattr(lease, "com_initialized", False))
+    if not apartment_owned:
+        pythoncom.CoInitialize()
     app = None
     title = None
     try:
-        raw, _ = sw._connect_task_solidworks(lease, win32com, pythoncom)
+        try:
+            raw, _ = sw._connect_task_solidworks(lease, win32com, pythoncom)
+            sw._com_read(raw, "GetProcessID")
+        except ComSessionDisconnected as error:
+            raise PostSaveComDisconnect(
+                "post-save application pointer did not rebind; not a pass: " + str(error)
+            ) from error
+        except Exception as error:
+            if is_com_server_disconnect(error):
+                mark_session_disconnected(lease)
+                raise PostSaveComDisconnect(
+                    "post-save COM disconnect before reopen; not a pass: " + str(error)
+                ) from error
+            raise
         module = sw.ensure_solidworks_typelib()
         app = sw._as_interface(module, raw, 'ISldWorks')
         lease.note_bound_application(app)
@@ -92,5 +185,6 @@ def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
             if title and app is not None and title in lease.owned_docs:
                 close_owned_document(lease,app,title)
         finally:
-            pythoncom.CoUninitialize()
+            if not apartment_owned:
+                pythoncom.CoUninitialize()
 

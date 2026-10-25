@@ -167,7 +167,7 @@ class SavedPartContractTests(unittest.TestCase):
             lease.owned_docs = {}
             lease.note_owned_document.side_effect = lambda title,**kwargs:lease.owned_docs.update({title:object()})
             model = SimpleNamespace(GetTitle=lambda:part.name,GetPathName=lambda:str(part),EditRebuild3=True)
-            app = SimpleNamespace(OpenDoc6=lambda *args:model)
+            app = SimpleNamespace(OpenDoc6=lambda *args:model, GetProcessID=lambda: 1)
             com = SimpleNamespace(CoInitialize=lambda:None,CoUninitialize=lambda:None)
             win = SimpleNamespace(client=SimpleNamespace())
             with patch.dict(sys.modules,{'pythoncom':com,'win32com':win,'win32com.client':win.client}),patch('sw_session.require_model_write',return_value=lease),patch('sw_session.close_owned_document',side_effect=lambda lease,app,title:lease.owned_docs.pop(title,None)) as close,patch('solidworks_generator._connect_task_solidworks',return_value=(app,False)),patch('solidworks_generator.ensure_solidworks_typelib'),patch('solidworks_generator._as_interface',side_effect=lambda m,obj,t:obj),patch('part_verification.solid_inventory',return_value=([0,0,0,120,16,16],[[0,0,0,120,16,16]])),patch('solidworks_generator._features',return_value=[]):

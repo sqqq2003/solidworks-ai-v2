@@ -649,9 +649,13 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     typed_solidworks = None
     saved = False
     model = None
+    post_save_error = None
     try:
-        pythoncom.CoInitialize()
-        com_initialized = True
+        # The task STA already owns the apartment. A nested CoUninitialize
+        # drops that count and the next call sees a dead proxy.
+        if not getattr(lease, "com_initialized", False):
+            pythoncom.CoInitialize()
+            com_initialized = True
 
         solidworks, _created_here = sw._connect_task_solidworks(lease, win32com, pythoncom)
         # 目标机装的 SolidWorks 版本未必和开发机一致，主版本号要现探测。
@@ -799,7 +803,7 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                         True,
                         True,
                         0,
-                        0,
+                        0.0,
                         False,
                     )
                 except Exception:
@@ -897,12 +901,46 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
             raise FileExistsError(f"输出已存在：{output}")
         session.require_model_write(lease)
         errors = model.SaveAs3(str(output), 0, 2)
-        from part_verification import assert_native_save
+        from part_verification import (
+            PostSaveComDisconnect,
+            assert_native_save,
+            rebind_model_after_save,
+        )
         assert_native_save(output, errors)
         saved = True
+
+        def _active_model(app):
+            raw = sw._com_read(app, "ActiveDoc")
+            if raw is None:
+                return None
+            return sw._as_interface(type_library, raw, "IModelDoc2")
+
+        try:
+            model, rebound_title = rebind_model_after_save(
+                typed_solidworks,
+                _active_model,
+                lambda rebound: sw._com_read(rebound, "GetTitle"),
+                lease=lease,
+            )
+        except PostSaveComDisconnect as error:
+            post_save_error = error
+            raise
+        if (
+            lease is not None
+            and document_title
+            and rebound_title != document_title
+            and lease.is_owned_title(document_title)
+        ):
+            lease.rename_owned(document_title, rebound_title)
+        document_title = rebound_title
         return str(output)
     finally:
+        keep_previous = False
         try:
+            if lease is not None:
+                keep_previous = bool(lease.keep_application_open)
+                # Close only this document. Do not ExitApp from generation.
+                lease.keep_application_open = True
             application = typed_solidworks if typed_solidworks is not None else solidworks
             if application is not None:
                 session.release_task_documents(
@@ -913,8 +951,16 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                     resolve_title=(lambda: sw._com_read(model, "GetTitle")) if saved and model is not None else None,
                 )
         finally:
+            if lease is not None:
+                lease.keep_application_open = keep_previous
             if com_initialized:
                 pythoncom.CoUninitialize()
+        if saved and post_save_error is None and lease is not None and lease.disconnected:
+            from part_verification import PostSaveComDisconnect
+            raise PostSaveComDisconnect(
+                "COM disconnected after save while closing the owned document; "
+                "not a modeling pass; ExitApp was not called"
+            )
 
 
 def _front_plane(planes):
