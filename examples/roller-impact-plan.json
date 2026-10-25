@@ -1,0 +1,16 @@
+{
+  "status": "ready_for_native",
+  "changes": [
+    {
+      "parameter": "barrel_length",
+      "before_mm": 945,
+      "after_mm": 745
+    }
+  ],
+  "affected_features": [
+    "BarrelExtrude"
+  ],
+  "affected_mates": [
+    "right_support"
+  ]
+}
