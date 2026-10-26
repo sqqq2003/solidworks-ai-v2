@@ -60,12 +60,17 @@ class StockChoice:
 
 @dataclass(frozen=True)
 class SketchPathSegment:
-    """草图路径段：直线或三点弧。via 是弧上的中间点。"""
+    """草图路径段：直线，或带圆心和方向的圆弧。via 是弧上的中间点。
+
+    direction 是 SolidWorks CreateArc 的方向：+1 逆时针，-1 顺时针。
+    """
 
     kind: str  # "line" | "arc"
     start: Point
     end: Point
     via: Point | None = None
+    center: Point | None = None
+    direction: int = 0
 
 
 @dataclass(frozen=True)
@@ -231,6 +236,24 @@ def mm_point_to_m(point: Point) -> tuple[float, float, float]:
             f"{MAX_SKETCH_METERS:g} m。轮廓还停在图纸坐标上，绕错轴就会扫成十几米的扁片。"
         )
     return (x, y, 0.0)
+
+
+def revolve_arc_meters(segment: SketchPathSegment) -> tuple[float, ...]:
+    """SketchManager.CreateArc 的参数：圆心、起点、终点、方向。
+
+    Create3PointArc(start, via, end) 的第二点才是终点。圆角会停在 via 上，
+    下一段从 end 起，缝有零点几毫米，GetSketchContours 就报轮廓没有闭合。
+    AddToDB=True 时三点弧还会走优弧，把轮廓绕穿。这里改走 CreateArc。
+    """
+
+    if segment.kind != "arc" or segment.center is None or segment.direction not in (-1, 1):
+        raise ValueError("圆弧缺少圆心或方向，不能写入草图。")
+    return (
+        *mm_point_to_m(segment.center),
+        *mm_point_to_m(segment.start),
+        *mm_point_to_m(segment.end),
+        int(segment.direction),
+    )
 
 
 # 链轮图纸习惯把规格写在标题栏里，例如「3分12齿链轮RS30X12T」：
@@ -780,8 +803,8 @@ def _revolve_sketch(
     mm_point_to_m(axis_start)
     mm_point_to_m(axis_end)
     # DWG→DXF 会把圆弧拆成细碎点，旋转后倒角/圆角变成一圈碎面。
-    # 这里把近似直线的点链并成一条线，真圆弧拟合成三点弧，草图干净了再写 SW。
-    segments = _fit_path_segments(shifted)
+    # 这里把近似直线的点链并成一条线，真圆弧收成圆心+方向，再把端点焊死。
+    segments = seal_revolve_contour(_fit_path_segments(shifted))
     return RevolveSketch(
         tuple(shifted),
         axis_start,
@@ -906,6 +929,212 @@ def _fit_path_segments(closed_ring: list[Point]) -> tuple[SketchPathSegment, ...
             index += 1
     segments.append(SketchPathSegment("line", ring[-1], ring[0]))
     return tuple(segments)
+
+
+# 小于该缝的端点收成同一个草图顶点。再大就是真缺口，不能硬焊。
+_SEAL_GAP_MM = 0.05
+
+
+def contour_joint_gap(segments: tuple[SketchPathSegment, ...] | list[SketchPathSegment]) -> float:
+    """相邻段端点的最大缝，含最后一段回到第一段。单位毫米。"""
+
+    if len(segments) < 2:
+        return 0.0
+    return max(
+        math.dist(first.end, second.start)
+        for first, second in zip(segments, list(segments)[1:] + list(segments)[:1])
+    )
+
+
+def seal_revolve_contour(
+    segments: tuple[SketchPathSegment, ...] | list[SketchPathSegment],
+) -> tuple[SketchPathSegment, ...]:
+    """把旋转轮廓收成 SolidWorks 认得出的闭合环。
+
+    点环的长度和半径可以是对的，草图仍然不闭合：拟合出的圆角若用
+    Create3PointArc(start, via, end) 写入，接口把第二点当终点，弧停在
+    via，下一条线从 end 起。f09/f15/f19 这类带圆角或退刀槽的图，缝有
+    零点几毫米。AddToDB=True 时三点弧还会画成优弧，轮廓被绕穿。
+
+    这里改成 CreateArc 需要的圆心和方向，并把每段终点焊到下一段起点上
+    （包括回到第一段）。弧的端点落在圆上，方向取经过 via 的那一侧。
+    """
+
+    pieces: list[SketchPathSegment] = []
+    for segment in segments:
+        pieces.extend(_expand_contour_segment(segment))
+    pieces = [piece for piece in pieces if math.dist(piece.start, piece.end) > 1e-6]
+    if len(pieces) < 2:
+        return tuple(pieces)
+    chained = _chain_contour(pieces)
+    chained = [piece for piece in chained if math.dist(piece.start, piece.end) > 1e-6]
+    if len(chained) >= 2:
+        chained = _chain_contour(chained)
+    gap = contour_joint_gap(chained)
+    if gap > 1e-6:
+        raise ValueError(
+            f"旋转轮廓还有 {gap:.4f} mm 的缝，已中止，避免草图不闭合。"
+        )
+    return tuple(chained)
+
+
+def _expand_contour_segment(segment: SketchPathSegment) -> list[SketchPathSegment]:
+    if segment.kind != "arc" or segment.via is None:
+        return [_line_segment(segment.start, segment.end)]
+    fitted = _circle_through(segment.start, segment.via, segment.end)
+    if fitted is None:
+        return [_line_segment(segment.start, segment.end)]
+    center, radius = fitted
+    start = _project_to_circle(segment.start, center, radius)
+    end = _project_to_circle(segment.end, center, radius)
+    via = _project_to_circle(segment.via, center, radius)
+    if (
+        math.dist(start, segment.start) > _SEAL_GAP_MM
+        or math.dist(end, segment.end) > _SEAL_GAP_MM
+        or math.dist(start, end) <= 1e-6
+        or math.dist(via, start) <= 1e-6
+        or math.dist(via, end) <= 1e-6
+    ):
+        return [_line_segment(segment.start, segment.end)]
+    direction = _arc_direction_through(center, start, end, via)
+    sweep = _directed_sweep(center, start, end, direction)
+    if sweep <= 1e-6 or sweep >= math.tau - 1e-3:
+        return [_line_segment(segment.start, segment.end)]
+    arc = SketchPathSegment(
+        "arc",
+        start,
+        end,
+        via,
+        (float(center[0]), float(center[1])),
+        direction,
+    )
+    return [arc]
+
+
+def _line_segment(start: Point, end: Point) -> SketchPathSegment:
+    return SketchPathSegment(
+        "line",
+        (float(start[0]), float(start[1])),
+        (float(end[0]), float(end[1])),
+    )
+
+
+def _project_to_circle(point: Point, center: Point, radius: float) -> Point:
+    dx = point[0] - center[0]
+    dy = point[1] - center[1]
+    length = math.hypot(dx, dy)
+    if length <= 1e-12:
+        return (float(point[0]), float(point[1]))
+    return (
+        float(center[0] + radius * dx / length),
+        float(center[1] + radius * dy / length),
+    )
+
+
+def _arc_direction_through(center: Point, start: Point, end: Point, via: Point) -> int:
+    """+1 逆时针，-1 顺时针。取从 start 到 end、经过 via 的那一侧。"""
+
+    a0 = math.atan2(start[1] - center[1], start[0] - center[0])
+    a1 = math.atan2(end[1] - center[1], end[0] - center[0])
+    av = math.atan2(via[1] - center[1], via[0] - center[0])
+    ccw_end = (a1 - a0) % math.tau
+    ccw_via = (av - a0) % math.tau
+    if ccw_via <= ccw_end + 1e-8:
+        return 1
+    return -1
+
+
+def _directed_sweep(center: Point, start: Point, end: Point, direction: int) -> float:
+    a0 = math.atan2(start[1] - center[1], start[0] - center[0])
+    a1 = math.atan2(end[1] - center[1], end[0] - center[0])
+    if direction > 0:
+        return (a1 - a0) % math.tau
+    return (a0 - a1) % math.tau
+
+
+def _chain_contour(pieces: list[SketchPathSegment]) -> list[SketchPathSegment]:
+    chained: list[SketchPathSegment] = [pieces[0]]
+    for segment in pieces[1:]:
+        chained.append(_attach_contour(chained, segment))
+    if len(chained) >= 2:
+        holder = [chained[-1]]
+        first = _attach_contour(holder, chained[0])
+        chained[-1] = holder[0]
+        chained[0] = first
+    return chained
+
+
+def _attach_contour(
+    chained: list[SketchPathSegment],
+    segment: SketchPathSegment,
+) -> SketchPathSegment:
+    previous = chained[-1]
+    gap = math.dist(previous.end, segment.start)
+    if gap > _SEAL_GAP_MM:
+        return segment
+    if gap <= 1e-12:
+        candidate = previous.end
+    else:
+        candidate = (
+            (previous.end[0] + segment.start[0]) * 0.5,
+            (previous.end[1] + segment.start[1]) * 0.5,
+        )
+    joint = _pull_onto_incident_arcs(candidate, previous, segment)
+    if math.dist(joint, previous.end) > _SEAL_GAP_MM or math.dist(joint, segment.start) > _SEAL_GAP_MM:
+        return segment
+    shared = (float(joint[0]), float(joint[1]))
+    chained[-1] = _move_end(previous, shared)
+    return _move_start(segment, shared)
+
+
+def _pull_onto_incident_arcs(
+    candidate: Point,
+    previous: SketchPathSegment,
+    segment: SketchPathSegment,
+) -> Point:
+    point = candidate
+    for _ in range(4):
+        if previous.kind == "arc" and previous.center is not None and previous.via is not None:
+            point = _project_to_circle(
+                point,
+                previous.center,
+                math.dist(previous.center, previous.via),
+            )
+        if segment.kind == "arc" and segment.center is not None and segment.via is not None:
+            point = _project_to_circle(
+                point,
+                segment.center,
+                math.dist(segment.center, segment.via),
+            )
+    return point
+
+
+def _move_end(segment: SketchPathSegment, joint: Point) -> SketchPathSegment:
+    if segment.kind != "arc" or segment.center is None or segment.via is None:
+        return SketchPathSegment("line", segment.start, joint)
+    direction = _arc_direction_through(segment.center, segment.start, joint, segment.via)
+    return SketchPathSegment(
+        "arc",
+        segment.start,
+        joint,
+        segment.via,
+        segment.center,
+        direction,
+    )
+
+
+def _move_start(segment: SketchPathSegment, joint: Point) -> SketchPathSegment:
+    if segment.kind != "arc" or segment.center is None or segment.via is None:
+        return SketchPathSegment("line", joint, segment.end)
+    direction = _arc_direction_through(segment.center, joint, segment.end, segment.via)
+    return SketchPathSegment(
+        "arc",
+        joint,
+        segment.end,
+        segment.via,
+        segment.center,
+        direction,
+    )
 
 
 def _clean_open(profile: tuple[Point, ...] | list[Point]) -> list[Point]:
