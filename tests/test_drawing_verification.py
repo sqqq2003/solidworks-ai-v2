@@ -2,10 +2,12 @@ from pathlib import Path
 from types import SimpleNamespace as NS
 import tempfile
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock,patch
 from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject,NameObject
 from ql5050px.drawing_verification import validate_pdf,verify_view_layout,lock_view_layout,export_pdf
+from ql5050px.manufacturing_drawings import apply_sheet_case,drawing_sheet_cases,plan_drawings
+from sw_compat.model_document import model_document
 
 
 class DrawingVerificationTests(unittest.TestCase):
@@ -73,5 +75,40 @@ class DrawingVerificationTests(unittest.TestCase):
             export_pdf(driver,drawing,Path(tmp)/'oversized.pdf')
         drawing.Extension.SaveAs.assert_not_called()
         drawing.ActivateSheet.assert_called_with('oversized')
+
+    def test_model_document_passes_mocks_and_casts_ole_documents(self):
+        drawing_mock=MagicMock()
+        self.assertIs(model_document(drawing_mock),drawing_mock)
+        drawing=NS(_oleobj_=object(),GetType=lambda:3)
+        part=NS(_oleobj_=object(),GetType=lambda:1)
+        with patch('solidworks_generator.ensure_solidworks_typelib',return_value='lib'), \
+             patch('solidworks_generator._as_interface',side_effect=lambda module,obj,interface:interface):
+            self.assertEqual(model_document(drawing),'IDrawingDoc')
+            self.assertEqual(model_document(part),'IModelDoc2')
+
+    def test_d4_scale_template_matrix_is_settings_data(self):
+        templates={'A2':'sheets/a2.drwdot','A3':'sheets/a3.drwdot'}
+        cases=drawing_sheet_cases(templates)
+        self.assertEqual([(c['sheet'],c['scale_label']) for c in cases],
+            [('A2','1:5'),('A2','1:10'),('A2','1:20'),('A3','1:5'),('A3','1:10'),('A3','1:20')])
+        a2_tenth=next(c for c in cases if c['sheet']=='A2' and c['scale_label']=='1:10')
+        self.assertEqual(a2_tenth,{'sheet':'A2','scale_label':'1:10','width_mm':594,'height_mm':420,
+            'scale':[1,10],'template':'sheets/a2.drwdot'})
+        settings=apply_sheet_case({'revision':'DEV','scale':[1,1]},a2_tenth)
+        self.assertEqual(settings['part_template'],'sheets/a2.drwdot')
+        self.assertEqual(settings['scale'],[1,10])
+        self.assertEqual(settings['width_mm'],594)
+        plan=plan_drawings(
+            {'tree':{'root':'frame','catalog':{'frame':{'type':'part','part_number':'QL-FRAME','material':'Q235'}}},
+             'dependency_order':['frame']},
+            part_parameters={'frame':{'views':[{'kind':'model','orientation':'*Front'}],
+                'dimensions':[{'references':[{'name':'e1'}],'status':'confirmed'}],
+                'process':'laser','datum_scheme':'A','tolerance_scheme':'GB'}},
+            settings=settings)
+        task=plan['tasks'][0]
+        self.assertEqual(task['scale'],[1,10])
+        self.assertEqual(task['width_mm'],594)
+        self.assertEqual(task['height_mm'],420)
+        self.assertEqual(task['template'],'sheets/a2.drwdot')
 
 if __name__=='__main__':unittest.main()

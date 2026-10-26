@@ -121,8 +121,8 @@ class ProductionTests(unittest.TestCase):
             self.assertEqual(feature_error(f),0)
 
     def test_drawing_template_projection_is_checked_before_views(self):
-        import types
         from src.ql5050px.native_drawings import ManufacturingDriver
+        from sw_compat.model_document import model_document
         driver=ManufacturingDriver(MagicMock(),self.root)
         app=MagicMock();drawing=MagicMock()
         drawing.GetCurrentSheet.return_value.GetProperties2.return_value=[12,0,1,1,False,.42,.297,False]
@@ -132,11 +132,9 @@ class ProductionTests(unittest.TestCase):
         source=MagicMock();source.GetModelViewNames.return_value=['*Front']
         driver.guard=MagicMock();driver.app=app;driver.require_isolated_model=MagicMock()
         driver.open_document=MagicMock(return_value=source)
-        compat=types.ModuleType('sw_compat');helper=types.ModuleType('sw_compat.model_document')
-        helper.model_document=lambda document:document;compat.model_document=helper
+        self.assertIs(model_document(drawing),drawing)
         task=dict(node='A01',template=str(template),width_mm=420,height_mm=297,projection='first_angle')
-        with patch.dict(sys.modules,{'sw_compat':compat,'sw_compat.model_document':helper}), \
-             self.assertRaisesRegex(RuntimeError,'first-angle'):
+        with self.assertRaisesRegex(RuntimeError,'first-angle'):
             driver.export_manufacturing(dict(status='ready_for_native',tasks=[task]),
                 {'documents':{'A01':{'path':str(model),'configuration':'Default'}}},self.root/'drawings')
         drawing.CreateDrawViewFromModelView3.assert_not_called()
