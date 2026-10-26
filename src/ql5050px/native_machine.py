@@ -11,8 +11,29 @@ from .assembly_builder import validate_transform, finite
 
 
 def read_member(obj,name):
-    value = getattr(obj,name)
-    return value() if callable(value) else value
+    """Read a COM member. View iterators are property-first.
+
+    ``GetNextView`` on SW2025 is a propget. Calling the generated method raises
+    ``DISP_E_MEMBERNOTFOUND``. A property result, including None at the end of
+    the chain, is returned without that call. Any other member still calls a
+    method, and only a member-not-found error retries as a property get.
+    """
+    from part_verification import is_member_not_found
+    from sw_compat.com_access import read_propget, read_view_iterator, view_iterator
+    if view_iterator(name):
+        return read_view_iterator(obj, name)
+    value = getattr(obj, name)
+    if not callable(value):
+        return value
+    try:
+        return value()
+    except Exception as exc:
+        if not is_member_not_found(exc):
+            raise
+        try:
+            return read_propget(obj, name)
+        except AttributeError:
+            raise exc
 
 
 def retarget_saved_title(lease, title_before, model):

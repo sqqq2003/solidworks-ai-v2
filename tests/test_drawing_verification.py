@@ -196,6 +196,65 @@ class DrawingVerificationTests(unittest.TestCase):
         self.assertEqual(calls,[DISPATCH_PROPERTYGET,DISPATCH_METHOD])
         self.assertEqual(ann.position,(0.11,0.22,0))
 
+    def test_getnextview_propget_is_not_called_as_method(self):
+        # SW2025: GetNextView is a propget. The generated method raises
+        # DISP_E_MEMBERNOTFOUND. The post-SaveAs walk must not call it.
+        calls=[]
+        front=NS(GetName2='Front')
+        class Ole:
+            def __init__(self,result):
+                self.result=result
+            def GetIDsOfNames(self,name):
+                if name!='GetNextView':
+                    raise OSError(-2147352570,'DISP_E_UNKNOWNNAME')
+                return 9
+            def Invoke(self,dispid,lcid,flags,wanted,*args):
+                calls.append(flags)
+                if flags!=DISPATCH_PROPERTYGET:
+                    raise OSError(-2147352573,'找不到成员。')
+                return self.result
+        class View:
+            def __init__(self,result):
+                self._oleobj_=Ole(result)
+                self.method_calls=0
+            def GetNextView(self):
+                self.method_calls+=1
+                raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+        sheet=View(front)
+        self.assertIs(read_member(sheet,'GetNextView'),front)
+        self.assertEqual(sheet.method_calls,0)
+        self.assertEqual(calls,[DISPATCH_PROPERTYGET])
+        end=View(None)
+        self.assertIsNone(read_member(end,'GetNextView'))
+        self.assertEqual(end.method_calls,0)
+        self.assertEqual(calls,[DISPATCH_PROPERTYGET,DISPATCH_PROPERTYGET])
+
+        class Legacy:
+            def __init__(self):
+                self.method_calls=0
+            def GetNextView(self):
+                self.method_calls+=1
+                return front
+        legacy=Legacy()
+        self.assertIs(read_member(legacy,'GetNextView'),front)
+        self.assertEqual(legacy.method_calls,1)
+
+        class NameOle:
+            def GetIDsOfNames(self,name):
+                if name!='GetName2':
+                    raise OSError(-2147352570,'DISP_E_UNKNOWNNAME')
+                return 4
+            def Invoke(self,dispid,lcid,flags,wanted,*args):
+                if flags!=DISPATCH_PROPERTYGET:
+                    raise OSError(-2147352573,'找不到成员。')
+                return 'Front'
+        class Named:
+            def __init__(self):
+                self._oleobj_=NameOle()
+            def GetName2(self):
+                raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+        self.assertEqual(read_member(Named(),'GetName2'),'Front')
+
     def test_save_as_retargets_only_the_leased_drawing_title(self):
         from sw_session import SessionLease,SessionOwnershipError
         from ql5050px.native_machine import retarget_saved_title

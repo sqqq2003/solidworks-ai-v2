@@ -137,6 +137,89 @@ def _late_read(target, name, args):
     return value(*args)
 
 
+# Sheet and view chains. On SW2025 these are propgets; calling them is
+# DISP_E_MEMBERNOTFOUND. None is the end of the chain, not a missing member.
+_VIEW_ITERATORS = frozenset({
+    'GetFirstView', 'IGetFirstView',
+    'GetNextView', 'IGetNextView',
+    'GetFirstAnnotation', 'IGetFirstAnnotation',
+    'GetNextAnnotation', 'IGetNextAnnotation',
+})
+
+
+def read_propget(target, name):
+    """Read ``name`` with DISPATCH_PROPERTYGET. Do not call a method."""
+    descriptor = getattr(type(target), name, None)
+    if isinstance(descriptor, property):
+        return descriptor.fget(target)
+    ole = _oleobj(target)
+    if ole is not None and callable(getattr(type(ole), 'GetIDsOfNames', None)) and callable(getattr(type(ole), 'Invoke', None)):
+        try:
+            dispid = ole.GetIDsOfNames(name)
+        except Exception as exc:
+            if _missing_name(exc):
+                raise AttributeError(name) from exc
+            raise
+        if isinstance(dispid, (tuple, list)):
+            if not dispid:
+                raise AttributeError(name)
+            dispid = dispid[0]
+        try:
+            result = ole.Invoke(dispid, 0, DISPATCH_PROPERTYGET, True)
+        except Exception as exc:
+            if is_member_not_found(exc) or _missing_name(exc):
+                raise AttributeError(name) from exc
+            raise
+        return _wrap_dispatch(result)
+    value = getattr(target, name)
+    if callable(value):
+        raise AttributeError(name)
+    return value
+
+
+def view_iterator(name):
+    return name in _VIEW_ITERATORS
+
+
+def read_view_iterator(target, name):
+    """Next sheet or view. Property first; a real method is the fallback.
+
+    A successful property read, including None, does not call the method.
+    """
+    if name not in _VIEW_ITERATORS:
+        raise ValueError(name)
+    last = None
+    for attr in _names(name):
+        try:
+            return read_propget(target, attr)
+        except AttributeError as exc:
+            last = exc
+            continue
+        except Exception as exc:
+            last = exc
+            if is_member_not_found(exc) or _missing_name(exc):
+                continue
+            raise
+    for attr in _names(name):
+        try:
+            value = getattr(target, attr)
+        except AttributeError as exc:
+            last = exc
+            continue
+        if not callable(value):
+            return value
+        try:
+            return value()
+        except Exception as exc:
+            last = exc
+            if is_member_not_found(exc) or _missing_name(exc):
+                continue
+            raise
+    if last is not None and not isinstance(last, AttributeError):
+        raise last
+    raise AttributeError(name) from last
+
+
 def read_com_member(target, name, *args):
     """Read ``name`` without calling a property result.
 
