@@ -10,6 +10,18 @@ import sys
 from .assembly_builder import validate_transform, finite
 
 
+def verify_dimension_value(actual, expected, unit):
+    """Compare finite SI readback with an explicitly unit-bearing plan value."""
+    from math import radians, isclose
+    if unit not in {'mm','deg'}:
+        raise ValueError('native dimension supports mm/deg only')
+    value = finite(expected)
+    value = value/1000 if unit == 'mm' else radians(value)
+    if not isclose(finite(actual),value,rel_tol=1e-9,abs_tol=1e-8):
+        raise RuntimeError('dimension differs from reviewed plan; rescan and approve again')
+    return value
+
+
 def read_member(obj,name):
     value = getattr(obj,name)
     return value() if callable(value) else value
@@ -243,10 +255,10 @@ class NativeMachineDriver:
                     value = edit['after']/1000 if edit['unit']=='mm' else radians(edit['after'])
                     dimension = model.Parameter(target)
                     if dimension is None: raise RuntimeError('mapped native dimension missing')
+                    verify_dimension_value(dimension.SystemValue,edit['before'],edit['unit'])
                     if int(dimension.SetSystemValue3(value,3,[component['configuration']]))!=0:
                         raise RuntimeError('configuration-specific dimension write rejected')
-                    if abs(float(dimension.SystemValue)-value)>1e-8:
-                        raise RuntimeError('dimension readback mismatch')
+                    verify_dimension_value(dimension.SystemValue,edit['after'],edit['unit'])
                 changes.append({'component':component['component'],**edit})
             if not read_member(model,'EditRebuild3'): raise RuntimeError('drive part rebuild failed')
             saved = model.Save3(1,0,0)
@@ -256,10 +268,7 @@ class NativeMachineDriver:
             reopened = self.open_document(copies[source],component['configuration'])
             for edit in component['edits']:
                 if isinstance(edit['target'],str):
-                    from math import radians
-                    expected = edit['after']/1000 if edit['unit']=='mm' else radians(edit['after'])
-                    if abs(float(reopened.Parameter(edit['target']).SystemValue)-expected)>1e-8:
-                        raise RuntimeError('saved dimension readback mismatch')
+                    verify_dimension_value(reopened.Parameter(edit['target']).SystemValue,edit['after'],edit['unit'])
             self.close_document(reopened)
         for mate in plan['affected_mates']:
             copied = copies.get(str(Path(mate['document']).resolve()))
