@@ -315,3 +315,9 @@
 - 本轮：轴与钣金对齐。SaveAs 之后仍走 `rebind_model_after_save`（属性 ActiveDoc，再按路径 `GetOpenDocumentByName` / `OpenDoc6`）。CloseDoc 保活，不调用 ExitApp。文件已在磁盘时，重绑失败记 `partial_rebind_failed`，cleanup/inventory COM 失败记 `partial_com_disconnect`，`cleanup_error` 留空，不删 SLDPRT，不做 `staging_removed`。别人的未拥有文档仍然让清理失败。已分类的断连清理状态仍是 `saved_com_disconnected_after_generation`。轴 CLI 在「已保存且只是这类收尾失败」时 exit 0，事件里带路径和 `partial_com_disconnect`。`passed` 与 `sw_live_verified` 仍为 false。`post_save_status` 对断连仍不是建模通过。
 - 离线：`python3 work/run_cloud_tests.py` → 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
 - 实机判据：轴 live，SaveAs 已写出非空 SLDPRT 后，若只剩 cleanup/inventory COM 失败，进程 exit 0，`status` 为 `partial_com_disconnect`（或重绑失败时 `partial_rebind_failed`），路径保留，不调用 ExitApp。没有零件文件的断连仍然失败。这仍不是实机通过。
+
+## P0-DDD-9544d3c：轴 partial 验收已达到，本 PR 不再改保活
+
+- WorkBuddy 在 `9544d3c` 上确认 DDD live。轴：进程 exit 0，`status=partial_com_disconnect`，非空 SLDPRT 保留，未调用 ExitApp。这条验收达到。轴仍不是 `sw_live_verified`：partial 只表示保存后的清理断连不再整单失败，重开读特征之前不算建模通过。
+- 钣金 live 回归：pass，且 `sw_live_verified`。板 `FeatureCut3` 仍返回 `None`，留在本 PR 之外。f09/f15/f19 的旋转轮廓未闭合也不属于本 PR，不并入这条分支。
+- 本 PR 不再为这条轴保活验收改代码。合并前只补这份记录。离线计数仍是 `9544d3c` 上的 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped。
