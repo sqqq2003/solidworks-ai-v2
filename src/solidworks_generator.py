@@ -334,44 +334,119 @@ def _set_sw_automation_mode(solidworks: Any, enabled: bool) -> None:
 _auto_bend_deadline: float | None = None
 
 
-def _list_open_document_titles(application: Any) -> list[str]:
-    """Open-document titles. A mid-walk COM drop is re-raised for a full rewalk.
+_INVENTORY_METHOD_FALLBACK = {
+    "GetNext": ("IGetNext",),
+    "GetFirstDocument": ("IGetFirstDocument2",),
+}
 
-    A large readonly assembly can disconnect a document proxy on GetType or
-    GetNext. That failure is not a shorter count and is not a foreign document.
-    The caller rebinds this task's PID and starts again at GetFirstDocument.
+
+def _inventory_walk_error(name: str, cause: BaseException | None = None) -> InventoryWalkDisconnected:
+    error = InventoryWalkDisconnected(
+        "document inventory walk disconnected during "
+        + name
+        + "; writes refused; ExitApp was not called"
+    )
+    if cause is not None:
+        raise error from cause
+    return error
+
+
+def _invoke_inventory_member(target: Any, attr: str) -> Any:
+    """Read one inventory member. Propget first; do not call a property result."""
+    descriptor = getattr(type(target), attr, None)
+    if isinstance(descriptor, property):
+        got = descriptor.fget(target)
+        if callable(got):
+            raise _inventory_walk_error(attr)
+        return got
+    if not hasattr(target, attr):
+        raise AttributeError(attr)
+    value = getattr(target, attr)
+    if not callable(value):
+        return value
+    return value()
+
+
+def _read_inventory_member(target: Any, name: str, *, required: bool) -> Any:
+    """Read ``name``, then the method form (``IGetNext``) when the propget is missing.
+
+    ``DISP_E_MEMBERNOTFOUND`` on ``ModelDoc.GetNext`` is the wrong invoke kind
+    or a dead document pointer. It is not a foreign document. The caller rebinds
+    this PID and walks again. ``GetType`` may be absent.
     """
+    from part_verification import is_member_not_found
 
-    def _member(target, name):
+    last: BaseException | None = None
+    for attr in (name,) + _INVENTORY_METHOD_FALLBACK.get(name, ()):
         try:
-            return _com_read(target, name)
-        except Exception as exc:
-            if is_com_server_disconnect(exc):
-                raise InventoryWalkDisconnected(
-                    "document inventory walk disconnected during "
-                    + name
-                    + "; writes refused; ExitApp was not called"
-                ) from exc
+            return _invoke_inventory_member(target, attr)
+        except AttributeError:
+            continue
+        except InventoryWalkDisconnected:
             raise
+        except Exception as exc:
+            last = exc
+            if is_member_not_found(exc) or is_com_server_disconnect(exc):
+                continue
+            raise
+    if last is not None and (is_member_not_found(last) or is_com_server_disconnect(last)):
+        if not required and is_member_not_found(last) and not is_com_server_disconnect(last):
+            return None
+        raise _inventory_walk_error(name, last)
+    if last is not None:
+        raise last
+    if not required:
+        return None
+    raise _inventory_walk_error(name)
 
-    count = int(_member(application, "GetDocumentCount"))
-    if count < 0 or count > 10000:
-        raise SessionOwnershipError("invalid document count")
-    current = _member(application, "GetFirstDocument")
+
+def _titles_from_document_array(application: Any, count: int) -> list[str] | None:
+    """Use ``GetDocuments`` when it returns the full open set. Skip the GetNext chain."""
+    has_array = isinstance(getattr(type(application), "GetDocuments", None), property) or hasattr(
+        application, "GetDocuments"
+    )
+    if not has_array:
+        return None
+    raw = _read_inventory_member(application, "GetDocuments", required=False)
+    if not isinstance(raw, (list, tuple)):
+        return None
+    if len(raw) != count:
+        return None
     titles: list[str] = []
-    for _ in range(count):
-        if current is None:
-            raise InventoryWalkDisconnected(
-                "document inventory walk disconnected during GetNext; "
-                "writes refused; ExitApp was not called"
-            )
-        title = _member(current, "GetTitle")
-        if getattr(current, "GetType", None) is not None:
-            _member(current, "GetType")
+    for document in raw:
+        title = _read_inventory_member(document, "GetTitle", required=True)
         if not title or str(title) in titles:
             raise SessionOwnershipError("document inventory has empty/ambiguous titles")
         titles.append(str(title))
-        current = _member(current, "GetNext")
+    return titles
+
+
+def _list_open_document_titles(application: Any) -> list[str]:
+    """Open-document titles. A mid-walk drop is re-raised for a full rewalk.
+
+    A large readonly assembly can fail ``GetNext`` with ``DISP_E_MEMBERNOTFOUND``
+    or drop a document proxy. That is not a shorter count and is not a foreign
+    document. ``GetDocuments`` or ``IGetNext`` is tried before the caller rebinds
+    this task's PID and starts again at ``GetFirstDocument``.
+    """
+
+    count = int(_read_inventory_member(application, "GetDocumentCount", required=True))
+    if count < 0 or count > 10000:
+        raise SessionOwnershipError("invalid document count")
+    via_array = _titles_from_document_array(application, count)
+    if via_array is not None:
+        return via_array
+    current = _read_inventory_member(application, "GetFirstDocument", required=True)
+    titles: list[str] = []
+    for _ in range(count):
+        if current is None:
+            raise _inventory_walk_error("GetNext")
+        title = _read_inventory_member(current, "GetTitle", required=True)
+        _read_inventory_member(current, "GetType", required=False)
+        if not title or str(title) in titles:
+            raise SessionOwnershipError("document inventory has empty/ambiguous titles")
+        titles.append(str(title))
+        current = _read_inventory_member(current, "GetNext", required=True)
     if current is not None:
         raise SessionOwnershipError("document enumeration longer than count")
     return titles

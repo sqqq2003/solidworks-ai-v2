@@ -188,15 +188,16 @@ class OwnedBinding:
                     lease, self.app, self.list_titles, rebind=_rebind_inventory,
                 ))
             except Exception as exc:
+                from part_verification import is_member_not_found
                 normalized = normalize_com_disconnect(exc)
                 lease.writes_blocked = True
-                if normalized is not None:
+                if normalized is not None or is_member_not_found(exc):
                     lease.verified_exclusive = False
                     lease.disconnected = True
                     if isinstance(exc, InventoryWalkDisconnected):
                         raise
                     raise InventoryWalkDisconnected(
-                        "document inventory walk disconnected during GetFirstDocument; "
+                        "document inventory walk disconnected during GetNext; "
                         "writes refused; ExitApp was not called"
                     ) from exc
                 raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc

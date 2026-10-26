@@ -329,3 +329,10 @@
 - 本轮：`_list_open_document_titles` 在 `GetTitle` / `GetType` / `GetNext` 断连或链条提前结束时抛 `InventoryWalkDisconnected`（`status=partial_inventory_disconnect`）。清单按本任务 PID 重绑并从头 `GetFirstDocument` 再走，最多三次。仍不安全则拒绝写入，错误保持这条状态，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 断连仍是 `saved_com_disconnected_after_generation` / `partial_com_disconnect`，路径保留。
 - 离线：`python3 work/run_cloud_tests.py` → 552 ran / 548 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
 - 实机判据：D2 只读大装配后，若只是遍历中的瞬时断连，重绑后清单能走完且文档都属于本任务，则 `require_model_write` 不再报 `document inventory unavailable`。重绑后仍断连则是 `partial_inventory_disconnect`，写入仍拒绝，不调用 ExitApp。别人的文档仍然失败。这仍不是实机通过。
+
+## P0-DDD-1806f74：GetNext 的 MEMBERNOTFOUND 也要重列
+
+- DDD 在 `1806f74` 上复测 D2/D3 仍失败。装配能打开（约 303 个组件），断在 `export_manufacturing` → `guard` → inventory `validate`。错误仍是 `document inventory unavailable; refusing writes`。根 HRESULT 是 `ModelDoc.GetNext` 的 `DISP_E_MEMBERNOTFOUND`（-2147352573），不在 `_DISCONNECT_HRESULTS` 里，所以 `InventoryWalkDisconnected` / 重绑没有发生。D4–D6 没有出图。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 本轮：清单先用 `GetDocuments`（数量对得上就不再走 `GetNext`）。`GetNext` / `GetFirstDocument` 先按属性读，调用失败再试 `IGetNext` / `IGetFirstDocument2`。中途 `DISP_E_MEMBERNOTFOUND` 与断连一样抛 `InventoryWalkDisconnected`，按本任务 PID 重绑并从头重列。仍失败则是 `partial_inventory_disconnect`，写入拒绝，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 语义不变。
+- 离线：`python3 work/run_cloud_tests.py` → 557 ran / 553 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：D2/D3 打开大装配后，`GetNext` 的 `DISP_E_MEMBERNOTFOUND` 应走 `GetDocuments` 或 `IGetNext`，否则重绑重列。成功且文档属于本任务时不再报 `document inventory unavailable`。仍不安全则 `partial_inventory_disconnect`，不调用 ExitApp。这仍不是实机通过。

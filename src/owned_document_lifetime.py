@@ -39,6 +39,22 @@ def is_startup_blank_title(title) -> bool:
     return bool(_STARTUP_BLANK_TITLE.fullmatch(str(title).strip()))
 
 
+def _inventory_rewalk(exc: BaseException) -> bool:
+    """True when a listing should rebind this PID and start the walk over.
+
+    Disconnects and mid-walk ``DISP_E_MEMBERNOTFOUND`` both do. A missing member
+    on ``GetNext`` is not a foreign document and is not left as a hard
+    inventory-unavailable failure.
+    """
+    from sw_session import InventoryWalkDisconnected, is_com_server_disconnect
+
+    if isinstance(exc, InventoryWalkDisconnected) or is_com_server_disconnect(exc):
+        return True
+    from part_verification import is_member_not_found
+
+    return is_member_not_found(exc)
+
+
 def _transient_inventory_error(exc: BaseException) -> bool:
     from sw_session import is_com_server_disconnect
 
@@ -63,8 +79,6 @@ def read_owned_inventory(
     A disconnect with no rebind callback still fails immediately so an unproven
     spawn is not retried into a claim. ExitApp is not involved.
     """
-    from sw_session import is_com_server_disconnect
-
     transient_attempts = (
         _TRANSIENT_INVENTORY_ATTEMPTS if transient_attempts is None else transient_attempts
     )
@@ -83,8 +97,15 @@ def read_owned_inventory(
             raw = list_titles(current)
             return [str(title) for title in (raw or []) if str(title).strip()]
         except Exception as exc:
-            if is_com_server_disconnect(exc):
+            if _inventory_rewalk(exc):
                 if rebind is None or disconnect_used >= disconnect_attempts:
+                    if not isinstance(exc, InventoryWalkDisconnected):
+                        from sw_session import InventoryWalkDisconnected
+
+                        raise InventoryWalkDisconnected(
+                            "document inventory walk disconnected during GetNext; "
+                            "writes refused; ExitApp was not called"
+                        ) from exc
                     raise
                 disconnect_used += 1
                 rebound = rebind()

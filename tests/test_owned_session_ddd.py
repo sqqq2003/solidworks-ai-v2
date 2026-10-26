@@ -701,6 +701,177 @@ class DddOwnedSessionTests(unittest.TestCase):
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-foreign-after-rewalk")
 
+    def test_getnext_member_not_found_uses_igetnext_without_rebind(self):
+        from solidworks_generator import _list_open_document_titles
+
+        class com_error(Exception):
+            pass
+
+        class Doc:
+            def __init__(self, title, nxt):
+                self.title = title
+                self.nxt = nxt
+
+            def GetTitle(self):
+                return self.title
+
+            def GetNext(self):
+                raise com_error(-2147352573, "找不到成员。", None, None)
+
+            def IGetNext(self):
+                return self.nxt
+
+        second = Doc("b.SLDPRT", None)
+        first = Doc("a.SLDPRT", second)
+
+        class App:
+            def GetDocumentCount(self):
+                return 2
+
+            def GetFirstDocument(self):
+                return first
+
+        self.assertEqual(_list_open_document_titles(App()), ["a.SLDPRT", "b.SLDPRT"])
+
+    def test_getdocuments_skips_the_getnext_chain(self):
+        from solidworks_generator import _list_open_document_titles
+
+        class Doc:
+            def __init__(self, title):
+                self.title = title
+
+            def GetTitle(self):
+                return self.title
+
+            def GetNext(self):
+                raise AssertionError("GetNext")
+
+        class App:
+            def __init__(self):
+                self.docs = (Doc("root.SLDASM"), Doc("part.SLDPRT"))
+
+            def GetDocumentCount(self):
+                return 2
+
+            def GetDocuments(self):
+                return self.docs
+
+            def GetFirstDocument(self):
+                raise AssertionError("GetFirstDocument")
+
+        self.assertEqual(
+            _list_open_document_titles(App()),
+            ["root.SLDASM", "part.SLDPRT"],
+        )
+
+    def test_getnext_member_not_found_rebinds_and_rewalks(self):
+        from solidworks_generator import _list_open_document_titles
+
+        class com_error(Exception):
+            pass
+
+        class Doc:
+            def __init__(self, title, nxt, fail):
+                self.title = title
+                self.nxt = nxt
+                self.fail = fail
+
+            def GetTitle(self):
+                return self.title
+
+            def GetNext(self):
+                if self.fail:
+                    raise com_error(-2147352573, "找不到成员。", None, None)
+                return self.nxt
+
+        class WalkApp:
+            def __init__(self, fail):
+                self.fail = fail
+                self.exit_calls = 0
+                tail = Doc("owned-1.SLDPRT", None, fail)
+                self.head = Doc("owned-0.SLDPRT", tail, fail)
+
+            def GetDocumentCount(self):
+                return 2
+
+            def GetFirstDocument(self):
+                return self.head
+
+            def ExitApp(self):
+                self.exit_calls += 1
+
+        def job():
+            life = Lifetime()
+            dead = WalkApp(True)
+            fresh = WalkApp(False)
+            binding = self.bind(life, dead, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.note_owned_document("owned-0.SLDPRT")
+            lease.note_owned_document("owned-1.SLDPRT")
+            binding.list_titles = _list_open_document_titles
+            binding.rediscover = lambda pid: fresh
+            sw_session.require_model_write(lease)
+            self.assertIs(binding.app, fresh)
+            self.assertFalse(lease.writes_blocked)
+            self.assertFalse(lease.disconnected)
+            self.assertEqual(dead.exit_calls, 0)
+            self.assertEqual(fresh.exit_calls, 0)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-member-rewalk")
+
+    def test_persistent_member_not_found_is_not_inventory_unavailable(self):
+        class com_error(Exception):
+            pass
+
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+
+            def dead_walk(_app):
+                raise com_error(-2147352573, "找不到成员。", None, None)
+
+            binding.list_titles = dead_walk
+            with self.assertRaises(sw_session.InventoryWalkDisconnected) as caught:
+                sw_session.require_model_write(lease)
+            self.assertEqual(caught.exception.status, "partial_inventory_disconnect")
+            self.assertNotIn("document inventory unavailable", str(caught.exception))
+            self.assertNotIn("(-2147352573", str(caught.exception))
+            self.assertIn("ExitApp was not called", str(caught.exception))
+            self.assertTrue(lease.writes_blocked)
+            self.assertEqual(app.exit_calls, 0)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-member-partial")
+
+    def test_saved_shaft_member_not_found_stays_partial(self):
+        class com_error(Exception):
+            pass
+
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.generation_saved = True
+            lease.generation_path = r"D:\out\shaft.SLDPRT"
+
+            def dead_walk(_app):
+                raise com_error(-2147352573, "找不到成员。", None, None)
+
+            binding.list_titles = dead_walk
+            finish_owned_session(lease, binding)
+            self.assertEqual(app.exit_calls, 0)
+            self.assertIsNone(binding.cleanup_error)
+            self.assertEqual(
+                binding.cleanup_status,
+                "saved_com_disconnected_after_generation",
+            )
+            self.assertIn("ExitApp was not called", binding.cleanup_disconnect)
+            self.assertEqual(lease.generation_path, r"D:\out\shaft.SLDPRT")
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-shaft-member-walk")
+
 
 if __name__ == "__main__":
     unittest.main()
