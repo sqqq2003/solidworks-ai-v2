@@ -7,7 +7,9 @@ from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject,NameObject
 from ql5050px.drawing_verification import validate_pdf,verify_view_layout,lock_view_layout,export_pdf
 from ql5050px.manufacturing_drawings import apply_sheet_case,drawing_sheet_cases,plan_drawings
-from sw_compat.model_document import model_document
+from ql5050px.native_machine import read_member
+from sw_compat.annotation import read_annotation_position,set_annotation_position
+from sw_compat.model_document import DualDocument,model_document
 
 
 class DrawingVerificationTests(unittest.TestCase):
@@ -79,12 +81,90 @@ class DrawingVerificationTests(unittest.TestCase):
     def test_model_document_passes_mocks_and_casts_ole_documents(self):
         drawing_mock=MagicMock()
         self.assertIs(model_document(drawing_mock),drawing_mock)
-        drawing=NS(_oleobj_=object(),GetType=lambda:3)
         part=NS(_oleobj_=object(),GetType=lambda:1)
         with patch('solidworks_generator.ensure_solidworks_typelib',return_value='lib'), \
              patch('solidworks_generator._as_interface',side_effect=lambda module,obj,interface:interface):
-            self.assertEqual(model_document(drawing),'IDrawingDoc')
             self.assertEqual(model_document(part),'IModelDoc2')
+
+    def test_drawing_dual_cast_reads_title_from_model_face(self):
+        class DrawingFace:
+            def GetCurrentSheet(self):
+                return 'sheet'
+            def GetTitle(self):
+                raise AssertionError('IDrawingDoc GetTitle hangs')
+        class ModelFace:
+            @property
+            def GetType(self):
+                return 3
+            def GetTitle(self):
+                return 'A2-10'
+            @property
+            def Extension(self):
+                return 'extension'
+        raw=NS(_oleobj_=object())
+        faces={'IDrawingDoc':DrawingFace(),'IModelDoc2':ModelFace()}
+        with patch('solidworks_generator.ensure_solidworks_typelib',return_value='lib'), \
+             patch('solidworks_generator._as_interface',side_effect=lambda module,obj,interface:faces[interface]) as cast:
+            wrapped=model_document(raw)
+        self.assertIsInstance(wrapped,DualDocument)
+        self.assertEqual([call.args[2] for call in cast.call_args_list],['IModelDoc2','IDrawingDoc'])
+        self.assertEqual(read_member(wrapped,'GetTitle'),'A2-10')
+        self.assertEqual(read_member(wrapped,'GetCurrentSheet'),'sheet')
+        self.assertEqual(wrapped.Extension,'extension')
+
+    def test_annotation_property_is_not_called_and_member_not_found_rebinds(self):
+        class CallableAnnotation:
+            def __init__(self):
+                self.called=False
+                self.position=None
+            def __call__(self):
+                self.called=True
+                raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+            def SetPosition2(self,x,y,z):
+                self.position=(x,y,z)
+                return True
+            def GetPosition(self):
+                return (0.1,0.2,0)
+        ann=CallableAnnotation()
+        class Note:
+            @property
+            def GetAnnotation(self):
+                return ann
+        set_annotation_position(Note(),0.15,0.22,0)
+        self.assertFalse(ann.called)
+        self.assertEqual(ann.position,(0.15,0.22,0))
+        self.assertEqual(tuple(read_annotation_position(Note())),(0.1,0.2,0))
+
+        class RawAnnotation:
+            def __init__(self):
+                self._oleobj_=object()
+            def SetPosition2(self,x,y,z):
+                raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+            def GetPosition(self):
+                raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+        class TypedAnnotation:
+            def __init__(self):
+                self.position=None
+            def SetPosition2(self,x,y,z):
+                self.position=(x,y,z)
+                return True
+            @property
+            def GetPosition(self):
+                return (0.2,0.3,0)
+        typed=TypedAnnotation()
+        raw=RawAnnotation()
+        class MethodNote:
+            def GetAnnotation(self):
+                raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+            @property
+            def IGetAnnotation(self):
+                return raw
+        with patch('solidworks_generator.ensure_solidworks_typelib',return_value='lib'), \
+             patch('solidworks_generator._as_interface',return_value=typed) as cast:
+            set_annotation_position(MethodNote(),0.05,0.06,0)
+            self.assertEqual(tuple(read_annotation_position(MethodNote())),(0.2,0.3,0))
+        self.assertEqual(typed.position,(0.05,0.06,0))
+        self.assertEqual(cast.call_args.args[2],'IAnnotation')
 
     def test_d4_scale_template_matrix_is_settings_data(self):
         templates={'A2':'sheets/a2.drwdot','A3':'sheets/a3.drwdot'}

@@ -6,6 +6,7 @@ from .native_exports import NativeExportsMixin
 from .drawing_layout import DrawingAnnotationsMixin
 from .assembly_builder import finite
 from .drawing_verification import lock_view_layout,verify_view_layout
+from sw_compat.annotation import read_annotation_position,set_annotation_position
 
 
 def model_view_name(requested,available):
@@ -127,7 +128,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 note = drawing.InsertNote(annotation['text'])
                 if note is None: raise RuntimeError('drawing note failed')
                 x,y = [finite(v)/1000 for v in annotation['position_mm']]
-                if not read_member(note,'GetAnnotation').SetPosition2(x,y,0): raise RuntimeError('drawing annotation position failed')
+                set_annotation_position(note,x,y,0)
             bom = task['drawing_model']['bom']
             bom_evidence=None
             if bom:
@@ -140,15 +141,14 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 native_table=_as_interface(ensure_solidworks_typelib(),table,'ITableAnnotation')
                 if task.get('bom_position_mm'):
                     x,y=[finite(v)/1000 for v in task['bom_position_mm']]
-                    if not read_member(native_table,'GetAnnotation').SetPosition2(x,y,0):
-                        raise RuntimeError('BOM position update failed')
+                    set_annotation_position(native_table,x,y,0)
                 bom_evidence={'rows':int(read_member(native_table,'RowCount')),
                               'columns':int(read_member(native_table,'ColumnCount')),
                               'configuration':configuration}
                 if bom_evidence['rows']<=1:
                     raise RuntimeError('native BOM has no component data rows')
                 if task.get('bom_position_mm'):
-                    position=read_member(read_member(native_table,'GetAnnotation'),'GetPosition')
+                    position=read_annotation_position(native_table)
                     bx,by=[float(v)*1000 for v in position[:2]]
                     tw=sum(float(native_table.GetColumnWidth(c))*1000 for c in range(bom_evidence['columns']))
                     th=sum(float(native_table.GetRowHeight(r))*1000 for r in range(bom_evidence['rows']))
@@ -168,7 +168,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 note = drawing.Extension.InsertBOMBalloon2(options)
                 if note is None: raise RuntimeError('BOM balloon insertion failed')
                 x,y = [finite(v)/1000 for v in balloon['position_mm']]
-                note.GetAnnotation().SetPosition2(x,y,0)
+                set_annotation_position(note,x,y,0)
             output = folder/task['filename']
             view_names={name:str(read_member(view,'GetName2')) for name,view in views.items()}
             receipt = self.save_reopen(drawing,output,'')
