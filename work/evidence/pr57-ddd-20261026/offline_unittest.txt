@@ -1,0 +1,14 @@
+test_r2_hresult_is_a_disconnect (tests.test_p0_native_com_hardening.PlateBracketCallTests.test_r2_hresult_is_a_disconnect) ... ok
+test_selection_callout_is_null_dispatch (tests.test_p0_native_com_hardening.PlateBracketCallTests.test_selection_callout_is_null_dispatch) ... ok
+test_solid_cut_is_not_the_sheet_metal_call (tests.test_p0_native_com_hardening.PlateBracketCallTests.test_solid_cut_is_not_the_sheet_metal_call) ... ok
+test_close_after_objnotconnected_does_not_exit_app (tests.test_p0_native_com_hardening.ShaftRebindTests.test_close_after_objnotconnected_does_not_exit_app) ... COM disconnect closing owned document 'Part1'; not calling ExitApp and not force-killing SolidWorks
+ok
+test_member_not_found_uses_path_not_the_callable_activedoc (tests.test_p0_native_com_hardening.ShaftRebindTests.test_member_not_found_uses_path_not_the_callable_activedoc) ... ok
+test_member_not_found_without_a_reopen_is_not_a_disconnect (tests.test_p0_native_com_hardening.ShaftRebindTests.test_member_not_found_without_a_reopen_is_not_a_disconnect) ... ok
+test_rebind_returns_the_live_document_not_the_pre_save_pointer (tests.test_p0_native_com_hardening.ShaftRebindTests.test_rebind_returns_the_live_document_not_the_pre_save_pointer) ... ok
+test_stale_pointer_after_save_is_not_a_pass (tests.test_p0_native_com_hardening.ShaftRebindTests.test_stale_pointer_after_save_is_not_a_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.006s
+
+OK
