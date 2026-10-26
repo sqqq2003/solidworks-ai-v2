@@ -1,8 +1,11 @@
-"""旋转轮廓必须在写入 SolidWorks 之前闭合成圆上的弧。
+"""旋转轮廓必须在写入 SolidWorks 之前闭合成圆上的弧，且弧不能鼓出点框。
 
 f09/f15/f19 的计划长度和半径是对的，draw() 仍报「旋转轮廓没有闭合」。
 圆角被拟合成弧之后，若按 Create3PointArc(start, via, end) 写入，接口把
 第二点当终点，弧停在 via，下一条线从 end 起，缝有零点几毫米。
+
+轮廓闭上之后，f15 仍因外包长度多出约 1.45 mm 被拒绝保存。采样点可以
+都落在拟合圆上，扫掠弧顶却在两点之间越过端面或外圆。
 这里不连 SolidWorks，只检查密封后的段和 CreateArc 参数。
 """
 
@@ -97,6 +100,103 @@ def _radial_error(segment) -> float:
         abs(math.dist(segment.center, segment.start) - radius),
         abs(math.dist(segment.center, segment.end) - radius),
     )
+
+
+def _end_fillet(length=54.97, radius=5.0, fillet=1.45):
+    """轴端 R 圆角。端面和圆角连在一起时，旧拟合会把弧顶甩过端面。"""
+
+    center = (length - fillet, radius - fillet)
+    points = [(0.0, 0.0), (0.0, radius), (center[0], radius)]
+    points.extend(_tessellate(center, fillet, math.pi / 2.0, 0.0)[1:])
+    points.extend([(length, center[1]), (length, 0.0)])
+    return points
+
+
+def _both_end_fillets(length=54.97, radius=5.0, fillet=1.45):
+    """两端都有圆角。旧拟合会把外圆收成一根大半径弧，径向鼓出两毫米以上。"""
+
+    left = (fillet, radius - fillet)
+    points = [(0.0, 0.0)]
+    points.extend(_tessellate(left, fillet, math.pi, math.pi / 2.0))
+    right = (length - fillet, radius - fillet)
+    if math.dist(points[-1], (right[0], radius)) > 1e-6:
+        points.append((right[0], radius))
+    arc = _tessellate(right, fillet, math.pi / 2.0, 0.0)
+    if math.dist(points[-1], arc[0]) <= 1e-6:
+        points.extend(arc[1:])
+    else:
+        points.extend(arc)
+    points.extend([(length, right[1]), (length, 0.0)])
+    return points
+
+
+def _crown_past_end(overshoot=1.45, gap_degrees=14.5):
+    """大半径弧在端面外侧有一段没被采样的弧顶，弧顶比点框长出 overshoot。"""
+
+    gap = math.radians(gap_degrees)
+    radius = overshoot / (1.0 - math.cos(gap))
+    center_y = radius * math.sin(gap)
+    angles = (50.0, 35.0, gap_degrees, -gap_degrees)
+    raw = []
+    for degrees in angles:
+        angle = math.radians(degrees)
+        y = center_y + radius * math.sin(angle)
+        raw.append((radius * math.cos(angle), 0.0 if abs(y) < 1e-8 else y))
+    origin = min(point[0] for point in raw)
+    shifted = [(point[0] - origin, point[1]) for point in raw]
+    end = shifted[-1]
+    profile = [(0.0, 0.0), (end[0], 0.0)]
+    profile.extend(reversed(shifted[:-1]))
+    return profile
+
+
+def _curve_samples(segment, count=48):
+    """沿写入 SolidWorks 的那条弧取样，并带上扫掠角里的轴向/径向极值。"""
+
+    points = [segment.start, segment.end]
+    if segment.kind != "arc" or segment.center is None or segment.direction not in (-1, 1):
+        return points
+    center = segment.center
+    radius = math.dist(center, segment.start)
+    start_angle = math.atan2(segment.start[1] - center[1], segment.start[0] - center[0])
+    end_angle = math.atan2(segment.end[1] - center[1], segment.end[0] - center[0])
+    if segment.direction > 0:
+        sweep = (end_angle - start_angle) % math.tau
+        sign = 1.0
+    else:
+        sweep = (start_angle - end_angle) % math.tau
+        sign = -1.0
+    for index in range(count + 1):
+        angle = start_angle + sign * sweep * index / count
+        points.append(
+            (
+                center[0] + radius * math.cos(angle),
+                center[1] + radius * math.sin(angle),
+            )
+        )
+    for cardinal in (0.0, math.pi / 2.0, math.pi, -math.pi / 2.0):
+        if sign > 0:
+            on_sweep = (cardinal - start_angle) % math.tau <= sweep + 1e-8
+        else:
+            on_sweep = (start_angle - cardinal) % math.tau <= sweep + 1e-8
+        if on_sweep:
+            points.append(
+                (
+                    center[0] + radius * math.cos(cardinal),
+                    center[1] + radius * math.sin(cardinal),
+                )
+            )
+    return points
+
+
+def _curve_extent(segments):
+    xs = []
+    ys = []
+    for segment in segments:
+        for point in _curve_samples(segment):
+            xs.append(point[0])
+            ys.append(point[1])
+    return min(xs), min(ys), max(xs), max(ys)
 
 
 def _directed_sweep_deg(segment) -> float:
@@ -237,6 +337,95 @@ class RevolveContourClosureTests(unittest.TestCase):
         self.assertEqual(contour_joint_gap(build.revolve.segments), 0.0)
         self.assertAlmostEqual(build.length_mm, 80.0, places=2)
         self.assertAlmostEqual(build.revolve.max_radius_mm, 12.0, places=2)
+
+    def test_end_fillet_curve_stays_on_the_plan_length(self) -> None:
+        length = 54.97
+        radius = 5.0
+        fillet = 1.45
+        sketch = prepare_profile_sketch(
+            _end_fillet(length, radius, fillet),
+            length_mm=length,
+            max_radius_mm=radius,
+        )
+        min_x, min_y, max_x, max_y = _curve_extent(sketch.segments)
+        self.assertEqual(contour_joint_gap(sketch.segments), 0.0)
+        self.assertLessEqual(max_x - min_x, length + 0.05)
+        self.assertGreaterEqual(max_x - min_x, length - 0.05)
+        self.assertLessEqual(max_y, radius + 0.05)
+        self.assertGreaterEqual(max_y, radius - 0.05)
+        self.assertGreaterEqual(min_y, -0.05)
+        # 真圆角还在（圆心在端面内侧），鼓出的 R10 弧没有留下来。
+        # 贴着端面的那几度落在直线容差里，可以并进端面，其余必须仍是这段圆弧。
+        arcs = [segment for segment in sketch.segments if segment.kind == "arc"]
+        self.assertEqual(len(arcs), 1)
+        arc = arcs[0]
+        self.assertAlmostEqual(math.dist(arc.center, arc.start), fillet, places=2)
+        self.assertLess(math.dist(arc.center, (length - fillet, radius - fillet)), 0.05)
+        self.assertGreater(_directed_sweep_deg(arc), 60.0)
+        self.assertLess(_directed_sweep_deg(arc), 180.0)
+        self.assertLess(_radial_error(arc), 1e-6)
+        self.assertTrue(_via_on_directed_arc(arc))
+
+    def test_both_end_fillets_do_not_grow_the_radius(self) -> None:
+        length = 54.97
+        radius = 5.0
+        fillet = 1.45
+        sketch = prepare_profile_sketch(
+            _both_end_fillets(length, radius, fillet),
+            length_mm=length,
+            max_radius_mm=radius,
+        )
+        min_x, _min_y, max_x, max_y = _curve_extent(sketch.segments)
+        self.assertEqual(contour_joint_gap(sketch.segments), 0.0)
+        self.assertLessEqual(max_x - min_x, length + 0.05)
+        self.assertLessEqual(max_y, radius + 0.05)
+        self.assertGreaterEqual(max_y, radius - 0.05)
+        radii = [
+            math.dist(segment.center, segment.start)
+            for segment in sketch.segments
+            if segment.kind == "arc"
+        ]
+        self.assertGreaterEqual(sum(abs(value - fillet) < 0.05 for value in radii), 2)
+        self.assertTrue(all(value < 20.0 for value in radii))
+
+    def test_unsampled_crown_cannot_lengthen_the_solid(self) -> None:
+        profile = _crown_past_end(1.45, 14.5)
+        length = max(point[0] for point in profile) - min(point[0] for point in profile)
+        radius = max(point[1] for point in profile)
+        sketch = prepare_profile_sketch(
+            profile,
+            length_mm=length,
+            max_radius_mm=radius,
+        )
+        min_x, min_y, max_x, max_y = _curve_extent(sketch.segments)
+        self.assertEqual(contour_joint_gap(sketch.segments), 0.0)
+        self.assertLessEqual(max_x, length + 0.05)
+        self.assertGreaterEqual(max_x, length - 0.05)
+        self.assertLessEqual(max_y, radius + 0.05)
+        self.assertGreaterEqual(min_y, -0.05)
+        # 没有采样到的弧顶不再被画出来。剩下的弧都必须待在点框里。
+        self.assertLessEqual(max_x - min_x, length + 0.05)
+
+    def test_seal_replaces_a_bulging_arc_with_chords(self) -> None:
+        # 端面三个点决定的圆，弧顶在 x=55.12，点框只到 54.97。
+        start = (54.97, 0.0)
+        via = (54.97, 3.55)
+        end = (54.86, 4.105)
+        segments = (
+            SketchPathSegment("arc", start, end, via),
+            SketchPathSegment("line", end, (0.0, 5.0)),
+            SketchPathSegment("line", (0.0, 5.0), (0.0, 0.0)),
+            SketchPathSegment("line", (0.0, 0.0), start),
+        )
+        sealed = seal_revolve_contour(segments)
+        min_x, min_y, max_x, max_y = _curve_extent(sealed)
+        self.assertEqual(contour_joint_gap(sealed), 0.0)
+        self.assertLessEqual(max_x, 54.97 + 0.05)
+        self.assertGreaterEqual(max_x, 54.97 - 0.05)
+        self.assertLessEqual(max_y, 5.0 + 0.05)
+        self.assertGreaterEqual(min_y, -0.05)
+        self.assertGreaterEqual(min_x, -0.05)
+        self.assertTrue(all(segment.kind == "line" for segment in sealed))
 
     def test_sealing_twice_stays_closed(self) -> None:
         sketch = prepare_profile_sketch(
