@@ -1,13 +1,25 @@
 """Property-first COM reads for drawing documents and annotations.
 
 Early-bound SolidWorks wrappers raise ``DISP_E_MEMBERNOTFOUND``
-(-2147352573) when a propget is invoked as a method. ``read_member`` then
-calls the returned object if it is callable, which is the same failure.
-This module tries the property, then the method, then the ``I``-prefixed
-name. It does not rebind a session, CloseDoc, or call ExitApp.
+(-2147352573) when a propget is invoked as a method. A live ``InsertNote``
+return often does not list ``GetAnnotation`` on its Python class at all.
+Skipping those names raised ``AttributeError`` before any COM call. An
+undeclared name is still invoked through ``IDispatch`` as a property and as
+a method. This module does not rebind a session, CloseDoc, or call ExitApp.
 """
 
 from part_verification import is_member_not_found
+
+try:
+    import pythoncom
+    DISPATCH_METHOD = pythoncom.DISPATCH_METHOD
+    DISPATCH_PROPERTYGET = pythoncom.DISPATCH_PROPERTYGET
+except ImportError:  # Linux tests have no pywin32; these match pythoncom.
+    DISPATCH_METHOD = 1
+    DISPATCH_PROPERTYGET = 2
+
+# GetIDsOfNames uses this when the name is not on the object.
+_DISP_E_UNKNOWNNAME = -2147352570
 
 
 def _names(name):
@@ -41,26 +53,114 @@ def _invoke(target, attr, args):
     return value(*args)
 
 
-def read_com_member(target, name, *args):
-    """Read ``name`` without calling a property result.
+def _oleobj(target):
+    bag = getattr(target, '__dict__', None)
+    if not isinstance(bag, dict) or '_oleobj_' not in bag:
+        return None
+    return bag['_oleobj_']
 
-    ``DISP_E_MEMBERNOTFOUND`` tries the next spelling. Any other exception
-    propagates.
-    """
+
+def _missing_name(exc):
+    if isinstance(exc, AttributeError):
+        return True
+    if is_member_not_found(exc):
+        return True
+    args = getattr(exc, 'args', ())
+    if isinstance(args, tuple) and args:
+        head = args[0]
+        if head in (_DISP_E_UNKNOWNNAME, _DISP_E_UNKNOWNNAME & 0xFFFFFFFF):
+            return True
+    return False
+
+
+def _wrap_dispatch(value):
+    """Wrap a raw ``PyIDispatch`` so later reads can see ``_oleobj_``."""
+    if value is None or isinstance(value, (bool, int, float, str, bytes)):
+        return value
+    if '_oleobj_' in getattr(value, '__dict__', {}):
+        return value
+    if not callable(getattr(value, 'Invoke', None)) or not callable(getattr(value, 'GetIDsOfNames', None)):
+        return value
+    try:
+        import win32com.client
+    except ImportError:
+        return value
+    try:
+        return win32com.client.Dispatch(value)
+    except Exception:
+        return value
+
+
+def _disp_invoke(ole, name, args):
+    """Call ``name`` on a live dispatch. Try property and method invoke kinds."""
+    try:
+        dispid = ole.GetIDsOfNames(name)
+    except Exception as exc:
+        if _missing_name(exc):
+            raise AttributeError(name) from exc
+        raise
+    if isinstance(dispid, (tuple, list)):
+        if not dispid:
+            raise AttributeError(name)
+        dispid = dispid[0]
+    flags = (DISPATCH_PROPERTYGET, DISPATCH_METHOD) if not args else (DISPATCH_METHOD, DISPATCH_PROPERTYGET)
     last = None
-    for attr in _names(name):
-        if not declared(target, attr):
-            continue
+    for flag in flags:
         try:
-            return _invoke(target, attr, args)
+            result = ole.Invoke(dispid, 0, flag, True, *args)
         except Exception as exc:
             last = exc
-            if is_member_not_found(exc):
+            if is_member_not_found(exc) or _missing_name(exc):
                 continue
             raise
+        if result is None and not args:
+            last = AttributeError(name)
+            continue
+        return _wrap_dispatch(result)
     if last is not None:
         raise last
     raise AttributeError(name)
+
+
+def _late_read(target, name, args):
+    """Invoke a name the Python class does not declare. Do not skip COM."""
+    ole = _oleobj(target)
+    if ole is not None and callable(getattr(type(ole), 'GetIDsOfNames', None)) and callable(getattr(type(ole), 'Invoke', None)):
+        return _disp_invoke(ole, name, args)
+    value = getattr(target, name)
+    if not args:
+        if not callable(value):
+            return value
+        return value()
+    if not callable(value):
+        raise TypeError(name)
+    return value(*args)
+
+
+def read_com_member(target, name, *args):
+    """Read ``name`` without calling a property result.
+
+    A declared member uses the Python descriptor. An undeclared member is
+    still dispatched. ``DISP_E_MEMBERNOTFOUND`` tries the other invoke kind,
+    then the ``I``-prefixed spelling.
+    """
+    last = None
+    for attr in _names(name):
+        try:
+            if declared(target, attr):
+                return _invoke(target, attr, args)
+            return _late_read(target, attr, args)
+        except AttributeError as exc:
+            last = exc
+            continue
+        except Exception as exc:
+            last = exc
+            if is_member_not_found(exc) or _missing_name(exc):
+                continue
+            raise
+    if last is not None and not isinstance(last, AttributeError):
+        raise last
+    raise AttributeError(name) from last
 
 
 def read_document_kind(target):

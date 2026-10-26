@@ -9,6 +9,7 @@ from ql5050px.drawing_verification import validate_pdf,verify_view_layout,lock_v
 from ql5050px.manufacturing_drawings import apply_sheet_case,drawing_sheet_cases,plan_drawings
 from ql5050px.native_machine import read_member
 from sw_compat.annotation import read_annotation_position,set_annotation_position
+from sw_compat.com_access import DISPATCH_METHOD,DISPATCH_PROPERTYGET
 from sw_compat.model_document import DualDocument,model_document
 
 
@@ -165,6 +166,35 @@ class DrawingVerificationTests(unittest.TestCase):
             self.assertEqual(tuple(read_annotation_position(MethodNote())),(0.2,0.3,0))
         self.assertEqual(typed.position,(0.05,0.06,0))
         self.assertEqual(cast.call_args.args[2],'IAnnotation')
+
+    def test_undeclared_note_getannotation_still_invokes_com(self):
+        # 9dd6908 A2 failure: InsertNote's return does not declare GetAnnotation.
+        calls=[]
+        class Ann:
+            def __init__(self):
+                self.position=None
+            def SetPosition2(self,x,y,z):
+                self.position=(x,y,z)
+                return True
+        ann=Ann()
+        class Ole:
+            def GetIDsOfNames(self,name):
+                if name!='GetAnnotation':
+                    raise OSError(-2147352570,'DISP_E_UNKNOWNNAME')
+                return 7
+            def Invoke(self,dispid,lcid,flags,wanted,*args):
+                calls.append(flags)
+                if flags==DISPATCH_PROPERTYGET:
+                    raise OSError(-2147352573,'DISP_E_MEMBERNOTFOUND')
+                if flags==DISPATCH_METHOD:
+                    return ann
+                raise AssertionError(flags)
+        class Note:
+            def __init__(self):
+                self._oleobj_=Ole()
+        set_annotation_position(Note(),0.11,0.22,0)
+        self.assertEqual(calls,[DISPATCH_PROPERTYGET,DISPATCH_METHOD])
+        self.assertEqual(ann.position,(0.11,0.22,0))
 
     def test_d4_scale_template_matrix_is_settings_data(self):
         templates={'A2':'sheets/a2.drwdot','A3':'sheets/a3.drwdot'}

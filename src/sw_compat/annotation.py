@@ -1,10 +1,10 @@
 """Place a drawing note or table after InsertNote / InsertBomTable.
 
-A2 1:10 and A2 1:20 failed on ``GetAnnotation`` / ``SetPosition2`` with
-``DISP_E_MEMBERNOTFOUND`` (-2147352573). That is the wrong invoke kind or an
-uncast ``IAnnotation``, not a frame-fit rejection. The note is read
-property-first, cast to ``IAnnotation`` when it has an OLE pointer, and
-``SetPosition2`` is retried on the other pointer. No session rebind.
+Live A2 1:10 and A2 1:20 on ``9dd6908`` raised ``AttributeError: GetAnnotation``
+before any COM call: ``InsertNote`` returns a note whose Python class does
+not declare ``GetAnnotation``. That name is now invoked as a property and as
+a method. ``SetPosition2`` still recasts to ``IAnnotation`` when the pointer
+has ``_oleobj_``. No session rebind.
 """
 
 from part_verification import is_member_not_found
