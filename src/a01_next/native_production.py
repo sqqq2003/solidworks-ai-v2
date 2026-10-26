@@ -156,8 +156,8 @@ class A01ProductionDriver(ManufacturingDriver):
             if pdf.exists():raise FileExistsError(pdf)
             drawing=self.open_document(path)
             try:
-                if int(drawing.SaveAs3(str(pdf),0,1))!=0 or not pdf.is_file() or not pdf.read_bytes().startswith(b'%PDF-'):
-                    raise RuntimeError('native PDF export failed')
+                from ..ql5050px.drawing_verification import export_pdf
+                item['pdf_validation']=export_pdf(self,drawing,pdf)
             finally:self.close_document(drawing)
             item.update(pdf=str(pdf),pdf_sha256=sha(pdf),slddrw_sha256=sha(path),pdf_layout_review='pending')
         return result
