@@ -1,0 +1,95 @@
+{
+  "task": "D2",
+  "script": "run_partial_4344f22.py stabilized-test-5",
+  "tip_sha": "4344f222a2070d0f79082d219377e840f06ca30f",
+  "owner": "lxy",
+  "machine": "DDD",
+  "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+  "timestamp": "2026-10-26 14:52:53",
+  "zone": "Asia/Shanghai",
+  "mode": "explicit_partial_model_test",
+  "manufacturing_approved": false,
+  "status": "pass_pending_visual_review",
+  "job_status": "partial_drawing_test_completed_pending_visual_review",
+  "assembly_opened": true,
+  "components_verified": null,
+  "configuration": "榛樿",
+  "drawing_produced": true,
+  "drawing_path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+  "pdf_path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.pdf",
+  "pdf_sha256": "43c926cdedcaf118921ac351ae9cbb424c3204b764eb49d7b304ea36ed8f2be7",
+  "slddrw_sha256": "76ef7f26eb65146ea110f20caef01e89c3cb388b12aaf94796ae4721fdcaf340",
+  "sheet_scale": [
+    1.0,
+    10.0
+  ],
+  "views": 3,
+  "bom_rows": 8,
+  "sw_owned_pid": 43368,
+  "orphan_embedding_pid": 52620,
+  "inventory_rebind_triggered": "not_explicitly_logged",
+  "inventory_rebind_note": "Completed without inventory-unavailable. Tip prefers GetDocuments then IGetNext/GetNext; MEMBERNOTFOUND now rewalkable. No rebind counter in job JSON.",
+  "error": null,
+  "com_root": null,
+  "session": {
+    "ownership": "spawned_pid_and_live_handle",
+    "pid": 43368,
+    "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+    "attached_existing": false,
+    "native_verification": "session_only_not_cad_acceptance",
+    "cleanup_status": "left_open_keepalive",
+    "cleanup_error": null,
+    "cleanup_disconnect": null,
+    "cleanup_exit_code": null,
+    "keepalive_policy": "close_doc_only_keep_alive_exit_not_required",
+    "exit_poll_seconds": 20.0,
+    "anchor_created": false,
+    "anchor_closed": false,
+    "keepalive_verified": true
+  },
+  "loads": [
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\鎬诲浘\\FX-PX-ZYQDYT-001脳1.SLDASM",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\鎬诲浘\\FX-PX-ZYQDYT-001脳1.SLDASM",
+      "error": 0,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+      "error": 0,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+      "error": 0,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\鎬诲浘\\FX-PX-ZYQDYT-001脳1.SLDDRW",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\reference-paper-normalized.SLDDRW",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\reference-paper-normalized.SLDDRW",
+      "error": 2,
+      "readonly": true
+    }
+  ],
+  "job_out": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5",
+  "cleanup": "CloseAllDocuments (0 docs) then ExitApp on idle owned PID 43368; orphan Embedding 52620 left (no ROT, no taskkill)",
+  "note": "Not claiming production drawing pass; manufacturing_approved=false; visual_review pending."
+}
