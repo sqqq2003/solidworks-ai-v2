@@ -336,3 +336,11 @@
 - 本轮：清单先用 `GetDocuments`（数量对得上就不再走 `GetNext`）。`GetNext` / `GetFirstDocument` 先按属性读，调用失败再试 `IGetNext` / `IGetFirstDocument2`。中途 `DISP_E_MEMBERNOTFOUND` 与断连一样抛 `InventoryWalkDisconnected`，按本任务 PID 重绑并从头重列。仍失败则是 `partial_inventory_disconnect`，写入拒绝，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 语义不变。
 - 离线：`python3 work/run_cloud_tests.py` → 557 ran / 553 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
 - 实机判据：D2/D3 打开大装配后，`GetNext` 的 `DISP_E_MEMBERNOTFOUND` 应走 `GetDocuments` 或 `IGetNext`，否则重绑重列。成功且文档属于本任务时不再报 `document inventory unavailable`。仍不安全则 `partial_inventory_disconnect`，不调用 ExitApp。这仍不是实机通过。
+
+## P0-DDD-A2：租赁图纸带进来的引用文档不是别人的会话
+
+- DDD 在 COM `4344f22` + 出图 `6506153` 上复测 A2 1:10 / 1:20。标注路径已过（没有 `AttributeError GetAnnotation`，没有 `DISP_E_MEMBERNOTFOUND`）。SLDDRW 约 13.3MB 已写入。新失败是 `save_reopen` → `close_document` → `guard` → `validate`：`SessionOwnershipError: unowned documents appeared in task process`。没有 PDF / sheet_readback。`manufacturing_approved=false`。这不是生产图通过。证据在 `work/evidence/drawing-a2-6506153-owned/`。
+- 原因：工程图视图打开大装配时，SolidWorks 把引用的装配和零件加载进本任务进程。清单里只有 `NewDocument` 记下的图纸标题，引用文档被当成未拥有。
+- 本轮：已打开且仍在租约里的模型，若 `GetDependencies2` / `GetComponents` / 工程图 `GetViews` 点名了这些文档的路径，就把它们记入 `owned_docs`。未保存标题（如 `工程图1`）在 SaveAs 后改成文件名、且新文件的引用能解释其余打开文档时，标题跟着改。别人的文件、同名不同路径、以及已经保存的自有标题消失后被换成另一个模型，仍然 `unowned documents appeared`。启动时进程里已有的用户文档仍然拒绝。不在这里 CloseDoc 这些引用（图纸还要用）；会话结束时只对已拥有标题 CloseDoc。不调用 ExitApp。不碰 Embedding 孤儿。
+- 离线：`python3 work/run_cloud_tests.py` → 562 ran / 558 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：A2 `save_reopen` 能走完 close 和 readback，不再因引用文档报 `unowned documents appeared`。引用之外的文档仍然拒绝写入。这不是生产图通过。

@@ -452,6 +452,181 @@ def _list_open_document_titles(application: Any) -> list[str]:
     return titles
 
 
+def _ordered_open_documents(application: Any) -> list[Any]:
+    """Document objects in the same order as ``_list_open_document_titles``."""
+    count = int(_read_inventory_member(application, "GetDocumentCount", required=True))
+    if count < 0 or count > 10000:
+        raise SessionOwnershipError("invalid document count")
+    has_array = isinstance(getattr(type(application), "GetDocuments", None), property) or hasattr(
+        application, "GetDocuments"
+    )
+    if has_array:
+        raw = _read_inventory_member(application, "GetDocuments", required=False)
+        if isinstance(raw, (list, tuple)) and len(raw) == count:
+            return list(raw)
+    current = _read_inventory_member(application, "GetFirstDocument", required=True)
+    documents: list[Any] = []
+    for _ in range(count):
+        if current is None:
+            raise _inventory_walk_error("GetNext")
+        documents.append(current)
+        current = _read_inventory_member(current, "GetNext", required=True)
+    if current is not None:
+        raise SessionOwnershipError("document enumeration longer than count")
+    return documents
+
+
+def _dependency_strings(raw: Any) -> list[str]:
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        return [raw] if raw.strip() else []
+    try:
+        values = list(raw)
+    except TypeError:
+        text = str(raw).strip()
+        return [text] if text else []
+    found: list[str] = []
+    for item in values:
+        if item is None:
+            continue
+        text = str(item).strip()
+        if text:
+            found.append(text)
+    return found
+
+
+def _fatal_dependency_error(exc: BaseException) -> bool:
+    return isinstance(exc, InventoryWalkDisconnected) or is_com_server_disconnect(exc)
+
+
+def _call_dependency_method(document: Any, name: str, args: tuple[Any, ...]) -> list[str] | None:
+    """Call one dependency API. ``None`` means try the next one."""
+    from part_verification import is_member_not_found
+
+    member = getattr(document, name, None)
+    descriptor = getattr(type(document), name, None)
+    if isinstance(descriptor, property):
+        try:
+            member = descriptor.fget(document)
+        except Exception as exc:
+            if _fatal_dependency_error(exc):
+                raise
+            return None
+    if not callable(member):
+        return None
+    try:
+        raw = member(*args) if args else member()
+    except TypeError:
+        try:
+            raw = member()
+        except Exception as exc:
+            if _fatal_dependency_error(exc):
+                raise
+            return None
+    except Exception as exc:
+        if _fatal_dependency_error(exc):
+            raise
+        if is_member_not_found(exc):
+            return None
+        return None
+    return _dependency_strings(raw)
+
+
+def _component_dependency_strings(document: Any) -> list[str]:
+    member = getattr(document, "GetComponents", None)
+    if not callable(member):
+        return []
+    try:
+        raw = member(False)
+    except TypeError:
+        try:
+            raw = member()
+        except Exception as exc:
+            if _fatal_dependency_error(exc):
+                raise
+            return []
+    except Exception as exc:
+        if _fatal_dependency_error(exc):
+            raise
+        return []
+    found: list[str] = []
+    for component in list(raw or []):
+        path = _read_inventory_member(component, "GetPathName", required=False)
+        name = _read_inventory_member(component, "Name2", required=False)
+        if not name:
+            name = _read_inventory_member(component, "GetTitle", required=False)
+        if path:
+            found.append(str(path))
+        if name:
+            found.append(str(name))
+    return found
+
+
+def _drawing_view_dependency_strings(document: Any) -> list[str]:
+    member = getattr(document, "GetViews", None)
+    if not callable(member):
+        return []
+    try:
+        sheets = member()
+    except Exception as exc:
+        if _fatal_dependency_error(exc):
+            raise
+        return []
+    found: list[str] = []
+    for sheet in list(sheets or []):
+        views = sheet if isinstance(sheet, (list, tuple)) else (sheet,)
+        for view in views:
+            if view is None:
+                continue
+            path = _read_inventory_member(view, "GetReferencedModelName", required=False)
+            if path:
+                found.append(str(path))
+    return found
+
+
+def _document_dependency_strings(document: Any) -> list[str]:
+    for name, args in (
+        ("GetDependencies2", (True, True, True)),
+        ("GetDependencies", ()),
+    ):
+        found = _call_dependency_method(document, name, args)
+        if found:
+            return found
+    found = _component_dependency_strings(document)
+    found.extend(_drawing_view_dependency_strings(document))
+    return found
+
+
+def open_document_facts(application: Any) -> list[tuple[str, str, tuple[str, ...]]]:
+    """Open documents plus the reference tokens each one reports.
+
+    Titles match ``_list_open_document_titles``. Paths and dependencies are
+    optional. A disconnect while reading them is the same inventory failure.
+    ``DISP_E_MEMBERNOTFOUND`` on a dependency method tries the next method.
+    Tokens are the raw ``GetDependencies2`` name/path pairs, component paths,
+    or drawing-view model paths. The caller decides which of those belong to
+    the leased document.
+    """
+    documents = _ordered_open_documents(application)
+    facts: list[tuple[str, str, tuple[str, ...]]] = []
+    seen: list[str] = []
+    for document in documents:
+        title = _read_inventory_member(document, "GetTitle", required=True)
+        if not title or str(title) in seen:
+            raise SessionOwnershipError("document inventory has empty/ambiguous titles")
+        seen.append(str(title))
+        path = _read_inventory_member(document, "GetPathName", required=False)
+        facts.append(
+            (
+                str(title),
+                "" if path is None else str(path),
+                tuple(_document_dependency_strings(document)),
+            )
+        )
+    return facts
+
+
 def _connect_task_solidworks(lease, win32com: Any, pythoncom: Any):
     """Reuse a proved native launch; legacy Dispatch/attach stays unproven."""
 

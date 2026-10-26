@@ -12,7 +12,7 @@ import sys
 import time
 
 from owned_document_lifetime import (
-    DEFAULT_EXIT_POLL_SECONDS, prepare_owned_inventory,
+    DEFAULT_EXIT_POLL_SECONDS, adopt_leased_reference_documents, prepare_owned_inventory,
 )
 from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
     on_task_sta, claim_spawned_process, require_model_write)
@@ -187,6 +187,10 @@ class OwnedBinding:
                 titles = set(prepare_owned_inventory(
                     lease, self.app, self.list_titles, rebind=_rebind_inventory,
                 ))
+                # Referenced parts/drawings loaded by an owned model are part of
+                # this task. A document that model does not reference stays foreign.
+                if titles - set(lease.owned_docs) and lease.owned_docs:
+                    adopt_leased_reference_documents(lease, self.app)
             except Exception as exc:
                 from part_verification import is_member_not_found
                 normalized = normalize_com_disconnect(exc)

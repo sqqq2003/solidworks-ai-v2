@@ -872,6 +872,260 @@ class DddOwnedSessionTests(unittest.TestCase):
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-shaft-member-walk")
 
+    def test_drawing_references_are_owned_and_a_foreign_file_is_not(self):
+        from owned_document_lifetime import classify_leased_references, OpenDocumentFact
+
+        asm = r"C:\job\总图\FX-PX.SLDASM"
+        part = r"C:\job\总图\bolt.SLDPRT"
+        other = r"D:\someone\User.SLDPRT"
+        drawing = OpenDocumentFact(
+            "工程图1",
+            "",
+            ("装配", asm, "螺栓", part),
+        )
+        assembly = OpenDocumentFact("FX-PX.SLDASM", asm, ("螺栓", part))
+        bolt = OpenDocumentFact("bolt.SLDPRT", part, ())
+        stranger = OpenDocumentFact("User.SLDPRT", other, ())
+        adopted = classify_leased_references(["工程图1"], [drawing, assembly, bolt])
+        self.assertEqual(adopted.note_titles, ("FX-PX.SLDASM", "bolt.SLDPRT"))
+        self.assertIsNone(adopted.rename)
+        blocked = classify_leased_references(
+            ["工程图1"], [drawing, assembly, bolt, stranger]
+        )
+        self.assertNotIn("User.SLDPRT", blocked.note_titles)
+        self.assertIn("bolt.SLDPRT", blocked.note_titles)
+        same_name = OpenDocumentFact("bolt.SLDPRT", r"D:\other\bolt.SLDPRT", ())
+        missed = classify_leased_references(["工程图1"], [drawing, assembly, same_name])
+        self.assertEqual(missed.note_titles, ("FX-PX.SLDASM",))
+
+    def test_saveas_retitle_owns_the_drawing_closure_only(self):
+        from owned_document_lifetime import classify_leased_references, OpenDocumentFact
+
+        asm = r"C:\job\asm.SLDASM"
+        part = r"C:\job\part.SLDPRT"
+        saved = OpenDocumentFact(
+            "QL-A2.SLDDRW",
+            r"C:\job\QL-A2.SLDDRW",
+            ("装配", asm, "零件", part),
+        )
+        assembly = OpenDocumentFact("asm.SLDASM", asm, ("零件", part))
+        component = OpenDocumentFact("part.SLDPRT", part, ())
+        decision = classify_leased_references(
+            ["工程图1"], [saved, assembly, component]
+        )
+        self.assertEqual(decision.rename, ("工程图1", "QL-A2.SLDDRW"))
+        self.assertEqual(decision.note_titles, ("asm.SLDASM", "part.SLDPRT"))
+        foreign = classify_leased_references(
+            ["task.SLDPRT"],
+            [assembly, component],
+        )
+        self.assertIsNone(foreign.rename)
+        self.assertEqual(foreign.note_titles, ())
+
+    def test_referenced_children_pass_the_write_gate_and_close_with_closedoc(self):
+        from solidworks_generator import _list_open_document_titles
+
+        asm = r"C:\job\总图\FX-PX.SLDASM"
+        part = r"C:\job\总图\bolt.SLDPRT"
+
+        class Doc:
+            def __init__(self, title, path, deps, nxt=None):
+                self.title = title
+                self.path = path
+                self.deps = deps
+                self.nxt = nxt
+
+            def GetTitle(self):
+                return self.title
+
+            def GetPathName(self):
+                return self.path
+
+            def GetDependencies2(self, _traverse, _external, _virtual):
+                return self.deps
+
+            def GetNext(self):
+                return self.nxt
+
+            def GetType(self):
+                return 3
+
+        class Walk:
+            def __init__(self, docs):
+                self.docs = docs
+                self.exit_calls = 0
+                self.closed = []
+                self.UserControl = False
+
+            def GetDocumentCount(self):
+                return len(self.docs)
+
+            def GetFirstDocument(self):
+                return self.docs[0] if self.docs else None
+
+            def CloseDoc(self, title):
+                self.closed.append(title)
+                self.docs = [doc for doc in self.docs if doc.title != title]
+                for index, doc in enumerate(self.docs):
+                    doc.nxt = self.docs[index + 1] if index + 1 < len(self.docs) else None
+
+            def ExitApp(self):
+                self.exit_calls += 1
+
+        bolt = Doc("bolt.SLDPRT", part, ())
+        assembly = Doc("FX-PX.SLDASM", asm, ("螺栓", part), bolt)
+        drawing = Doc("工程图1", "", ("装配", asm, "螺栓", part), assembly)
+
+        def job():
+            life = Lifetime()
+            app = Walk([drawing, assembly, bolt])
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.note_owned_document("工程图1")
+            binding.list_titles = _list_open_document_titles
+            sw_session.require_model_write(lease)
+            self.assertFalse(lease.writes_blocked)
+            self.assertEqual(lease.foreign_titles, set())
+            self.assertIn("FX-PX.SLDASM", lease.owned_docs)
+            self.assertIn("bolt.SLDPRT", lease.owned_docs)
+            self.assertEqual(app.exit_calls, 0)
+            finish_owned_session(lease, binding)
+            self.assertEqual(app.exit_calls, 0)
+            self.assertIsNone(binding.cleanup_error)
+            self.assertEqual(binding.cleanup_status, "left_open_keepalive")
+            self.assertCountEqual(
+                app.closed, ["工程图1", "FX-PX.SLDASM", "bolt.SLDPRT"]
+            )
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-drawing-refs-owned")
+
+    def test_unreferenced_document_still_blocks_after_children_are_known(self):
+        from solidworks_generator import _list_open_document_titles
+
+        part = r"C:\job\part.SLDPRT"
+        stranger = r"D:\someone\User.SLDPRT"
+
+        class Doc:
+            def __init__(self, title, path, deps, nxt=None):
+                self.title = title
+                self.path = path
+                self.deps = deps
+                self.nxt = nxt
+
+            def GetTitle(self):
+                return self.title
+
+            def GetPathName(self):
+                return self.path
+
+            def GetDependencies2(self, _traverse, _external, _virtual):
+                return self.deps
+
+            def GetNext(self):
+                return self.nxt
+
+            def GetType(self):
+                return 1
+
+        class Walk:
+            def __init__(self):
+                user = Doc("User.SLDPRT", stranger, ())
+                child = Doc("part.SLDPRT", part, (), user)
+                self.head = Doc("工程图1", "", ("零件", part), child)
+                self.exit_calls = 0
+
+            def GetDocumentCount(self):
+                return 3
+
+            def GetFirstDocument(self):
+                return self.head
+
+            def ExitApp(self):
+                self.exit_calls += 1
+
+        def job():
+            life = Lifetime()
+            app = Walk()
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.note_owned_document("工程图1")
+            binding.list_titles = _list_open_document_titles
+            with self.assertRaisesRegex(SessionOwnershipError, "unowned documents appeared"):
+                sw_session.require_model_write(lease)
+            self.assertTrue(lease.writes_blocked)
+            self.assertIn("User.SLDPRT", lease.foreign_titles)
+            self.assertNotIn("User.SLDPRT", lease.owned_docs)
+            self.assertIn("part.SLDPRT", lease.owned_docs)
+            self.assertEqual(app.exit_calls, 0)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-foreign-not-a-reference")
+
+    def test_component_and_drawing_view_paths_count_as_references(self):
+        from solidworks_generator import open_document_facts
+
+        class Component:
+            def __init__(self, path):
+                self.path = path
+                self.Name2 = "bolt-1"
+
+            def GetPathName(self):
+                return self.path
+
+        class View:
+            def __init__(self, path):
+                self.path = path
+
+            def GetReferencedModelName(self):
+                return self.path
+
+        class Asm:
+            def __init__(self):
+                self.title = "FX-PX.SLDASM"
+                self.path = r"C:\job\FX-PX.SLDASM"
+
+            def GetTitle(self):
+                return self.title
+
+            def GetPathName(self):
+                return self.path
+
+            def GetComponents(self, _top_only):
+                return [Component(r"C:\job\bolt.SLDPRT")]
+
+            def GetNext(self):
+                return None
+
+        class Drawing:
+            def __init__(self, nxt):
+                self.nxt = nxt
+
+            def GetTitle(self):
+                return "工程图1"
+
+            def GetPathName(self):
+                return ""
+
+            def GetViews(self):
+                return [[View(r"C:\job\FX-PX.SLDASM")]]
+
+            def GetNext(self):
+                return self.nxt
+
+        class App:
+            def __init__(self):
+                self.asm = Asm()
+                self.drawing = Drawing(self.asm)
+
+            def GetDocumentCount(self):
+                return 2
+
+            def GetFirstDocument(self):
+                return self.drawing
+
+        facts = {title: tokens for title, _path, tokens in open_document_facts(App())}
+        self.assertIn(r"C:\job\FX-PX.SLDASM", facts["工程图1"])
+        self.assertIn(r"C:\job\bolt.SLDPRT", facts["FX-PX.SLDASM"])
+
 
 if __name__ == "__main__":
     unittest.main()
