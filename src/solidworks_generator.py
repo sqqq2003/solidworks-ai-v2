@@ -28,6 +28,7 @@ from profile_selection import (
 )
 from sw_session import (
     SW_SESSION_CALL_TIMEOUT_SEC,
+    InventoryWalkDisconnected,
     SessionOwnershipError,
     SwCallTimeoutError,
     call_with_watchdog,
@@ -334,21 +335,43 @@ _auto_bend_deadline: float | None = None
 
 
 def _list_open_document_titles(application: Any) -> list[str]:
-    """Best-effort open-document titles. Raises if the session cannot be listed."""
+    """Open-document titles. A mid-walk COM drop is re-raised for a full rewalk.
 
-    titles: list[str] = []
-    count = int(_com_read(application, "GetDocumentCount"))
+    A large readonly assembly can disconnect a document proxy on GetType or
+    GetNext. That failure is not a shorter count and is not a foreign document.
+    The caller rebinds this task's PID and starts again at GetFirstDocument.
+    """
+
+    def _member(target, name):
+        try:
+            return _com_read(target, name)
+        except Exception as exc:
+            if is_com_server_disconnect(exc):
+                raise InventoryWalkDisconnected(
+                    "document inventory walk disconnected during "
+                    + name
+                    + "; writes refused; ExitApp was not called"
+                ) from exc
+            raise
+
+    count = int(_member(application, "GetDocumentCount"))
     if count < 0 or count > 10000:
         raise SessionOwnershipError("invalid document count")
-    current = _com_read(application, "GetFirstDocument")
+    current = _member(application, "GetFirstDocument")
+    titles: list[str] = []
     for _ in range(count):
         if current is None:
-            raise SessionOwnershipError("document enumeration shorter than count")
-        title = _com_read(current, "GetTitle")
+            raise InventoryWalkDisconnected(
+                "document inventory walk disconnected during GetNext; "
+                "writes refused; ExitApp was not called"
+            )
+        title = _member(current, "GetTitle")
+        if getattr(current, "GetType", None) is not None:
+            _member(current, "GetType")
         if not title or str(title) in titles:
             raise SessionOwnershipError("document inventory has empty/ambiguous titles")
         titles.append(str(title))
-        current = _com_read(current, "GetNext")
+        current = _member(current, "GetNext")
     if current is not None:
         raise SessionOwnershipError("document enumeration longer than count")
     return titles

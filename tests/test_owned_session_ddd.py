@@ -498,6 +498,209 @@ class DddOwnedSessionTests(unittest.TestCase):
             1,
         )
 
+    def test_large_assembly_gettype_disconnect_rebinds_and_rewalks(self):
+        from solidworks_generator import _list_open_document_titles
+
+        class com_error(Exception):
+            pass
+
+        class Doc:
+            def __init__(self, title, nxt, fail_type):
+                self.title = title
+                self.nxt = nxt
+                self.fail_type = fail_type
+
+            def GetTitle(self):
+                return self.title
+
+            def GetNext(self):
+                return self.nxt
+
+            def GetType(self):
+                if self.fail_type:
+                    raise com_error(
+                        -2147417848,
+                        "被调用的对象已与其客户端断开连接",
+                        None,
+                        None,
+                    )
+                return 2
+
+        class WalkApp:
+            def __init__(self, life, fail):
+                self.life = life
+                self.fail = fail
+                self.exit_calls = 0
+
+            def documents(self):
+                head = None
+                for index in range(85, -1, -1):
+                    head = Doc(f"owned-{index}.SLDPRT", head, self.fail and index == 40)
+                return head
+
+            def GetDocumentCount(self):
+                return 86
+
+            def GetFirstDocument(self):
+                return self.documents()
+
+            def ExitApp(self):
+                self.exit_calls += 1
+
+        def job():
+            life = Lifetime()
+            dead = WalkApp(life, True)
+            fresh = WalkApp(life, False)
+            binding = self.bind(life, dead, lambda _app: [])
+            lease = sw_session.current_lease()
+            for index in range(86):
+                lease.note_owned_document(f"owned-{index}.SLDPRT")
+            binding.list_titles = _list_open_document_titles
+            binding.rediscover = lambda pid: fresh
+            sw_session.require_model_write(lease)
+            self.assertIs(binding.app, fresh)
+            self.assertFalse(lease.writes_blocked)
+            self.assertFalse(lease.disconnected)
+            self.assertEqual(dead.exit_calls, 0)
+            self.assertEqual(fresh.exit_calls, 0)
+            self.assertEqual(binding.rebind_attempted, False)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-asm-rewalk")
+
+    def test_persistent_inventory_disconnect_is_partial_not_unavailable(self):
+        class com_error(Exception):
+            pass
+
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+
+            def dead_walk(_app):
+                raise com_error(
+                    -2147417848,
+                    "被调用的对象已与其客户端断开连接",
+                    None,
+                    None,
+                )
+
+            binding.list_titles = dead_walk
+            with self.assertRaises(sw_session.InventoryWalkDisconnected) as caught:
+                sw_session.require_model_write(lease)
+            self.assertEqual(caught.exception.status, "partial_inventory_disconnect")
+            self.assertNotIn("document inventory unavailable", str(caught.exception))
+            self.assertNotIn("(-2147417848", str(caught.exception))
+            self.assertIn("ExitApp was not called", str(caught.exception))
+            self.assertTrue(lease.writes_blocked)
+            self.assertTrue(lease.disconnected)
+            self.assertEqual(app.exit_calls, 0)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-inventory-partial-status")
+
+    def test_saved_shaft_inventory_disconnect_stays_partial(self):
+        class com_error(Exception):
+            pass
+
+        def job():
+            life = Lifetime()
+            app = App(life)
+            binding = self.bind(life, app, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.generation_saved = True
+            lease.generation_path = r"D:\out\shaft.SLDPRT"
+
+            def dead_walk(_app):
+                raise com_error(
+                    -2147417848,
+                    "被调用的对象已与其客户端断开连接",
+                    None,
+                    None,
+                )
+
+            binding.list_titles = dead_walk
+            finish_owned_session(lease, binding)
+            self.assertEqual(app.exit_calls, 0)
+            self.assertIsNone(binding.cleanup_error)
+            self.assertEqual(
+                binding.cleanup_status,
+                "saved_com_disconnected_after_generation",
+            )
+            self.assertIn("ExitApp was not called", binding.cleanup_disconnect)
+            self.assertEqual(lease.generation_path, r"D:\out\shaft.SLDPRT")
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-shaft-inventory-walk")
+
+    def test_recovered_walk_still_blocks_foreign_documents(self):
+        from solidworks_generator import _list_open_document_titles
+
+        class com_error(Exception):
+            pass
+
+        class Doc:
+            def __init__(self, title):
+                self.title = title
+
+            def GetTitle(self):
+                return self.title
+
+            def GetNext(self):
+                return None
+
+            def GetType(self):
+                return 2
+
+        class Dead:
+            def GetDocumentCount(self):
+                return 1
+
+            def GetFirstDocument(self):
+                class Broken:
+                    def GetTitle(self):
+                        return "owned.SLDASM"
+
+                    def GetType(self):
+                        raise com_error(
+                            -2147417848,
+                            "被调用的对象已与其客户端断开连接",
+                            None,
+                            None,
+                        )
+
+                    def GetNext(self):
+                        return None
+
+                return Broken()
+
+            def ExitApp(self):
+                raise AssertionError("ExitApp")
+
+        class Fresh:
+            def GetDocumentCount(self):
+                return 1
+
+            def GetFirstDocument(self):
+                return Doc("foreign.SLDASM")
+
+            def ExitApp(self):
+                raise AssertionError("ExitApp")
+
+        def job():
+            life = Lifetime()
+            dead = Dead()
+            fresh = Fresh()
+            binding = self.bind(life, dead, lambda _app: [])
+            lease = sw_session.current_lease()
+            lease.note_owned_document("owned.SLDASM")
+            binding.list_titles = _list_open_document_titles
+            binding.rediscover = lambda pid: fresh
+            with self.assertRaisesRegex(SessionOwnershipError, "unowned"):
+                sw_session.require_model_write(lease)
+            self.assertTrue(lease.writes_blocked)
+            self.assertIs(binding.app, fresh)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="ddd-foreign-after-rewalk")
+
 
 if __name__ == "__main__":
     unittest.main()

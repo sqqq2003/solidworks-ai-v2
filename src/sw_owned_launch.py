@@ -123,6 +123,29 @@ class OwnedBinding:
             lease.verified_exclusive = True
         return True
 
+    def rebind_for_inventory(self, lease):
+        """Rediscover this task's PID after a document-walk disconnect.
+
+        Does not consume the one-shot GetProcessID rebind and does not ExitApp.
+        The caller limits how many times a single listing may ask.
+        """
+        discover = self.rediscover
+        if discover is None or self.lifetime.probe(self.lifetime.pid) is None:
+            return False
+        try:
+            app = discover(self.lifetime.pid)
+            if app is None or self.read_pid(app) != self.lifetime.pid:
+                return False
+        except Exception:
+            return False
+        self.app = app
+        lease.note_bound_application(app)
+        lease.disconnected = False
+        lease.writes_blocked = False
+        if not lease.poisoned and not lease.timed_out:
+            lease.verified_exclusive = True
+        return True
+
     def _read_connection_or_rebind(self, lease):
         from sw_session import normalize_com_disconnect
         try:
@@ -150,27 +173,33 @@ class OwnedBinding:
             lease.writes_blocked = True
             raise SessionOwnershipError('launched process lifetime/COM PID no longer matches')
         if documents:
+            from sw_session import InventoryWalkDisconnected
+
+            def _rebind_inventory():
+                if self.rebind_for_inventory(lease):
+                    return self.app
+                return None
+
             try:
                 # Retry racy startup enumeration before poisoning the lease.
                 # Default blanks (零件N / PartN) are adopted and closed here.
-                titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
+                # A transient disconnect mid-walk rebinds this PID and rewalks.
+                titles = set(prepare_owned_inventory(
+                    lease, self.app, self.list_titles, rebind=_rebind_inventory,
+                ))
             except Exception as exc:
                 normalized = normalize_com_disconnect(exc)
-                if normalized is not None and self.rebind_owned_pid(lease):
-                    try:
-                        titles = set(prepare_owned_inventory(lease, self.app, self.list_titles))
-                        exc = None
-                        normalized = None
-                    except Exception as again:
-                        exc = again
-                        normalized = normalize_com_disconnect(again)
-                if exc is not None:
-                    lease.writes_blocked = True
-                    if normalized is not None:
-                        lease.verified_exclusive = False
-                        lease.disconnected = True
-                        raise normalized from exc
-                    raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
+                lease.writes_blocked = True
+                if normalized is not None:
+                    lease.verified_exclusive = False
+                    lease.disconnected = True
+                    if isinstance(exc, InventoryWalkDisconnected):
+                        raise
+                    raise InventoryWalkDisconnected(
+                        "document inventory walk disconnected during GetFirstDocument; "
+                        "writes refused; ExitApp was not called"
+                    ) from exc
+                raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
             foreign = titles - set(lease.owned_docs)
             if foreign:
                 lease.foreign_titles.update(foreign)

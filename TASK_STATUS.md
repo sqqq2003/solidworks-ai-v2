@@ -321,3 +321,11 @@
 - WorkBuddy 在 `9544d3c` 上确认 DDD live。轴：进程 exit 0，`status=partial_com_disconnect`，非空 SLDPRT 保留，未调用 ExitApp。这条验收达到。轴仍不是 `sw_live_verified`：partial 只表示保存后的清理断连不再整单失败，重开读特征之前不算建模通过。
 - 钣金 live 回归：pass，且 `sw_live_verified`。板 `FeatureCut3` 仍返回 `None`，留在本 PR 之外。f09/f15/f19 的旋转轮廓未闭合也不属于本 PR，不并入这条分支。
 - 本 PR 不再为这条轴保活验收改代码。合并前只补这份记录。离线计数仍是 `9544d3c` 上的 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped。
+
+## P0-DDD-D2：大装配文档遍历断连不得记成 inventory unavailable
+
+- 证据是 D2 工程图 live。只读打开约 86 个文档的装配后，`export_manufacturing` 里第二次 `open_document` 的 `GetFirstDocument` 遍历在 `model_document.GetType` 上报 `(-2147417848, '被调用的对象已与其客户端断开连接')`。这是 `RPC_E_DISCONNECTED`，不是 `CO_E_OBJNOTCONNECTED`（-2147220995）。随后 `save_reopen` → `close_document` → `require_model_write` → `validate` 变成 `document inventory unavailable; refusing writes`。没有出图。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：遍历中途断连被立刻抛出，或者断链被记成「枚举比 count 短」。`validate` 只在已识别的断连上重绑一次；认不出来就包成 `document inventory unavailable` 并挡住写入。大装配的文档代理可以在 `GetProcessID` 仍活着时单独死去。
+- 本轮：`_list_open_document_titles` 在 `GetTitle` / `GetType` / `GetNext` 断连或链条提前结束时抛 `InventoryWalkDisconnected`（`status=partial_inventory_disconnect`）。清单按本任务 PID 重绑并从头 `GetFirstDocument` 再走，最多三次。仍不安全则拒绝写入，错误保持这条状态，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 断连仍是 `saved_com_disconnected_after_generation` / `partial_com_disconnect`，路径保留。
+- 离线：`python3 work/run_cloud_tests.py` → 552 ran / 548 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：D2 只读大装配后，若只是遍历中的瞬时断连，重绑后清单能走完且文档都属于本任务，则 `require_model_write` 不再报 `document inventory unavailable`。重绑后仍断连则是 `partial_inventory_disconnect`，写入仍拒绝，不调用 ExitApp。别人的文档仍然失败。这仍不是实机通过。

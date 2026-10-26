@@ -20,6 +20,8 @@ _TRANSIENT_INVENTORY_ATTEMPTS = 20
 _TRANSIENT_INVENTORY_PAUSE_SEC = 0.1
 _OTHER_INVENTORY_ATTEMPTS = 3
 _OTHER_INVENTORY_PAUSE_SEC = 0.05
+# A large assembly walk can drop one document proxy and recover on a rebind.
+_INVENTORY_DISCONNECT_ATTEMPTS = 3
 
 # Untitled default parts created by SolidWorks itself. Saved files carry an
 # extension or a path and must not match.
@@ -46,23 +48,50 @@ def _transient_inventory_error(exc: BaseException) -> bool:
     return any(needle in text for needle in _TRANSIENT_INVENTORY_TEXT)
 
 
-def read_owned_inventory(list_titles, app, *, transient_attempts=None, pause=None):
-    """List titles, retrying the enumeration races seen on a fresh SLDWORKS."""
+def read_owned_inventory(
+    list_titles,
+    app,
+    *,
+    transient_attempts=None,
+    pause=None,
+    rebind=None,
+    disconnect_attempts=None,
+):
+    """List titles, retrying startup races and a transient document-walk drop.
+
+    ``rebind`` returns a replacement application for this same PID, or None.
+    A disconnect with no rebind callback still fails immediately so an unproven
+    spawn is not retried into a claim. ExitApp is not involved.
+    """
     from sw_session import is_com_server_disconnect
 
     transient_attempts = (
         _TRANSIENT_INVENTORY_ATTEMPTS if transient_attempts is None else transient_attempts
     )
+    disconnect_attempts = (
+        _INVENTORY_DISCONNECT_ATTEMPTS
+        if disconnect_attempts is None
+        else disconnect_attempts
+    )
     pause = _TRANSIENT_INVENTORY_PAUSE_SEC if pause is None else pause
     transient_used = 0
     other_used = 0
+    disconnect_used = 0
+    current = app
     while True:
         try:
-            raw = list_titles(app)
+            raw = list_titles(current)
             return [str(title) for title in (raw or []) if str(title).strip()]
         except Exception as exc:
             if is_com_server_disconnect(exc):
-                raise
+                if rebind is None or disconnect_used >= disconnect_attempts:
+                    raise
+                disconnect_used += 1
+                rebound = rebind()
+                if rebound is not None:
+                    current = rebound
+                time.sleep(_OTHER_INVENTORY_PAUSE_SEC)
+                continue
             if _transient_inventory_error(exc):
                 transient_used += 1
                 if transient_used >= transient_attempts:
@@ -112,11 +141,11 @@ def adopt_and_close_startup_blanks(lease, app, titles) -> None:
         logger.info("closed owned startup blank %r", title)
 
 
-def prepare_owned_inventory(lease, app, list_titles):
+def prepare_owned_inventory(lease, app, list_titles, *, rebind=None):
     """Retry listing. Adopt and close only unsaved default parts, then re-list."""
     titles: list[str] = []
     for _ in range(4):
-        titles = read_owned_inventory(list_titles, app)
+        titles = read_owned_inventory(list_titles, app, rebind=rebind)
         open_now = set(titles)
         for name in list(lease.owned_docs):
             if is_startup_blank_title(name) and name not in open_now:
@@ -134,7 +163,7 @@ def prepare_owned_inventory(lease, app, list_titles):
         if not blanks:
             return titles
         adopt_and_close_startup_blanks(lease, app, titles)
-    return read_owned_inventory(list_titles, app)
+    return read_owned_inventory(list_titles, app, rebind=rebind)
 
 
 def poll_exit(binding, timeout=0):
@@ -155,9 +184,16 @@ def poll_exit(binding, timeout=0):
     return code
 
 
-def _open_titles(binding) -> list[str]:
-    raw = binding.list_titles(binding.app)
-    return [str(title) for title in (raw or []) if str(title).strip()]
+def _open_titles(binding, lease=None) -> list[str]:
+    def rebind():
+        rebound = getattr(binding, "rebind_for_inventory", None)
+        if lease is None or rebound is None:
+            return None
+        if rebound(lease):
+            return binding.app
+        return None
+
+    return read_owned_inventory(binding.list_titles, binding.app, rebind=rebind)
 
 
 def cleanup_mentions_foreign_documents(error) -> bool:
@@ -213,12 +249,12 @@ def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
         return
     try:
         binding.validate(lease)
-        foreign = [title for title in _open_titles(binding) if title not in lease.owned_docs]
+        foreign = [title for title in _open_titles(binding, lease) if title not in lease.owned_docs]
         if foreign:
             raise SessionOwnershipError(
                 "unowned documents remain; preserve session: " + ", ".join(foreign)
             )
-        for title in [name for name in list(lease.owned_docs) if name in set(_open_titles(binding))]:
+        for title in [name for name in list(lease.owned_docs) if name in set(_open_titles(binding, lease))]:
             close_owned_document(lease, binding.app, title)
         binding.cleanup_status = "left_open_keepalive"
         binding.cleanup_error = None
