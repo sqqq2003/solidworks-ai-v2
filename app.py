@@ -19,9 +19,10 @@ def main():
     state = {'busy':False,'jobs':[]}
     messages = queue.Queue()
     stop = threading.Event()
+    # t/R/angle/K 故意留空：每单必须由操作员显式填写，不许用上次的数或通用值悄悄顶替（2026-10-24 用户纠正）。空值提交时 float('') 报错，走现有的参数检查弹窗。
     values = {name:tk.StringVar(value=value) for name,value in {
         'kind':'sheet','machine':'QL-5050PX','ql_action':'plan','source':'','output':'','sw_exe':'','profile':'1','variant':'0',
-        'thickness':'2.5','radius':'1','angle':'90','k_factor':'0.4',
+        'thickness':'','radius':'','angle':'','k_factor':'',
         'length':'1800','width':'900','height':'1500'}.items()}
     confirmed, flip, inferred = tk.BooleanVar(), tk.BooleanVar(), tk.BooleanVar()
     for value in values.values():

@@ -33,6 +33,10 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
             drawing = self.app.NewDocument(task['template'],12,task['width_mm']/1000,task['height_mm']/1000)
             if drawing is None: raise RuntimeError('manufacturing drawing NewDocument failed')
             self.lease.note_owned_document(str(read_member(drawing,'GetTitle')),handle_id=id(drawing))
+            if task.get('projection')=='first_angle':
+                properties=read_member(drawing.GetCurrentSheet(),'GetProperties2')
+                if len(properties)<5 or properties[4] not in (True,1):
+                    raise RuntimeError('drawing template first-angle projection readback mismatch')
             if task.get('sheet_format'):
                 sheet = drawing.GetCurrentSheet()
                 sheet.SetTemplateName(task['sheet_format'])
@@ -56,6 +60,10 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                         raise RuntimeError('projected view parent selection failed')
                     view = drawing.CreateUnfoldedViewAt3(x,y,0,False)
                 if view is None: raise RuntimeError('native view creation failed')
+                if item['kind']=='model' and task.get('configuration'):
+                    view.ReferencedConfiguration=task['configuration']
+                    if str(read_member(view,'ReferencedConfiguration'))!=task['configuration']:
+                        raise RuntimeError('drawing model configuration readback mismatch')
                 views[item['id']] = view
                 drawing.ClearSelection2(True)
             for dimension in task['dimensions']:
@@ -103,3 +111,4 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 self.close_document(part)
             results.append({'task':task['id'],**receipt,'manufacturing_approved':False})
         return {'results':results,'native_status':'files_created_reopened','manufacturing_approved':False}
+

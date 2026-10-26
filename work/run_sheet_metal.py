@@ -1,6 +1,7 @@
 """P0 CAD feature planning, trace simulation, or guarded Windows native execution."""
 import argparse
 import json
+import logging
 from pathlib import Path
 import sys
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +13,8 @@ from sheet_metal_pipeline import build_plan, run_plan, MockSheetMetalPort
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('source', type=Path)
+    p.add_argument('--diagnostic-log', type=Path, help='new UTF-8 diagnostic log, never overwrite')
+    p.add_argument('--no-relief-retries', action='store_true', help='single original-geometry attempt; no deepen or flat fallback')
     p.add_argument('--sw-exe', type=Path, help='installed SLDWORKS.exe; spawn and verify a dedicated process')
     p.add_argument('--profile', type=int, default=0, help='zero-based contour index')
     for key in ('thickness','radius','angle','k-factor'):
@@ -26,6 +29,11 @@ def main():
     group.add_argument('--live', action='store_true')
     args = p.parse_args()
     try:
+        if args.diagnostic_log is not None:
+            args.diagnostic_log.parent.mkdir(parents=True, exist_ok=True)
+            logging.basicConfig(level=logging.INFO, handlers=[
+                logging.FileHandler(args.diagnostic_log, mode='x', encoding='utf-8'),
+                logging.StreamHandler(sys.stderr)], force=True)
         analysis = analyze_cad_file(args.source)
         plan = build_plan(analysis, profile_index=args.profile, thickness_mm=args.thickness,
             radius_mm=args.radius, angle_degrees=args.angle, k_factor=args.k_factor,
@@ -40,11 +48,11 @@ def main():
             from sw_session import run_on_task_sta
             def live_job():
                 if args.sw_exe is None:
-                    return run_plan(analysis, plan, args.out, WindowsSheetMetalPort())
+                    return run_plan(analysis, plan, args.out, WindowsSheetMetalPort(allow_relief_retries=not args.no_relief_retries))
                 from sw_owned_launch import owned_solidworks
                 with owned_solidworks(args.sw_exe) as binding:
                     report['session'] = binding.evidence()
-                    result = run_plan(analysis, plan, args.out, WindowsSheetMetalPort())
+                    result = run_plan(analysis, plan, args.out, WindowsSheetMetalPort(allow_relief_retries=not args.no_relief_retries))
                 report['session'] = binding.evidence()
                 return result
             report['execution'] = run_on_task_sta(live_job,
@@ -59,3 +67,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

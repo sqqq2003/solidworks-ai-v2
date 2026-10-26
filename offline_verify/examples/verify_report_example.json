@@ -1,0 +1,297 @@
+{
+  "format": "offline-verify-report/1",
+  "generated_at_utc": "2026-10-24T14:38:57.642295+00:00",
+  "runner_version": "1.0.0",
+  "root": "/tmp/devcheck",
+  "allow_missing": false,
+  "suites": [
+    {
+      "id": "bridge-contract",
+      "status": "pass",
+      "ran": 17,
+      "passed": 17,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "桥接契约 (csharp-bridge)",
+      "baseline": {
+        "verdict": "match",
+        "expected": 17,
+        "delta": 0
+      },
+      "source_pr": 26,
+      "source_commit": "7363fe49",
+      "relpath": "csharp-bridge/tests"
+    },
+    {
+      "id": "bridge-wiring",
+      "status": "pass",
+      "ran": 8,
+      "passed": 8,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "桥接接线 (run_plan S1/S2/S5)",
+      "baseline": {
+        "verdict": "match",
+        "expected": 8,
+        "delta": 0
+      },
+      "source_pr": 31,
+      "source_commit": "f8b20580",
+      "relpath": "tests/test_bridge_wiring.py"
+    },
+    {
+      "id": "bridge-build-reopen",
+      "title": "桥接 build/reopen (run_plan S1/S2)",
+      "status": "missing",
+      "ran": 0,
+      "passed": 0,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "suite not present in this checkout (branch unmerged or file absent); never counted as passed",
+      "baseline": {
+        "verdict": "missing",
+        "expected": null,
+        "delta": null
+      },
+      "source_pr": 32,
+      "source_commit": "e08b8509",
+      "relpath": "tests/test_bridge_build_reopen.py"
+    },
+    {
+      "id": "pipeline",
+      "status": "pass",
+      "ran": 14,
+      "passed": 14,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "钣金流水线 run_plan",
+      "baseline": {
+        "verdict": "match",
+        "expected": 14,
+        "delta": 0
+      },
+      "source_pr": 23,
+      "source_commit": "9d65352a",
+      "relpath": "tests/test_sheet_metal_pipeline.py"
+    },
+    {
+      "id": "issue19-ckpt",
+      "status": "pass",
+      "ran": 14,
+      "passed": 14,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "#19 checkpoint / 收尾",
+      "baseline": {
+        "verdict": "match",
+        "expected": 14,
+        "delta": 0
+      },
+      "source_pr": 23,
+      "source_commit": "9d65352a",
+      "relpath": "tests/test_issue19_ckpt_teardown.py"
+    },
+    {
+      "id": "no-default-k",
+      "status": "pass",
+      "ran": 5,
+      "passed": 5,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "去默认值 (K/t)",
+      "baseline": {
+        "verdict": "match",
+        "expected": 5,
+        "delta": 0
+      },
+      "source_pr": 29,
+      "source_commit": "a7e171cb",
+      "relpath": "tests/test_no_default_k.py"
+    },
+    {
+      "id": "bend-allowance",
+      "status": "pass",
+      "ran": 6,
+      "passed": 6,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "折弯 allowance 公式",
+      "baseline": {
+        "verdict": "match",
+        "expected": 6,
+        "delta": 0
+      },
+      "source_pr": 29,
+      "source_commit": "a7e171cb",
+      "relpath": "tests/test_bend_allowance.py"
+    },
+    {
+      "id": "p0-gork",
+      "status": "pass",
+      "ran": 10,
+      "passed": 10,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "P0 Gork 回归",
+      "baseline": {
+        "verdict": "match",
+        "expected": 10,
+        "delta": 0
+      },
+      "source_pr": 29,
+      "source_commit": "a7e171cb",
+      "relpath": "tests/test_p0_gork_regressions.py"
+    },
+    {
+      "id": "recovery-guards",
+      "status": "pass",
+      "ran": 8,
+      "passed": 8,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "#30 收尾 / 接管守卫",
+      "baseline": {
+        "verdict": "diff",
+        "expected": 7,
+        "delta": 1
+      },
+      "source_pr": 30,
+      "source_commit": "d392b74d",
+      "relpath": "tests/test_recovery_review_guards.py"
+    },
+    {
+      "id": "dxf-extract",
+      "title": "模块 ③ DXF 几何提取",
+      "status": "missing",
+      "ran": 0,
+      "passed": 0,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "suite not present in this checkout (branch unmerged or file absent); never counted as passed",
+      "baseline": {
+        "verdict": "missing",
+        "expected": null,
+        "delta": null
+      },
+      "source_pr": 35,
+      "source_commit": "f9dd625d",
+      "relpath": "tests/test_dxf_extract.py"
+    },
+    {
+      "id": "feature-tree",
+      "title": "模块 ④ 特征树执行",
+      "status": "missing",
+      "ran": 0,
+      "passed": 0,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "suite not present in this checkout (branch unmerged or file absent); never counted as passed",
+      "baseline": {
+        "verdict": "missing",
+        "expected": null,
+        "delta": null
+      },
+      "source_pr": 36,
+      "source_commit": "1a8b30fb",
+      "relpath": "feature_tree/tests/test_feature_tree.py"
+    },
+    {
+      "id": "dependency-engine",
+      "title": "模块 ⑤ 整机依赖引擎",
+      "status": "missing",
+      "ran": 0,
+      "passed": 0,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "suite not present in this checkout (branch unmerged or file absent); never counted as passed",
+      "baseline": {
+        "verdict": "missing",
+        "expected": null,
+        "delta": null
+      },
+      "source_pr": 37,
+      "source_commit": "0c722db2",
+      "relpath": "dependency_engine/tests/test_dependency_engine.py"
+    },
+    {
+      "id": "offline-verify-self",
+      "status": "pass",
+      "ran": 12,
+      "passed": 12,
+      "failed": 0,
+      "errored": 0,
+      "skipped": 0,
+      "failures": [],
+      "note": "",
+      "title": "模块 ⑥ 本包自测",
+      "baseline": {
+        "verdict": "match",
+        "expected": 12,
+        "delta": 0
+      },
+      "source_pr": "module-6",
+      "source_commit": "this-branch",
+      "relpath": "offline_verify/tests/test_offline_verify.py"
+    }
+  ],
+  "missing": [
+    "bridge-build-reopen",
+    "dxf-extract",
+    "feature-tree",
+    "dependency-engine"
+  ],
+  "unregistered": [],
+  "summary": {
+    "suites_total": 13,
+    "suites_present": 9,
+    "suites_missing": 4,
+    "suites_passed": 9,
+    "suites_failed": 0,
+    "tests_ran": 94,
+    "tests_passed": 94,
+    "tests_failed": 0,
+    "tests_errored": 0,
+    "tests_skipped": 0,
+    "baseline_match": 8,
+    "baseline_diff": 1,
+    "complete": false
+  },
+  "exit_code": 1,
+  "exit_reasons": [
+    "baseline diffs: recovery-guards",
+    "suites missing: bridge-build-reopen, dxf-extract, feature-tree, dependency-engine"
+  ],
+  "principles": "merge != validation: every Windows / SolidWorks item is pending_windows_validation. Mock/offline passes are never native acceptance; a missing suite is never a pass."
+}

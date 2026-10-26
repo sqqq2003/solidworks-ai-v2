@@ -1,0 +1,60 @@
+{
+  "scope": "portable_simulation_only",
+  "platform": "Windows",
+  "python": "3.14.7",
+  "tests_run": 436,
+  "passed": 431,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [
+    {
+      "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+      "reason": "测试用滚筒 DWG 不在 uploads"
+    },
+    {
+      "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+      "reason": "本机未安装 LibreDWG dwg2dxf"
+    },
+    {
+      "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+      "reason": "Drawing1_e7b7.dwg 未上传"
+    },
+    {
+      "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+      "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    },
+    {
+      "test": "test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux)",
+      "reason": "Linux refusal test"
+    }
+  ],
+  "cross_process_lock_passed": true,
+  "pending_feature_cases": {
+    "test_border_relief_notch.py": 9,
+    "test_spur_segments.py": 5,
+    "test_turned_part.py": 22
+  },
+  "solidworks_live_verified": false,
+  "base_commit": "d392b74d6aa4da6ce175ea00214b10b8298760a8",
+  "csharp_python_contract_tests": {
+    "run": 17,
+    "passed": 17,
+    "failures": 0,
+    "native_csharp_compile": "not_run"
+  },
+  "desktop": {
+    "window_observed": true,
+    "responding": true,
+    "native_cad_started": false
+  },
+  "smoke": {
+    "project_smoke": "completed",
+    "ql_integrated": "completed_pending_oem_mapping",
+    "customer_cad_modified": false
+  },
+  "dependencies": {
+    "ezdxf": "1.4.4",
+    "pywin32": "312",
+    "comtypes": "1.4.17"
+  }
+}

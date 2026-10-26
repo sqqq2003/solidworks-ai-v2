@@ -13,14 +13,11 @@ SW_BEND_ALLOWANCE_DEDUCTION = 4
 
 BendMode = Literal["k_factor", "bend_deduction", "bend_allowance"]
 
-# 常用材料默认 K 因子（中性层相对板厚的位置，0~1）。
-MATERIAL_K_FACTORS: dict[str, float] = {
-    "软钢/冷轧": 0.44,
-    "不锈钢": 0.40,
-    "铝": 0.33,
-    "黄铜": 0.35,
-    "自定义": 0.44,
-}
+# 注意：这里故意没有任何材料通用 K 因子表。
+# K 因子不是常量：每单的材料、板厚、下模 V 口、内半径、工艺都不同，
+# K 必须由该单的实测展开数反推或工艺表显式给出。缺 K 时调用方必须
+# 走 pending_confirmation，绝不许用通用值顶替（2026-10-24 用户纠正；
+# 本模块此前自带的通用材料 K 因子表已删除）。
 
 
 @dataclass(frozen=True)
@@ -44,10 +41,14 @@ class BendAllowanceResult:
 
 @dataclass(frozen=True)
 class BendAllowanceSpec:
-    """写入 SolidWorks CustomBendAllowance 的规格。"""
+    """写入 SolidWorks CustomBendAllowance 的规格。
+
+    k_factor 无默认值：构造时必须显式传入每单的 K，不传即报 TypeError。
+    material_name 仅是显示标签，永不用于推导 K（通用材料 K 表已删除）。
+    """
 
     mode: BendMode
-    k_factor: float = 0.44
+    k_factor: float
     bend_deduction_mm: float | None = None
     bend_allowance_mm: float | None = None
     material_name: str = "软钢/冷轧"
@@ -65,15 +66,17 @@ def _validate_inputs(
     thickness_mm: float,
     radius_mm: float,
     angle_degrees: float,
-    k_factor: float,
+    k_factor: float | None = None,
 ) -> None:
+    # k_factor=None 表示本次校验不涉及 K（如 OSSB 只用 t/R/角度），而不是用某个
+    # 占位数充数：之前这里传过 0.5 做占位，已改为显式的 None。
     if not math.isfinite(thickness_mm) or thickness_mm <= 0:
         raise ValueError("板厚必须大于 0。")
     if not math.isfinite(radius_mm) or radius_mm < 0:
         raise ValueError("折弯内半径不能为负。")
     if not math.isfinite(angle_degrees) or not 0 < angle_degrees < 180:
         raise ValueError("折弯角度必须在 0°~180° 之间（不含端点）。")
-    if not math.isfinite(k_factor) or not 0.0 <= k_factor <= 1.0:
+    if k_factor is not None and (not math.isfinite(k_factor) or not 0.0 <= k_factor <= 1.0):
         raise ValueError("K 因子必须在 0~1 之间。")
 
 
@@ -100,7 +103,7 @@ def outside_setback_mm(
 ) -> float:
     """外侧回退 OSSB = (R + T)·tan(θ/2)。"""
 
-    _validate_inputs(thickness_mm, radius_mm, angle_degrees, 0.5)
+    _validate_inputs(thickness_mm, radius_mm, angle_degrees)
     half = math.radians(angle_degrees) / 2.0
     return (radius_mm + thickness_mm) * math.tan(half)
 
@@ -154,7 +157,7 @@ def k_factor_from_bend_deduction(
 ) -> float:
     """由已知折弯扣除反推 K 因子（车间扣数表 → K）。"""
 
-    _validate_inputs(thickness_mm, radius_mm, angle_degrees, 0.5)
+    _validate_inputs(thickness_mm, radius_mm, angle_degrees)
     if not math.isfinite(bend_deduction):
         raise ValueError("折弯扣除必须是有限数值。")
     theta = math.radians(angle_degrees)

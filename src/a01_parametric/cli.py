@@ -30,6 +30,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--spec", type=Path, default=None)
     parser.add_argument("--mapping-template", type=Path, default=None, help="Export pending real-model mapping JSON; does not confirm any OEM value")
     parser.add_argument("--out", type=Path, default=None)
+    parser.add_argument("--assembly-check", type=Path, help="Offline assembly graph and sampled motion input JSON (mm)")
+    parser.add_argument("--reference-check", type=Path, help="Persistent reference registry JSON; no COM resolution")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--live", action="store_true", help="Windows only. SaveAs a work copy; never overwrite the source.")
     parser.add_argument("--assembly", type=Path, default=None)
@@ -64,6 +66,12 @@ def main(argv: list[str] | None = None) -> int:
                 "drawing": drawing_export_skeleton(plan),
             },
         }
+        if args.assembly_check is not None:
+            from src.a01_next.assembly_preflight import preflight_assembly
+            report['next_track']['assembly_preflight'] = preflight_assembly(json.loads(args.assembly_check.read_text(encoding='utf-8-sig')))
+        if args.reference_check is not None:
+            from src.a01_next.stable_references import validate_references
+            report['next_track']['reference_check'] = validate_references(json.loads(args.reference_check.read_text(encoding='utf-8-sig')))
         if args.dry_run:
             destination = args.save_as or _default_trace(args.length, args.width, args.height)
             if destination.suffix.lower() != ".json":
@@ -93,4 +101,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 

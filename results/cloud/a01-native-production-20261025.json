@@ -1,0 +1,14 @@
+{
+  "scope": "portable_simulation_only",
+  "parent_commit": "a189805a16fd513551d76ae5468a703b8ef105a8",
+  "tests_run": 515,
+  "passed": 510,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 5,
+  "new_production_contract_tests": 12,
+  "cross_process_lock_passed": true,
+  "solidworks_live_verified": false,
+  "engineering_acceptance": "unverified",
+  "limitations": ["Native COM signatures untested on A01", "Actual mappings and templates not supplied to this workflow", "PDF layout review pending", "No production release", "New work-copy failures retained without automatic rollback"]
+}

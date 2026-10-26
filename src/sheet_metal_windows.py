@@ -4,12 +4,20 @@ Call the entire pipeline in sw_session.run_on_task_sta. No implicit user-session
 attachment and no process termination. COM imports remain Windows-call-only.
 """
 from dataclasses import asdict
+import gc
+import logging
 import sys
+import time
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class WindowsSheetMetalPort:
     simulated = False
+
+    def __init__(self, *, allow_relief_retries=True):
+        self.allow_relief_retries = bool(allow_relief_retries)
 
     def guard(self):
         if sys.platform != 'win32':
@@ -20,9 +28,10 @@ class WindowsSheetMetalPort:
     def generate(self, analysis, plan, part):
         self.guard()
         from bend_allowance import BendAllowanceSpec
-        from solidworks_generator import generate_sheet_metal_with_relief_retries
+        from solidworks_generator import generate_sheet_metal_with_relief_retries, generate_sheet_metal
         p = plan['parameters']
-        result = generate_sheet_metal_with_relief_retries(analysis, plan['profile_index'], plan['bend_indices'],
+        generate = generate_sheet_metal_with_relief_retries if self.allow_relief_retries else generate_sheet_metal
+        result = generate(analysis, plan['profile_index'], plan['bend_indices'],
             p['thickness_mm'], p['radius_mm'], p['angle_degrees'], part,
             flip_direction=p['flip_direction'], auto_bend=True, cad_import=False,
             relief_bend_indices=plan['relief_bend_indices'],
@@ -41,8 +50,19 @@ class WindowsSheetMetalPort:
         from solidworks_generator import (_connect_task_solidworks, ensure_solidworks_typelib,
             _as_interface, _features, _com_read)
         pythoncom.CoInitialize()
+        _started = time.monotonic()
+        _owned_before = list(lease.owned_docs)
         app = None
         title = None
+        # COM wrappers created below. They are initialized here so the
+        # finally block can release them even when the try body fails early.
+        model = None
+        features = []
+        definition = None
+        data = None
+        custom = None
+        raw_model = None
+        opened = None
         try:
             raw, _ = _connect_task_solidworks(lease, win32com, pythoncom)
             module = ensure_solidworks_typelib()
@@ -93,10 +113,45 @@ class WindowsSheetMetalPort:
                 raise RuntimeError("folded/flat measurement or state restoration failed: " + str(exc)) from exc
             return evidence
         finally:
+            # Issue #19 S5: COM release order. Drop every wrapper this
+            # function created, in reverse creation order, force a GC pass,
+            # and only then unload COM. Unloading COM while wrappers are
+            # still referenced is the prime suspect for the p248 teardown
+            # AV (EXIT=139 / 0xC0000005). The app wrapper itself is owned
+            # by the task lease, not by this function, so it is
+            # intentionally NOT released here. pending_windows_validation:
+            # this order has never run on real SolidWorks hardware.
             try:
                 if title and title in lease.owned_docs and app is not None:
                     close_owned_document(lease, app, title)
             finally:
+                from run_recovery import assert_release_order
+                order = []
+                if custom is not None:
+                    order.append('release:custom')
+                if data is not None:
+                    order.append('release:data')
+                if definition is not None:
+                    order.append('release:definition')
+                if features:
+                    order.append('release:features')
+                if model is not None:
+                    order.append('release:model')
+                if raw_model is not None:
+                    order.append('release:raw_model')
+                if opened is not None:
+                    order.append('release:opened')
+                custom = data = definition = None
+                features = []
+                model = raw_model = opened = None
+                gc.collect()
+                order.append('uninitialize')
+                assert_release_order(order)
+                logger.info('teardown S5 com_release order=%s owned_docs_before=%s '
+                            'owned_docs_after=%s pid=%s elapsed_ms=%s',
+                            order, _owned_before, list(lease.owned_docs),
+                            lease.spawned_pid,
+                            int((time.monotonic() - _started) * 1000))
                 pythoncom.CoUninitialize()
 
     def export_flat(self, part, dxf):
@@ -150,3 +205,4 @@ def measure_folded_and_flat(model, module):
                 'flat_bounds': flat, 'axes': 'model_axes', 'saved': False}
     finally:
         set_flat(not suppressed)
+

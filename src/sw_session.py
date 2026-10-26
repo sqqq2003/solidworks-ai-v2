@@ -803,6 +803,31 @@ def require_model_write(lease: SessionLease | None = None) -> SessionLease:
     return lease
 
 
+def ensure_application_keepalive(lease: SessionLease, app: Any) -> None:
+    """Prevent background SW from exiting on the last intermediate CloseDoc.
+
+    UserControl=True makes this proved task-owned instance visible. It does
+    not grant ownership; all PID, inventory, STA and write gates still apply.
+    """
+    if getattr(lease, "keep_application_open", False) is not True:
+        return
+    require_model_write(lease)
+    _require_bound_application(lease, app, "UserControl keepalive")
+    try:
+        app.UserControl = True
+        actual = getattr(app, "UserControl")
+        actual = actual() if callable(actual) else actual
+        if actual is not True:
+            raise RuntimeError("UserControl readback did not confirm True")
+    except Exception as error:
+        lease.writes_blocked = True
+        raise SessionOwnershipError("owned application keepalive could not be verified; CloseDoc refused") from error
+    binding = getattr(lease, "native_launch", None)
+    if binding is not None:
+        binding.keepalive_verified = True
+    logger.info("owned application keepalive verified: UserControl=True pid=%s", lease.spawned_pid)
+
+
 def close_owned_document(lease: SessionLease, app: Any, title: str) -> None:
     _require_sta(lease)
     _require_bound_application(lease, app, "CloseDoc")
@@ -816,6 +841,7 @@ def close_owned_document(lease: SessionLease, app: Any, title: str) -> None:
         raise SessionOwnershipError(
             f"refusing to close document {title!r}: this task cannot prove it owns that document"
         )
+    ensure_application_keepalive(lease, app)
     app.CloseDoc(title)
     # Drop the title and its handle only after CloseDoc returns. A replacement
     # opened later under the same title is not this registration.
@@ -843,6 +869,7 @@ def close_all_documents(lease: SessionLease, app: Any, open_titles: Any) -> None
             "refusing CloseAllDocuments while documents this task does not own are open: "
             + ", ".join(foreign)
         )
+    ensure_application_keepalive(lease, app)
     app.CloseAllDocuments(True)
 
 
@@ -1231,4 +1258,5 @@ def call_with_watchdog(
     finally:
         finished.set()
         watcher.join(timeout=1.0)
+
 

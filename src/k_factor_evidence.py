@@ -12,7 +12,8 @@ from sheet_metal_pipeline import diagnose_k_change
 PIPELINE_GEOMETRY_BASIS = "fixed_blank"
 
 
-def audit_variants(payload, *, geometry_basis=None, thickness_mm=2.5, radius_mm=1, angle_degrees=90):
+def audit_variants(payload, *, geometry_basis=None, thickness_mm, radius_mm, angle_degrees):
+    # t/R/angle 无默认值：必须由调用方显式传入本单的参数（之前的 2.5/1/90 默认值已删除）。
     variants = payload.get('variants', [])
     if len(variants) != 2:
         raise ValueError('two K variants required')

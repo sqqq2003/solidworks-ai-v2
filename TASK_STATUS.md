@@ -179,3 +179,78 @@
 - 本批只做 AST/JSON 语法解析；未执行单测、示例、全面回归、原生 API 或实机验收，不继承旧通过统计。新增回归代码未运行。
 - Gork 继续旧 p248，之后统一接测；真实 QL 模型/OEM 映射/Windows driver 仍待提供。集成 SHA 在 Issue #6 评论记录。
 
+
+
+
+## CODEX-PROJECT-RUN-20261024
+
+- 同步基线d392b74，启动统一桌面工作台（窗口响应已核对）；三类零件smoke及QL integrated示例实际运行并生成离线交接包，未知OEM值保持pending。
+- 补齐本地开发venv pywin32/comtypes；普通桌面/离线与SW实机验收分开。
+- 修复恢复锁Windows os.kill(pid,0)会终止进程的错误，改为只读句柄查询，新增禁止发信号回归。
+- 合并原生数学核验硬门槛、逐次Insert结构化诊断、失败证据保留、--no-relief-retries及只读证据检查。无新原生通过声明。
+- 完整离线436 ran / 431 passed / 0 failures/errors / 5 skipped；锁通过。另C# Python合约17/17；未编译C#、未运行真实桥。36 pending合约不算通过。说明及一次联合回传矩阵见docs/project-start-20261024.md。
+
+
+## CODEX-FOLLOWUP-20261024
+
+- 继续跑完离线集成/产物哈希/覆盖保护/冲突拒绝及制造队列首次、resume；5项完成、0失败、1原生pending。
+- 修复QL续跑日志value与result.json不绑定、空产物完成项复用、kind不符复用，以及$ref共享对象被下游修改。新增5项回归，旧实现4项明确失败，新实现通过；正常缓存不重跑。
+- 完整441 ran / 436 passed / 0 failures/errors / 5 skipped，跨进程锁通过；C# Python合约17项沿用前轮未改模块结果。
+- .NET host有但SDK缺失，实际build失败；SW oracle交接原稿在本机指定路径不可读，已向现有执行者请求共享。按ur56w8下一原生阶段仅oracle，不整跑step0。a9rpk4双轨选型仍未验收。详见docs/project-problems-20261024.md。
+
+
+## CODEX-S2-KEEPALIVE：gh268s双轨回传审查
+
+- WB/Qoder S1保存成功、S2断连发布失败，整体不放行。旧Windows探针/路径断言已由def70f3修复，不重复实现。
+- 原生保活缺陷定位：_set_sw_automation_mode把UserControl设False；后台会话关最后文档会退出。现按keep_application_open设置True并严格读回；受控CloseDoc前再次核验，失败不关文档。最终空文档ExitApp保留。
+- oracle回传显示typed数学有效但raw dispatch/tuple编组不可靠，补显式SAFEARRAY(double)；不合入温复用绕过。
+- p248温测报告改了源图/profile299且非独占、exit139，仅保留几何正面信号，不按原任务或稳定发布通过。Qoder不一致汇总不累计。
+- 新增会话/编组/fixture回归，完整478 ran / 473 passed / 0 failures/errors / 5 skipped，锁通过；另C#Python合同17/17。合成fixture dry-run实际simulated_pass，未启动新SW实测。
+- 新work/prepare_s2_retest.py输出样本与加载模块哈希、自动轮廓及精确argv；run_sheet_metal新增不可覆盖UTF8诊断日志。docs/s2-retest-20261024.md给出串行WB/Qoder精确跑法，待实机。
+
+
+## 2026-10-24 Issue #19 / #25 云端批次合并记账（#23 / #26 / #31 / #29 / #30 已合并，#32 待合并）
+
+- 记账口径：本节只补 2026-10-24 当天 Muse 云端批次（#23、#26、#27→#31、#29）与 #23 评审修正（#30）的合并事实；此前各节原样保留，不改写他人条目与历史结论。
+- #23 已合并（merge commit `9d65352a`，分支 `feat/issue19-ckpt-teardown` → `dev/cloud-ai`）：S0–S5 阶段 checkpoint、断点续跑、RunLock 死锁自愈、孤儿 staging 归档、崩溃现场包、收尾 5 步日志、COM 逆序释放、最小复现模式；`reopen_inspect` finally 改为逆序释放后才 CoUninitialize。云端自查：14 项新测试 + 113 项相关旧测试通过、4 项原有跳过。Windows 实机验收仍 pending：最小收尾复现 ×3 退出码 0、p248 全流程四项含退出码 0、#20 oracle max_dev ≤ 1e-10、死锁续跑、accept JSON 由 runner 正常写出。
+- #26 已合并（merge commit `7363fe49`，分支 `feat/issue25-csharp-bridge` → `dev/cloud-ai`）：`csharp-bridge/` 9 个文件——契约（命名管道 + JSON 行协议 `sw-bridge/1`）、独立审查结论（REVIEW.md）、钣金规则核对（SHEET_METAL_RULES.md）、集成建议与风险及 Gork 矩阵 A1–A8（INTEGRATION.md）、C# 桥接骨架（mock 模式；RealSwApp 在 `SOLIDWORKS_INTEROP` 后）、Python mock 客户端、17 项 mock 测试。云端自查 17 项全过。未测：C# 未在云端编译（无 .NET SDK）、命名管道实测、RealSwApp、SW2022/SW2025 行为，全部 pending_windows_validation。
+- #27 → #31 已合并（替代 PR #31，merge commit `f8b20580`，分支 `feat/issue25-runplan-wiring-merge` → `dev/cloud-ai`；原 #27 留言 superseded 后关闭未合并，评论 `6383390043`）：原因——#27（堆叠在 #23 分支上）与已合并的 #26 在 `csharp-bridge/INTEGRATION.md` 上 add/add 冲突；处理——#27 的 4 个改动原样重建在最新 dev 上（`src/bridge_wiring.py`、`tests/test_bridge_wiring.py`、`src/sheet_metal_pipeline.py` 的 bridge= 接线、合并版 INTEGRATION.md），合并版 = #26 完整集成文档 + #27 接线记录单节 appended，两节均未改动、互不覆盖。接线语义：`run_plan` 新增可选 `bridge=` 参数，不传时行为与接线前一致；S1 会话证明、S2 会话 + list_titles 验活、S5 桥接 5 步 teardown 报告；桥接不可用当阶段回落 grade mock + fallback_reason，不中断流程；非零退出码原样记录；锁与 staging 所有权仍归 run_plan。云端自查：8 项新测试全过，回归合计 36 项全过（#23 的 14 项 + pipeline 14 项 + 新 8 项）。边界：桥接契约当时无 build/reopen 方法，生成与重开检查本身仍走 port（见 #32）。
+- #29 已合并（merge commit `a7e171cb`，无冲突，分支 `feat/issue25-no-default-k` → `dev/cloud-ai`）：去掉钣金路径默认值——`BendAllowanceSpec.k_factor=0.44` 默认删除改为必填（不传即 TypeError）、`MATERIAL_K_FACTORS` 通用材料 K 表整表删除（审计确认仓库内无调用方）、`audit_variants` 的 `thickness_mm=2.5 / radius_mm=1 / angle_degrees=90` 默认删除改为必填关键字参数、`app.py` 工作台 t/R/角度/K 预填值（2.5/1/90/0.4）改为空；缺输入走 pending_confirmation 或参数检查弹窗，绝无默认数顶替。云端自查：5 项新测试全过，回归合计 35 项全过。Windows 项 pending：CustomBendAllowance 写入与读回、SW2022/SW2025 表现、工作台空字段弹窗流程、生成器全文逐行审计。
+- #30 已合并（merge commit `d392b74d`，无冲突，分支 `fix/pr23-recovery-review-guards` → `dev/cloud-ai`；#23 的评审修正）：三项——活/无法探测的锁所有者一律拒绝接管（仅确认死亡才能恢复；旧“活 PID 过期可接管”测试已改正）、收尾退出值原样记录并判失败/待定（139/None 与 release ok=false 不再记为 OK；关闭失败或非空/不可用文档清单时跳过 ExitApp）、检查点产物读取增加双平台路径与 resolve 边界校验（拒绝外部/遍历/逃逸符号链接）。PR 描述自查 21 项通过（7 项新增 + 14 项原 PR23 离线检查）；合并执行时云端核查 43 项通过。Windows 原生验证仍 pending；不声称解决 COM 崩溃。
+- 合并后 `dev/cloud-ai` HEAD：`d392b74d`（#30 的合并提交）。合并方式均为 merge commit，不 squash、不强推；main 未动；已合并分支保留未删。另注：Draft PR 按 GitHub API 要求在合并前转为正式（draft:false），为合并必要子步骤，非内容改动。
+- #32 未合并（Draft，分支 `feat/bridge-build-reopen`，HEAD `e08b8509`，基线 dev `d392b74d`）：桥接 build/reopen 方法接进 run_plan S1/S2——CONTRACT.md §12（build/reopen 方法、单位显式、错误映射、退出隔离、幂等键）、SwBridge BuildDocument/ReopenDocument（mock 实现；RealSwApp 仍为 stub，pending_windows_validation）、Python 客户端 build()/reopen()（缺参数即 MissingParameterError → pending_confirmation，绝无默认值）、bridge_wiring build_evidence()/reopen_evidence()（executed_via 仅方法成功时为 bridge，否则为 port + fallback_reason）、run_plan 加法接线（S1 先试桥接 build、S2 先试桥接 reopen，任一失败回落 port；桥接报成功却无产物文件为硬失败；S0/S3/S4/S5 不动；#30 守卫不动）、INTEGRATION.md 接线记录与 Gork 矩阵增补 B6–B10、15 项新 mock 测试。云端自查：15 项新测试全过；tests/ 回归 72/72（基线 57：bridge_wiring 8、pipeline 14、no_default_k 5、bend_allowance 6、p0_gork 10、issue19 14）；csharp-bridge 契约测试 17/17。诚实边界：build 目前仅以 plan_id 引用已验证计划，完整几何 IR 传输仍是未起草的设计项；RealSwApp build/reopen 仍为 stub；C# 未编译、命名管道未实测、SW2022/SW2025 行为全部 pending。合并另需用户批准。
+- 其他仍 open 的 PR（本节记账时实查，2026-10-24）：#28（Codex #24 单滚筒 800mm，基线旧，合前需 rebase）、#20（统一原生建模，基线旧，合前需 rebase）、#16（#15 CAD 特征首批，未完成）、#17（SAFEARRAY 桥接；与 #20 的桥接取代关系未定性）、#21/#22/#18（证据/文档类，不动代码）、#1（dev→main 记录 PR，head 已为最新 dev `d392b74d`）。Issue #25 仍 open：云端交付（#26/#31/#29/#32）已做，Windows 验收仍 pending，关闭与否待定。
+- 跨批共识（写入账本，防后人踩坑）：
+  - t、R、K、角度一律按每单输入参数处理，绝无默认值；t=2.5 / R=1 / K=0.36 / BA=3.0 / BD=4.0 只是本厂一次实测用例（2026-10-22 对称 U 槽），不是默认值；#29 已删除 k_factor=0.44 默认与通用材料 K 表；缺输入标 pending_confirmation，永不以默认数顶替。
+  - 合并 ≠ 实机验证：上述所有 Windows / SolidWorks 验收项均为 pending_windows_validation；mock 与离线通过不得写成实机通过；accept 结论以 runner 正常写出的 accept JSON 与实机证据为准，事后重建的 accept 须注明证据等级。
+
+## 补记（2026-10-24 合并批：#32/#34/#35/#36/#37/#38 已合并，#33 最后合并）
+
+- 合并前 dev HEAD：`243e269f`。合并顺序与 merge SHA（均为 merge commit 方式，分支保留未删）：
+  - #32 桥接 build/reopen（分支 `feat/bridge-build-reopen`）→ `d4183dec`
+  - #34 口径统一（分支 `docs/k-value-wording-20261024`）→ `38e88ac7`
+  - #35 模块③ DXF 提取（分支 `feat/issue25-dxf-extract`）→ `a1f697c0`
+  - #36 模块④ 特征树执行（分支 `feat/issue25-feature-tree-exec`）→ `a7f71a45`
+  - #37 模块⑤ 依赖引擎（分支 `feat/issue25-dependency-engine`）→ `d9d9f719`
+  - #38 模块⑥ 离线验证包（分支 `feat/issue25-offline-verify`）→ `4fe6e05c`
+  - #33（本节所在分支 `docs/task-status-20261024`）在内容批合完后追加本节，再最后合并；其 merge SHA 以 GitHub 合并记录为准。
+- 合并过程：6 批均无冲突直接合并。#35/#36/#37/#38 为纯新增目录；#32 改 csharp-bridge/ 与 src/bridge_wiring.py 等已有文件，合并时无冲突；#34 只改 docs/ 措辞。#32/#34/#35/#36 基于旧 dev `d392b74d`，#37/#38 基于 dev `243e269f`，均未 rebase 即合（diff 可干净应用）。
+- 合并 ≠ 实机验证：上述各批的 Windows / SolidWorks 验收项仍为 pending_windows_validation；统一验收总表见 `offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`（42 项）。
+- 遗留项（本批未改，如实记账）：
+  - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项，已标 diff 未改基线，待归属方确认后随其 PR 更新。
+  - 生成器头部 `DEFAULT_BEND_K_FACTOR = 0.44` 残留由独立清理批处理（分支 `feat/generator-no-default-k`），不在本批范围。
+  - Issue #25 仍 open，关闭与否待用户/Gork 定。
+  - 仍 open 的其他 PR：#28（Codex #24 滚筒）、#20（统一原生建模）、#16、#17、#21/#22/#18（证据类）、#1（dev→main 记录 PR）。
+
+
+## 补记 2（2026-10-25 替代记账：原 #33 未合并，#40 已合并）
+
+- 本替代分支基线：dev `7696e18d`（#40 的合并提交）。
+- 原 #33（分支 `docs/task-status-20261024`，head `70bce193`，含追加提交 `54e5bfb5` 与并集拼合提交 `70bce193`）**未合并**：dev 的 `TASK_STATUS.md` 在前进过程中多了 Codex 的 `CODEX-PROJECT-RUN-20261024` / `CODEX-FOLLOWUP-20261024` 两节，与 #33 在文件尾部同一锚点的追加构成 add/add 型结构性冲突；本地 git 复现证实，只要合并基准还是旧 `d392b74d`，API 合并即判冲突，与内容取舍无关。故不硬合、不 force-push、不 rebase 原分支。处理沿用 #27→#31 的先例：从最新 dev 新开本替代分支，把上两节记账原文接在 dev 版 `TASK_STATUS.md` 之后（旧节一字未改），本替代 PR 合并后在原 #33 下留言说明并关闭原 #33（未合并关闭）。
+- 订正：上节“补记”中“#33 最后合并”一语已过时——原 #33 实际未合并，记账承接关系以本节为准；上两节中的 PR 号、分支、merge SHA、测试数等事实原样保留。
+- #40 已合并（merge commit `7696e18d`，分支 `feat/generator-no-default-k` → `dev/cloud-ai`）：删除生成器头部 2 行死定义（`DEFAULT_BEND_K_FACTOR = 0.44` 注释 + 定义，6085 行 → 6083 行）+ 新增 `tests/test_no_generator_default_k.py`（5 项测试）；审计确认全仓库 174 个文件无任何引用点，故无回落默认值转换、无行为变化；5 项测试全过，其中 3 项在清理前原文上失败，证明可抓住残留。至此“t、K 绝无默认值”规则在代码侧彻底落实（文档侧见 #34）。
+- 本节所在替代 PR 的 merge SHA 以 GitHub 合并记录为准；合并方式为 merge commit，分支保留未删，main 未动。
+- 仍 pending（本批未改，如实记账）：
+  - Issue #39：7c787deb（`Keep owned SolidWorks alive across S1 close and S2 reopen`）已在代码侧修复 S1→S2 保活根因（UserControl=True + 严格读回、CloseDoc 前再核验、显式 SAFEARRAY(double)），并附 `docs/s2-retest-20261024.md` 精确串行重测跑法；但新补丁实机通过仍待 WB/Qoder 串行重测（同一受控 PID 跨 S1 关最后文档 → S2 重开 → 重建读回 → 展开导出，`keepalive_verified=true`）；`_pid_alive` 的 Windows 分支已用 `_windows_pid_alive`（属 def70f3 一批）；WB-TEST-001 的同名测试在 dev 树内无对应项，修复认领以 def70f3 为据，待重测确认；#39 本身仍 open，不急于关闭。
+  - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
+  - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。

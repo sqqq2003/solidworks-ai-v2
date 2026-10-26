@@ -35,7 +35,7 @@ class FrameworkReviewFixes(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'machine=GT-ZX'):
             build_command({'kind':'parametric','length':1800,'width':900,'height':1500})
         command = build_command({'kind':'parametric','machine':'QL-5050PX','length':1800,'width':900,'height':1500})
-        self.assertTrue(any(arg.endswith('work/ql5050px.py') for arg in command))
+        self.assertTrue(any(Path(arg).as_posix().endswith('work/ql5050px.py') for arg in command))
         self.assertNotIn('src.a01_parametric.cli',command)
 
     def test_all_bodies_contribute_to_union(self):
@@ -68,3 +68,4 @@ class FrameworkReviewFixes(unittest.TestCase):
                 args = listing.call_args.args[0]
                 self.assertIn('--cached',args)
                 self.assertNotIn('--others',args)
+
