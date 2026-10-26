@@ -196,6 +196,20 @@ class DrawingVerificationTests(unittest.TestCase):
         self.assertEqual(calls,[DISPATCH_PROPERTYGET,DISPATCH_METHOD])
         self.assertEqual(ann.position,(0.11,0.22,0))
 
+    def test_save_as_retargets_only_the_leased_drawing_title(self):
+        from sw_session import SessionLease,SessionOwnershipError
+        from ql5050px.native_machine import retarget_saved_title
+        lease=SessionLease('drawing-save')
+        lease.note_owned_document('绘图1',handle_id=1)
+        lease.foreign_titles.add('FX-PX-ZYQDYT-001×1.SLDASM')
+        saved=NS(GetTitle='QL-5050PX-A2R-A2_1-10.SLDDRW')
+        self.assertEqual(retarget_saved_title(lease,'绘图1',saved),'QL-5050PX-A2R-A2_1-10.SLDDRW')
+        self.assertNotIn('绘图1',lease.owned_docs)
+        self.assertIn('QL-5050PX-A2R-A2_1-10.SLDDRW',lease.owned_docs)
+        self.assertIs(retarget_saved_title(lease,'QL-5050PX-A2R-A2_1-10.SLDDRW',saved),'QL-5050PX-A2R-A2_1-10.SLDDRW')
+        with self.assertRaises(SessionOwnershipError):
+            retarget_saved_title(lease,'QL-5050PX-A2R-A2_1-10.SLDDRW',NS(GetTitle='FX-PX-ZYQDYT-001×1.SLDASM'))
+
     def test_d4_scale_template_matrix_is_settings_data(self):
         templates={'A2':'sheets/a2.drwdot','A3':'sheets/a3.drwdot'}
         cases=drawing_sheet_cases(templates)

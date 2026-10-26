@@ -15,6 +15,18 @@ def read_member(obj,name):
     return value() if callable(value) else value
 
 
+def retarget_saved_title(lease, title_before, model):
+    """Point the existing lease entry at the title SaveAs left open.
+
+    Does not adopt any other open document. A title already marked foreign
+    still fails in ``rename_owned``.
+    """
+    title_after = str(read_member(model, 'GetTitle'))
+    if title_after != str(title_before):
+        lease.rename_owned(str(title_before), title_after)
+    return title_after
+
+
 def math_transform(utility, array):
     """CreateTransform argument must be SAFEARRAY(double), not a raw list."""
     from sw_math_arrays import double_array
@@ -120,7 +132,12 @@ class NativeMachineDriver:
         if not read_member(model,'EditRebuild3'): raise RuntimeError('native rebuild failed')
         self.verify_references(model)
         if path.exists(): raise FileExistsError(path)
+        title_before = str(read_member(model,'GetTitle'))
         if int(model.SaveAs3(str(path),0,1))!=0 or not path.is_file(): raise RuntimeError('native SaveAs3 failed')
+        # SaveAs renames the open document. guard() inventories titles before
+        # CloseDoc; the pre-save title would look unowned. Referenced models
+        # SolidWorks loads for drawing views are not registered here.
+        retarget_saved_title(self.lease, title_before, model)
         self.close_document(model)
         reopened = self.open_document(path,configuration)
         if not read_member(reopened,'EditRebuild3'): raise RuntimeError('reopen rebuild failed')
