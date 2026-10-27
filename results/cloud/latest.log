@@ -496,6 +496,8 @@ test_launcher_cannot_bind_off_worker (test_sw_owned_launch.OwnedLaunchTests.test
 test_nonempty_or_unreadable_new_process_inventory_refused (test_sw_owned_launch.OwnedLaunchTests.test_nonempty_or_unreadable_new_process_inventory_refused) ... ok
 test_success_uses_spawned_pid_and_never_refetches_active_object (test_sw_owned_launch.OwnedLaunchTests.test_success_uses_spawned_pid_and_never_refetches_active_object) ... ok
 test_unknown_document_appearing_later_blocks_writes (test_sw_owned_launch.OwnedLaunchTests.test_unknown_document_appearing_later_blocks_writes) ... ok
+test_user_instance_returned_by_discovery_is_never_enumerated_or_mutated (test_sw_owned_launch.OwnedLaunchTests.test_user_instance_returned_by_discovery_is_never_enumerated_or_mutated) ... ok
+test_user_session_remains_untouched_while_owned_instance_exits (test_sw_owned_launch.OwnedLaunchTests.test_user_session_remains_untouched_while_owned_instance_exits) ... ok
 test_wrong_active_pid_never_becomes_exclusive (test_sw_owned_launch.OwnedLaunchTests.test_wrong_active_pid_never_becomes_exclusive) ... ok
 test_attached_user_session_cannot_be_torn_down (test_sw_session_safety.SessionSafetyTests.test_attached_user_session_cannot_be_torn_down) ... ok
 test_automation_mode_requires_exclusive_proof (test_sw_session_safety.SessionSafetyTests.test_automation_mode_requires_exclusive_proof) ... ok
@@ -566,6 +568,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 525 tests in 5.420s
+Ran 527 tests in 5.647s
 
 OK (skipped=4)

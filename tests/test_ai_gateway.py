@@ -22,7 +22,10 @@ class GatewayTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
     def test_discover_without_cad_and_job_report(self):
-        self.assertFalse(self.gateway.call('solidworks_capabilities',{})['native_enabled'])
+        capabilities = self.gateway.call('solidworks_capabilities',{})
+        self.assertFalse(capabilities['native_enabled'])
+        self.assertFalse(capabilities['session_policy']['attach_user_session'])
+        self.assertEqual(capabilities['session_policy']['fallback_on_isolation_failure'],'refuse')
         result = self.gateway.call('solidworks_run_job',{'job':{'kind':'parametric','machine':'GT-ZX','length':100,'width':80,'height':60}})
         self.assertEqual(result['status'],'planned')
         self.assertTrue((self.root/result['report']).is_file())

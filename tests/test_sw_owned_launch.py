@@ -104,6 +104,34 @@ class OwnedLaunchTests(unittest.TestCase):
             app.ExitApp.assert_not_called()
         self.on_sta(job)
 
+    def test_user_session_remains_untouched_while_owned_instance_exits(self):
+        user = MagicMock(name='user_solidworks')
+        owned = MagicMock(name='task_solidworks')
+        observations = []
+        def job():
+            binding = bind_spawned(Lifetime(),lambda pid:owned,
+                lambda app:43210 if app is owned else 999,
+                lambda app:observations.append(app) or [],timeout=1)
+            lease = sw_session.current_lease()
+            binding.validate(lease)
+            sw_session.exit_owned_application(lease,binding.app)
+        self.on_sta(job)
+        owned.ExitApp.assert_called_once_with()
+        self.assertTrue(all(app is owned for app in observations))
+        self.assertEqual(user.mock_calls,[])
+
+    def test_user_instance_returned_by_discovery_is_never_enumerated_or_mutated(self):
+        user = MagicMock(name='existing_user_solidworks')
+        inventory = MagicMock(return_value=['unsaved-user-part'])
+        def job():
+            with self.assertRaises(SessionOwnershipError):
+                bind_spawned(Lifetime(),lambda pid:user,lambda app:999,
+                    inventory,timeout=.01)
+            self.assertFalse(sw_session.current_lease().verified_exclusive)
+        self.on_sta(job)
+        inventory.assert_not_called()
+        self.assertEqual(user.mock_calls,[])
+
     def test_launcher_cannot_bind_off_worker(self):
         with self.assertRaises(SessionOwnershipError):
             bind_spawned(Lifetime(),lambda p:object(),lambda a:43210,lambda a:[],timeout=1)

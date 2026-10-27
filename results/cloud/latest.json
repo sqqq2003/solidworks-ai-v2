@@ -2,8 +2,8 @@
   "scope": "portable_simulation_only",
   "platform": "Linux",
   "python": "3.12.14",
-  "tests_run": 525,
-  "passed": 521,
+  "tests_run": 527,
+  "passed": 523,
   "failures": 0,
   "errors": 0,
   "skipped": [

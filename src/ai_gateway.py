@@ -52,7 +52,11 @@ class Gateway:
             if arguments:
                 raise ValueError('this tool accepts no arguments')
             data = project.capabilities() if name == 'solidworks_capabilities' else project.doctor()
-            return {**data,'native_enabled':bool(self.sw_exe)}
+            return {**data,'native_enabled':bool(self.sw_exe),
+                'session_policy':{'mode':'task_owned_separate_process',
+                    'attach_user_session':False,'close_user_documents':False,
+                    'exit_user_application':False,'fallback_on_isolation_failure':'refuse',
+                    'desktop_focus_isolation':'not_guaranteed'}}
         if name != 'solidworks_run_job':
             raise ValueError('unknown tool')
         if set(arguments) != {'job'} or not isinstance(arguments['job'],dict):
