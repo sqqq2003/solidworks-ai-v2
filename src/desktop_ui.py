@@ -195,7 +195,7 @@ class Workbench:
         self.path_row(self.native,0,'sw_exe','SolidWorks 程序')
         self.flip_check=ttk.Checkbutton(self.native,text='反向折弯',variable=self.flip);self.flip_check.grid(row=1,column=0,sticky='w',pady=6)
         ttk.Checkbutton(self.native,text='已核对图纸、索引、尺寸和方向',variable=self.confirmed).grid(row=2,column=0,sticky='w')
-        self.label(self.native,'修改输入会取消确认。',size=9,color=MUTED).grid(row=3,column=0,sticky='w',pady=5)
+        self.label(self.native,'AI 将另开任务窗口，可保留现有 SolidWorks。\n修改输入会取消确认。',size=9,color=MUTED).grid(row=3,column=0,sticky='w',pady=5)
         controls=tk.Frame(self.form,bg=WHITE);controls.grid(row=10,column=0,sticky='ew',pady=(22,12))
         self.add_button=self.button(controls,'加入任务队列',self.append,primary=True);self.add_button.pack(fill='x')
         self.native_button=self.button(controls,'原生配方审核',self.native_review);self.native_button.pack(fill='x',pady=(8,0))
