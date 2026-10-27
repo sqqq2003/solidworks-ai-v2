@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tkinter as tk
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
@@ -22,6 +23,9 @@ class ExportAllOptions:
     selected_labels: tuple[str, ...] = ()
     # 清单里没显示出来的件（超过 MAX_LISTED_PARTS）默认也要。
     select_hidden: bool = False
+    k_factor: float | None = None
+    uniform_scale: float = 1.0
+    preserve_circle_holes: bool = False
 
 
 @dataclass(frozen=True)
@@ -75,7 +79,7 @@ def _parse_positive(value: str, label: str, *, upper: float | None = None) -> fl
         number = float(value.strip())
     except ValueError as error:
         raise ValueError(f"{label}必须填写为数值。") from error
-    if number <= 0:
+    if not math.isfinite(number) or number <= 0:
         raise ValueError(f"{label}必须大于 0。")
     if upper is not None and number >= upper:
         raise ValueError(f"{label}必须小于 {upper:g}。")
@@ -93,6 +97,8 @@ def ask_export_all_options(
     radius: str,
     angle: str,
     parts: Sequence[PartRow] = (),
+    k_factor: str = "",
+    uniform_scale: str = "1",
 ) -> ExportAllOptions | None:
     """弹出导出确认窗。取消或关闭窗口时返回 None。
 
@@ -245,9 +251,16 @@ def ask_export_all_options(
     thickness_var = tk.StringVar(value=thickness)
     radius_var = tk.StringVar(value=radius)
     angle_var = tk.StringVar(value=angle)
+    k_var = tk.StringVar(value=k_factor)
+    scale_var = tk.StringVar(value=uniform_scale)
+    preserve_var = tk.BooleanVar(value=False)
     add_number(next_row + 1, "默认板厚", thickness_var, "mm")
     add_number(next_row + 2, "折弯半径", radius_var, "mm")
     add_number(next_row + 3, "折弯角度", angle_var, "°")
+    add_number(next_row + 4, "本单 K 因子", k_var, "0–1；折弯件必填")
+    add_number(next_row + 5, "外形缩放倍数", scale_var, "1=不改；板厚不缩放")
+    ttk.Checkbutton(body, text="圆孔孔径保持不变，孔心随外形缩放", variable=preserve_var).grid(
+        row=next_row + 6, column=0, columnspan=3, sticky='w', pady=4)
 
     hint = ttk.Label(
         body,
@@ -255,7 +268,7 @@ def ask_export_all_options(
         foreground="#555555",
         wraplength=440,
     )
-    hint.grid(row=next_row + 4, column=0, columnspan=3, sticky="w", pady=(10, 0))
+    hint.grid(row=next_row + 7, column=0, columnspan=3, sticky="w", pady=(10, 0))
     refresh_summary()
 
     buttons = ttk.Frame(dialog, padding=(18, 8, 18, 16))
@@ -272,6 +285,11 @@ def ask_export_all_options(
             messagebox.showwarning("缺少目录", "请填写输出目录。", parent=dialog)
             return
         try:
+            k = float(k_var.get()) if k_var.get().strip() else None
+            if k is not None and (not math.isfinite(k) or not 0 <= k <= 1):
+                raise ValueError('K 因子必须是 0–1 的有限数值。')
+            if any(row.bend_count and (row in hidden or checked[row.label].get()) for row in parts) and k is None:
+                raise ValueError('勾选的折弯件需要填写本单已确认的 K 因子。')
             options = ExportAllOptions(
                 output_dir=Path(folder),
                 thickness_mm=_parse_positive(thickness_var.get(), "默认板厚"),
@@ -281,6 +299,9 @@ def ask_export_all_options(
                     label for label, variable in checked.items() if variable.get()
                 ),
                 select_hidden=bool(hidden),
+                k_factor=k,
+                uniform_scale=_parse_positive(scale_var.get(), '缩放倍数'),
+                preserve_circle_holes=preserve_var.get(),
             )
         except ValueError as error:
             messagebox.showwarning("参数无效", str(error), parent=dialog)

@@ -121,6 +121,7 @@ class Workbench:
         self.button(nav,'三视图 / BOM',self.open_drawing).pack(fill='x',padx=12,pady=2)
         self.button(nav,'DXF 图纸概览',self.open_dxf_overview).pack(fill='x',padx=12,pady=2)
         self.button(nav,'钣金批量预检',self.open_sheet_batch_review).pack(fill='x',padx=12,pady=2)
+        self.button(nav,'技能融合进度',self.show_skill_integration).pack(fill='x',padx=12,pady=2)
         self.button(nav,'尺寸试改预检',self.native_review).pack(fill='x',padx=12,pady=2)
         tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=20)
         self.button(nav,'任务队列',self.show_queue).pack(fill='x',padx=12,pady=2)
@@ -658,14 +659,45 @@ class Workbench:
                 # 预检只是只读检查；给出「开始导出」入口，让用户确认后再走串行生成。
                 bar=self.tk.Frame(win,bg=WHITE);bar.pack(fill='x',padx=16,pady=8)
                 self.label(bar,'预检未放行生产；导出前会再次逐件确认。',color=MUTED).pack(side='left')
+                def save_review():
+                    from tkinter import messagebox
+                    from batch_review_manifest import create_manifest, save_manifest
+                    destination=filedialog.asksaveasfilename(parent=win,title='保存独立审核清单',
+                        defaultextension='.json',filetypes=[('审核清单','*.json')])
+                    if not destination:return
+                    try:
+                        manifest=create_manifest(source,report=report)
+                        save_manifest(manifest,destination)
+                        self.journal.record('sheet_review_saved',path=destination,source_sha256=manifest['source_sha256'])
+                        messagebox.showinfo('已保存','已保存候选清单；数量、板厚、缩放和孔径策略仍需确认。',parent=win)
+                    except Exception as exc:
+                        self.journal.exception('sheet_review_save_failed',exc)
+                        messagebox.showerror('保存失败',str(exc),parent=win)
+                self.button(bar,'保存审核清单…',save_review).pack(side='right',padx=6)
                 self.button(bar,'开始导出…',lambda:self.start_sheet_batch_export(source,win)).pack(side='right')
         threading.Thread(target=inspect,daemon=True).start();win.after(150,poll_result)
+
+    def show_skill_integration(self):
+        from skill_integration import integration_status
+        report=integration_status()
+        win=self.tk.Toplevel(self.root);win.title('技能融合进度');win.geometry('820x580')
+        text=self.tk.Text(win,wrap='word',padx=18,pady=16)
+        text.pack(fill='both',expand=True)
+        lines=['I01–I08 渐进融合 · 代码存在不代表功能验收通过',
+               '本轮仅编码，没有执行模拟测试、SolidWorks 实机或工程验收。','']
+        for row in report['items']:
+            state={'code_present_unverified':'已有代码，待验证','deferred':'后续评估','incomplete':'代码待补齐'}[row['implementation']]
+            lines.extend([row['id']+' · '+row['scope']+' · '+state,
+                          '  依赖：'+(', '.join(row['depends_on']) or '无'),
+                          '  模块：'+(', '.join(row['files']) or '尚未纳入开发')])
+        text.insert('end','\n'.join(lines));text.configure(state='disabled')
+        self.journal.record('skill_integration_viewed',plan_id=report['plan_id'])
 
     def start_sheet_batch_export(self, source, parent_win=None):
         """弹确认窗 → 构造批量导出任务 → 加入队列串行执行。"""
         from tkinter import messagebox
         from project_workbench import confirm_job
-        from export_dialog import ask_export_all_options, list_part_rows
+        from export_dialog import ask_export_all_options, list_part_rows, MAX_LISTED_PARTS
         from batch_export import discover_sheet_parts
         from cad_analyzer import analyze_cad_file
 
@@ -691,12 +723,20 @@ class Workbench:
             bent_count=sum(1 for j in real if j.bend_indices),
             labeled_count=0,
             initial_dir=str(Path(source).parent),
-            thickness='4',
-            radius='1.2',
-            angle='90',
+            thickness=self.values['thickness'].get().strip(),
+            radius=self.values['radius'].get().strip(),
+            angle=self.values['angle'].get().strip(),
+            k_factor=self.values['k_factor'].get().strip(),
+            uniform_scale=self.values['uniform_scale'].get().strip() or '1',
             parts=rows,
         )
         if options is None:
+            return
+        selected = list(options.selected_labels)
+        if options.select_hidden:
+            selected.extend(j.label for j in real[MAX_LISTED_PARTS:])
+        if not selected:
+            self.add_message('未导出', '没有选择任何零件，未创建任务。')
             return
         try:
             job=confirm_job({
@@ -706,6 +746,10 @@ class Workbench:
                 'thickness':options.thickness_mm,
                 'radius':options.radius_mm,
                 'angle':options.angle_degrees,
+                'k_factor':options.k_factor,
+                'uniform_scale':options.uniform_scale,
+                'preserve_circle_holes':options.preserve_circle_holes,
+                'selected_labels':selected,
             })
         except Exception as exc:
             self.journal.exception('sheet_batch_export_confirm_failed',exc)

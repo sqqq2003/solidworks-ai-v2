@@ -272,3 +272,13 @@
 - Fixed repair CLI test fixture isolation; added pinned pypdf dependency. Simulation runner and marker-only lock probe use isolated test locks, leaving production writer exclusion unchanged.
 - Validation: Windows Python 3.14, 739 tests, 733 passed, 0 failures, 0 errors, 6 skipped; cross-process marker lock passed. Skips cover unavailable customer fixtures/LibreDWG, symlink support and platform-specific cases.
 - Linux 3.11/3.12 regression is triggered by push through cloud-tests.yml. This local result is not Linux or SolidWorks live acceptance. Quantity annotation binding and mechanical/drawing production acceptance remain open.
+
+## 2026-10-28 code-only completion batch (not validated)
+
+User explicitly requested implementation without testing. No tests, compile checks, application launch, CAD access, package build or deployment was performed for this batch. Previous 733-pass result belongs to commit 62a9c91 and must not be attributed to these changes.
+
+Implemented code: quantity uniqueness/ambiguity handling; parameter provenance/dependency review; batch review manifests and offline CLI; UI selection/scale/circle/K parameter propagation; batch stop on session failures and source changes; recursive resume fingerprints; stable-reference signature evidence comparison; feature readback checklist; assembly/BOM candidate summary; I01-I08 integration status/UI/AI tools; delivery inventory/evidence gates; credential redaction and runtime-version packaging improvements.
+
+Full sequence and explicit limitations: docs/development-completion-20261028.md. Original integration numbering preserved in docs/skill-integration-plan-20261026.md. All changes remain code_present_unverified. Full native geometry transaction, native review-to-batch execution adapter, production drawing/PDF acceptance and target-machine packaging validation remain open.
+
+Delivery: private development branch dev/code-completion-20261028. Do not merge or release as production until a separately authorized verification round. This branch is outside the current cloud-tests push trigger; no new test workflow dispatched. Customer CAD, local test logs and credentials are excluded.

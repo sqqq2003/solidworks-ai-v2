@@ -14,6 +14,34 @@ PROPERTIES={
 RELATIONS={'horizontal':'sgHORIZONTAL2D','vertical':'sgVERTICAL2D','coincident':'sgCOINCIDENT','concentric':'sgCONCENTRIC','parallel':'sgPARALLEL','perpendicular':'sgPERPENDICULAR','equal':'sgSAMELENGTH','tangent':'sgTANGENT'}
 
 
+def execution_checklist(features):
+    """Expose bounded feature steps without executing or inventing tolerances."""
+    if not isinstance(features, list) or not features or len(features) > 10000:
+        raise ValueError('bounded nonempty feature list required')
+    validate_operations(features)
+    seen, steps = set(), []
+    for feature in features:
+        identity = feature.get('id')
+        if not isinstance(identity, str) or not identity or identity in seen:
+            raise ValueError('unique semantic feature id required')
+        dependencies = feature.get('depends_on', [])
+        if not isinstance(dependencies, list) or any(key not in seen for key in dependencies):
+            raise ValueError('feature dependencies must precede the feature')
+        seen.add(identity)
+        checks = feature.get('readback_checks', [])
+        if not isinstance(checks, list):
+            raise ValueError('explicit readback check list required')
+        steps.append({'id': identity, 'kind': feature['kind'], 'depends_on': dependencies,
+            'preconditions': ['owned_document', 'writer_lock_held', 'parameters_confirmed',
+                              'references_resolved', 'prior_steps_readback_complete'],
+            'readback_checks': checks, 'status': 'planned' if checks else 'blocked_missing_readback_checks',
+            'on_api_error': 'stop_current_part', 'on_session_error': 'stop_batch',
+            'cad_executed': False})
+    return {'schema_version': 1, 'steps': steps, 'native_write_allowed': False,
+            'status': 'blocked' if any(not s['readback_checks'] for s in steps) else 'planned_unverified',
+            'production_approved': False}
+
+
 def native_value(row):
     value=row['value'];unit=row.get('unit')
     if type(value) is bool:

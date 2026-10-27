@@ -15,14 +15,16 @@ import traceback
 import uuid
 import zipfile
 
-_SECRET_KEYS={'password','api_key','secret','access_token','authorization','refresh_token'}
+_SECRET_KEYS={'password','api_key','apikey','secret','access_token','authorization',
+              'refresh_token','token','client_secret','cookie','set-cookie','private_key'}
 
 
 def scrub(value):
     if isinstance(value,dict):return {str(k):('[REDACTED]' if str(k).casefold() in _SECRET_KEYS else scrub(v)) for k,v in value.items()}
     if isinstance(value,(list,tuple)):return [scrub(v) for v in value]
     if isinstance(value,str):
-        return re.sub(r'\b(?:sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})\b','[REDACTED]',value)
+        value=re.sub(r'\b(?:sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b','[REDACTED]',value)
+        return re.sub(r'(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*','Bearer [REDACTED]',value)
     if value is None or isinstance(value,(bool,int,float)):return value
     return str(value)
 

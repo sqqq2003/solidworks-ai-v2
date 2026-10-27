@@ -2,6 +2,8 @@
 
 项目工作台覆盖二维 CAD 识别、钣金/滚筒/车件入口、整机参数预检、串行任务与报告。原生 SolidWorks 操作仅在 Windows 独占工作会话执行；Linux 测试只证明离线算法和模拟合同。
 
+2026-10-28 编码批次：批量选择/缩放/K 因子传递、参数审核清单与 I01–I08 融合扩展均为**未测试代码**，不作为当前生产发布。见[长步骤计划与交付边界](docs/development-completion-20261028.md)及[原技能融合计划](docs/skill-integration-plan-20261026.md)。
+
 ```bash
 python -m pip install -r requirements-cloud.txt
 python work/project.py doctor

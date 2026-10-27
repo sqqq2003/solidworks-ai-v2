@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -19,8 +20,8 @@ from solidworks_generator import (
     generate_sheet_metal_with_relief_retries,
     profile_bend_indices,
 )
-from sw_session import SessionOwnershipError, recycle_exclusive_session
-from resume_manifest import fingerprint, verified_output, write_record
+from sw_session import SessionOwnershipError, SwCallTimeoutError, is_com_server_disconnect, recycle_exclusive_session
+from resume_manifest import fingerprint, verified_output, write_record, sha256
 
 logger = logging.getLogger(__name__)
 
@@ -289,7 +290,13 @@ def discover_sheet_parts(analysis: DrawingAnalysis) -> tuple[SheetPartJob, ...]:
             part_bend_indices(analysis, profile_index, stamping_targets=stamping_targets),
             profile_area(profile),
         )
-    annotations = annotate_sheet_parts(located, list(analysis.text_entities))
+    # Text frames must not claim a nearby part's quantity or thickness label.
+    annotation_candidates = [
+        (i, b) for i, b in located
+        if not any(b[0] <= t.x <= b[2] and b[1] <= t.y <= b[3]
+                   for t in analysis.text_entities)
+    ]
+    annotations = annotate_sheet_parts(annotation_candidates, list(analysis.text_entities))
     jobs: list[SheetPartJob] = []
     for sequence, profile_index in enumerate(reading_order(located), start=1):
         bends, area = pending[profile_index]
@@ -333,6 +340,8 @@ def export_all_sheet_parts(
     on_result: Callable[[SheetPartResult], None] | None = None,
     selected_labels: Sequence[str] | None = None,
     jobs: Sequence[SheetPartJob] | None = None,
+    uniform_scale: float | None = None,
+    preserve_circle_holes: bool = False,
 ) -> list[SheetPartResult]:
     """对图上每块外轮廓导出一个 SLDPRT；单件失败跳过并继续。
 
@@ -343,6 +352,12 @@ def export_all_sheet_parts(
     """
 
     from sheet_safety import bend_note_warning
+    if uniform_scale is not None and (type(uniform_scale) not in (int, float)
+                                     or not math.isfinite(uniform_scale) or uniform_scale <= 0):
+        raise ValueError('positive finite batch scale required')
+    if preserve_circle_holes and uniform_scale is None:
+        raise ValueError('circle preservation requires an explicit scale')
+    expected_source_sha256 = sha256(Path(analysis.path))
     warning=bend_note_warning(analysis)
     if warning:raise ValueError(warning)
     ensure_dirs()
@@ -392,6 +407,8 @@ def export_all_sheet_parts(
             analysis, numbered, out_root, thickness_mm, radius_mm, angle_degrees,
             flip_direction, bend_allowance, auto_bend, progress,
             skip_existing, on_result,
+            uniform_scale, preserve_circle_holes,
+            expected_source_sha256,
         )
     finally:
         _swg.CLOSE_SAVED_DOCS = previous_close
@@ -401,9 +418,24 @@ def _export_jobs(
     analysis, numbered_jobs, out_root, thickness_mm, radius_mm, angle_degrees,
     flip_direction, bend_allowance, auto_bend, progress,
     skip_existing=False, on_result=None,
+    uniform_scale=None, preserve_circle_holes=False,
+    expected_source_sha256=None,
 ) -> list[SheetPartResult]:
     results: list[SheetPartResult] = []
     for sequence, job in numbered_jobs:
+        if expected_source_sha256 is not None and sha256(Path(analysis.path)) != expected_source_sha256:
+            raise SessionOwnershipError('source drawing changed during batch; refusing remaining writes')
+        part_analysis = analysis
+        geometry_changed = uniform_scale is not None and not math.isclose(uniform_scale, 1.0, abs_tol=1e-12, rel_tol=0)
+        if geometry_changed:
+            from profile_edit import resize_profile_dimensions
+            bounds = primitive_bounds(analysis.profiles[job.profile_index])
+            # Each part starts from the same source analysis. Never resize a
+            # previous part's already transformed drawing a second time.
+            part_analysis = resize_profile_dimensions(analysis, job.profile_index,
+                width_mm=(bounds[2] - bounds[0]) * uniform_scale,
+                height_mm=(bounds[3] - bounds[1]) * uniform_scale,
+                preserve_circle_holes=preserve_circle_holes)
         part_thickness = resolved_part_thickness(job, thickness_mm)
         filename = format_sheet_part_name(sequence, job.quantity, part_thickness)
         canonical = out_root / filename
@@ -412,6 +444,7 @@ def _export_jobs(
             angle_degrees=angle_degrees, flip_direction=flip_direction,
             bend_allowance=asdict(bend_allowance) if bend_allowance else None,
             auto_bend=auto_bend, primitives=[asdict(p) for p in analysis.primitives],
+            uniform_scale=uniform_scale, preserve_circle_holes=preserve_circle_holes,
             profiles=[asdict(p) for p in analysis.profiles],
             bend_lines=[asdict(p) for p in analysis.bend_lines],
         ), Path(__file__).resolve().parent)
@@ -440,6 +473,7 @@ def _export_jobs(
             )
             if progress:
                 progress(f"拒绝重启 SolidWorks：{error}")
+            raise  # Ownership uncertainty stops the batch before another CAD write.
         except Exception:  # noqa: BLE001
             logger.exception("SolidWorks 内存检查失败，已跳过会话回收")
         output = _unique_part_path(out_root, filename)
@@ -449,9 +483,13 @@ def _export_jobs(
                 f"折弯 {len(job.bend_indices)} 条，板厚 {part_thickness:g} mm）…"
             )
         t0 = time.monotonic()
+        stop_batch = False
         try:
+            if expected_source_sha256 is not None and sha256(Path(analysis.path)) != expected_source_sha256:
+                raise SessionOwnershipError('source drawing changed before native write')
+            import_options = {'cad_import': False} if geometry_changed else {}
             result: GenerationResult = generate_sheet_metal_with_relief_retries(
-                analysis,
+                part_analysis,
                 job.profile_index,
                 job.bend_indices,
                 part_thickness,
@@ -466,7 +504,13 @@ def _export_jobs(
                     if progress
                     else None
                 ),
+                **import_options,
             )
+            if (bend_allowance is not None and auto_bend and job.bend_indices
+                    and not result.auto_bend_abandoned
+                    and (not result.bend_allowance_verified or result.k_factor_readback is None
+                         or not math.isclose(result.k_factor_readback, bend_allowance.k_factor, abs_tol=1e-8))):
+                raise RuntimeError('batch K factor readback missing or different; generated artifact remains unverified')
             item = SheetPartResult(
                 job=job,
                 ok=True,
@@ -504,6 +548,7 @@ def _export_jobs(
                     len(job.bend_indices),
                 )
         except Exception as error:  # noqa: BLE001 - 单件失败不中断整批
+            stop_batch = isinstance(error, (SessionOwnershipError, SwCallTimeoutError, TimeoutError)) or is_com_server_disconnect(error)
             item = SheetPartResult(
                 job=job,
                 ok=False,
@@ -519,6 +564,11 @@ def _export_jobs(
                 on_result(item)
             except Exception:  # noqa: BLE001
                 logger.exception("on_result 回调失败")
+        if stop_batch:
+            logger.error('批量写入已停止：会话归属、超时或断连问题；后续零件未尝试。')
+            if progress:
+                progress('会话不安全，已停止后续写入；请先检查当前任务和日志。')
+            break
     ok = sum(1 for item in results if item.ok)
     manual = [item for item in results if item.ok and item.auto_bend_abandoned]
     partial = [

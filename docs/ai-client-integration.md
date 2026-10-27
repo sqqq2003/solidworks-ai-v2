@@ -29,8 +29,12 @@
 | `solidworks_capabilities` | 查询真实能力与未完成模块 |
 | `solidworks_doctor` | 查看环境，不启动 SolidWorks |
 | `solidworks_run_job` | 执行一项分析、规划或已确认的生成任务 |
+| `solidworks_batch_review` | 只读识别 DXF 批量候选，返回源/代码哈希与未确认参数，不生成 CAD |
+| `solidworks_skill_integration` | 查询原 I01–I08 融合状态；代码存在不等于验收通过 |
 
 客户端先调用能力与环境检查，再分析图纸、检查规划结果。生成前需要明确确认几何与参数；`confirmed: true` 是调用方对确认状态的声明，网关不提供独立人工审批界面。客户端应使用自身工具授权策略控制写操作。
+
+本批未测试扩展支持 `uniform_scale`（正数）与 `preserve_circle_holes`（布尔）传入单件规划/生成。前者只改变平面外形，板厚不跟随；后者仅保持圆孔直径，孔心随外形缩放。曲线与折弯限制仍由现有几何模块检查。本轮没有运行网关、模拟或实机测试，不能视为已验证接口。新增审核工具只接受工作目录内 DXF，不能转换 DWG 或连接原生会话。
 
 示例工具参数：
 

@@ -12,11 +12,17 @@ JOB_SCHEMA = {'type':'object','properties':{
     'confirmed':{'type':'boolean'},'allow_inferred':{'type':'boolean'},
     'profile':{'type':'integer','minimum':1},'variant':{'type':'integer','minimum':0},
     'flip':{'type':'boolean'},'name':{'type':'string'},
+    'uniform_scale':{'type':'number','exclusiveMinimum':0},
+    'preserve_circle_holes':{'type':'boolean'},
     **{k:{'type':'number','exclusiveMinimum':0} for k in
        ('length','width','height','thickness','radius','angle')},
     'k_factor':{'type':'number','minimum':0,'maximum':1}},
     'required':['kind'],'additionalProperties':False}
 TOOLS = [
+    {'name':'solidworks_batch_review','description':'Read-only DXF sheet candidate review with source/code hashes and unconfirmed parameter proposals. Does not generate CAD.',
+     'inputSchema':{'type':'object','properties':{'source':{'type':'string'}},'required':['source'],'additionalProperties':False}},
+    {'name':'solidworks_skill_integration','description':'Show I01-I08 method integration and unverified code status; no CAD access.',
+     'inputSchema':{'type':'object','properties':{},'additionalProperties':False}},
     {'name':'solidworks_capabilities','description':'Discover implemented and pending project capabilities. Does not start CAD.',
      'inputSchema':{'type':'object','properties':{},'additionalProperties':False}},
     {'name':'solidworks_doctor','description':'Inspect execution environment without starting SolidWorks.',
@@ -48,6 +54,16 @@ class Gateway:
     def call(self, name, arguments):
         if not isinstance(arguments,dict):
             raise ValueError('arguments must be an object')
+        if name == 'solidworks_skill_integration':
+            if arguments:
+                raise ValueError('this tool accepts no arguments')
+            from .skill_integration import integration_status
+            return integration_status()
+        if name == 'solidworks_batch_review':
+            if set(arguments) != {'source'}:
+                raise ValueError('exactly one source path required')
+            from .batch_review_manifest import create_manifest
+            return create_manifest(self.path(arguments['source']))
         if name in {'solidworks_capabilities','solidworks_doctor'}:
             if arguments:
                 raise ValueError('this tool accepts no arguments')
@@ -64,7 +80,7 @@ class Gateway:
         job = dict(arguments['job'])
         if set(job) - set(JOB_SCHEMA['properties']):
             raise ValueError('unknown job fields')
-        for field in ('confirmed','allow_inferred','flip'):
+        for field in ('confirmed','allow_inferred','flip','preserve_circle_holes'):
             if field in job and type(job[field]) is not bool:
                 raise ValueError(field+' must be boolean')
         if job.get('kind') == 'parametric' and job.get('action','plan') != 'plan':

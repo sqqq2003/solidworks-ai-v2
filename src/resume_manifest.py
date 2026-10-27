@@ -17,7 +17,9 @@ def fingerprint(source: Path, parameters: dict, code_root: Path) -> str | None:
     """Missing input evidence disables resume rather than trusting an old file."""
     try:
         source_hash = sha256(source)
-        code = {p.name: sha256(p) for p in sorted(code_root.glob('*.py'))}
+        # Nested COM adapters and feature modules affect saved results too.
+        code = {p.relative_to(code_root).as_posix(): sha256(p)
+                for p in sorted(code_root.rglob('*.py')) if '__pycache__' not in p.parts}
         payload = json.dumps(dict(schema=1, source=source_hash, parameters=parameters,
                                   code=code), sort_keys=True, allow_nan=False)
         return hashlib.sha256(payload.encode()).hexdigest()

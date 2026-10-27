@@ -196,6 +196,23 @@ def build_command(job: dict, *, root=ROOT):
                     '--sw-exe',str(executable)])
         for key in ('thickness','radius','angle'):
             cmd.extend(['--'+key,number(job.get(key),key)])
+        k = job.get('k_factor')
+        if k is not None:
+            if type(k) not in (int,float) or not math.isfinite(k) or not 0 <= k <= 1:
+                raise ValueError('explicit K factor from 0 to 1 required for batch')
+            cmd.extend(['--k-factor', str(k)])
+        labels = job.get('selected_labels')
+        if labels is not None:
+            if not isinstance(labels, (list, tuple)) or not labels or any(not isinstance(x, str) or not x for x in labels):
+                raise ValueError('nonempty explicit batch selection required')
+            for label in labels:
+                cmd.extend(['--batch-label', label])
+        if 'uniform_scale' in job:
+            cmd.extend(['--uniform-scale', number(job['uniform_scale'], 'uniform_scale')])
+        if job.get('preserve_circle_holes') is True:
+            if 'uniform_scale' not in job:
+                raise ValueError('circle preservation requires explicit scale')
+            cmd.append('--preserve-circle-holes')
         if job.get('flip') is True:
             cmd.append('--flip')
         return cmd

@@ -513,30 +513,43 @@ def _quantity_only(
 
     thickness_by_index = thickness_by_index or {}
     annotations: dict[int, PartAnnotation] = {}
+    # Match labels to parts first, so one label cannot silently populate several
+    # parts. Ambiguous competing labels leave quantity_source empty for review.
+    claims: dict[int, list[tuple[int, str]]] = {}
+    for text in texts:
+        parsed = parse_quantity_value(str(getattr(text, "text", "") or ""))
+        if parsed is None:
+            continue
+        x = float(getattr(text, "x", 0) or 0)
+        y = float(getattr(text, "y", 0) or 0)
+        height = max(0.0, float(getattr(text, "height", 0) or 0))
+        if not all(math.isfinite(v) for v in (x, y, height)):
+            continue
+        candidates = []
+        for index, (left, bottom, right, top) in items:
+            width, depth = right - left, top - bottom
+            mx = max(50.0, width * .35, height * 4)
+            my = max(100.0, depth * .5, height * 6)
+            dx = max(left - x, 0.0, x - right)
+            dy = max(bottom - (y + height), 0.0, y - top)
+            if dx > mx or dy > my:
+                continue
+            # Near-boundary distance avoids making a small adjacent part lose
+            # solely because a long plate has a distant centre.
+            score = math.hypot(dx / mx, dy / my)
+            candidates.append((score, index))
+        candidates.sort()
+        if not candidates:
+            continue
+        if len(candidates) > 1 and candidates[1][0] - candidates[0][0] < .2:
+            continue
+        claims.setdefault(candidates[0][1], []).append(parsed)
     for index, bounds in items:
         quantity = 1
         quantity_source = ""
-        best_distance = None
-        min_x, min_y, max_x, max_y = bounds
-        margin_x = max(25.0, (max_x - min_x) * 0.35)
-        margin_y = max(25.0, (max_y - min_y) * 0.5)
-        center = ((min_x + max_x) / 2.0, (min_y + max_y) / 2.0)
-        for text in texts:
-            parsed_qty = parse_quantity_value(str(getattr(text, "text", "") or ""))
-            if parsed_qty is None:
-                continue
-            x = float(getattr(text, "x", 0) or 0)
-            y = float(getattr(text, "y", 0) or 0)
-            height = float(getattr(text, "height", 0) or 0)
-            if not (
-                min_x - margin_x <= x <= max_x + margin_x
-                and min_y - margin_y <= y <= max_y + margin_y + height
-            ):
-                continue
-            distance = math.hypot(x - center[0], y - center[1])
-            if best_distance is None or distance < best_distance:
-                best_distance = distance
-                quantity, quantity_source = parsed_qty
+        labels = claims.get(index, [])
+        if len(labels) == 1:
+            quantity, quantity_source = labels[0]
         thickness = thickness_by_index.get(index)
         annotations[index] = PartAnnotation(
             quantity=quantity,

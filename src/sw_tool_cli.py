@@ -94,6 +94,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="把识别 / 建模的详细日志打到标准错误，便于排查",
     )
     parser.set_defaults(auto_bend=True)
+    parser.add_argument('--batch-label', action='append', default=None,
+                        help='批量：只导出该标签；可重复指定；未知标签直接拒绝')
     return parser
 
 
@@ -276,11 +278,21 @@ def run_sheet_batch(args: argparse.Namespace) -> int:
     if out_root.exists() and any(out_root.iterdir()):
         emit("error", message=f"输出目录 {out_root} 已存在且非空，请指定新目录。")
         return 2
-    out_root.mkdir(parents=True, exist_ok=True)
-
     from batch_export import export_all_sheet_parts, discover_sheet_parts
 
     jobs = discover_sheet_parts(analysis)
+    selected = getattr(args, 'batch_label', None)
+    available = {job.label for job in jobs if not job.text_frame}
+    if selected is not None and (not selected or set(selected) - available):
+        raise ValueError('批量选择包含未知零件，请重新识别和确认。')
+    chosen = [job for job in jobs if not job.text_frame and (selected is None or job.label in selected)]
+    allowance = None
+    if any(job.bend_indices for job in chosen) and args.auto_bend:
+        if args.k_factor is None:
+            raise ValueError('批量折弯必须显式提供本单已确认的 --k-factor，不使用通用默认值。')
+        allowance, _ = resolve_bend_allowance_spec(thickness_mm=args.thickness,
+            radius_mm=args.radius, angle_degrees=args.angle, mode='k_factor', k_factor=args.k_factor)
+    out_root.mkdir(parents=True, exist_ok=True)
     emit(
         "progress",
         message=f"识别到 {len(jobs)} 块候选轮廓，开始串行导出到 {out_root}…",
@@ -293,12 +305,18 @@ def run_sheet_batch(args: argparse.Namespace) -> int:
         angle_degrees=args.angle,
         flip_direction=args.flip,
         auto_bend=args.auto_bend,
+        bend_allowance=allowance,
+        uniform_scale=args.uniform_scale,
+        preserve_circle_holes=args.preserve_circle_holes,
+        jobs=jobs,
+        selected_labels=selected,
         output_dir=out_root,
         progress=lambda text: emit("progress", message=text),
     )
 
     ok = sum(1 for item in results if item.ok)
     failed = [item for item in results if not item.ok]
+    unattempted = max(0, len(chosen) - len(results))
     # 单件失败不 emit error（否则 execute_job 会把整批判为 failed）；
     # 通过 done 事件的 failed 计数与 status=degraded 表达局部失败。
     emit(
@@ -307,12 +325,17 @@ def run_sheet_batch(args: argparse.Namespace) -> int:
         total=len(results),
         ok=ok,
         failed=len(failed),
+        unattempted=unattempted,
         output_dir=str(out_root),
         mechanical_acceptance="unverified",
-        status="degraded" if failed else "passed",
+        status="degraded" if failed or unattempted or any(item.status != 'passed' for item in results) else "passed" if results else "review_required",
         parts=[
             {
                 "label": item.job.label,
+                "quantity": item.job.quantity,
+                "quantity_source": item.job.quantity_source,
+                "quantity_confirmed": False,
+                "thickness_source": item.job.thickness_source,
                 "path": str(item.path) if item.path else None,
                 "status": item.status,
                 "bend_count": item.bend_count,
@@ -326,7 +349,7 @@ def run_sheet_batch(args: argparse.Namespace) -> int:
             else f"批量导出完成：成功 {ok}/{len(results)}（{len(failed)} 件失败），目录 {out_root}"
         ),
     )
-    return 3 if failed else 0
+    return 3 if failed or unattempted or not results or any(item.status != 'passed' for item in results) else 0
 
 
 def run_roller(args: argparse.Namespace) -> int:
