@@ -1,0 +1,15 @@
+{
+  "scope": "targeted_fake_COM_and_offline_only",
+  "tests_run": 129,
+  "passed": 128,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [
+    {
+      "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+      "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    }
+  ],
+  "solidworks_live_verified": false,
+  "windows_acceptance": "not_run"
+}

@@ -16,27 +16,6 @@ from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
 from sw_compat.dispatch import unwrap
 
 
-def refuse_registered_instance(lookup):
-    """Read-only preflight; discovery never grants ownership or closes CAD."""
-    app=lookup()
-    if app is not None:
-        raise SessionOwnershipError('existing registered SolidWorks instance; no process spawned. '
-            'Preserve current work and use an operator-prepared dedicated environment; '
-            'do not bypass the owned write gate or automatically close sessions.')
-
-
-def _registered_application():
-    import pythoncom
-    import win32com.client
-    try:
-        return win32com.client.GetActiveObject('SldWorks.Application')
-    except pythoncom.com_error as exc:
-        # MK_E_UNAVAILABLE means no active ROT object. Other discovery failures
-        # are not proof of an empty environment and must fail before spawning.
-        if getattr(exc,'hresult',None)==-2147221021:return None
-        raise SessionOwnershipError('active COM registration probe failed; no process spawned') from exc
-
-
 class WindowsProcessLifetime:
     def __init__(self, executable):
         self.executable = str(executable)
@@ -67,20 +46,16 @@ class WindowsProcessLifetime:
 def _native_candidate(pid):
     import pythoncom
     import win32com.client
-    # Read-only discovery; never Dispatch a ProgID (which can create another PID).
-    try:
-        app = win32com.client.GetActiveObject('SldWorks.Application')
-        if _read_pid(app) == pid:
-            return app
-    except Exception:
-        pass
+    # An existing user session is allowed. Bind only the newly spawned PID's
+    # ROT entry; GetActiveObject can point at the user's older window.
+    expected = f'solidworks_pid_{int(pid)}'
     rot = pythoncom.GetRunningObjectTable()
     for count, moniker in enumerate(rot.EnumRunning()):
-        if count >= 256:
+        if count >= 4096:
             break
         try:
             name = moniker.GetDisplayName(pythoncom.CreateBindCtx(0), None).casefold()
-            if 'solidworks' not in name and 'sldworks' not in name:
+            if name.lstrip('!') != expected:
                 continue
             app = win32com.client.Dispatch(rot.GetObject(moniker))
             if _read_pid(app) == pid:
@@ -133,6 +108,8 @@ class OwnedBinding:
         # code of 0 is required for "stable exit", 139 / 0xC0000005 (-1073741819)
         # is the known teardown-crash class. pending_windows_validation.
         return {'ownership': 'spawned_pid_and_live_handle', 'pid': self.lifetime.pid,
+                'instance_mode': 'new_process_alongside_existing',
+                'connection_policy': 'spawned_pid_rot_only',
                 'image': self.lifetime.executable, 'attached_existing': False,
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
@@ -199,7 +176,6 @@ def owned_solidworks(executable, *, timeout=90):
         raise ValueError('provide the installed SLDWORKS.exe absolute path')
     import pythoncom
     from solidworks_generator import _list_open_document_titles
-    refuse_registered_instance(_registered_application)
     lifetime = WindowsProcessLifetime(path)
     lease.native_launch_attempt = lifetime  # Keep the lifetime handle even on failed proof.
     try:
