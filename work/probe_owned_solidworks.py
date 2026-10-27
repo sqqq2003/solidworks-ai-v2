@@ -1,4 +1,8 @@
-"""Windows ownership smoke check: spawn, verify empty process, exit; no CAD writes."""
+"""Windows ownership smoke: spawn and prove an empty process. No CAD writes.
+
+Success does not require ExitApp. A proved spawn that is left open with an
+empty document list is session_verified. Native CAD acceptance is not claimed.
+"""
 import argparse
 import json
 from pathlib import Path

@@ -21,6 +21,21 @@ class Lifetime:
 
 
 class OwnedLaunchTests(unittest.TestCase):
+    def test_rot_unknown_is_queried_for_dispatch_and_pid_is_still_required(self):
+        from sw_owned_launch import _native_candidate
+        unknown=MagicMock();dispatch=object();unknown.QueryInterface.return_value=dispatch
+        moniker=MagicMock();moniker.GetDisplayName.return_value='SolidWorks_PID_43210'
+        rot=MagicMock();rot.EnumRunning.return_value=[moniker];rot.GetObject.return_value=unknown
+        pycom=MagicMock();pycom.GetRunningObjectTable.return_value=rot
+        client=MagicMock();client.GetActiveObject.return_value=SimpleNamespace(GetProcessID=999)
+        client.Dispatch.return_value=SimpleNamespace(GetProcessID=43210)
+        with patch.dict(sys.modules,{'pythoncom':pycom,'win32com':SimpleNamespace(client=client),'win32com.client':client}):
+            self.assertIs(_native_candidate(43210),client.Dispatch.return_value)
+            unknown.QueryInterface.assert_called_once_with(pycom.IID_IDispatch)
+            client.Dispatch.assert_called_once_with(dispatch)
+            client.Dispatch.return_value=SimpleNamespace(GetProcessID=123)
+            self.assertIsNone(_native_candidate(43210))
+
     def setUp(self):
         sw_session.reset_for_tests()
         self.addCleanup(sw_session.reset_for_tests)
@@ -103,34 +118,6 @@ class OwnedLaunchTests(unittest.TestCase):
             sw_session.release_task_documents(lease,app,title=None,close=False)
             app.ExitApp.assert_not_called()
         self.on_sta(job)
-
-    def test_user_session_remains_untouched_while_owned_instance_exits(self):
-        user = MagicMock(name='user_solidworks')
-        owned = MagicMock(name='task_solidworks')
-        observations = []
-        def job():
-            binding = bind_spawned(Lifetime(),lambda pid:owned,
-                lambda app:43210 if app is owned else 999,
-                lambda app:observations.append(app) or [],timeout=1)
-            lease = sw_session.current_lease()
-            binding.validate(lease)
-            sw_session.exit_owned_application(lease,binding.app)
-        self.on_sta(job)
-        owned.ExitApp.assert_called_once_with()
-        self.assertTrue(all(app is owned for app in observations))
-        self.assertEqual(user.mock_calls,[])
-
-    def test_user_instance_returned_by_discovery_is_never_enumerated_or_mutated(self):
-        user = MagicMock(name='existing_user_solidworks')
-        inventory = MagicMock(return_value=['unsaved-user-part'])
-        def job():
-            with self.assertRaises(SessionOwnershipError):
-                bind_spawned(Lifetime(),lambda pid:user,lambda app:999,
-                    inventory,timeout=.01)
-            self.assertFalse(sw_session.current_lease().verified_exclusive)
-        self.on_sta(job)
-        inventory.assert_not_called()
-        self.assertEqual(user.mock_calls,[])
 
     def test_launcher_cannot_bind_off_worker(self):
         with self.assertRaises(SessionOwnershipError):

@@ -44,7 +44,7 @@ def code_hash():
     root = Path(__file__).parent
     return digest({name: file_hash(root/name) for name in (
         'sheet_metal_pipeline.py', 'sheet_metal_windows.py', 'cad_analyzer.py',
-        'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py',
+        'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py', 'profile_edit.py',
         'bend_allowance.py', 'sw_session.py', 'sw_owned_launch.py',
         'bridge_wiring.py')})
 
@@ -178,6 +178,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
     stage = None
     generated = None
     evidence = None
+    part = None
     ckpt_dir = None
     checkpoints = {}
     resume_stage = None
@@ -275,6 +276,11 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
                              code_sha256=plan['code_sha256'],
                              products=[{'name': part.name, 'sha256': file_hash(part)}],
                              evidence=s1_evidence)
+            if not port.simulated:
+                from sw_session import current_lease
+                live_lease = current_lease()
+                if live_lease is not None:
+                    live_lease.generation_saved = True
             checkpoints = read_checkpoints(ckpt_dir)
         run_lock.heartbeat()
         if resume_stage in (None, 'S0', 'S1'):
@@ -376,6 +382,51 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
                          evidence=s5_evidence)
         return {**result, 'resumed': resume_stage is not None, 'output_dir': str(destination)}
     except Exception as exc:
+        from part_verification import (
+            disconnect_after_saved_product,
+            partial_rebind_after_save,
+            rebind_failure_after_save,
+            saved_generation_after_disconnect,
+        )
+        from sw_session import normalize_com_disconnect
+        reported = normalize_com_disconnect(exc) or exc
+        keep_disconnect = disconnect_after_saved_product(reported, part)
+        keep_rebind = (not keep_disconnect) and rebind_failure_after_save(exc, part)
+        if keep_disconnect or keep_rebind:
+            # SaveAs3 already wrote the part. A later ActiveDoc
+            # MEMBERNOTFOUND or COM drop must not delete it or report
+            # generation as null. ExitApp stays unused.
+            if generated is None and part is not None:
+                generated = {
+                    "path": Path(part).name,
+                    "file_on_disk": True,
+                    "saved_before_rebind": True,
+                }
+            kept = (
+                saved_generation_after_disconnect(generated, reported)
+                if keep_disconnect
+                else partial_rebind_after_save(generated, exc)
+            )
+            crash_file = None
+            if ckpt_dir is not None and Path(ckpt_dir).is_dir():
+                try:
+                    products = [{'name': p.name, 'size': p.stat().st_size}
+                                for p in Path(stage).iterdir() if p.is_file()] \
+                        if stage is not None and Path(stage).is_dir() else []
+                    crash_file = write_crash_package(
+                        root, plan_id=plan_id, error=exc,
+                        checkpoints=read_checkpoints(ckpt_dir), products=products)
+                except Exception:
+                    crash_file = None
+            kept.update({
+                'plan_id': plan_id,
+                'diagnostic_stage': str(stage) if stage is not None and Path(stage).exists() else None,
+            })
+            if crash_file is not None:
+                kept['crash_package'] = str(crash_file)
+            diagnostic = root / ('failure-' + uuid.uuid4().hex + '.json')
+            diagnostic.write_text(json.dumps(kept, ensure_ascii=False, indent=2, default=str)+'\n')
+            return {**kept, 'diagnostic_file': str(diagnostic)}
         recovery = 'not_needed'
         crash_file = None
         if ckpt_dir is not None and Path(ckpt_dir).is_dir():

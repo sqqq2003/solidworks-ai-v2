@@ -606,6 +606,33 @@ def discover_turned_parts(analysis: DrawingAnalysis) -> tuple[TurnedPartPlan, ..
     return tuple(labeled)
 
 
+def finish_turned_generation(output, *, saved, lease, post_save_error, release_error):
+    """Keep a non-empty SLDPRT. Later COM failure is not a hard failure.
+
+    Returns the path when the file stays on disk. Returns None when there is
+    nothing to keep, so the original error still propagates. Does not delete
+    the file and does not call ExitApp.
+    """
+    from part_verification import (
+        PARTIAL_COM_DISCONNECT_STATUS,
+        PARTIAL_REBIND_STATUS,
+        PostSaveRebindFailed,
+        is_member_not_found,
+        product_file_ready,
+    )
+
+    if not saved or not product_file_ready(output):
+        return None
+    disconnected = bool(getattr(lease, "disconnected", False)) if lease is not None else False
+    if lease is not None and (post_save_error is not None or release_error is not None or disconnected):
+        if not getattr(lease, "post_save_outcome", None):
+            if isinstance(post_save_error, PostSaveRebindFailed) or is_member_not_found(post_save_error):
+                lease.post_save_outcome = PARTIAL_REBIND_STATUS
+            else:
+                lease.post_save_outcome = PARTIAL_COM_DISCONNECT_STATUS
+    return str(output)
+
+
 def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     """按件类生成零件。轴类绕局部中心线旋转；六角和方钢凸台拉伸。
 
@@ -631,7 +658,12 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         )
     lease = session.current_lease()
     session.require_model_write(lease)
-    from turned_generate import REVOLVE_AXIS_MARK, build_turned, mm_point_to_m
+    from turned_generate import (
+        REVOLVE_AXIS_MARK,
+        build_turned,
+        mm_point_to_m,
+        revolve_arc_meters,
+    )
 
     build = build_turned(plan)
 
@@ -649,9 +681,13 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
     typed_solidworks = None
     saved = False
     model = None
+    post_save_error = None
     try:
-        pythoncom.CoInitialize()
-        com_initialized = True
+        # The task STA already owns the apartment. A nested CoUninitialize
+        # drops that count and the next call sees a dead proxy.
+        if not getattr(lease, "com_initialized", False):
+            pythoncom.CoInitialize()
+            com_initialized = True
 
         solidworks, _created_here = sw._connect_task_solidworks(lease, win32com, pythoncom)
         # 目标机装的 SolidWorks 版本未必和开发机一致，主版本号要现探测。
@@ -713,15 +749,16 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                         raise sw.SolidWorksGenerationError(f"{name}的旋转轴没有写进草图。")
                 if segments:
                     for piece in segments:
-                        start = mm_point_to_m(piece.start)
-                        end = mm_point_to_m(piece.end)
-                        if piece.kind == "arc" and piece.via is not None:
-                            via = mm_point_to_m(piece.via)
-                            if sketch_manager.Create3PointArc(*start, *via, *end) is None:
+                        if piece.kind == "arc":
+                            # 圆心、起点、终点、方向。三点弧把 via 当成终点，圆角和
+                            # 下一条线对不上，f09/f15/f19 这类带圆角的旋转轮廓就不闭合。
+                            if sketch_manager.CreateArc(*revolve_arc_meters(piece)) is None:
                                 raise sw.SolidWorksGenerationError(
                                     f"{name}有一段圆弧没有写进草图，已中止。"
                                 )
                             continue
+                        start = mm_point_to_m(piece.start)
+                        end = mm_point_to_m(piece.end)
                         if sketch_manager.CreateLine(*start, *end) is None:
                             raise sw.SolidWorksGenerationError(
                                 f"{name}有一段直线没有写进草图，已中止。"
@@ -799,7 +836,7 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                         True,
                         True,
                         0,
-                        0,
+                        0.0,
                         False,
                     )
                 except Exception:
@@ -897,24 +934,147 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
             raise FileExistsError(f"输出已存在：{output}")
         session.require_model_write(lease)
         errors = model.SaveAs3(str(output), 0, 2)
-        from part_verification import assert_native_save
+        from part_verification import (
+            PostSaveComDisconnect,
+            assert_native_save,
+            rebind_model_after_save,
+        )
         assert_native_save(output, errors)
         saved = True
+        if lease is not None:
+            lease.generation_saved = True
+            lease.generation_path = str(output)
+
+        from part_verification import (
+            PostSaveRebindFailed,
+            read_active_document,
+            read_com_property,
+        )
+
+        def _wrap_model(raw):
+            if raw is None:
+                return None
+            return sw._as_interface(type_library, raw, "IModelDoc2")
+
+        def _active_model(app):
+            return _wrap_model(read_active_document(app))
+
+        def _open_saved(app):
+            from part_verification import is_member_not_found
+            saved_path = str(output.resolve())
+            found = None
+            by_name = getattr(app, "GetOpenDocumentByName", None)
+            if callable(by_name):
+                try:
+                    found = by_name(saved_path)
+                except Exception as error:
+                    if not is_member_not_found(error):
+                        raise
+                    found = None
+            if found is None:
+                opener = getattr(app, "OpenDoc6", None)
+                if callable(opener):
+                    opened = opener(saved_path, 1, 1, "", 0, 0)
+                    found = opened[0] if isinstance(opened, tuple) else opened
+            if found is None:
+                try:
+                    found = read_com_property(app, "ActiveDoc")
+                except Exception as error:
+                    if not is_member_not_found(error):
+                        raise
+                    found = None
+            return _wrap_model(found)
+
+        def _saved_title(rebound):
+            try:
+                return read_com_property(rebound, "GetTitle")
+            except Exception as error:
+                from part_verification import is_member_not_found
+                if is_member_not_found(error):
+                    return output.name
+                raise
+
+        rebound_title = document_title
+        try:
+            model, rebound_title = rebind_model_after_save(
+                typed_solidworks,
+                _active_model,
+                _saved_title,
+                lease=lease,
+                open_saved=_open_saved,
+            )
+        except (PostSaveComDisconnect, PostSaveRebindFailed) as error:
+            post_save_error = error
+            from part_verification import product_file_ready
+            if not product_file_ready(output):
+                raise
+            import logging
+            logging.getLogger(__name__).warning(
+                "post-save rebind failed; keeping %s; ExitApp was not called: %s",
+                output,
+                error,
+            )
+        if (
+            lease is not None
+            and document_title
+            and rebound_title
+            and rebound_title != document_title
+            and lease.is_owned_title(document_title)
+        ):
+            lease.rename_owned(document_title, rebound_title)
+        document_title = rebound_title
         return str(output)
     finally:
+        import sys
+        release_error = None
+        keep_previous = False
         try:
+            if lease is not None:
+                keep_previous = bool(lease.keep_application_open)
+                # Close only this document. Do not ExitApp from generation.
+                lease.keep_application_open = True
             application = typed_solidworks if typed_solidworks is not None else solidworks
             if application is not None:
+                # A failed rebind must not CloseDoc through the stale pointer.
+                release_model = None if post_save_error is not None else model
+
+                def _saved_title():
+                    from part_verification import read_com_property
+                    return read_com_property(release_model, "GetTitle")
+
                 session.release_task_documents(
                     lease,
                     application,
                     title=str(document_title) if document_title else None,
                     close=bool(document_title),
-                    resolve_title=(lambda: sw._com_read(model, "GetTitle")) if saved and model is not None else None,
+                    resolve_title=_saved_title if saved and release_model is not None else None,
                 )
+        except Exception as error:
+            release_error = error
         finally:
+            if lease is not None:
+                lease.keep_application_open = keep_previous
             if com_initialized:
                 pythoncom.CoUninitialize()
+        kept = finish_turned_generation(
+            output,
+            saved=saved,
+            lease=lease,
+            post_save_error=post_save_error,
+            release_error=release_error,
+        )
+        pending = sys.exc_info()[1]
+        if kept is not None and (pending is not None or post_save_error is not None or release_error is not None):
+            import logging
+            logging.getLogger(__name__).warning(
+                "turned part kept after post-save COM failure; "
+                "ExitApp was not called: %s",
+                post_save_error or release_error or pending,
+            )
+        if kept is not None and pending is not None:
+            return kept
+        if release_error is not None and pending is None and kept is None:
+            raise release_error
 
 
 def _front_plane(planes):

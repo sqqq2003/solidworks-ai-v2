@@ -73,6 +73,7 @@ class RollerDrawingVariant:
     shaft_thread_designation: str | None = None
     # 无动力轴端中间台阶直径（图上若标了 Φ12/Φ15/Φ50 中的 15）。
     shaft_step_diameter_mm: float | None = None
+    geometry_inferred: bool = False
 
     @property
     def is_powered(self) -> bool:
@@ -963,7 +964,9 @@ def extract_roller_variants_from_geometry(
         if key in seen:
             continue
         seen.add(key)
-        inferred_fields = {"wall_thickness_mm", "shaft_thread_designation"}
+        inferred_fields = {"overall_length_mm", "outer_diameter_mm", "shaft_diameter_mm",
+                           "shaft_projection_mm", "shaft_exposed_mm", "wall_thickness_mm",
+                           "shaft_thread_designation"}
         projection = view["shaft_projection"]
         if projection is None:
             projection = 13.5 if view["powered"] else 5.0
@@ -993,6 +996,7 @@ def extract_roller_variants_from_geometry(
                     if (not view["powered"] and view["step_diameter"] is not None)
                     else None
                 ),
+                geometry_inferred=True,
             )
         )
     return tuple(variants)

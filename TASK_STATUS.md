@@ -264,3 +264,11 @@
 ## AI 会话共存保护补充（2026-10-27）
 
 用户要求保留自己正在使用的 SW。核对现有独立实例所有权保护，不改变或放宽启动器。AI 能力查询新增 session_policy，明确拒绝接管用户会话、关闭用户文档和退出用户应用；隔离失败拒绝执行。新增双实例模拟清理及错误返回用户实例的回归，用户实例未被枚举或修改。完整回归 527 项，523 通过、4 跳过，跨进程锁通过。仅模拟证据；Windows 双实例和未保存文档实测待完成。独立进程不保证桌面焦点或资源完全隔离。
+
+
+## 2026-10-28 private cloud integration
+
+- Integrated desktop UI/logging, batch sheet conversion/resize, drawing and owned-session improvements from the local development snapshot. Customer CAD and local run logs are excluded.
+- Fixed repair CLI test fixture isolation; added pinned pypdf dependency. Simulation runner and marker-only lock probe use isolated test locks, leaving production writer exclusion unchanged.
+- Validation: Windows Python 3.14, 739 tests, 733 passed, 0 failures, 0 errors, 6 skipped; cross-process marker lock passed. Skips cover unavailable customer fixtures/LibreDWG, symlink support and platform-specific cases.
+- Linux 3.11/3.12 regression is triggered by push through cloud-tests.yml. This local result is not Linux or SolidWorks live acceptance. Quantity annotation binding and mechanical/drawing production acceptance remain open.

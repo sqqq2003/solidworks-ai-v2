@@ -289,6 +289,101 @@ def _primitive_midpoint(primitive: Primitive) -> tuple[float, float] | None:
     )
 
 
+def _hole_reference_point(primitive: Primitive) -> tuple[float, float] | None:
+    """孔/槽的参考点（圆心或长圆孔槽心），用于缩放时移动位置。
+
+    圆孔用圆心；长圆孔用包围盒中心（槽心）。非独立圆孔或长圆孔返回 None，
+    表示「保持规格」暂不支持该孔型。
+    """
+    if primitive.kind.upper() == "CIRCLE" and primitive.circle_center is not None:
+        return primitive.circle_center
+    if _looks_like_obround(primitive):
+        min_x, min_y, max_x, max_y = primitive_bounds(primitive)
+        return ((min_x + max_x) / 2.0, (min_y + max_y) / 2.0)
+    return None
+
+
+def _looks_like_obround(primitive: Primitive) -> bool:
+    """长圆孔（槽）：闭合轮廓，由两条平行直边 + 两端半圆弧组成。
+
+    判定为「近似长圆孔」：闭合 LINE_LOOP，且既有直线段又有圆弧段，
+    且非整圆（整圆是 CIRCLE kind，已单独处理）。
+    """
+    if not primitive.closed or primitive.kind.upper() != "LINE_LOOP":
+        return False
+    if primitive.circle_center is not None:
+        return False
+    segments = primitive.curve_segments
+    if len(segments) < 3:
+        return False
+    has_line = any(seg.center is None for seg in segments)
+    has_arc = any(seg.center is not None for seg in segments)
+    return has_line and has_arc
+
+
+def _translate_primitive(
+    primitive: Primitive,
+    dx: float,
+    dy: float,
+) -> Primitive:
+    """整体平移图元，尺寸与形状完全不变。"""
+    move = lambda p: (p[0] + dx, p[1] + dy)
+    segments = tuple(
+        SketchSegment(
+            move(seg.start),
+            move(seg.end),
+            move(seg.center) if seg.center is not None else None,
+            seg.sweep_angle,
+        )
+        for seg in primitive.curve_segments
+    )
+    return replace(
+        primitive,
+        points=tuple(move(p) for p in primitive.points),
+        curve_segments=segments,
+        circle_center=(
+            move(primitive.circle_center)
+            if primitive.circle_center is not None
+            else None
+        ),
+    )
+
+
+def _hole_safe_inside(hole: Primitive, outer: Primitive) -> bool:
+    """保持尺寸平移后的孔，其采样点都必须落在外轮廓内，否则越界。"""
+    if hole.circle_center is not None and hole.circle_radius is not None:
+        x, y = hole.circle_center
+        r = hole.circle_radius
+        return all(
+            _point_in_profile(
+                (x + r * math.cos(t * math.tau / 32), y + r * math.sin(t * math.tau / 32)),
+                outer,
+            )
+            for t in range(32)
+        )
+    samples = hole.points
+    if len(samples) >= 2 and samples[0] == samples[-1]:
+        samples = samples[:-1]
+    return all(_point_in_profile(p, outer) for p in samples)
+
+
+def _holes_overlap(a: Primitive, b: Primitive) -> bool:
+    """两个保持尺寸的孔是否重叠（包围盒 + 中心距粗判）。"""
+    a_min_x, a_min_y, a_max_x, a_max_y = primitive_bounds(a)
+    b_min_x, b_min_y, b_max_x, b_max_y = primitive_bounds(b)
+    if a_max_x < b_min_x or b_max_x < a_min_x or a_max_y < b_min_y or b_max_y < a_min_y:
+        return False
+    ac = _hole_reference_point(a)
+    bc = _hole_reference_point(b)
+    if ac is None or bc is None:
+        # 无法精确判定时，包围盒相交即视为可能重叠，保守阻断。
+        return True
+    dist = math.dist(ac, bc)
+    a_radius = max(a_max_x - a_min_x, a_max_y - a_min_y) / 2.0
+    b_radius = max(b_max_x - b_min_x, b_max_y - b_min_y) / 2.0
+    return dist <= a_radius + b_radius
+
+
 def _primitive_inside_outer(
     primitive: Primitive,
     outer: Primitive,
@@ -325,6 +420,7 @@ def resize_profile_dimensions(
     *,
     width_mm: float | None = None,
     height_mm: float | None = None,
+    preserve_circle_holes: bool = False,
 ) -> DrawingAnalysis:
     """按包围盒一键改所选轮廓的长度（X）或宽度（Y）。
 
@@ -370,6 +466,18 @@ def resize_profile_dimensions(
     bend_indices = set(
         _bend_indices_for_profile(densified_outer, analysis.bend_lines)
     )
+    if preserve_circle_holes:
+        if bend_indices:
+            raise ValueError('孔径保持不变暂不支持带折弯线的零件')
+        unsupported = [
+            i
+            for i in hole_indices
+            if _hole_reference_point(analysis.profiles[i]) is None
+        ]
+        if unsupported:
+            raise ValueError(
+                '孔径保持不变目前仅支持独立圆孔和长圆孔，其他孔型需另行复核'
+            )
     outer_bounds = (min_x, min_y, max_x, max_y)
 
     target_profiles = {profile_index} | hole_indices
@@ -425,6 +533,30 @@ def resize_profile_dimensions(
         scale_y *= corr_y
 
     transformed_profiles = _apply_scales(scale_x, scale_y, prepared_profiles)
+    if preserve_circle_holes:
+        # 保持孔/槽规格：只把孔心（圆孔圆心 / 长圆孔槽心）按比例移动到新位置，
+        # 孔/槽本身的尺寸（孔径、槽宽、槽长）保持不变。
+        def translate_hole(index):
+            hole = analysis.profiles[index]
+            ref = _hole_reference_point(hole)
+            new_ref = _transform_point(
+                ref, center=center, scale_x=scale_x, scale_y=scale_y
+            )
+            dx, dy = new_ref[0] - ref[0], new_ref[1] - ref[1]
+            return _translate_primitive(hole, dx, dy)
+
+        transformed_profiles.update(
+            {i: translate_hole(i) for i in hole_indices}
+        )
+        outer = transformed_profiles[profile_index]
+        kept_holes = [transformed_profiles[i] for i in hole_indices]
+        for hole in kept_holes:
+            if not _hole_safe_inside(hole, outer):
+                raise ValueError('保持孔规格后孔超出零件轮廓，禁止生成')
+        for i, a in enumerate(kept_holes):
+            for b in kept_holes[i + 1:]:
+                if _holes_overlap(a, b):
+                    raise ValueError('保持孔规格后孔发生重叠，禁止生成')
     transformed_bends = _apply_scales(scale_x, scale_y, prepared_bends)
 
     new_profiles = tuple(

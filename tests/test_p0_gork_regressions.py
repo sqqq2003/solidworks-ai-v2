@@ -16,6 +16,14 @@ import sw_tool_cli
 
 
 class GorkRegressions(unittest.TestCase):
+    def test_explicit_red_bend_note_without_detected_bends_blocks_generation(self):
+        args=sw_tool_cli.build_parser().parse_args(['--mode','sheet','--input','test.dxf','--out','out.SLDPRT'])
+        analysis=SimpleNamespace(texts=('红色线为折弯线，折弯90度',),bend_lines=())
+        with patch('sw_tool_cli.analyze_cad_file',return_value=analysis), patch('sw_tool_cli.emit') as emit, patch('sw_tool_cli.generate_sheet_metal_with_relief_retries') as generate:
+            self.assertEqual(sw_tool_cli.run_sheet(args),1)
+            generate.assert_not_called()
+            self.assertIn('没有识别到折弯线',emit.call_args.kwargs['message'])
+
     def test_custom_allowance_typed_before_property_writes(self):
         raw, typed = MagicMock(), SimpleNamespace()
         fm = SimpleNamespace(CreateCustomBendAllowance=lambda:raw)

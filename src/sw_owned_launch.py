@@ -11,8 +11,11 @@ import subprocess
 import sys
 import time
 
+from owned_document_lifetime import (
+    DEFAULT_EXIT_POLL_SECONDS, adopt_leased_reference_documents, prepare_owned_inventory,
+)
 from sw_session import (SessionOwnershipError, ProcessProbeInfo, current_lease,
-    on_task_sta, claim_spawned_process, require_model_write, exit_owned_application)
+    on_task_sta, claim_spawned_process, require_model_write)
 
 
 class WindowsProcessLifetime:
@@ -60,7 +63,11 @@ def _native_candidate(pid):
             name = moniker.GetDisplayName(pythoncom.CreateBindCtx(0), None).casefold()
             if 'solidworks' not in name and 'sldworks' not in name:
                 continue
-            app = win32com.client.Dispatch(rot.GetObject(moniker))
+            # ROT returns IUnknown. Query IDispatch before wrapping; otherwise
+            # pywin32 calls GetTypeInfo on PyIUnknown and silently misses every
+            # secondary instance whenever GetActiveObject points at another PID.
+            dispatch = rot.GetObject(moniker).QueryInterface(pythoncom.IID_IDispatch)
+            app = win32com.client.Dispatch(dispatch)
             if _read_pid(app) == pid:
                 return app
         except Exception:
@@ -69,8 +76,16 @@ def _native_candidate(pid):
 
 
 def _read_pid(app):
-    value = getattr(app, 'GetProcessID')
-    return int(value() if callable(value) else value)
+    """Read the owned PID. A dead IDispatch becomes ComSessionDisconnected."""
+    from sw_session import normalize_com_disconnect
+    try:
+        value = getattr(app, 'GetProcessID')
+        return int(value() if callable(value) else value)
+    except Exception as exc:
+        normalized = normalize_com_disconnect(exc)
+        if normalized is not None:
+            raise normalized from exc
+        raise
 
 
 class OwnedBinding:
@@ -79,18 +94,120 @@ class OwnedBinding:
         self.read_pid, self.list_titles = read_pid, list_titles
         self.cleanup_status = 'not_attempted'
         self.cleanup_error = None
+        self.cleanup_disconnect = None
         self.keepalive_verified = False
+        self.anchor_created = False
+        self.anchor_closed = False
+        self.rediscover = None
+        self.rebind_attempted = False
+
+    def _read_connection(self):
+        image_ok = self.lifetime.probe(self.lifetime.pid) is not None
+        return image_ok, self.read_pid(self.app)
+
+    def rebind_owned_pid(self, lease):
+        """One rediscovery of this task's PID. A dead IDispatch is not a new process."""
+        if self.rebind_attempted:
+            return False
+        self.rebind_attempted = True
+        discover = self.rediscover
+        if discover is None or self.lifetime.probe(self.lifetime.pid) is None:
+            return False
+        try:
+            app = discover(self.lifetime.pid)
+            if app is None or self.read_pid(app) != self.lifetime.pid:
+                return False
+        except Exception:
+            return False
+        self.app = app
+        lease.note_bound_application(app)
+        lease.disconnected = False
+        lease.writes_blocked = False
+        if not lease.poisoned and not lease.timed_out:
+            lease.verified_exclusive = True
+        return True
+
+    def rebind_for_inventory(self, lease):
+        """Rediscover this task's PID after a document-walk disconnect.
+
+        Does not consume the one-shot GetProcessID rebind and does not ExitApp.
+        The caller limits how many times a single listing may ask.
+        """
+        discover = self.rediscover
+        if discover is None or self.lifetime.probe(self.lifetime.pid) is None:
+            return False
+        try:
+            app = discover(self.lifetime.pid)
+            if app is None or self.read_pid(app) != self.lifetime.pid:
+                return False
+        except Exception:
+            return False
+        self.app = app
+        lease.note_bound_application(app)
+        lease.disconnected = False
+        lease.writes_blocked = False
+        if not lease.poisoned and not lease.timed_out:
+            lease.verified_exclusive = True
+        return True
+
+    def _read_connection_or_rebind(self, lease):
+        from sw_session import normalize_com_disconnect
+        try:
+            return self._read_connection()
+        except Exception as exc:
+            normalized = normalize_com_disconnect(exc)
+            if normalized is not None and self.rebind_owned_pid(lease):
+                try:
+                    return self._read_connection()
+                except Exception as again:
+                    exc = again
+                    normalized = normalize_com_disconnect(again) or normalized
+            if normalized is None:
+                raise
+            lease.verified_exclusive = False
+            lease.writes_blocked = True
+            lease.disconnected = True
+            raise normalized from exc
 
     def validate(self, lease, *, documents=True):
-        if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+        from sw_session import normalize_com_disconnect
+        image_ok, com_pid = self._read_connection_or_rebind(lease)
+        if not image_ok or com_pid != self.lifetime.pid:
             lease.verified_exclusive = False
             lease.writes_blocked = True
             raise SessionOwnershipError('launched process lifetime/COM PID no longer matches')
         if documents:
+            from sw_session import InventoryWalkDisconnected
+
+            def _rebind_inventory():
+                if self.rebind_for_inventory(lease):
+                    return self.app
+                return None
+
             try:
-                titles = set(self.list_titles(self.app))
+                # Retry racy startup enumeration before poisoning the lease.
+                # Default blanks (零件N / PartN) are adopted and closed here.
+                # A transient disconnect mid-walk rebinds this PID and rewalks.
+                titles = set(prepare_owned_inventory(
+                    lease, self.app, self.list_titles, rebind=_rebind_inventory,
+                ))
+                # Referenced parts/drawings loaded by an owned model are part of
+                # this task. A document that model does not reference stays foreign.
+                if titles - set(lease.owned_docs) and lease.owned_docs:
+                    adopt_leased_reference_documents(lease, self.app)
             except Exception as exc:
+                from part_verification import is_member_not_found
+                normalized = normalize_com_disconnect(exc)
                 lease.writes_blocked = True
+                if normalized is not None or is_member_not_found(exc):
+                    lease.verified_exclusive = False
+                    lease.disconnected = True
+                    if isinstance(exc, InventoryWalkDisconnected):
+                        raise
+                    raise InventoryWalkDisconnected(
+                        "document inventory walk disconnected during GetNext; "
+                        "writes refused; ExitApp was not called"
+                    ) from exc
                 raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
             foreign = titles - set(lease.owned_docs)
             if foreign:
@@ -113,12 +230,16 @@ class OwnedBinding:
                 'image': self.lifetime.executable, 'attached_existing': False,
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,
+                'cleanup_disconnect': self.cleanup_disconnect,
                 'cleanup_exit_code': self.lifetime.process.poll(),
-                'keepalive_policy': 'user_control_true_before_intermediate_close',
+                'keepalive_policy': 'close_doc_only_keep_alive_exit_not_required',
+                'exit_poll_seconds': DEFAULT_EXIT_POLL_SECONDS,
+                'anchor_created': self.anchor_created, 'anchor_closed': self.anchor_closed,
                 'keepalive_verified': self.keepalive_verified}
 
 
-def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump=None):
+def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump=None,
+        rediscover=None):
     """Injectable proof logic; must run under the real task STA/OS writer lock."""
     lease = current_lease()
     if lease is None or not on_task_sta():
@@ -135,11 +256,14 @@ def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump
         except Exception:
             matches = False
         if matches:
-            # Failure or nonempty inventory is a hard failure, not an empty list.
-            titles = list_titles(app)
-            if titles:
+            # User documents are a hard failure. Startup blanks of this PID are
+            # adopted and closed; a racy empty title is retried, not a claim miss.
+            titles = prepare_owned_inventory(lease, app, list_titles)
+            unowned = [title for title in titles if title not in lease.owned_docs]
+            if unowned:
                 raise SessionOwnershipError('new process contains unowned documents; no writes allowed')
             binding = OwnedBinding(lifetime, app, read_pid, list_titles)
+            binding.rediscover = rediscover
             lease.attached_existing = False
             lease.created_by_task = True
             lease.shared_com_bound = True
@@ -160,6 +284,47 @@ def bind_spawned(lifetime, candidate, read_pid, list_titles, *, timeout=90, pump
     raise SessionOwnershipError(f'COM registration did not match spawned PID {lifetime.pid}; process left untouched')
 
 
+def suppress_saved_cleanup_error(binding, lease) -> bool:
+    """Clear a post-save cleanup error so the context does not discard the path.
+
+    Foreign documents still fail. A cleared error is ``partial_com_disconnect``
+    unless the disconnect status is already the sheet-metal saved name.
+    ExitApp is not called.
+    """
+    from owned_document_lifetime import cleanup_mentions_foreign_documents
+
+    if not getattr(binding, "cleanup_error", None) or not getattr(lease, "generation_saved", False):
+        return False
+    if cleanup_mentions_foreign_documents(binding.cleanup_error):
+        return False
+    marker = str(binding.cleanup_error)
+    folded = marker.casefold()
+    partial = (
+        binding.cleanup_status in {
+            "saved_com_disconnected_after_generation",
+            "partial_com_disconnect",
+        }
+        or "没有连接到服务器" in marker
+        or "-2147220995" in marker
+        or "objnotconnected" in folded
+        or "disconnected" in folded
+        or "com_error" in folded
+        or "ComSessionDisconnected" in marker
+        or "inventory unavailable" in folded
+        or "document enumeration failed" in folded
+        or "partial_com_disconnect" in folded
+    )
+    if not partial:
+        return False
+    binding.cleanup_disconnect = binding.cleanup_disconnect or marker
+    binding.cleanup_error = None
+    if binding.cleanup_status != "saved_com_disconnected_after_generation":
+        binding.cleanup_status = "partial_com_disconnect"
+    if getattr(lease, "post_save_outcome", None) is None:
+        lease.post_save_outcome = "partial_com_disconnect"
+    return True
+
+
 @contextmanager
 def owned_solidworks(executable, *, timeout=90):
     if sys.platform != 'win32':
@@ -178,26 +343,38 @@ def owned_solidworks(executable, *, timeout=90):
     lease.native_launch_attempt = lifetime  # Keep the lifetime handle even on failed proof.
     try:
         binding = bind_spawned(lifetime, _native_candidate, _read_pid,
-            _list_open_document_titles, timeout=timeout, pump=pythoncom.PumpWaitingMessages)
+            _list_open_document_titles, timeout=timeout, pump=pythoncom.PumpWaitingMessages,
+            rediscover=_native_candidate)
     except Exception as exc:
         lease.writes_blocked = True
         raise SessionOwnershipError(f"spawned PID {lifetime.pid} is unproven and left open: {exc}") from exc
+    body_failed = False
     try:
         yield binding
+    except BaseException:
+        body_failed = True
+        raise
     finally:
-        lease.keep_application_open = False
-        # Never terminate a process or close any unknown document on failure.
-        # Exit only if lifetime, PID, lease and zero-document inventory still prove it.
-        try:
-            binding.validate(lease)
-            require_model_write(lease)
-            if binding.list_titles(binding.app):
-                raise SessionOwnershipError('task documents remain; process left open for recovery')
-            exit_owned_application(lease, binding.app)
-            binding.cleanup_status = 'exit_requested'
-        except Exception as exc:
-            binding.cleanup_status = 'left_open_for_recovery'
-            binding.cleanup_error = str(exc)
+        # CloseDoc only. finish_owned_session does not call ExitApp. A disconnect
+        # after a saved part is a warning, not a failed session.
+        from owned_document_lifetime import finish_owned_session, release_closed_session_references
+        finish_owned_session(lease, binding)
+        release_closed_session_references(lease, binding)
+        # A part already on disk must survive a dead GetProcessID or a failed
+        # inventory in this finally. Raising here discards the result and the
+        # CLI exits 1.
+        if suppress_saved_cleanup_error(binding, lease):
             import logging
-            logging.getLogger(__name__).exception('owned process left open; no forced cleanup')
+            logging.getLogger(__name__).warning(
+                "saved part kept after cleanup/inventory COM failure: %s",
+                binding.cleanup_disconnect,
+            )
+        if binding.cleanup_error and not body_failed:
+            import logging
+            logging.getLogger(__name__).error(
+                'owned cleanup requires review: %s', binding.cleanup_error)
+            error = SessionOwnershipError(
+                'owned session cleanup failed: ' + binding.cleanup_error)
+            error.native_session_evidence = binding.evidence()
+            raise error
 

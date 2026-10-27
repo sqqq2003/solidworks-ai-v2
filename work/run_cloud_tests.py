@@ -11,6 +11,10 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 os.chdir(ROOT)
+# This entrypoint runs simulated jobs only: never contend with a live CAD writer.
+import sw_session
+sw_session._WRITER_MUTEX_NAME = 'Local\\A01CloudTests-' + str(os.getpid())
+sw_session._WRITER_LOCK_FILE = Path(__import__('tempfile').gettempdir()) / ('a01-cloud-tests-' + str(os.getpid()) + '.lock')
 output = ROOT / 'results/cloud'
 output.mkdir(parents=True, exist_ok=True)
 suite = unittest.TestLoader().discover(str(ROOT / 'tests'))
@@ -30,15 +34,15 @@ try:
         "envelope_mm": parametric_plan["target_envelope_mm"],
         "pending_mapping": [row["mapping_id"] for row in parametric_plan["pending_mapping"]],
         "cad_executed": False,
-        "sw_live": "not_applicable_on_linux",
+        "sw_live": "not_run_simulation_only",
     }
 except Exception as exc:  # reported, not hidden
-    a01_parametric = {"status": "failed", "error": str(exc), "sw_live": "not_applicable_on_linux"}
+    a01_parametric = {"status": "failed", "error": str(exc), "sw_live": "not_run_simulation_only"}
 report = dict(scope='portable_simulation_only', platform=platform.system(), python=platform.python_version(),
               tests_run=result.testsRun, passed=result.testsRun-len(result.errors)-len(result.failures)-len(result.skipped),
               failures=len(result.failures), errors=len(result.errors), skipped=[dict(test=str(test), reason=reason) for test, reason in result.skipped],
               pending_feature_cases=pending, cross_process_lock_passed=probe.returncode == 0,
-              solidworks_live_verified=False, sw_live='not_applicable_on_linux',
+              solidworks_live_verified=False, sw_live='not_run_simulation_only',
               a01_parametric=a01_parametric)
 from project_workbench import capabilities, doctor
 report['whole_project'] = capabilities()
