@@ -597,6 +597,11 @@ def discover_turned_parts(analysis: DrawingAnalysis) -> tuple[TurnedPartPlan, ..
             except ValueError:
                 continue
             found.append((plan.bounds, plan))
+    # Candidates containing drawing text need review; do not silently revolve a
+    # legend box into a tube. This is conservative and may exclude annotated parts.
+    found = [(bounds, plan) for bounds, plan in found
+             if not any(bounds[0] <= note.x <= bounds[2] and bounds[1] <= note.y <= bounds[3]
+                        for note in analysis.text_entities)]
     found.sort(key=lambda item: (-item[0][3], item[0][0]))
     labeled: list[TurnedPartPlan] = []
     for sequence, (_bounds, plan) in enumerate(found, start=1):

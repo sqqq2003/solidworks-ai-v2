@@ -261,7 +261,11 @@ def part_bend_indices(
     若该件被「打码焊接线，不用折弯」文字标注（见 ``stamping_target_indices``），
     其上的红线是打码线而非折弯线，返回空折弯。
     """
-    if stamping_targets and profile_index in stamping_targets:
+    if stamping_targets is None:
+        located = [(index, primitive_bounds(analysis.profiles[index]))
+                   for index in candidate_profile_indices(analysis.profiles, include_enclosed=False)]
+        stamping_targets = stamping_target_indices(analysis, located)
+    if profile_index in stamping_targets:
         return ()
     profile = analysis.profiles[profile_index]
     holes = [

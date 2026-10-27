@@ -6,7 +6,8 @@ import hashlib
 
 def inspect_sheet_batch(path):
     from cad_analyzer import analyze_cad_file,primitive_bounds
-    from batch_export import discover_sheet_parts
+    from batch_export import discover_sheet_parts, stamping_target_indices
+    from profile_selection import candidate_profile_indices
     from sheet_safety import bend_note_warning
     source=Path(path).resolve(strict=True)
     if source.suffix.casefold()!='.dxf':
@@ -14,6 +15,9 @@ def inspect_sheet_batch(path):
     before=hashlib.sha256(source.read_bytes()).hexdigest()
     analysis=analyze_cad_file(source)
     jobs=discover_sheet_parts(analysis)
+    located=[(i,primitive_bounds(analysis.profiles[i]))
+             for i in candidate_profile_indices(analysis.profiles,include_enclosed=False)]
+    marking=stamping_target_indices(analysis,located)
     rows=[]
     for job in jobs:
         b=primitive_bounds(analysis.profiles[job.profile_index])
@@ -22,7 +26,10 @@ def inspect_sheet_batch(path):
         row.update(bounds_mm=list(b), text_inside=text_inside,
                    quantity_detected=bool(job.quantity_source),
                    quantity_confirmed=False, thickness_confirmed=False,
-                   review_status='可能是文字框，需排除或确认' if text_inside else '候选零件，需确认')
+                   stamping_line=job.profile_index in marking,
+                   review_status=('可能是文字框，需排除或确认' if text_inside else
+                                  '打码焊接线，不折弯；仍需逐件确认' if job.profile_index in marking else
+                                  '候选零件，需确认'))
         rows.append(row)
     if hashlib.sha256(source.read_bytes()).hexdigest()!=before:raise ValueError('图纸读取期间发生变化，请重新检查。')
     warning=bend_note_warning(analysis)

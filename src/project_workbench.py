@@ -222,10 +222,12 @@ def build_command(job: dict, *, root=ROOT):
         if not out_dir:
             raise ValueError('batch export requires output_dir')
         out_path = Path(out_dir).expanduser().resolve()
-        if out_path.exists() and any(out_path.iterdir()):
+        if out_path.exists() and any(out_path.iterdir()) and job.get('skip_existing') is not True:
             raise ValueError('batch output directory already exists and is not empty')
         cmd.extend(['--batch','--batch-out-dir',str(out_path),
                     '--sw-exe',str(executable)])
+        if job.get('skip_existing') is True:
+            cmd.append('--skip-existing')
         for key in ('thickness','radius','angle'):
             cmd.extend(['--'+key,number(job.get(key),key)])
         k = job.get('k_factor')

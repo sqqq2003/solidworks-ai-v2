@@ -26,6 +26,7 @@ class ExportAllOptions:
     k_factor: float | None = None
     uniform_scale: float = 1.0
     preserve_circle_holes: bool = False
+    skip_existing: bool = False
 
 
 @dataclass(frozen=True)
@@ -254,6 +255,7 @@ def ask_export_all_options(
     k_var = tk.StringVar(value=k_factor)
     scale_var = tk.StringVar(value=uniform_scale)
     preserve_var = tk.BooleanVar(value=False)
+    resume_var = tk.BooleanVar(value=False)
     add_number(next_row + 1, "默认板厚", thickness_var, "mm")
     add_number(next_row + 2, "折弯半径", radius_var, "mm")
     add_number(next_row + 3, "折弯角度", angle_var, "°")
@@ -261,6 +263,8 @@ def ask_export_all_options(
     add_number(next_row + 5, "外形缩放倍数", scale_var, "1=不改；板厚不缩放")
     ttk.Checkbutton(body, text="圆孔孔径保持不变，孔心随外形缩放", variable=preserve_var).grid(
         row=next_row + 6, column=0, columnspan=3, sticky='w', pady=4)
+    ttk.Checkbutton(body, text="断点续跑：只跳过校验一致的完成件，不覆盖旧模型", variable=resume_var).grid(
+        row=next_row + 7, column=0, columnspan=3, sticky='w', pady=4)
 
     hint = ttk.Label(
         body,
@@ -268,7 +272,7 @@ def ask_export_all_options(
         foreground="#555555",
         wraplength=440,
     )
-    hint.grid(row=next_row + 7, column=0, columnspan=3, sticky="w", pady=(10, 0))
+    hint.grid(row=next_row + 8, column=0, columnspan=3, sticky="w", pady=(10, 0))
     refresh_summary()
 
     buttons = ttk.Frame(dialog, padding=(18, 8, 18, 16))
@@ -302,6 +306,7 @@ def ask_export_all_options(
                 k_factor=k,
                 uniform_scale=_parse_positive(scale_var.get(), '缩放倍数'),
                 preserve_circle_holes=preserve_var.get(),
+                skip_existing=resume_var.get(),
             )
         except ValueError as error:
             messagebox.showwarning("参数无效", str(error), parent=dialog)

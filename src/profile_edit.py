@@ -463,9 +463,10 @@ def resize_profile_dimensions(
 
     center = ((min_x + max_x) / 2.0, (min_y + max_y) / 2.0)
     hole_indices = set(contained_hole_indices(analysis.profiles, profile_index))
-    bend_indices = set(
-        _bend_indices_for_profile(densified_outer, analysis.bend_lines)
-    )
+    # Use the same semantic bend/mark classification as single and batch export.
+    # A classifier error propagates: never silently guess marking or bending.
+    from batch_export import part_bend_indices
+    bend_indices = set(part_bend_indices(analysis, profile_index))
     if preserve_circle_holes:
         if bend_indices:
             raise ValueError('孔径保持不变暂不支持带折弯线的零件')

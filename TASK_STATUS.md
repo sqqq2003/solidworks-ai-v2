@@ -295,3 +295,18 @@ Baseline: 016fcac on dev/code-completion-20261028. User instruction remains no t
 - Updated I02/I03 capability coverage and documentation. Unverified code is not engineering approval; production drawings, assembly motion, full hole/bend geometry equivalence, crash continuation and target-machine packaging remain open.
 
 Details: docs/reviewed-batch-and-transactions.md. No customer CAD/logs or old test outputs are part of this commit.
+
+## 2026-10-28 user-perspective report reconciliation (code-only)
+
+Reviewed local 用户视角全面体验排查报告.json, SHA256 079d2185831ff55bc2bf8049b990f9a36d4864fcac1ebcafb867dc2ac6fe0d0f. The report names detached baseline 4344f222 with uncommitted edits; it is not evidence for current cloud branch fce4f5c or this patch. Current desktop code contains fixes absent from the integration branch, but also lacks newer provenance/session guards, so files were not overlaid wholesale.
+
+Evidence discrepancy: the report states 726 all passing with 5 skipped; the available sibling 集中回归测试.log explicitly says Ran 715 tests and OK (skipped=5). The referenced 726-run raw log and exact source hashes are not supplied in that report. Its native 4/4 means artifacts created, including flat/manual-bend fallbacks, not successful automatic completion or production acceptance of four folded parts.
+
+Differential integration implemented without executing tests:
+- Common part_bend_indices marking classification is now used by single generation, analysis and resize; preflight exposes marking classification while retaining quantity-confirmed=false for detected proposals. Classifier failure propagates rather than silently choosing a bend interpretation.
+- Strict SM3dBend feature-count observations cover all/group/single attempts. Missing or mismatched counts do not claim success. A count mismatch aborts this possibly partial document to the outer source rebuild rather than retrying on mutated topology. Counting features is a conservative pilot check, not full fold geometry verification or proof of a universal SW limitation.
+- Turned candidates enclosing drawing text are filtered conservatively; complex-assembly micro-contour rejection remains open. Annotated genuine parts may also be excluded and need review.
+- Ordinary batch --skip-existing is wired to workbench and export dialog. Only content-bound verified artifacts skip; newer code fingerprints invalidate old evidence. Reviewed-batch automatic continuation remains deliberately unsupported.
+- Retained the existing self-contained repair CLI fixture from the cloud branch; did not replace it with a cross-test-module import.
+
+No tests, native operation, compilation or portable rebuild executed for this reconciliation. Broad error-message localization is not claimed completed in the integrated branch. The current desktop shortcut still requires a separately built/validated package before it includes these changes. Original report, desktop checkout, customer files and old logs remain unchanged; raw reports/logs are not uploaded.

@@ -96,6 +96,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.set_defaults(auto_bend=True)
     parser.add_argument('--batch-label', action='append', default=None,
                         help='批量：只导出该标签；可重复指定；未知标签直接拒绝')
+    parser.add_argument('--skip-existing', action='store_true',
+                        help='批量续跑：仅跳过输入、参数、源码及输出哈希均匹配的完成件')
     return parser
 
 
@@ -114,16 +116,23 @@ def _largest_closed_profile_index(analysis) -> int:
 
 
 def describe_drawing(analysis) -> dict[str, object]:
+    from batch_export import part_bend_indices, stamping_target_indices
+    from cad_analyzer import primitive_bounds
+    from profile_selection import candidate_profile_indices
+    located = [(i, primitive_bounds(analysis.profiles[i]))
+               for i in candidate_profile_indices(analysis.profiles, include_enclosed=False)]
+    stamping_targets = stamping_target_indices(analysis, located)
     profiles = []
     for index, profile in enumerate(analysis.profiles):
         if not getattr(profile, "closed", False):
             continue
-        bends = profile_bend_indices(profile, analysis.bend_lines)
+        bends = part_bend_indices(analysis, index, stamping_targets=stamping_targets)
         profiles.append(
             {
                 "index": index + 1,
                 "area_mm2": round(profile_area(profile), 2),
                 "bend_count": len(bends),
+                "stamping_line": index in stamping_targets,
             }
         )
     profiles.sort(key=lambda item: item["area_mm2"], reverse=True)
@@ -142,6 +151,9 @@ def describe_drawing(analysis) -> dict[str, object]:
         "path": str(analysis.path),
         "profile_count": len(profiles),
         "bend_line_count": len(analysis.bend_lines),
+        "stamping_line_count": sum(len(profile_bend_indices(analysis.profiles[i], analysis.bend_lines))
+                                   for i in stamping_targets),
+        "line_count_scope": "raw_red_line_candidates; per-profile bend counts exclude marking lines",
         "profiles": profiles,
         "roller_variants": variants,
         "warnings": [warning] if (warning := bend_note_warning(analysis)) else [],
@@ -275,8 +287,9 @@ def run_sheet_batch(args: argparse.Namespace) -> int:
         emit("error", message="批量导出需要 --batch-out-dir 指定新输出目录。")
         return 2
     out_root = Path(args.batch_out_dir).expanduser().resolve()
-    if out_root.exists() and any(out_root.iterdir()):
-        emit("error", message=f"输出目录 {out_root} 已存在且非空，请指定新目录。")
+    skip_existing = bool(getattr(args, 'skip_existing', False))
+    if out_root.exists() and any(out_root.iterdir()) and not skip_existing:
+        emit("error", message=f"输出目录 {out_root} 已存在且非空；请指定新目录或明确选择断点续跑。")
         return 2
     from batch_export import export_all_sheet_parts, discover_sheet_parts
 
@@ -310,6 +323,7 @@ def run_sheet_batch(args: argparse.Namespace) -> int:
         preserve_circle_holes=args.preserve_circle_holes,
         jobs=jobs,
         selected_labels=selected,
+        skip_existing=skip_existing,
         output_dir=out_root,
         progress=lambda text: emit("progress", message=text),
     )

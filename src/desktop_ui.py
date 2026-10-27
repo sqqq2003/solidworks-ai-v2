@@ -779,7 +779,7 @@ class Workbench:
             part_count=len(real),
             bent_count=sum(1 for j in real if j.bend_indices),
             labeled_count=0,
-            initial_dir=str(Path(source).parent),
+            initial_dir=str(Path(source).parent/'SW-批量导出'),
             thickness=self.values['thickness'].get().strip(),
             radius=self.values['radius'].get().strip(),
             angle=self.values['angle'].get().strip(),
@@ -807,6 +807,7 @@ class Workbench:
                 'uniform_scale':options.uniform_scale,
                 'preserve_circle_holes':options.preserve_circle_holes,
                 'selected_labels':selected,
+                'skip_existing':options.skip_existing,
             })
         except Exception as exc:
             self.journal.exception('sheet_batch_export_confirm_failed',exc)

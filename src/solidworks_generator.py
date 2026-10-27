@@ -2569,6 +2569,16 @@ def _features(model: Any, module: Any) -> list[Any]:
     return features
 
 
+def _count_bend_features(model: Any, module: Any) -> int:
+    """Conservative feature-count observation, not bend geometry acceptance.
+
+    Read failures propagate. This pilot assumes one SM3dBend per requested
+    line; an ambiguous representation must be reviewed, never called success.
+    """
+    return sum(str(_com_read(feature, 'GetTypeName2')) == 'SM3dBend'
+               for feature in _features(model, module))
+
+
 def _latest_profile_sketch(
     model: Any,
     module: Any,
@@ -3929,6 +3939,7 @@ def _create_bends_with_fallbacks_impl(
         started = time.monotonic()
         try:
             _ensure_time("attempt")
+            before_bends = _count_bend_features(model, module)
             _create_bend_feature(
                 model,
                 part,
@@ -3949,6 +3960,15 @@ def _create_bends_with_fallbacks_impl(
                 outer_profile=outer_profile,
                 diagnostic_events=event["native_attempts"],
             )
+            created = _count_bend_features(model, module) - before_bends
+            event.update(expected_bend_features=len(indices), observed_bend_features=created,
+                         geometry_verified=False)
+            if created != len(indices):
+                error = BendRejectedError(indices, relief_step=relief_step)
+                # This document may already contain a partial fold. Retry only
+                # from the outer source rebuild, not on the mutated topology.
+                error.discard_partial_document = True
+                raise error
         except Exception as error:
             event.update(status="failed", error_kind=type(error).__name__)
             raise
@@ -3967,6 +3987,8 @@ def _create_bends_with_fallbacks_impl(
     except ComDisconnectedBendError:
         raise
     except BendRejectedError as error:
+        if getattr(error, 'discard_partial_document', False):
+            raise
         if len(bend_indices) <= 1 or time.monotonic() >= deadline:
             logger.warning(
                 "auto-bend rejected bends=%s relief_step=%d; defer to relief/flat",
@@ -3991,7 +4013,9 @@ def _create_bends_with_fallbacks_impl(
                     _attempt(group)
                 except ComDisconnectedBendError:
                     raise
-                except BendRejectedError:
+                except BendRejectedError as error:
+                    if getattr(error, 'discard_partial_document', False):
+                        raise
                     pending.extend(group)
         else:
             pending = list(bend_indices)
@@ -4004,7 +4028,9 @@ def _create_bends_with_fallbacks_impl(
                 _attempt((index,))
             except ComDisconnectedBendError:
                 raise
-            except BendRejectedError:
+            except BendRejectedError as error:
+                if getattr(error, 'discard_partial_document', False):
+                    raise
                 failed.append(index)
         if not failed:
             return len(bend_indices)
