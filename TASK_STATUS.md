@@ -282,3 +282,16 @@ Implemented code: quantity uniqueness/ambiguity handling; parameter provenance/d
 Full sequence and explicit limitations: docs/development-completion-20261028.md. Original integration numbering preserved in docs/skill-integration-plan-20261026.md. All changes remain code_present_unverified. Full native geometry transaction, native review-to-batch execution adapter, production drawing/PDF acceptance and target-machine packaging validation remain open.
 
 Delivery: private development branch dev/code-completion-20261028. Do not merge or release as production until a separately authorized verification round. This branch is outside the current cloud-tests push trigger; no new test workflow dispatched. Customer CAD, local test logs and credentials are excluded.
+
+## 2026-10-28 code-only continuation: reviewed batch and observed part changes
+
+Baseline: 016fcac on dev/code-completion-20261028. User instruction remains no tests, no app/native execution. This batch has no new test results.
+
+- Added prepare_execution/execute_reviewed_batch adapter to existing sheet export and save/reopen functions. Exact candidate identity, per-part confirmed settings, new output folders, source/review hashes, task ownership and serial STA remain required. Partial receipt separates retained/unverified artifacts and unattempted parts.
+- Added read-only-default work/run_reviewed_batch.py and a reviewed_batch workbench action with source/options/manifest content binding. Native execution requires explicit flags and host configuration. Session cleanup uncertainty stops the surrounding queue.
+- Added a Tk review editor, save/open workflow and existing-queue integration; no Tk window was opened in this coding batch.
+- Added optional A01 geometry_contracts and before/after/reopened observation transactions for mapped millimetre part dimensions. Missing explicit checks, targets, bindings or tolerances block this path. Failure preserves an unverified receipt; no rollback of saved files is claimed.
+- Added read-only AI execution-plan tool restricted to explicit workspace paths. Native reviewed-batch execution is not exposed in the AI tool schema.
+- Updated I02/I03 capability coverage and documentation. Unverified code is not engineering approval; production drawings, assembly motion, full hole/bend geometry equivalence, crash continuation and target-machine packaging remain open.
+
+Details: docs/reviewed-batch-and-transactions.md. No customer CAD/logs or old test outputs are part of this commit.

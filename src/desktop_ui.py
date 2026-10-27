@@ -121,6 +121,7 @@ class Workbench:
         self.button(nav,'三视图 / BOM',self.open_drawing).pack(fill='x',padx=12,pady=2)
         self.button(nav,'DXF 图纸概览',self.open_dxf_overview).pack(fill='x',padx=12,pady=2)
         self.button(nav,'钣金批量预检',self.open_sheet_batch_review).pack(fill='x',padx=12,pady=2)
+        self.button(nav,'逐件审核清单',self.open_reviewed_sheet_manifest).pack(fill='x',padx=12,pady=2)
         self.button(nav,'技能融合进度',self.show_skill_integration).pack(fill='x',padx=12,pady=2)
         self.button(nav,'尺寸试改预检',self.native_review).pack(fill='x',padx=12,pady=2)
         tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=20)
@@ -670,12 +671,68 @@ class Workbench:
                         save_manifest(manifest,destination)
                         self.journal.record('sheet_review_saved',path=destination,source_sha256=manifest['source_sha256'])
                         messagebox.showinfo('已保存','已保存候选清单；数量、板厚、缩放和孔径策略仍需确认。',parent=win)
+                        self.open_reviewed_sheet_manifest(destination)
                     except Exception as exc:
                         self.journal.exception('sheet_review_save_failed',exc)
                         messagebox.showerror('保存失败',str(exc),parent=win)
                 self.button(bar,'保存审核清单…',save_review).pack(side='right',padx=6)
                 self.button(bar,'开始导出…',lambda:self.start_sheet_batch_export(source,win)).pack(side='right')
         threading.Thread(target=inspect,daemon=True).start();win.after(150,poll_result)
+
+    def open_reviewed_sheet_manifest(self,path=None):
+        from tkinter import filedialog,messagebox
+        if self.state['busy']:return
+        if not path:
+            path=filedialog.askopenfilename(parent=self.root,title='打开逐件审核清单',filetypes=[('审核清单','*.json')])
+        if not path:return
+        try:
+            from sheet_review_ui import open_review_editor
+            open_review_editor(self.root,path,on_queue=self.queue_reviewed_sheet_batch)
+        except Exception as exc:
+            self.journal.exception('sheet_review_editor_failed',exc)
+            messagebox.showerror('清单无法打开',str(exc),parent=self.root)
+
+    def queue_reviewed_sheet_batch(self,path):
+        from tkinter import filedialog,messagebox
+        if self.state['busy']:
+            messagebox.showinfo('正在运行','请等待当前任务结束后再加入审核批次。',parent=self.root)
+            return
+        try:
+            from batch_review_manifest import load_manifest
+            from reviewed_batch import prepare_execution
+            from project_workbench import confirm_job,build_command
+            from datetime import datetime
+            import uuid
+            manifest=load_manifest(path)
+            plan=prepare_execution(manifest)
+            if plan['blockers']:
+                raise ValueError('审核尚未完成：\n'+'\n'.join(plan['blockers'][:25]))
+            sw_exe=self.values['sw_exe'].get().strip()
+            if not sw_exe:
+                raise ValueError('请先选择 SolidWorks 程序。')
+            parent=filedialog.askdirectory(parent=self.root,title='选择批次输出的上级目录，将新建独立子目录')
+            if not parent:return
+            output=Path(parent)/('审核批次-'+datetime.now().strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6])
+            summary='\n'.join(e['label']+f" · 数量 {e['quantity']} · 缩放 {e['parameters']['scale']:g}"
+                              for e in plan['entries'][:12])
+            if not messagebox.askyesno('加入审核批次',f"本批 {len(plan['entries'])} 件，将按逐件参数生成独立工作副本。\n{summary}\n\n输出：{output}\n加入队列后仍需点击运行。",parent=self.root):return
+            job=confirm_job({'kind':'sheet','action':'reviewed_batch','name':Path(plan['source']).name+'（逐件审核）',
+                'source':plan['source'],'review_manifest':str(Path(path).resolve()),'output_dir':str(output),
+                'sw_exe':sw_exe,'timeout_seconds':1800})
+            build_command(job)
+            if not self.state['jobs']:
+                for item in self.table.get_children():self.table.delete(item)
+                self.row_ids=[]
+            self.state['jobs'].append(job)
+            item=self.table.insert('','end',values=(MODES['sheet'][0],job['name'],'待运行'))
+            self.row_ids.append(item)
+            self.queue_count.set(f"{len(self.state['jobs'])} 项待运行")
+            self.status.set('就绪');self._sync_buttons()
+            self.journal.record('reviewed_sheet_batch_queued',review_sha256=job['review_sha256'],parts=len(plan['entries']))
+            self.add_message('审核批次已加入队列',f"{len(plan['entries'])} 件 · 输出：{output}\n生成后仍需机械尺寸和图纸验收。")
+        except Exception as exc:
+            self.journal.exception('reviewed_sheet_batch_queue_failed',exc)
+            messagebox.showerror('未创建批次',str(exc),parent=self.root)
 
     def show_skill_integration(self):
         from skill_integration import integration_status

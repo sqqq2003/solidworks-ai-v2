@@ -9,6 +9,32 @@ _METRICS = {'body_count':'count','volume_mm3':'mm3',
             'extent_x_mm':'mm','extent_y_mm':'mm','extent_z_mm':'mm'}
 
 
+def require_check_contract(checks):
+    """Strict write-time contract; read-only comparison stays more permissive."""
+    if not isinstance(checks, list) or not checks or len(checks) > 1000:
+        raise ValueError('bounded nonempty geometry checks required before a write')
+    seen = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            raise ValueError('geometry check must be an object')
+        field, mode = check.get('field'), check.get('mode')
+        if not isinstance(field, str) or not (field in _METRICS or field.startswith('dimension:') and field[10:]):
+            raise ValueError('unsupported geometry metric')
+        if mode not in {'target', 'delta', 'unchanged', 'changed'}:
+            raise ValueError('unsupported geometry mode')
+        if check.get('unit') != _METRICS.get(field, 'mm'):
+            raise ValueError('explicit matching geometry unit required')
+        if (field, mode) in seen:
+            raise ValueError('duplicate geometry check')
+        seen.add((field, mode))
+        tolerance = _number(check.get('tolerance'), 'geometry tolerance')
+        if tolerance < 0:
+            raise ValueError('negative geometry tolerance')
+        if mode in {'target', 'delta'}:
+            _number(check.get('value'), 'geometry target')
+    return checks
+
+
 def _number(value, name):
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise ValueError(name + ' must be finite')

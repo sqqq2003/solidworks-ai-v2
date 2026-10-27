@@ -118,6 +118,12 @@ def validate_manifest(manifest, *, source=None, check_code=True):
     identifiers, indices = set(), set()
     for part in parts:
         identity = part['id']
+        index = part['profile_index']
+        if type(index) is not int or index < 0 or identity != f'profile-{index + 1}':
+            raise ValueError('part id must be bound to its nonnegative profile index')
+        bends = part['bend_indices']
+        if not isinstance(bends, list) or any(type(i) is not int or i < 0 for i in bends) or len(set(bends)) != len(bends):
+            raise ValueError('unique nonnegative bend indices required')
         if identity in identifiers or part['profile_index'] in indices:
             raise ValueError('duplicate part or profile identity')
         identifiers.add(identity)

@@ -31,6 +31,7 @@
 | `solidworks_run_job` | 执行一项分析、规划或已确认的生成任务 |
 | `solidworks_batch_review` | 只读识别 DXF 批量候选，返回源/代码哈希与未确认参数，不生成 CAD |
 | `solidworks_skill_integration` | 查询原 I01–I08 融合状态；代码存在不等于验收通过 |
+| `solidworks_review_execution_plan` | 读取工作区内审核清单与 DXF，预备逐件执行条目；不启动 CAD、不写文件 |
 
 客户端先调用能力与环境检查，再分析图纸、检查规划结果。生成前需要明确确认几何与参数；`confirmed: true` 是调用方对确认状态的声明，网关不提供独立人工审批界面。客户端应使用自身工具授权策略控制写操作。
 

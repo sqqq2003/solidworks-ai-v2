@@ -35,6 +35,9 @@ def main(argv=None):
     plans = commands.add_parser('plan-jobs', help='转换为现有工作台规划任务，不生成零件')
     plans.add_argument('--manifest', required=True)
     plans.add_argument('--source')
+    execution = commands.add_parser('execution-plan', help='预备逐件原生参数与输出目录；不运行、不启动CAD')
+    execution.add_argument('--manifest', required=True)
+    execution.add_argument('--source')
     commands.add_parser('integration', help='显示 I01–I08 代码融合状态')
     args = parser.parse_args(argv)
     try:
@@ -48,7 +51,10 @@ def main(argv=None):
             save_manifest(result, args.output)
         else:
             result = load_manifest(args.manifest)
-            if args.action == 'plan-jobs':
+            if args.action == 'execution-plan':
+                from reviewed_batch import prepare_execution
+                result = prepare_execution(result, source=args.source)
+            elif args.action == 'plan-jobs':
                 from batch_review_manifest import compile_plan_jobs
                 result = compile_plan_jobs(result, source=args.source)
             elif args.action == 'check':

@@ -44,6 +44,59 @@ def find_named_feature(model, name):
 
 
 class A01ProductionDriver(ManufacturingDriver):
+    def apply_mapped_dimensions_observed(self, edits, copies, contracts):
+        """Opt-in I02/I03 three-phase observation path; not live-qualified."""
+        from owned_part_transaction import change_owned_part
+        from batch_review_manifest import file_hash
+        from geometry_evidence import require_check_contract
+        prepared = []
+        seen = set()
+        # Check every file binding before the first edit. Only isolated parts
+        # are supported here; legacy assembly/angle editing remains separate.
+        for edit in edits:
+            source = Path(edit['document']).resolve(strict=True)
+            path = copies.get(str(source))
+            if not path or edit['unit'] != 'mm' or source.suffix.casefold() != '.sldprt':
+                raise ValueError('observed dimension requires an isolated millimetre part mapping')
+            copy = self.owned_path(path).resolve(strict=True)
+            if source.samefile(copy):
+                raise ValueError('source and work copy share the same file identity')
+            contract = contracts[edit['parameter']]
+            require_check_contract(contract['checks'])
+            if contract.get('confirmed') is not True or not contract.get('confirmed_by'):
+                raise ValueError('observed change requires a reviewed geometry contract')
+            if file_hash(source) != contract.get('source_sha256'):
+                raise ValueError('observed edit source changed before batch')
+            if contract.get('dimensions_mm', {}).get(edit['parameter']) != edit['dimension']:
+                raise ValueError('observed edit dimension binding mismatch')
+            key = (str(copy), edit['configuration'], edit['dimension'])
+            if key in seen:
+                raise ValueError('duplicate native dimension in observed edit batch')
+            seen.add(key)
+            prepared.append((edit, source, copy, contract))
+        evidence = []
+        for edit, source, copy, contract in prepared:
+            def apply(model, edit=edit):
+                self.guard()
+                if find_named_feature(model, edit['feature']) is None:
+                    raise RuntimeError('mapped feature missing before observed change')
+                dimension = model.Parameter(edit['dimension'])
+                if dimension is None:
+                    raise RuntimeError('mapped dimension missing before observed change')
+                value = edit['value'] / 1000
+                if int(dimension.SetSystemValue3(value, 3, [edit['configuration']])) != 0:
+                    raise RuntimeError('native observed dimension write refused')
+                return {'parameter': edit['parameter'], 'target_mm': edit['value'],
+                        'native_acceptance': 'pending_geometry_readback'}
+            receipt = change_owned_part(self, source_path=source,
+                source_sha256=contract['source_sha256'], work_copy=copy,
+                document_key=str(source), configuration=edit['configuration'],
+                step_id='mapped-' + edit['parameter'] + '-' + uuid.uuid4().hex,
+                checks=contract['checks'], dimensions_mm=contract['dimensions_mm'], apply_change=apply)
+            evidence.append({'parameter': edit['parameter'], 'transaction': receipt,
+                             'geometry_verified': False, 'production_approved': False})
+        return evidence
+
     def _save(self,model):
         self.guard()
         self.verify_references(model)

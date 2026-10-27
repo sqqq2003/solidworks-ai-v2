@@ -20,7 +20,7 @@ MODES = {'sheet','roller','turned'}
 
 def uses_native_session(job):
     """DWG analysis may import/export in SW even without generating a part."""
-    return job.get('kind') in MODES and (job.get('action') in ('generate', 'batch') or (
+    return job.get('kind') in MODES and (job.get('action') in ('generate', 'batch', 'reviewed_batch') or (
         Path(job.get('source', '')).suffix.casefold() == '.dwg' and bool(job.get('sw_exe'))))
 
 
@@ -28,6 +28,13 @@ def confirm_job(job):
     """Bind review to input bytes and every generation option; return a copy."""
     job = dict(job)
     job['source_sha256'] = hashlib.sha256(Path(job['source']).read_bytes()).hexdigest()
+    if job.get('action') == 'reviewed_batch':
+        from batch_review_manifest import file_hash, load_manifest
+        from parameter_ledger import digest
+        manifest_path = Path(job['review_manifest']).resolve(strict=True)
+        job['review_manifest'] = str(manifest_path)
+        job['review_manifest_sha256'] = file_hash(manifest_path)
+        job['review_sha256'] = digest(load_manifest(manifest_path))
     job['confirmed'] = True
     job['confirmation_digest'] = confirmation_digest(job)
     return job
@@ -166,11 +173,36 @@ def build_command(job: dict, *, root=ROOT):
     if kind not in MODES:
         raise ValueError('unknown job kind')
     action = job.get('action','analyze')
-    if action not in {'analyze','plan','generate','batch'}:
+    if action not in {'analyze','plan','generate','batch','reviewed_batch'}:
         raise ValueError('unknown action')
     source = Path(job['source']).expanduser().resolve()
     if not source.is_file() or source.suffix.casefold() not in {'.dwg','.dxf'}:
         raise ValueError('source must be an existing DWG/DXF file')
+    if action == 'reviewed_batch':
+        from batch_review_manifest import file_hash, load_manifest, validate_manifest
+        from parameter_ledger import digest
+        if kind != 'sheet' or source.suffix.casefold() != '.dxf':
+            raise ValueError('reviewed batch requires sheet kind and DXF')
+        if (job.get('confirmed') is not True or job.get('source_sha256') != file_hash(source)
+                or job.get('confirmation_digest') != confirmation_digest(job)):
+            raise ValueError('reviewed source/options changed; confirm current job')
+        manifest_path = Path(job['review_manifest']).resolve(strict=True)
+        manifest = load_manifest(manifest_path)
+        if job.get('review_manifest_sha256') != file_hash(manifest_path) or job.get('review_sha256') != digest(manifest):
+            raise ValueError('review manifest changed after confirmation')
+        review = validate_manifest(manifest, source=source)
+        if review['blockers']:
+            raise ValueError('review manifest incomplete: ' + ', '.join(review['blockers']))
+        executable = Path(job.get('sw_exe', '')).resolve()
+        if not executable.is_file() or executable.name.casefold() != 'sldworks.exe':
+            raise ValueError('installed SLDWORKS.exe required for reviewed batch')
+        if not job.get('output_dir') or Path(job['output_dir']).resolve().exists():
+            raise ValueError('reviewed batch requires a new output directory')
+        return [sys.executable, '-X', 'utf8', str(Path(root) / 'work/run_reviewed_batch.py'),
+                '--manifest', str(manifest_path), '--source', str(source),
+                '--out-dir', str(Path(job['output_dir']).resolve()), '--review-sha256', job['review_sha256'],
+                '--execute-reviewed', '--sw-exe', str(executable),
+                '--timeout-seconds', number(job.get('timeout_seconds', 600), 'timeout_seconds')]
     cmd = [sys.executable,'-X','utf8',str(Path(root)/'src/sw_tool_cli.py'),
            '--mode',kind,'--input',str(source)]
     if action == 'batch':

@@ -80,9 +80,39 @@ def prepare_request(request):
                 raise ValueError('drawing dimension references must be confirmed')
             if not Path(task['template']).is_file() or not Path(task['bom_template']).is_file():
                 raise ValueError('existing drawing/BOM templates required')
+    contracts = request.get('geometry_contracts')
+    if contracts is not None:
+        from geometry_evidence import require_check_contract
+        from datetime import datetime
+        if not isinstance(contracts, dict) or set(contracts) != {e['parameter'] for e in edits}:
+            raise ValueError('one explicit geometry contract per mapped parameter required')
+        seen_targets = set()
+        for edit in edits:
+            if edit['unit'] != 'mm' or Path(edit['document']).suffix.casefold() != '.sldprt':
+                raise ValueError('observed geometry transactions currently support millimetre part edits only')
+            target = (edit['document'], edit['configuration'], edit['dimension'])
+            if target in seen_targets:
+                raise ValueError('duplicate physical dimension in observed edit batch')
+            seen_targets.add(target)
+            contract = contracts[edit['parameter']]
+            if not isinstance(contract, dict) or contract.get('confirmed') is not True or not contract.get('confirmed_by'):
+                raise ValueError('geometry contract requires explicit reviewer confirmation')
+            stamp = datetime.fromisoformat(contract.get('confirmed_at', ''))
+            if stamp.utcoffset() is None:
+                raise ValueError('geometry contract confirmation needs timezone')
+            if contract.get('source_sha256') != request['document_sha256'][edit['document']]:
+                raise ValueError('geometry contract source hash mismatch')
+            bindings = contract.get('dimensions_mm')
+            if not isinstance(bindings, dict) or bindings.get(edit['parameter']) != edit['dimension']:
+                raise ValueError('geometry contract must include the exact edited dimension binding')
+            checks = require_check_contract(contract.get('checks'))
+            if not any(c['field'] == 'dimension:' + edit['parameter'] and c['mode'] == 'target'
+                       and c.get('value') == edit['value'] for c in checks):
+                raise ValueError('geometry contract must check the actual requested dimension target')
     return dict(status='ready_for_native',source_assembly=str(source),configuration=request['configuration'],
                 source_sha256=request['source_sha256'],edits=edits,mates=mates,references=refs,
-                drawing_plan=drawings,cad_executed=False,engineering_acceptance='unverified')
+                drawing_plan=drawings,geometry_contracts=contracts,
+                cad_executed=False,engineering_acceptance='unverified')
 
 
 def execute_request(request,driver,destination):
@@ -91,7 +121,10 @@ def execute_request(request,driver,destination):
     root=Path(destination)
     copied=driver.pack_and_go(plan['source_assembly'],root/'refs',plan['configuration'])
     copies=driver.receipt['events'][-1]['copies']
-    edits=driver.apply_mapped_dimensions(plan['edits'],copies)
+    if plan['geometry_contracts'] is not None:
+        edits=driver.apply_mapped_dimensions_observed(plan['edits'],copies,plan['geometry_contracts'])
+    else:
+        edits=driver.apply_mapped_dimensions(plan['edits'],copies)
     mate_evidence=driver.apply_persistent_mates(copied,plan['configuration'],plan['mates'],plan['references'])
     checks=driver.inspect_native(copied)
     if checks.get('interference_count',0):

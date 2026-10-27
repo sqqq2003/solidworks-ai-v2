@@ -4,6 +4,8 @@
 
 2026-10-28 编码批次：批量选择/缩放/K 因子传递、参数审核清单与 I01–I08 融合扩展均为**未测试代码**，不作为当前生产发布。见[长步骤计划与交付边界](docs/development-completion-20261028.md)及[原技能融合计划](docs/skill-integration-plan-20261026.md)。
 
+继续编码已增加[逐件审核窗口、审核批次队列与三阶段几何记录](docs/reviewed-batch-and-transactions.md)，同样未测试。新原生入口默认只预备计划，不能据此宣称实机或生产验收通过。
+
 ```bash
 python -m pip install -r requirements-cloud.txt
 python work/project.py doctor

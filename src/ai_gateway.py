@@ -19,6 +19,9 @@ JOB_SCHEMA = {'type':'object','properties':{
     'k_factor':{'type':'number','minimum':0,'maximum':1}},
     'required':['kind'],'additionalProperties':False}
 TOOLS = [
+    {'name':'solidworks_review_execution_plan','description':'Read a workspace review JSON and DXF and prepare per-part execution entries without starting CAD or writing files.',
+     'inputSchema':{'type':'object','properties':{'manifest':{'type':'string'},'source':{'type':'string'}},
+                    'required':['manifest','source'],'additionalProperties':False}},
     {'name':'solidworks_batch_review','description':'Read-only DXF sheet candidate review with source/code hashes and unconfirmed parameter proposals. Does not generate CAD.',
      'inputSchema':{'type':'object','properties':{'source':{'type':'string'}},'required':['source'],'additionalProperties':False}},
     {'name':'solidworks_skill_integration','description':'Show I01-I08 method integration and unverified code status; no CAD access.',
@@ -54,6 +57,15 @@ class Gateway:
     def call(self, name, arguments):
         if not isinstance(arguments,dict):
             raise ValueError('arguments must be an object')
+        if name == 'solidworks_review_execution_plan':
+            if set(arguments) != {'manifest', 'source'}:
+                raise ValueError('explicit workspace-relative manifest and source required')
+            from .batch_review_manifest import load_manifest
+            from .reviewed_batch import prepare_execution
+            manifest_path = self.path(arguments['manifest'])
+            source_path = self.path(arguments['source'])
+            # Never follow an arbitrary source path embedded in review JSON.
+            return prepare_execution(load_manifest(manifest_path), source=source_path)
         if name == 'solidworks_skill_integration':
             if arguments:
                 raise ValueError('this tool accepts no arguments')

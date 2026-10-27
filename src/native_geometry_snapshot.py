@@ -24,8 +24,8 @@ def capture_owned_part(driver, model, *, source_path, source_sha256, document_ke
     writer lease. Body boxes are approximate; output cannot certify shape,
     mating, dimensions, material or manufacturing.
     """
-    if phase not in {'before','after'} or not isinstance(step_id,str) or not step_id.strip():
-        raise ValueError('explicit step id and before/after phase required')
+    if phase not in {'before','after','reopened'} or not isinstance(step_id,str) or not step_id.strip():
+        raise ValueError('explicit step id and before/after/reopened phase required')
     if not isinstance(source_sha256,str) or not re.fullmatch('[0-9a-f]{64}',source_sha256):
         raise ValueError('confirmed source SHA256 required')
     if not isinstance(document_key,str) or not document_key.strip() or not isinstance(configuration,str) or not configuration.strip():
@@ -40,7 +40,7 @@ def capture_owned_part(driver, model, *, source_path, source_sha256, document_ke
             raise RuntimeError('snapshot requires the exact task-owned document handle')
         copy=driver.owned_path(str(sw._com_read(model,'GetPathName')))
         baseline=Path(source_path).resolve(strict=True)
-        if not baseline.is_file() or not copy.is_file() or baseline==copy:
+        if not baseline.is_file() or not copy.is_file() or baseline.samefile(copy):
             raise RuntimeError('source baseline and owned work copy must be distinct files')
         if _sha(baseline)!=source_sha256:
             raise RuntimeError('source baseline hash changed')
