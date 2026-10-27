@@ -32,6 +32,9 @@ class NativeMachineDriver:
             import solidworks_generator as sw
             raw,_ = sw._connect_task_solidworks(self.lease,win32com,pythoncom)
             self.app = sw._as_interface(sw.ensure_solidworks_typelib(),raw,'ISldWorks')
+            # PR #18 r3: typed wrappers have a distinct identity. Bind once and
+            # reuse this exact instance for OpenDoc/CloseDoc; never reconnect.
+            self.lease.note_bound_application(self.app)
         return self.app
 
     def owned_path(self,path):
