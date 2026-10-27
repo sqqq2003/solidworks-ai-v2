@@ -254,3 +254,9 @@
   - Issue #39：7c787deb（`Keep owned SolidWorks alive across S1 close and S2 reopen`）已在代码侧修复 S1→S2 保活根因（UserControl=True + 严格读回、CloseDoc 前再核验、显式 SAFEARRAY(double)），并附 `docs/s2-retest-20261024.md` 精确串行重测跑法；但新补丁实机通过仍待 WB/Qoder 串行重测（同一受控 PID 跨 S1 关最后文档 → S2 重开 → 重建读回 → 展开导出，`keepalive_verified=true`）；`_pid_alive` 的 Windows 分支已用 `_windows_pid_alive`（属 def70f3 一批）；WB-TEST-001 的同名测试在 dev 树内无对应项，修复认领以 def70f3 为据，待重测确认；#39 本身仍 open，不急于关闭。
   - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
   - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。
+
+## AI-GATEWAY-001：本机 AI 通用调用入口（2026-10-27）
+
+用户明确优先同一台 Windows 电脑上的 AI 客户端。新增 MCP stdio 与带令牌的回环 HTTP API，模型无关工具 Schema，共享现有 workbench 执行、确认摘要、原生会话所有权与恢复锁。默认关闭原生写入，主机配置 SLDWORKS.exe 才可启用；路径限制在指定工作目录；参数规划必须显式选择 GT-ZX / QL-5050PX。当前暴露能力发现、环境检查、钣金/滚筒/车件分析规划与生成、整机包围尺寸规划；装配制造专用接口尚未全部暴露。
+
+基于远端 aca899b，同步其他开发者新增模块后回归 525 项，521 通过、4 跳过、无错误失败，跨进程锁通过。接口新增测试 10 项；HTTP 回环真实请求和 MCP 子进程握手通过。Windows AI 客户端和 SolidWorks 原生操作仍待本机实测。配置见 docs/ai-client-integration.md。

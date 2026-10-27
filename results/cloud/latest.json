@@ -2,8 +2,8 @@
   "scope": "portable_simulation_only",
   "platform": "Linux",
   "python": "3.12.14",
-  "tests_run": 385,
-  "passed": 381,
+  "tests_run": 525,
+  "passed": 521,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -84,6 +84,16 @@
         "id": "parametric",
         "state": "offline_implemented_pending_mapping",
         "entry": "src.a01_parametric.cli"
+      },
+      {
+        "id": "ql5050px",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "work/project.py ql"
+      },
+      {
+        "id": "ql_assembly_bom_drawing",
+        "state": "offline_implemented_pending_native",
+        "entry": "ql5050px.workflow"
       },
       {
         "id": "assembly_mates_motion",
