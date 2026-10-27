@@ -1,0 +1,10 @@
+{
+  "diagnostic_archive_sha256": "51e1b84ab87f773eff562663d7d00165cd44cb2b937c4f81dbd92eae0d787e3b",
+  "observed_error": "SessionOwnershipError: refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership",
+  "failed_jobs": 2,
+  "stage": "DWG import before model generation",
+  "doctor_pass_is_native_acceptance": false,
+  "status": "pending_windows_validation",
+  "base_commit": "ac97e2af0a429c86e9ce26f39ac77816f2fd8675",
+  "portable_distribution_requires_rebuild": true
+}

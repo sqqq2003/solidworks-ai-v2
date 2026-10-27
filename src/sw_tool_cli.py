@@ -52,7 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", choices=("sheet", "roller", "turned"), required=True)
     parser.add_argument("--input", required=True, help="DWG / DXF 图纸路径")
     parser.add_argument("--out", help="输出 .SLDPRT 路径；--analyze-only 时可省略")
-    parser.add_argument("--plan-only", action="store_true", help="只输出特征计划，不连接 SolidWorks")
+    parser.add_argument("--plan-only", action="store_true", help="只输出特征计划；DWG 在显式指定 --sw-exe 时允许转换，不生成零件")
     parser.add_argument("--allow-inferred", action="store_true", help="明确允许滚筒通用默认值；这些不是 OEM 实测数据")
     parser.add_argument("--verify-reopen", action="store_true", help="生成后关闭重开并核对实体尺寸")
     parser.add_argument("--analyze-only", action="store_true", help="只识别图纸并汇报，不建模")
@@ -316,7 +316,8 @@ def main(argv: list[str] | None = None) -> int:
     LOGGER.debug("详细日志：%s", configured or log_file_path())
     try:
         runner = {"sheet":run_sheet,"roller":run_roller,"turned":run_turned}[args.mode]
-        if args.sw_exe is not None and not args.analyze_only and not args.plan_only:
+        needs_conversion = Path(args.input).suffix.casefold() == '.dwg'
+        if args.sw_exe is not None and (needs_conversion or (not args.analyze_only and not args.plan_only)):
             from sw_owned_launch import owned_solidworks
             from sw_session import run_on_task_sta
             def owned_job():
@@ -325,7 +326,7 @@ def main(argv: list[str] | None = None) -> int:
                     rc = runner(args)
                 emit("session_end", **binding.evidence())
                 return rc
-            return run_on_task_sta(owned_job, timeout=300, task_name="owned-sheet-metal-cli")
+            return run_on_task_sta(owned_job, timeout=300, task_name="owned-cad-cli")
         return runner(args)
     except Exception as error:  # 插件按 error 事件提示用户
         LOGGER.exception("生成失败")

@@ -18,6 +18,12 @@ ROOT = Path(__file__).resolve().parents[1]
 MODES = {'sheet','roller','turned'}
 
 
+def uses_native_session(job):
+    """DWG analysis may import/export in SW even without generating a part."""
+    return job.get('kind') in MODES and (job.get('action') == 'generate' or (
+        Path(job.get('source', '')).suffix.casefold() == '.dwg' and bool(job.get('sw_exe'))))
+
+
 def confirm_job(job):
     """Bind review to input bytes and every generation option; return a copy."""
     job = dict(job)
@@ -183,6 +189,11 @@ def build_command(job: dict, *, root=ROOT):
         if output == source or output.exists() or output.suffix.casefold() != '.sldprt':
             raise ValueError('output must be a new .SLDPRT path, distinct from source')
         cmd.extend(['--out',str(output),'--sw-exe',str(executable),'--verify-reopen'])
+    if action in {'analyze','plan'} and source.suffix.casefold() == '.dwg' and job.get('sw_exe'):
+        executable = Path(job['sw_exe']).expanduser().resolve()
+        if not executable.is_file() or executable.name.casefold() != 'sldworks.exe':
+            raise ValueError('DWG conversion requires an installed SLDWORKS.exe, or clear the path to use LibreDWG/DXF')
+        cmd.extend(['--sw-exe',str(executable)])
     if kind == 'sheet' and action != 'analyze':
         for key in ('thickness','radius','angle'):
             cmd.extend(['--'+key,number(job.get(key),key)])
@@ -211,9 +222,9 @@ def execute_job(job, *, root=ROOT, runner=bounded_run):
             'mechanical_acceptance':'unverified','cad_verified':False}
     try:
         command = build_command(job,root=root)
-        native = job.get('action') == 'generate' and job.get('kind') in MODES
+        native = uses_native_session(job)
         if native and sys.platform != 'win32':
-            raise RuntimeError('native generation requires Windows; use analyze/plan on cloud')
+            raise RuntimeError('native SolidWorks conversion/generation requires Windows; use DXF or LibreDWG on cloud')
         # No shell interpolation, environment dump or automatic native-process kill.
         timeout = job.get('timeout_seconds',600)
         number(timeout,'timeout_seconds')
@@ -258,7 +269,7 @@ def execute_job(job, *, root=ROOT, runner=bounded_run):
         result = {**base,'status':status,'returncode':completed.returncode,'events':events,
                   'stderr':completed.stderr,'non_json_output':raw,'command':command,
                   'elapsed_seconds':round(time.monotonic()-started,3)}
-        if native and status != 'failed':
+        if job.get('action') == 'generate' and job.get('kind') in MODES and status != 'failed':
             output = Path(job['output']).resolve()
             if not output.is_file() or output.stat().st_size == 0:
                 raise RuntimeError('generation reported success without a nonempty product')
@@ -302,7 +313,7 @@ def run_batch(jobs, *, execute=execute_job, stop_requested=lambda:False):
         result = execute(job)
         results.append(result)
         # Never continue CAD writes after an unknown native failure.
-        if result['status'] == 'timed_out' or (job.get('action') == 'generate' and result['status'] == 'failed'):
+        if result['status'] == 'timed_out' or (uses_native_session(job) and result['status'] == 'failed'):
             blocked = True
     counts = {state:sum(r['status']==state for r in results) for state in sorted({r['status'] for r in results})}
     return {'schema_version':1,'status':'failed' if counts.get('failed') or counts.get('timed_out') else (
