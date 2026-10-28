@@ -3903,6 +3903,7 @@ def _create_bends_with_fallbacks_impl(
     *,
     hole_profiles: tuple[Primitive, ...] = (),
     group_attempts: list[dict] | None = None,
+    sequential: bool = False,
 ) -> int:
     """自动折弯总调度：先全部同草图，再平行分组，最后逐条（仍在当前最大平面上）。"""
 
@@ -3977,6 +3978,16 @@ def _create_bends_with_fallbacks_impl(
         finally:
             event["elapsed_seconds"] = max(0.0, time.monotonic() - started)
 
+
+    if sequential:
+        # Native sketch-bend creation consumes one line per feature on the
+        # tested SW version. Keep the central anchor but rediscover its current
+        # faces and sketch transform after each rebuild; never reuse topology.
+        for index in bend_indices:
+            _attempt((index,))
+            if not bool(_com_read(model, 'EditRebuild3')):
+                raise BendRejectedError(bend_indices, relief_step=relief_step)
+        return len(bend_indices)
 
     # 先全部同草图。失败且还没到总时限时，改平行分组，再逐条。
     # 一条坏线不再把其余折弯一起判死。超时仍立刻交给外层回退平板。
@@ -4599,6 +4610,7 @@ def generate_sheet_metal(
         hole_profiles_list.append((hole, _closed_points(hole)))
     hole_profiles = tuple(hole_profiles_list)
     selected_bends = tuple(dict.fromkeys(int(index) for index in bend_indices))
+    raw_selected_bends = selected_bends
     if any(index < 0 or index >= len(analysis.bend_lines) for index in selected_bends):
         raise ValueError("所选折弯线编号无效。")
     relief_bends = tuple(
@@ -4606,6 +4618,13 @@ def generate_sheet_metal(
     )
     if any(index not in selected_bends for index in relief_bends):
         raise ValueError("释放槽只能添加到本次选择的折弯线上。")
+    if auto_bend:
+        selected_bends = collapse_collinear_bend_indices(analysis, selected_bends)
+    relief_bends = tuple(i for i in selected_bends if any(
+        _bends_are_collinear(analysis.bend_lines[i], analysis.bend_lines[j]) for j in relief_bends))
+    if selected_bends != raw_selected_bends:
+        logger.info('折弯标记分段合并：原始索引=%s，物理折弯轴索引=%s；原图不变',
+                    raw_selected_bends, selected_bends)
     if not 0 <= relief_step <= MAX_RELIEF_STEPS:
         raise ValueError(
             f"释放槽自动扩大次数必须在 0 到 {MAX_RELIEF_STEPS} 之间。"
@@ -5216,6 +5235,7 @@ def generate_sheet_metal(
                 profile,
                 hole_profiles=tuple(hole for hole, _ in hole_profiles),
                 group_attempts=group_attempts,
+                sequential=True,
             )
             auto_bent = completed_bends == len(selected_bends)
 
@@ -5491,7 +5511,7 @@ def generate_sheet_metal_with_relief_retries(
                 completed_bend_count=result.bend_count, relief_slot_count=result.relief_slot_count,
                 bend_group_attempts=list(result.bend_group_attempts)))
             return replace(result, auto_bend_attempts=attempts, bend_attempts=tuple(trace),
-                           auto_bend_failed_count=max(0, len(selected) - result.bend_count),
+                           auto_bend_failed_count=0 if completed else max(0, len(selected) - result.bend_count),
                            auto_bend_abandoned=not completed)
         except (ComDisconnectedBendError, BendRejectedError) as error:
             failures += 1

@@ -17,7 +17,8 @@ from solidworks_generator import (
 )
 
 
-def _run(bend_indices, failing_groups, failing_single, all_ok=False, observed_per_attempt=None):
+def _run(bend_indices, failing_groups, failing_single, all_ok=False, observed_per_attempt=None,
+         sequential=False, calls=None):
     """按给定失败集合跑一轮折弯调度，返回真正折成的条数。"""
 
     all_key = tuple(bend_indices)
@@ -27,6 +28,8 @@ def _run(bend_indices, failing_groups, failing_single, all_ok=False, observed_pe
         nonlocal observed
         indices = args[7]  # bend_indices
         key = tuple(indices)
+        if calls is not None:
+            calls.append(key)
         # 默认让「全部同草图」这一步失败，逼出分组 + 逐条回退。
         if not all_ok and key == all_key:
             raise BendRejectedError(key, relief_step=0)
@@ -68,6 +71,7 @@ def _run(bend_indices, failing_groups, failing_single, all_ok=False, observed_pe
             0,
             None,
             MagicMock(),  # outer_profile
+            sequential=sequential,
         )
 
 
@@ -77,6 +81,11 @@ def _chunks(indices, size=2):
 
 
 class PartialBendCountTests(unittest.TestCase):
+    def test_native_sequential_path_uses_one_line_per_feature(self):
+        calls = []
+        self.assertEqual(_run((0, 1), set(), set(), all_ok=True, sequential=True, calls=calls), 2)
+        self.assertEqual(calls, [(0,), (1,)])
+
     def test_partial_native_creation_aborts_mutated_document(self):
         with self.assertRaises(BendRejectedError) as raised:
             _run((0, 1), set(), set(), all_ok=True, observed_per_attempt=1)

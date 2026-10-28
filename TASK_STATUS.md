@@ -320,3 +320,16 @@ Log-backed grouping: bend-count simulation 4 errors+1 failure; batch source/fixt
 Pending patch: validate drawing semantics before source hashing, explicitly refuse unreadable source, use a real temporary source fixture, model observed bend counts in mocks, add partial-native-creation rejection coverage, check explicit discovered tool names/uniqueness, and require no generation after ownership refusal. Tests updated but NOT executed, no compile/UI/native run or workflow dispatched. No new pass counts claimed.
 
 See docs/stage-a-return-review-20261028.md. V04/V05 returned evidence covers specified read-only and blocked paths, not successful native execution or exhaustive security review. Continue targeted retest then one full regression before G1 release; preserve failed logs and regenerate review manifests after code fingerprint changes.
+
+## 2026-10-28 native bend root cause correction
+
+The reported two-line sample (profile21) has two collinear fragments at the same source Y=4955.6935957602. Both extend to the same feature span; collapse_collinear_bend_indices returns one physical axis. Earlier report that this sample required two distinct bends was incorrect.
+
+Fix: normalize automatic bend selection to physical axes after validating raw indices; map relief selections consistently; preserve raw manual reference geometry; drive native generation sequentially per physical axis with feature-count/rebuild checks. Completed automatic attempts no longer subtract physical bend count from raw mark count to invent a failed bend.
+
+Native evidence in Desktop/text/SWAI_实机复测_9a07e94_20261028: 分段共线折弯-修复试件.SLDPRT was saved and reopened, one solid, one SM3dBend, bounds approximately130x76.8x46.716mm, K readback0.4. This is observed creation/reopen, not full angle/material/engineering acceptance. In-flight CLI loaded the earlier failure-count expression and reported failed_count1 despite completed bend1; the subsequent count expression correction is separate. Low-memory and recovery-log modal warnings were observed; only this owned PID24936 was interacted with, no unknown assembly closed. A separate sequential-only attempt retained its degraded evidence.
+
+This is not proof that two genuinely different bend axes work on all models. Their native validation remains open. Raw CAD/evidence remain local. Offline final regression recorded separately; no production release implied.
+
+Final current-code offline regression: Windows Python3.14.7, 741 run, 735 passed, 0 failures, 0 errors, 6 skipped; cross-process lock checked in runner. This does not certify distinct-axis native folding or manufacturing.
+
