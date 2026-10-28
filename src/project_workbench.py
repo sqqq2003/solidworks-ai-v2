@@ -288,8 +288,15 @@ def build_command(job: dict, *, root=ROOT):
             if type(factor) not in (int,float) or not math.isfinite(factor) or factor<=0:
                 raise ValueError('等比例缩放倍数必须大于零')
             cmd.extend(['--uniform-scale',str(factor)])
+        for key in ('target_length','target_width'):
+            if key in job:
+                value=job[key]
+                if type(value) not in (int,float) or not math.isfinite(value) or value<=0:
+                    raise ValueError('目标长宽必须为正的有限数值')
+                if 'uniform_scale' in job:raise ValueError('等比例缩放与指定长宽不能同时使用')
+                cmd.extend(['--'+key.replace('_','-'),str(value)])
         if job.get('preserve_circle_holes') is True:
-            if 'uniform_scale' not in job:raise ValueError('保持孔径需要填写缩放倍数')
+            if not any(k in job for k in ('uniform_scale','target_length','target_width')):raise ValueError('保持孔径需要指定缩放倍数或目标长宽')
             cmd.append('--preserve-circle-holes')
         if job.get('flip') is True:
             cmd.append('--flip')

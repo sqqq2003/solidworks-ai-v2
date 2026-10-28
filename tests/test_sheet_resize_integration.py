@@ -87,6 +87,23 @@ class SheetResizeIntegrationTests(unittest.TestCase):
             self.assertAlmostEqual(analysis.profiles[1].circle_radius,10.45)
             self.assertIs(generate.call_args.kwargs['cad_import'],False)
 
+    def test_single_part_target_length_is_wired_to_geometry_and_confirmation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'part.dxf'; d=ezdxf.new(); d.units=4
+            d.modelspace().add_lwpolyline([(0,0),(100,0),(100,50),(0,50)],close=True); d.saveas(path)
+            args=sw_tool_cli.build_parser().parse_args(['--mode','sheet','--input',str(path),'--out','new.SLDPRT',
+                '--profile','1','--target-length','120'])
+            fake=GenerationResult(Path('new.SLDPRT'),0,0,1,(0,)*6,(0,)*6)
+            with patch('sw_tool_cli.generate_sheet_metal_with_relief_retries',return_value=fake) as generate, patch('sw_tool_cli.emit'):
+                sw_tool_cli.run_sheet(args)
+            bounds=primitive_bounds(generate.call_args.args[0].profiles[0])
+            self.assertAlmostEqual(bounds[2]-bounds[0],120)
+            self.assertAlmostEqual(bounds[3]-bounds[1],50)
+            self.assertIs(generate.call_args.kwargs['cad_import'],False)
+            args.uniform_scale=1.2
+            with self.assertRaisesRegex(ValueError,'不能同时使用'):
+                sw_tool_cli.run_sheet(args)
+
     def test_job_binds_scale_to_confirmation(self):
         from desktop_jobs import build_desktop_job
         from project_workbench import build_command
@@ -97,4 +114,18 @@ class SheetResizeIntegrationTests(unittest.TestCase):
             job=build_desktop_job(v,'generate',confirmed=True,preserve_circle_holes=True)
             self.assertIn('--uniform-scale',build_command(job));self.assertIn('--preserve-circle-holes',build_command(job))
             job['uniform_scale']=1.2
+            with self.assertRaises(ValueError):build_command(job)
+
+    def test_target_dimensions_are_bound_to_confirmation(self):
+        from desktop_jobs import build_desktop_job
+        from project_workbench import build_command
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);source=root/'part.dxf';source.write_text('x');exe=root/'SLDWORKS.exe';exe.touch()
+            values={'kind':'sheet','source':str(source),'output':str(root/'new.SLDPRT'),'sw_exe':str(exe),'profile':'1',
+                    'thickness':'4','radius':'1','angle':'90','k_factor':'.4','target_length':'120','target_width':'50'}
+            job=build_desktop_job(values,'generate',confirmed=True)
+            command=build_command(job)
+            self.assertEqual(command[command.index('--target-length')+1], '120.0')
+            self.assertEqual(command[command.index('--target-width')+1], '50.0')
+            job['target_length']=130
             with self.assertRaises(ValueError):build_command(job)

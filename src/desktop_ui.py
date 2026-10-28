@@ -59,7 +59,7 @@ class Workbench:
         self.values={k:tk.StringVar(value=v) for k,v in {
             'kind':'sheet','source':'','output':'','sw_exe':'','machine':'QL-5050PX','ql_action':'plan',
             'profile':'1','variant':'0','thickness':'','radius':'','angle':'','k_factor':'',
-            'uniform_scale':'',
+            'uniform_scale':'','target_length':'','target_width':'',
             'length':'1800','width':'900','height':'1500'}.items()}
         self.confirmed=tk.BooleanVar();self.flip=tk.BooleanVar();self.inferred=tk.BooleanVar();self.preserve_circle_holes=tk.BooleanVar()
         self.native_open=False;self.advanced_open=False;self.detail_open=False
@@ -227,7 +227,7 @@ class Workbench:
         self.ql_box.bind('<<ComboboxSelected>>',lambda e:self.values['ql_action'].set(QL_ACTIONS[self.ql_action.get()]))
         self.inputs.extend([(self.action_box,'readonly'),(self.ql_box,'readonly')])
         self.sheet_frame=tk.Frame(self.form,bg=WHITE);self.sheet_frame.grid(row=5,column=0,sticky='ew',pady=(0,16))
-        self.numeric_row(self.sheet_frame,[('thickness','板厚 · mm'),('radius','内半径 · mm'),('angle','折弯角度 · °'),('k_factor','K 因子'),('uniform_scale','等比例倍数（留空不变；孔同步缩放）')])
+        self.numeric_row(self.sheet_frame,[('thickness','板厚 · mm'),('radius','内半径 · mm'),('angle','折弯角度 · °'),('k_factor','K 因子'),('uniform_scale','等比例倍数（留空不变）'),('target_length','展开长 X · mm'),('target_width','展开宽 Y · mm')])
         ttk.Checkbutton(self.sheet_frame,text='圆孔孔径不变（孔心随外形缩放）',variable=self.preserve_circle_holes).grid(row=6,column=0,columnspan=2,sticky='w',pady=(8,0))
         self.machine_frame=tk.Frame(self.form,bg=WHITE);self.machine_frame.grid(row=6,column=0,sticky='ew',pady=(0,16));self.machine_frame.columnconfigure(0,weight=1)
         model=ttk.Combobox(self.machine_frame,textvariable=self.values['machine'],values=('QL-5050PX','GT-ZX'),state='readonly',width=23)

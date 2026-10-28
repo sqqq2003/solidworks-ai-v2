@@ -48,6 +48,9 @@ def build_desktop_job(values, action='plan', *, confirmed=False, flip=False, all
             job['profile']=int(values['profile'])
             scale=str(values.get('uniform_scale','')).strip()
             if scale:job['uniform_scale']=float(scale)
+            for key in ('target_length','target_width'):
+                value=str(values.get(key,'')).strip()
+                if value:job[key]=float(value)
             if preserve_circle_holes:job['preserve_circle_holes']=True
         if kind in {'roller','turned'}:job['variant']=int(values['variant'])
         if action=='generate' and confirmed:job=confirm_job(job)

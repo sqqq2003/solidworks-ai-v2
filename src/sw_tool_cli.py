@@ -63,6 +63,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--analyze-only", action="store_true", help="只识别图纸并汇报，不建模")
     parser.add_argument("--profile", type=int, default=None, help="钣金：轮廓序号（从 1 开始）")
     parser.add_argument("--uniform-scale", type=float, default=None, help="钣金轮廓与孔按比例缩放；板厚不跟随")
+    parser.add_argument('--target-length', type=float, default=None, help='所选钣金展开轮廓 X 长度 mm')
+    parser.add_argument('--target-width', type=float, default=None, help='所选钣金展开轮廓 Y 宽度 mm')
     parser.add_argument("--preserve-circle-holes",action='store_true',help="缩放时圆孔大小保持不变，孔心位置随外形缩放")
     parser.add_argument("--thickness", type=float, default=1.2, help="钣金：板厚 mm")
     parser.add_argument("--radius", type=float, default=1.2, help="钣金：折弯半径 mm")
@@ -176,10 +178,15 @@ def run_sheet(args: argparse.Namespace) -> int:
         return 1
 
     scale=getattr(args,'uniform_scale',None)
+    length=getattr(args,'target_length',None)
+    width=getattr(args,'target_width',None)
+    if scale is not None and (length is not None or width is not None):
+        raise ValueError('等比例缩放与指定长宽不能同时使用')
+    resizing=scale is not None or length is not None or width is not None
     preserve_holes=getattr(args,'preserve_circle_holes',False)
-    if preserve_holes and scale is None:raise ValueError('保持孔径需要填写缩放倍数')
-    if scale is not None:
-        if not math.isfinite(scale) or scale<=0:raise ValueError('缩放比例必须是正的有限数值')
+    if preserve_holes and not resizing:raise ValueError('保持孔径需要指定缩放倍数或目标长宽')
+    if resizing:
+        if scale is not None and (not math.isfinite(scale) or scale<=0):raise ValueError('缩放比例必须是正的有限数值')
         from cad_analyzer import primitive_bounds
         from profile_edit import resize_profile_dimensions
         index=args.profile-1 if args.profile is not None else _largest_closed_profile_index(analysis)
@@ -187,9 +194,9 @@ def run_sheet(args: argparse.Namespace) -> int:
         if outermost_containing_profile_index(analysis.profiles,index)!=index:
             raise ValueError('请选择零件外轮廓，而不是内部孔')
         bounds=primitive_bounds(analysis.profiles[index])
-        analysis=resize_profile_dimensions(analysis,index,width_mm=(bounds[2]-bounds[0])*scale,height_mm=(bounds[3]-bounds[1])*scale,preserve_circle_holes=preserve_holes)
+        analysis=resize_profile_dimensions(analysis,index,width_mm=(bounds[2]-bounds[0])*scale if scale is not None else length,height_mm=(bounds[3]-bounds[1])*scale if scale is not None else width,preserve_circle_holes=preserve_holes)
         hole_rule='圆孔孔径不变、孔心随外形缩放' if preserve_holes else '孔槽同步缩放'
-        emit('progress',message=f'已按 {scale:g} 倍缩放所选轮廓；{hole_rule}；板厚不变，结果待复核。')
+        emit('progress',message=f'已调整所选轮廓；{hole_rule}；板厚不变，结果待复核。')
 
     if args.plan_only:
         from sheet_metal_pipeline import build_plan
@@ -237,7 +244,7 @@ def run_sheet(args: argparse.Namespace) -> int:
         flip_direction=args.flip,
         auto_bend=args.auto_bend,
         bend_allowance=allowance,
-        cad_import=False if scale is not None else None,
+        cad_import=False if resizing else None,
     )
     if allowance is not None and (
         not result.bend_allowance_verified
@@ -501,6 +508,8 @@ def main(argv: list[str] | None = None) -> int:
     # 详细日志落到文件，插件出错时能回看；事件流仍只走标准输出。
     LOGGER.debug("详细日志：%s", configured or log_file_path())
     try:
+        if args.batch and (args.target_length is not None or args.target_width is not None):
+            raise ValueError('指定长宽仅支持单件；批量请逐件审核')
         if args.inspect_cylinders and not args.verify_reopen:
             raise ValueError('--inspect-cylinders requires --verify-reopen')
         if args.inspect_cylinders and (args.batch or args.analyze_only or args.plan_only):
