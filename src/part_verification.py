@@ -377,7 +377,8 @@ def solid_inventory(part, sw, module):
     return union,boxes
 
 
-def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
+def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None,
+                      inspect_cylinders=False):
     from sw_session import require_model_write, close_owned_document
     import solidworks_generator as sw
     import pythoncom
@@ -449,8 +450,14 @@ def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
         get_journal().record('part_reopen_geometry',path=str(path),rebuilt=True,reopened=True,
             body_count=len(body_boxes),bounds_mm=bounds,dimensions_mm=dims,volume_mm3=None,
             bounds_precision='approximate',geometry_verified=False,production_approved=False)
+        surface_inventory = None
+        if inspect_cylinders:
+            from native_surface_inventory import cylindrical_surface_inventory
+            surface_inventory = cylindrical_surface_inventory(part, sw, module)
         return {'status':status,'rebuilt':True,'reopened':True,
-                'verification_scope':'solid_inventory_and_optional_envelope_only',
+                'cylindrical_surfaces':surface_inventory,
+                'verification_scope':('solid_inventory_envelope_and_cylindrical_surfaces'
+                                      if inspect_cylinders else 'solid_inventory_and_optional_envelope_only'),
                 'body_count':len(body_boxes),'body_bounds_mm':body_boxes,
                 'expected_body_count':expected_body_count,'geometry_verified':False,
                 'bounds_mm':bounds,'dimensions_mm':dims,

@@ -58,6 +58,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--plan-only", action="store_true", help="只输出特征计划；DWG 在显式指定 --sw-exe 时允许转换，不生成零件")
     parser.add_argument("--allow-inferred", action="store_true", help="明确允许滚筒通用默认值；这些不是 OEM 实测数据")
     parser.add_argument("--verify-reopen", action="store_true", help="生成后关闭重开并核对实体尺寸")
+    parser.add_argument("--inspect-cylinders", action="store_true",
+                        help="配合 --verify-reopen 读回原生圆柱面尺寸；不代表孔槽验收")
     parser.add_argument("--analyze-only", action="store_true", help="只识别图纸并汇报，不建模")
     parser.add_argument("--profile", type=int, default=None, help="钣金：轮廓序号（从 1 开始）")
     parser.add_argument("--uniform-scale", type=float, default=None, help="钣金轮廓与孔按比例缩放；板厚不跟随")
@@ -246,7 +248,8 @@ def run_sheet(args: argparse.Namespace) -> int:
     verification = None
     if args.verify_reopen and not result.auto_bend_abandoned:
         from part_verification import verify_saved_part
-        verification = verify_saved_part(result.path)
+        verification = verify_saved_part(result.path, **({'inspect_cylinders': True}
+                                         if getattr(args, 'inspect_cylinders', False) else {}))
     emit(
         "done",
         kind="sheet",
@@ -419,7 +422,8 @@ def run_roller(args: argparse.Namespace) -> int:
         from part_verification import verify_saved_part
         # result.bounds historically measures the first body only; it is not
         # an independent full-part target. Do not use it as an oracle.
-        verification = verify_saved_part(result.path)
+        verification = verify_saved_part(result.path, **({'inspect_cylinders': True}
+                                         if getattr(args, 'inspect_cylinders', False) else {}))
     emit(
         "done",
         kind="roller", reopen=verification, mechanical_acceptance="unverified",
@@ -479,7 +483,8 @@ def run_turned(args: argparse.Namespace) -> int:
     verification = None
     if args.verify_reopen:
         from part_verification import verify_saved_part
-        verification = verify_saved_part(path,expected_dims_mm=build.expected_dims_mm)
+        verification = verify_saved_part(path,expected_dims_mm=build.expected_dims_mm,
+            **({'inspect_cylinders': True} if getattr(args, 'inspect_cylinders', False) else {}))
     emit("done",kind="turned",path=path,reopen=verification,mechanical_acceptance="unverified",
          status=verification['status'] if verification else "generated_unverified",
          warnings=list(build.warnings),threads="cosmetic_or_pending_not_certified")
@@ -496,6 +501,10 @@ def main(argv: list[str] | None = None) -> int:
     # 详细日志落到文件，插件出错时能回看；事件流仍只走标准输出。
     LOGGER.debug("详细日志：%s", configured or log_file_path())
     try:
+        if args.inspect_cylinders and not args.verify_reopen:
+            raise ValueError('--inspect-cylinders requires --verify-reopen')
+        if args.inspect_cylinders and (args.batch or args.analyze_only or args.plan_only):
+            raise ValueError('--inspect-cylinders currently requires single-part generation')
         if args.mode == "sheet" and args.batch:
             runner = run_sheet_batch
         else:
