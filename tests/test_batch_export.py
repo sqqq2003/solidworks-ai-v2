@@ -8,6 +8,7 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "src"))
 
 
 import unittest
+from tempfile import TemporaryDirectory
 from pathlib import Path
 
 from cad_analyzer import DrawingAnalysis, Primitive, SketchSegment
@@ -81,11 +82,14 @@ class DiscoverSheetPartsTests(unittest.TestCase):
         self.assertEqual(marked[0].profile_index, 1)
 
         # 批量导出应默认排除文字框：只导出 1 件真实零件。
-        with patch("batch_export.discover_sheet_parts", return_value=jobs):
+        with patch("batch_export.discover_sheet_parts", return_value=jobs), TemporaryDirectory() as folder:
+            source = Path(folder) / 'synthetic.dxf'
+            source.write_bytes(b'synthetic metadata fixture; parser is not invoked')
+            analysis.path = source
             with patch("batch_export._export_jobs") as export_jobs:
                 from batch_export import export_all_sheet_parts
                 export_all_sheet_parts(
-                    analysis, thickness_mm=4, radius_mm=1, output_dir=Path("out")
+                    analysis, thickness_mm=4, radius_mm=1, output_dir=Path(folder) / 'out'
                 )
                 # _export_jobs 收到的编号清单只含非文字框的件。
                 exported = export_jobs.call_args[0][1]

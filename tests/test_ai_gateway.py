@@ -10,6 +10,19 @@ from http.server import ThreadingHTTPServer
 from src.ai_gateway import Gateway
 from work.ai_gateway import rpc, stdio, handler
 
+EXPECTED_TOOLS = {
+    'solidworks_capabilities', 'solidworks_doctor', 'solidworks_run_job',
+    'solidworks_batch_review', 'solidworks_skill_integration',
+    'solidworks_review_execution_plan',
+}
+
+
+def discovered_names(rows):
+    names = [row['name'] for row in rows]
+    if len(names) != len(set(names)):
+        raise AssertionError('duplicate tool names in transport discovery')
+    return set(names)
+
 class GatewayTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -68,7 +81,7 @@ class GatewayTests(unittest.TestCase):
         responses = [json.loads(line) for line in sink.getvalue().splitlines()]
         self.assertEqual(len(responses),4)
         self.assertEqual(responses[0]['result']['protocolVersion'],'2024-11-05')
-        self.assertEqual(len(responses[1]['result']['tools']),3)
+        self.assertEqual(discovered_names(responses[1]['result']['tools']), EXPECTED_TOOLS)
         self.assertTrue(responses[2]['result']['isError'])
         self.assertFalse(responses[3]['result']['isError'])
     def test_http_real_loopback_auth_and_job(self):
@@ -83,7 +96,7 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(error.exception.code,401)
             request = Request(base+'/v1/tools',headers={'Authorization':'Bearer '+token})
             with urlopen(request) as response:
-                self.assertEqual(len(json.load(response)['tools']),3)
+                self.assertEqual(discovered_names(json.load(response)['tools']), EXPECTED_TOOLS)
             data = {'name':'solidworks_run_job','arguments':{'job':{'kind':'parametric','machine':'GT-ZX','length':100,'width':80,'height':60}}}
             request = Request(base+'/v1/tools/call',data=json.dumps(data).encode(),headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
             with urlopen(request) as response:

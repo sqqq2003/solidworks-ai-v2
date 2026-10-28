@@ -41,11 +41,14 @@ class FixedPanelAnchorTests(unittest.TestCase):
         analysis = DrawingAnalysis(Path('synthetic.dxf'), 'mm', (), self.bends,
                                    (self.outer, self.hole), (0, 0, 100, 80), 'Model')
         anchors = []
+        observed = [0]
         def create(*args, **kwargs):
             anchors.append(args[13])
             if len(args[7]) == 4:
                 raise sw.BendRejectedError(args[7], relief_step=0)
-        with patch.object(sw, '_create_bend_feature', side_effect=create):
+            observed[0] += len(args[7])
+        with patch.object(sw, '_create_bend_feature', side_effect=create), patch.object(
+                sw, '_count_bend_features', side_effect=lambda *_: observed[0]):
             count = sw._create_bends_with_fallbacks(
                 *[MagicMock() for _ in range(6)], analysis, (0, 1, 2, 3),
                 (0, 0), 2.5, 1, 90, False, None, 0, None, self.outer,
@@ -68,7 +71,7 @@ class FixedPanelAnchorTests(unittest.TestCase):
         events = []
         def reject(*args, **kwargs):
             raise sw.BendRejectedError(args[7])
-        with patch.object(sw, '_create_bend_feature', side_effect=reject):
+        with patch.object(sw, '_create_bend_feature', side_effect=reject), patch.object(sw, '_count_bend_features', return_value=0):
             with self.assertRaises(sw.BendRejectedError) as caught:
                 sw._create_bends_with_fallbacks(
                     *[MagicMock() for _ in range(6)], analysis, (0, 1, 2, 3),
@@ -86,7 +89,11 @@ class FixedPanelAnchorTests(unittest.TestCase):
         analysis = DrawingAnalysis(Path('synthetic.dxf'), 'mm', (), self.bends,
                                    (self.outer,), (0, 0, 100, 80), 'Model')
         events = []
-        with patch.object(sw, '_create_bend_feature'):
+        observed = [0]
+        def create(*args, **kwargs):
+            observed[0] += len(args[7])
+        with patch.object(sw, '_create_bend_feature', side_effect=create), patch.object(
+                sw, '_count_bend_features', side_effect=lambda *_: observed[0]):
             count = sw._create_bends_with_fallbacks(
                 *[MagicMock() for _ in range(6)], analysis, (0, 1, 2, 3),
                 (0, 0), 2.5, 1, 90, False, None, 0, None, self.outer,

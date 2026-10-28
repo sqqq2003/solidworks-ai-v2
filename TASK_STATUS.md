@@ -310,3 +310,13 @@ Differential integration implemented without executing tests:
 - Retained the existing self-contained repair CLI fixture from the cloud branch; did not replace it with a cross-test-module import.
 
 No tests, native operation, compilation or portable rebuild executed for this reconciliation. Broad error-message localization is not claimed completed in the integrated branch. The current desktop shortcut still requires a separately built/validated package before it includes these changes. Original report, desktop checkout, customer files and old logs remain unchanged; raw reports/logs are not uploaded.
+
+## 2026-10-28 stage-A returned evidence and pending retest patch
+
+Read-only reconciliation of current returned reports and original latest.log/latest.json: Windows Python3.14.7, 739 run = 723 passed + 3 failures + 7 errors + 6 skipped, exit1. No Linux/native acceptance. Actual test HEAD49c0ebb differs from fixed3b1662a only by the plan document. G1 remains blocked.
+
+Log-backed grouping: bend-count simulation 4 errors+1 failure; batch source/fixture 2 errors; tool discovery2 failures; ownership-refusal safety contract1 error. The last error is not a missing-path fixture: the obsolete test expected generation to continue after ownership refusal. Preserve refusal and align its assertion.
+
+Pending patch: validate drawing semantics before source hashing, explicitly refuse unreadable source, use a real temporary source fixture, model observed bend counts in mocks, add partial-native-creation rejection coverage, check explicit discovered tool names/uniqueness, and require no generation after ownership refusal. Tests updated but NOT executed, no compile/UI/native run or workflow dispatched. No new pass counts claimed.
+
+See docs/stage-a-return-review-20261028.md. V04/V05 returned evidence covers specified read-only and blocked paths, not successful native execution or exhaustive security review. Continue targeted retest then one full regression before G1 release; preserve failed logs and regenerate review manifests after code fingerprint changes.

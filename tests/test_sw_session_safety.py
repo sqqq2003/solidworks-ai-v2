@@ -486,7 +486,7 @@ class SessionSafetyTests(unittest.TestCase):
             batch_export._solidworks_memory_mb = original
             subprocess.run = original_run
 
-    def test_batch_export_records_refusal_and_still_builds_without_teardown(self) -> None:
+    def test_batch_export_stops_after_ownership_refusal_without_teardown(self) -> None:
         generated: list[str] = []
         messages: list[str] = []
 
@@ -516,8 +516,8 @@ class SessionSafetyTests(unittest.TestCase):
                 quantity=1,
                 thickness_mm=2.0,
             )
-            with tempfile.TemporaryDirectory() as folder:
-                results = batch_export._export_jobs(
+            with tempfile.TemporaryDirectory() as folder, self.assertRaises(SessionOwnershipError):
+                batch_export._export_jobs(
                     types.SimpleNamespace(path=Path("drawing.dwg"), bend_lines=[], primitives=(), profiles=()),
                     [(1, job)],
                     Path(folder),
@@ -529,8 +529,7 @@ class SessionSafetyTests(unittest.TestCase):
                     False,
                     messages.append,
                 )
-            self.assertEqual(generated, ["called"])
-            self.assertTrue(results[0].ok)
+            self.assertEqual(generated, [])
             self.assertTrue(any("拒绝重启 SolidWorks" in message for message in messages))
         finally:
             batch_export._solidworks_memory_mb = original_memory

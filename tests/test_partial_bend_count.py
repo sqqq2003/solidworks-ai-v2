@@ -17,12 +17,14 @@ from solidworks_generator import (
 )
 
 
-def _run(bend_indices, failing_groups, failing_single, all_ok=False):
+def _run(bend_indices, failing_groups, failing_single, all_ok=False, observed_per_attempt=None):
     """按给定失败集合跑一轮折弯调度，返回真正折成的条数。"""
 
     all_key = tuple(bend_indices)
+    observed = 0
 
     def fake_create(*args, **kwargs):
+        nonlocal observed
         indices = args[7]  # bend_indices
         key = tuple(indices)
         # 默认让「全部同草图」这一步失败，逼出分组 + 逐条回退。
@@ -32,6 +34,7 @@ def _run(bend_indices, failing_groups, failing_single, all_ok=False):
             raise BendRejectedError(key, relief_step=0)
         if len(key) == 1 and key[0] in failing_single:
             raise BendRejectedError(key, relief_step=0)
+        observed += len(key) if observed_per_attempt is None else observed_per_attempt
         return None
 
     with (
@@ -41,6 +44,7 @@ def _run(bend_indices, failing_groups, failing_single, all_ok=False):
             return_value=[list(chunk) for chunk in _chunks(bend_indices)],
         ),
         patch("solidworks_generator._create_bend_feature", side_effect=fake_create),
+        patch("solidworks_generator._count_bend_features", side_effect=lambda *_: observed),
         patch(
             "solidworks_generator._create_bend_reference_sketch",
             return_value=("折弯线_手折参考", 2),
@@ -73,6 +77,13 @@ def _chunks(indices, size=2):
 
 
 class PartialBendCountTests(unittest.TestCase):
+    def test_partial_native_creation_aborts_mutated_document(self):
+        with self.assertRaises(BendRejectedError) as raised:
+            _run((0, 1), set(), set(), all_ok=True, observed_per_attempt=1)
+        self.assertTrue(raised.exception.discard_partial_document)
+        self.assertEqual(len(raised.exception.bend_group_attempts), 1)
+        self.assertEqual(raised.exception.bend_group_attempts[0]['observed_bend_features'], 1)
+
     def test_all_bends_succeed_returns_total(self) -> None:
         self.assertEqual(_run((0, 1, 2, 3), set(), set(), all_ok=True), 4)
 

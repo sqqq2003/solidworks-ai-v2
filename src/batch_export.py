@@ -361,9 +361,12 @@ def export_all_sheet_parts(
         raise ValueError('positive finite batch scale required')
     if preserve_circle_holes and uniform_scale is None:
         raise ValueError('circle preservation requires an explicit scale')
-    expected_source_sha256 = sha256(Path(analysis.path))
     warning=bend_note_warning(analysis)
     if warning:raise ValueError(warning)
+    source = Path(getattr(analysis, 'path', ''))
+    if not source.is_file():
+        raise ValueError('批量生成需要可读取的源图纸文件，请重新选择输入图纸。')
+    expected_source_sha256 = sha256(source)
     ensure_dirs()
     out_root = output_dir or export_dir_for(analysis.path.stem)
     out_root.mkdir(parents=True, exist_ok=True)
