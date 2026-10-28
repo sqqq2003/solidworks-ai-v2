@@ -24,6 +24,8 @@ def inspect_dxf(path):
             return hashlib.file_digest(stream, 'sha256').hexdigest()
     before = sha()
     doc = ezdxf.readfile(file)
+    from chutu_regions import inspect_regions
+    regions = inspect_regions(doc)
     counts = {}
     for entity in doc.modelspace():
         layer = str(entity.dxf.get('layer', '0'))
@@ -31,7 +33,8 @@ def inspect_dxf(path):
     if sha() != before:
         raise ValueError('读取时图纸发生变化，请重新检查')
     return {'path': str(file), 'sha256': before, 'dxf_units': doc.units,
-            'entity_count': sum(counts.values()), 'layers': dict(sorted(counts.items()))}
+            'entity_count': sum(counts.values()), 'layers': dict(sorted(counts.items())),
+            'region_candidates': regions}
 
 
 def plan_five_sheets(source, *, component_evidence=None):

@@ -72,9 +72,12 @@ def open_drawing_setup(parent,project_root,on_message):
             from five_sheet_plan import plan_five_sheets
             plan=plan_five_sheets(path)
             names='、'.join(row['name'] for row in plan['sheets'])
+            regions=plan['source']['region_candidates']['counts']
+            region_text='、'.join(f'{name}:{regions.get(key,0)}' for key,name in
+                [('banjin','钣金'),('fang','方管'),('bom','明细'),('view','视图'),('title','标题栏'),('frame','图框'),('extra','未分类')])
             messagebox.showinfo('五图模板预检',
                 f"母图：{path}\n实体：{plan['source']['entity_count']}\n图层：{len(plan['source']['layers'])}\n"
-                f"计划：{names}\n\n仅检查文件与版式规划；尚未生成图纸，区域、尺寸和 BOM 需要确认。",parent=win)
+                f"计划：{names}\n候选分区实体数：{region_text}\n\n旧规则按特定母图坐标识别，结果仅供核对；尚未生成图纸，区域、尺寸和 BOM 需要确认。",parent=win)
         except (OSError,ValueError) as error:
             messagebox.showerror('无法检查母图',str(error),parent=win)
     bar=ttk.Frame(body);bar.pack(fill='x')
