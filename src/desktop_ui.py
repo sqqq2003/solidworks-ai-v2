@@ -228,12 +228,13 @@ class Workbench:
         self.inputs.extend([(self.action_box,'readonly'),(self.ql_box,'readonly')])
         self.sheet_frame=tk.Frame(self.form,bg=WHITE);self.sheet_frame.grid(row=5,column=0,sticky='ew',pady=(0,16))
         self.numeric_row(self.sheet_frame,[('thickness','板厚 · mm'),('radius','内半径 · mm'),('angle','折弯角度 · °'),('k_factor','K 因子'),('uniform_scale','等比例倍数（留空不变）'),('target_length','展开长 X · mm'),('target_width','展开宽 Y · mm')])
-        ttk.Checkbutton(self.sheet_frame,text='圆孔孔径不变（孔心随外形缩放）',variable=self.preserve_circle_holes).grid(row=6,column=0,columnspan=2,sticky='w',pady=(8,0))
+        ttk.Checkbutton(self.sheet_frame,text='圆孔孔径不变（孔心随外形缩放）',variable=self.preserve_circle_holes).grid(row=8,column=0,columnspan=2,sticky='w',pady=(8,0))
         self.machine_frame=tk.Frame(self.form,bg=WHITE);self.machine_frame.grid(row=6,column=0,sticky='ew',pady=(0,16));self.machine_frame.columnconfigure(0,weight=1)
         model=ttk.Combobox(self.machine_frame,textvariable=self.values['machine'],values=('QL-5050PX','GT-ZX'),state='readonly',width=23)
         model.grid(row=0,column=0,sticky='ew',pady=(0,12));self.inputs.append((model,'readonly'))
         dimensions=tk.Frame(self.machine_frame,bg=WHITE);dimensions.grid(row=1,column=0,sticky='ew')
         self.numeric_row(dimensions,[('length','目标长度 · mm'),('width','目标宽度 · mm'),('height','目标高度 · mm')])
+        self.button(self.machine_frame,'导入旧改机 CSV 规格…',self.import_legacy_variant).grid(row=2,column=0,sticky='w',pady=(10,0))
         self.extra_line=tk.Frame(self.form,bg=WHITE);self.extra_line.grid(row=7,column=0,sticky='ew')
         self.advanced_toggle=self.button(self.extra_line,'高级选项  +',self.toggle_advanced);self.advanced_toggle.pack(anchor='w',pady=3)
         self.native_toggle=self.button(self.extra_line,'SolidWorks 设置  +',self.toggle_native);self.native_toggle.pack(anchor='w',pady=3)
@@ -630,6 +631,34 @@ class Workbench:
         win=self.tk.Toplevel(self.root);win.title('尺寸试改预检');win.geometry('960x620')
         panel=RepairPanel(win,ROOT);panel.frame.pack(fill='both',expand=True);self.tool_panels.append(panel)
         win.protocol('WM_DELETE_WINDOW',lambda:win.destroy() if not panel.busy else panel.status.set('请等待当前预检结束。'))
+
+    def import_legacy_variant(self):
+        from tkinter import filedialog,messagebox,simpledialog
+        if self.state['busy']:return
+        path=filedialog.askopenfilename(parent=self.root,title='选择旧改机规格表 CSV',filetypes=[('CSV 规格表','*.csv')])
+        if not path:return
+        try:
+            from legacy_variant_import import read_legacy_csv
+            report=read_legacy_csv(path)
+            options='\n'.join(f"第 {r['row']} 行：{r['values'].get('spec_name','未命名')} · "
+                + ' × '.join(str(r['values'][k]) for k in ('Length','Width','Height'))
+                for r in report['specs'][:30])
+            row=simpledialog.askinteger('选择规格',options+'\n\n输入表格行号（含表头）：',parent=self.root,minvalue=2)
+            if row is None:return
+            spec=next((r for r in report['specs'] if r['row']==row),None)
+            if spec is None:raise ValueError('该行没有规格数据')
+            values=spec['values']
+            if values.get('machine_type') not in ('斜动力滚筒线','GT-ZX'):
+                raise ValueError('此入口仅支持明确标注为斜动力滚筒线或 GT-ZX 的规格')
+            self.switch_mode('parametric');self.values['machine'].set('GT-ZX')
+            for old,new in [('Length','length'),('Width','width'),('Height','height')]:
+                self.values[new].set(str(values[old]))
+            if not self.settings_open:self.toggle_settings()
+            self.add_message('已导入旧规格（待确认）',f"{values.get('spec_name','未命名')} · 第 {row} 行\n"
+                '长宽高已填入参数规划；脚高、滚筒及方向等其他列尚未接入规划，未执行 CAD。')
+            self.journal.record('legacy_variant_imported',source_sha256=report['sha256'],row=row,cad_executed=False)
+        except (OSError,UnicodeError,ValueError) as error:
+            messagebox.showerror('规格表未导入',str(error),parent=self.root)
 
     def open_drawing(self):
         from drawing_setup import open_drawing_setup
