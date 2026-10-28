@@ -709,7 +709,10 @@ class Workbench:
                 raise ValueError('审核尚未完成：\n'+'\n'.join(plan['blockers'][:25]))
             sw_exe=self.values['sw_exe'].get().strip()
             if not sw_exe:
-                raise ValueError('请先选择 SolidWorks 程序。')
+                sw_exe=filedialog.askopenfilename(parent=self.root,title='选择 SolidWorks 程序 SLDWORKS.exe',
+                    filetypes=[('SolidWorks 程序','SLDWORKS.exe'),('可执行文件','*.exe')])
+                if not sw_exe:return
+                self.values['sw_exe'].set(sw_exe)
             parent=filedialog.askdirectory(parent=self.root,title='选择批次输出的上级目录，将新建独立子目录')
             if not parent:return
             output=Path(parent)/('审核批次-'+datetime.now().strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:6])

@@ -29,6 +29,8 @@ def open_review_editor(parent, manifest_path, *, on_queue=None):
     top.pack(fill='x')
     ttk.Label(top, text='选择零件 → 填写并确认参数 → 另存审核清单 → 加入任务队列').pack(anchor='w')
     ttk.Label(top, text='识别结果是候选值；缩放不改变板厚。圆孔策略不适用于任意槽孔。').pack(anchor='w', pady=5)
+    bar = ttk.Frame(win, padding=8)
+    bar.pack(side='bottom', fill='x')
     content = ttk.Frame(win, padding=(14, 0))
     content.pack(fill='both', expand=True)
     table = ttk.Treeview(content, columns=('name', 'included', 'review'), show='headings', selectmode='browse')
@@ -43,19 +45,19 @@ def open_review_editor(parent, manifest_path, *, on_queue=None):
     description = tk.StringVar(value='先选择一个候选零件')
     ttk.Label(editor, textvariable=description, wraplength=390).grid(row=0, column=0, columnspan=2, sticky='w', pady=8)
     for row, key in enumerate(FIELDS, 1):
-        ttk.Label(editor, text=LABELS[key]).grid(row=row, column=0, sticky='w', pady=5)
+        ttk.Label(editor, text=LABELS[key]).grid(row=row, column=0, sticky='w', pady=1)
         if key == 'hole_policy':
             field = ttk.Combobox(editor, textvariable=variables[key], state='readonly', width=28,
                                  values=tuple(HOLE_POLICIES))
         else:
             field = ttk.Entry(editor, textvariable=variables[key], width=31)
-        field.grid(row=row, column=1, sticky='ew', padx=(12, 0), pady=5)
+        field.grid(row=row, column=1, sticky='ew', padx=(12, 0), pady=1)
     ttk.Label(editor, text='孔心位置随外形缩放；“孔径不变”仅适用于圆孔，槽孔仍随外形缩放。',
-              wraplength=390).grid(row=8, column=0, columnspan=2, sticky='w', pady=7)
+              wraplength=390).grid(row=8, column=0, columnspan=2, sticky='w', pady=2)
     for row, label, variable in [(9, '确认人', actor), (10, '选择/排除理由', reason)]:
-        ttk.Label(editor, text=label).grid(row=row, column=0, sticky='w', pady=5)
-        ttk.Entry(editor, textvariable=variable, width=31).grid(row=row, column=1, padx=(12, 0), pady=5)
-    ttk.Checkbutton(editor, text='包含在本批次', variable=included).grid(row=11, column=0, columnspan=2, sticky='w', pady=7)
+        ttk.Label(editor, text=label).grid(row=row, column=0, sticky='w', pady=1)
+        ttk.Entry(editor, textvariable=variable, width=31).grid(row=row, column=1, padx=(12, 0), pady=1)
+    ttk.Checkbutton(editor, text='包含在本批次', variable=included).grid(row=11, column=0, columnspan=2, sticky='w', pady=2)
     status = tk.StringVar(value='尚未修改；所有候选都需要明确包含或排除。')
 
     def refresh():
@@ -163,9 +165,7 @@ def open_review_editor(parent, manifest_path, *, on_queue=None):
             return
         win.destroy()
 
-    ttk.Button(editor, text='确认本件参数与选择', command=confirm_current).grid(row=12, column=0, columnspan=2, sticky='ew', pady=12)
-    bar = ttk.Frame(win, padding=14)
-    bar.pack(fill='x')
+    ttk.Button(editor, text='确认本件参数与选择', command=confirm_current).grid(row=12, column=0, columnspan=2, sticky='ew', pady=3)
     ttk.Label(bar, textvariable=status, wraplength=680).pack(side='left')
     ttk.Button(bar, text='检查完整性', command=check).pack(side='right', padx=5)
     ttk.Button(bar, text='另存清单…', command=save).pack(side='right', padx=5)
