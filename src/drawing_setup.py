@@ -32,7 +32,7 @@ def detect_drawing_resources(executable):
 def open_drawing_setup(parent,project_root,on_message):
     import tkinter as tk
     from tkinter import ttk,filedialog,messagebox
-    root=Path(project_root);win=tk.Toplevel(parent);win.title('三视图 / BOM');win.geometry('760x390')
+    root=Path(project_root);win=tk.Toplevel(parent);win.title('三视图 / BOM');win.geometry('760x440')
     body=ttk.Frame(win,padding=22);body.pack(fill='both',expand=True)
     ttk.Label(body,text='从总装工作副本生成图纸',font=('Microsoft YaHei UI',15)).pack(anchor='w',pady=(0,12))
     fields={key:tk.StringVar() for key in ('models','assembly','output','sw_exe')}
@@ -65,4 +65,18 @@ def open_drawing_setup(parent,project_root,on_message):
             on_message('出图准备完成','请在出图窗口核对总装、比例和测试确认，然后执行。')
             win.destroy()
         except (OSError,ValueError) as error:messagebox.showerror('请检查出图设置',str(error),parent=win)
-    ttk.Button(body,text='进入出图核对',command=start).pack(anchor='e')
+    def inspect_five_sheet_template():
+        path=filedialog.askopenfilename(parent=win,title='选择五图母图的 DXF 工作副本',filetypes=[('DXF 图纸','*.dxf')])
+        if not path:return
+        try:
+            from five_sheet_plan import plan_five_sheets
+            plan=plan_five_sheets(path)
+            names='、'.join(row['name'] for row in plan['sheets'])
+            messagebox.showinfo('五图模板预检',
+                f"母图：{path}\n实体：{plan['source']['entity_count']}\n图层：{len(plan['source']['layers'])}\n"
+                f"计划：{names}\n\n仅检查文件与版式规划；尚未生成图纸，区域、尺寸和 BOM 需要确认。",parent=win)
+        except (OSError,ValueError) as error:
+            messagebox.showerror('无法检查母图',str(error),parent=win)
+    bar=ttk.Frame(body);bar.pack(fill='x')
+    ttk.Button(bar,text='五图母图预检…',command=inspect_five_sheet_template).pack(side='left')
+    ttk.Button(bar,text='进入出图核对',command=start).pack(side='right')
