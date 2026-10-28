@@ -33,8 +33,8 @@ def open_review_editor(parent, manifest_path, *, on_queue=None):
     bar.pack(side='bottom', fill='x')
     content = ttk.Frame(win, padding=(14, 0))
     content.pack(fill='both', expand=True)
-    table = ttk.Treeview(content, columns=('name', 'included', 'review'), show='headings', selectmode='browse')
-    for key, label, width in [('name', '候选零件', 170), ('included', '选择', 80), ('review', '参数审核', 110)]:
+    table = ttk.Treeview(content, columns=('name', 'quantity', 'thickness', 'included', 'review'), show='headings', selectmode='browse')
+    for key, label, width in [('name', '候选零件', 110), ('quantity', '数量候选', 80), ('thickness', '板厚候选', 80), ('included', '选择', 60), ('review', '审核', 95)]:
         table.heading(key, text=label)
         table.column(key, width=width)
     table.pack(side='left', fill='both', expand=True)
@@ -65,7 +65,12 @@ def open_review_editor(parent, manifest_path, *, on_queue=None):
             table.delete(item)
         for part in state['manifest']['parts']:
             review = part.get('selection_review')
+            parameters = part['ledger']['parameters']
+            quantity = parameters.get('quantity')
+            thickness = parameters.get('thickness')
             table.insert('', 'end', iid=part['id'], values=(part['label'],
+                str(quantity['value']) if quantity else '未识别',
+                str(thickness['value']) + ' mm' if thickness else '未识别',
                 '包含' if part['included'] else '排除' if review else '未选择',
                 '有记录，待检查' if review else '未确认'))
 
@@ -95,8 +100,14 @@ def open_review_editor(parent, manifest_path, *, on_queue=None):
             actor.set(prior['actor'])
         reason.set(prior.get('reason', ''))
         state.update(loading=False, pending_edits=False)
+        parameters = part['ledger']['parameters']
+        sources = []
+        for key, label in [('quantity', '数量'), ('thickness', '板厚')]:
+            entry = parameters.get(key)
+            sources.append(label + '来源：' + (str(entry.get('source') or '未记录') if entry else '未识别'))
         description.set(part['label'] + (' · 疑似文字框，只能排除' if part['text_frame'] else '')
-                        + f"\n外形：{part['bounds_mm']} mm；折弯线：{len(part['bend_indices'])}")
+                        + f"\n外形：{part['bounds_mm']} mm；折弯线：{len(part['bend_indices'])}"
+                        + '\n' + '；'.join(sources))
         status.set('修改输入后点击“确认本件”；切换零件不会自动保存输入。')
 
     def confirm_current():
