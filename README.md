@@ -32,3 +32,5 @@ python work/project.py batch runtime/whole-project-smoke/jobs.json
 统一源码候选、方案审核工作区和 Gork 证据收件入口：[交付说明](docs/unified-candidate.md)。
 
 候选包导入、工作区修订与验收比较：[本轮完善说明](docs/delivery-v4.md)。
+
+改型失败恢复、SHA256 checkpoint、幂等回执及未决会话隔离：[接口与 Gork 验收说明](docs/cad-recovery-v5.md)。

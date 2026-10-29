@@ -14,6 +14,7 @@ def execute_variant(request,driver,destination):
         with temporary.open('w',encoding='utf-8') as f:
             json.dump(report,f,ensure_ascii=False,indent=2,allow_nan=False);f.flush();os.fsync(f.fileno())
         temporary.replace(root/'checkpoint.json')
+    checkpoint=None
     try:
         record('queued',{'source_unchanged':True})
         driver.isolate(request,root/'isolated');record('isolated',{'status':'copied'})
@@ -21,7 +22,13 @@ def execute_variant(request,driver,destination):
         plan=plan_variant(request,before);report['plan']=plan
         if plan['status']!='ready_for_native':raise ValueError('roller native execution requires complete mappings/interfaces/dependencies')
         record('planned_from_native_readback',{'plan_sha256':plan['plan_sha256']})
+        if hasattr(driver,'checkpoint'):
+            checkpoint=driver.checkpoint()
+            record('rollback_checkpoint_sealed',{'manifest_sha256':checkpoint.manifest_sha256})
+        elif not driver.simulated:
+            raise RuntimeError('native writes require a byte checkpoint')
         for change in plan['changes']:
+            report['write_attempted']=True
             report['cad_write_attempted']=not driver.simulated
             driver.write(change);report['cad_executed']=not driver.simulated;record('dimension_written',{'parameter':change['parameter'],'after_mm':change['after_mm']})
         driver.rebuild_save();record('rebuilt_saved',{'status':'saved_pending_reopen'})
@@ -40,7 +47,13 @@ def execute_variant(request,driver,destination):
             after_mm=after,axial_extent_mm=envelope,verification_scope='mapped_dimensions_feature_inventory_mate_states_and_axis_bounds')
         record('verified',{'overall_mm':after['overall_length'],'axis_bounds_mm':envelope})
     except Exception as exc:
-        report.update(status='failed',error=str(exc),traceback=traceback.format_exc(),recovery='keep isolated failed output; rerun into a new directory; source never written')
+        report.update(status='failed',error=str(exc),traceback=traceback.format_exc(),recovery='preserve isolated output and reconcile request receipt before another write')
+        if checkpoint is not None and report.get('write_attempted'):
+            try:
+                report['rollback']=driver.restore(checkpoint)
+            except Exception as recovery:
+                report['rollback']={'state':'ROLLBACK_UNCONFIRMED','error':str(recovery),
+                                    'manifest_sha256':checkpoint.manifest_sha256}
         record('failed',{'error_type':type(exc).__name__})
     finally:
         try:driver.close();report['cleanup']='owned_documents_closed'

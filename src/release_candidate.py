@@ -16,7 +16,9 @@ CHECKS = [
     ('coexisting_instances','native'), ('dwg_analyze','native'),
     ('sheet_rebuild_flat_pattern','native'), ('roller_800_interfaces','native'),
     ('assembly_motion_interference','native'), ('drawings_bom_manufacturing','native'),
-    ('save_reopen_references','native'), ('process_exit_and_source_unchanged','native')]
+    ('save_reopen_references','native'), ('process_exit_and_source_unchanged','native'),
+    ('checkpoint_half_edit_restore','native'), ('request_idempotency_and_conflict','native'),
+    ('unresolved_session_reconciliation','native')]
 
 
 def git(root, *args):

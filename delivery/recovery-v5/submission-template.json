@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "results": [
+    {
+      "lane": "unified",
+      "id": "cloud_regression",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "offline",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "desktop_and_api",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "offline",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "coexisting_instances",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "dwg_analyze",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "sheet_rebuild_flat_pattern",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "roller_800_interfaces",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "assembly_motion_interference",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "drawings_bom_manufacturing",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "save_reopen_references",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "process_exit_and_source_unchanged",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "checkpoint_half_edit_restore",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "request_idempotency_and_conflict",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    },
+    {
+      "lane": "unified",
+      "id": "unresolved_session_reconciliation",
+      "sha": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+      "scope": "native",
+      "status": "review_required",
+      "simulated_only": null,
+      "environment": {},
+      "session": {},
+      "process_exit_code": null,
+      "artifacts": []
+    }
+  ]
+}

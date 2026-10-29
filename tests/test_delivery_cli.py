@@ -29,4 +29,16 @@ class CliTests(unittest.TestCase):
             original=(root/'comparison.json').read_bytes();self.assertEqual(self.call(args)[0],1)
             self.assertEqual((root/'comparison.json').read_bytes(),original)
 
+    def test_receipt_command_preserves_unresolved_writer_and_linux_reconcile_refuses(self):
+        from cad_receipts import ReceiptStore
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as folder:
+            db=Path(folder)/'state.sqlite3';store=ReceiptStore(db)
+            row=store.begin(Path(folder)/'fixture.SLDPRT','r1',{'fixture':True})
+            code,result=self.call(['receipts','--state-db',str(db),'--key',row['key']])
+            self.assertEqual(code,3);self.assertEqual(result['receipt']['session_state'],'RUNNING')
+            with patch('cad_reconcile.sys.platform','linux'):
+                code,result=self.call(['reconcile','--state-db',str(db),'--key',row['key']])
+            self.assertEqual(code,1);self.assertEqual(store.get(row['key'])['session_state'],'RUNNING')
+
 if __name__=='__main__':unittest.main()
