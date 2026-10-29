@@ -55,6 +55,24 @@ class PipelineTests(unittest.TestCase):
         self.assertIn('source_units', build_plan(analysis)['pending'])
         self.assertEqual(run_plan(self.analysis, plan, self.root/'out', MockSheetMetalPort())['status'], 'pending')
 
+    def test_collinear_marks_use_one_physical_axis_and_remap_relief(self):
+        line=self.analysis.bend_lines[0]
+        self.analysis=replace(self.analysis,bend_lines=(line,line))
+        plan=self.plan(relief_bend_indices=(1,))
+        self.assertEqual(plan['source_bend_indices'],[0,1])
+        self.assertEqual(plan['bend_indices'],[0])
+        self.assertEqual(plan['source_relief_bend_indices'],[1])
+        self.assertEqual(plan['relief_bend_indices'],[0])
+
+    def test_parallel_separate_axes_still_require_two_native_bends(self):
+        line=self.analysis.bend_lines[0]
+        other=replace(line,points=((70,0),(70,80)),curve_segments=())
+        self.analysis=replace(self.analysis,bend_lines=(line,other))
+        plan=self.plan()
+        self.assertEqual(plan['bend_indices'],[0,1])
+        with self.assertRaises(RuntimeError):
+            validate_native(plan,dict(editable=True,bend_feature_count=1))
+
     def test_invalid_parameters_and_reliefs(self):
         for updates in ({'thickness_mm':0}, {'radius_mm':-1}, {'angle_degrees':180},
                         {'k_factor':2}, {'k_factor':True}, {'radius_mm':float('nan')},

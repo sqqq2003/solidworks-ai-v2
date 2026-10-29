@@ -25,7 +25,8 @@ from bend_allowance import resolve_bend_allowance_spec
 from profile_selection import contained_hole_indices, outermost_containing_profile_index
 from profile_sanitize import contour_self_intersects, sanitize_closed_profile
 from solidworks_generator import (profile_bend_indices, minimal_relief_width_mm,
-                                 minimal_relief_depth_past_centerline_mm)
+                                 minimal_relief_depth_past_centerline_mm,
+                                 collapse_collinear_bend_indices, _bends_are_collinear)
 
 
 def digest(value):
@@ -70,10 +71,15 @@ def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
     relief = tuple(dict.fromkeys(relief_bend_indices))
     if any(type(i) is not int or i not in bends for i in relief):
         raise ValueError('relief indices must belong to selected bend lines')
+    source_bends = tuple(bends)
+    source_relief = relief
+    bends = collapse_collinear_bend_indices(analysis, source_bends)
+    relief = tuple(i for i in bends if any(_bends_are_collinear(
+        analysis.bend_lines[i], analysis.bend_lines[j]) for j in source_relief))
     pending = []
     if bends and not bends_confirmed:
         pending.append('bend_line_classification')
-    for index in bends:
+    for index in source_bends:
         bend = analysis.bend_lines[index]
         if len(bend.points) < 2 or math.dist(bend.points[0], bend.points[-1]) <= 1e-8:
             raise ValueError('degenerate bend line')
@@ -115,6 +121,8 @@ def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
             'source_sha256': file_hash(analysis.path), 'analysis_sha256': analysis_hash(analysis),
             'code_sha256': code_hash(), 'units': 'mm', 'source_units': analysis.units_name,
             'profile_index': profile_index, 'hole_indices': list(holes), 'bend_indices': list(bends),
+            'source_bend_indices': list(source_bends),
+            'source_relief_bend_indices': list(source_relief),
             'relief_bend_indices': list(relief), 'bend_classification_confirmed': bool(bends_confirmed),
             'parameters': params,
             'parameter_source': 'explicit_operator_inputs', 'bend_allowance': allowance,
