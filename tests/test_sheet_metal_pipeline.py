@@ -73,6 +73,38 @@ class PipelineTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             validate_native(plan,dict(editable=True,bend_feature_count=1))
 
+    def test_reviewed_bend_exclusion_is_recorded_and_requires_confirmation(self):
+        reason = 'drawing note: marking weld line, do not bend'
+        with self.assertLogs('sheet_metal_pipeline', level='INFO') as captured:
+            pending = self.plan(exclude_bend_indices=(0,), bend_exclusion_reason=reason)
+        self.assertIn('bend exclusion review', '\n'.join(captured.output))
+        self.assertEqual(pending['detected_bend_indices'], [0])
+        self.assertEqual(pending['excluded_bend_indices'], [0])
+        self.assertEqual(pending['bend_exclusion_reason'], reason)
+        self.assertFalse(pending['bend_exclusions_confirmed'])
+        self.assertIn('bend_exclusions_not_confirmed', pending['pending'])
+        self.assertEqual(run_plan(self.analysis, pending, self.root/'unconfirmed',
+                                 MockSheetMetalPort())['status'], 'pending')
+
+        confirmed = self.plan(exclude_bend_indices=(0,), bend_exclusions_confirmed=True,
+                              bend_exclusion_reason=reason)
+        self.assertEqual(confirmed['status'], 'ready_for_windows')
+        self.assertEqual(confirmed['bend_indices'], [])
+        self.assertEqual(confirmed['source_bend_indices'], [])
+        self.assertNotIn('native_sketched_bends', confirmed['feature_plan'])
+        result = run_plan(self.analysis, confirmed, self.root/'confirmed', MockSheetMetalPort())
+        manifest = json.loads((Path(result['output_dir'])/'result.json').read_text())
+        self.assertEqual(manifest['plan']['excluded_bend_indices'], [0])
+        self.assertEqual(manifest['plan']['bend_exclusion_reason'], reason)
+
+    def test_bend_exclusion_requires_valid_selected_candidate_and_reason(self):
+        with self.assertRaisesRegex(ValueError, 'selected profile'):
+            self.plan(exclude_bend_indices=(7,))
+        with self.assertRaisesRegex(ValueError, 'review reason'):
+            self.plan(exclude_bend_indices=(0,), bend_exclusions_confirmed=True)
+        with self.assertRaisesRegex(ValueError, 'requires at least one excluded bend'):
+            self.plan(bend_exclusions_confirmed=True)
+
     def test_invalid_parameters_and_reliefs(self):
         for updates in ({'thickness_mm':0}, {'radius_mm':-1}, {'angle_degrees':180},
                         {'k_factor':2}, {'k_factor':True}, {'radius_mm':float('nan')},

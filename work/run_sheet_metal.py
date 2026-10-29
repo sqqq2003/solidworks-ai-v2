@@ -21,6 +21,12 @@ def main():
         p.add_argument('--'+key, type=float)
     p.add_argument('--direction', choices=('normal','reverse'))
     p.add_argument('--confirm-bends', action='store_true', help='operator confirmed analyzer bend candidates')
+    p.add_argument('--exclude-bends', type=int, nargs='*', default=[],
+                   help='zero-based detected bend candidate indices reviewed as non-bends on this profile')
+    p.add_argument('--confirm-bend-exclusions', action='store_true',
+                   help='confirm the listed bend exclusions against explicit drawing evidence')
+    p.add_argument('--bend-exclusion-reason',
+                   help='drawing note or review evidence supporting the listed exclusions')
     p.add_argument('--confirm-unitless-mm', action='store_true')
     p.add_argument('--relief-bends', type=int, nargs='*', default=[])
     p.add_argument('--out', type=Path, default=ROOT/'runtime/sheet-metal')
@@ -39,7 +45,9 @@ def main():
             radius_mm=args.radius, angle_degrees=args.angle, k_factor=args.k_factor,
             flip_direction=None if args.direction is None else args.direction == 'reverse',
             units_confirmed=args.confirm_unitless_mm, relief_bend_indices=args.relief_bends,
-            bends_confirmed=args.confirm_bends)
+            bends_confirmed=args.confirm_bends, exclude_bend_indices=args.exclude_bends,
+            bend_exclusions_confirmed=args.confirm_bend_exclusions,
+            bend_exclusion_reason=args.bend_exclusion_reason)
         report = {'plan': plan}
         if args.dry_run:
             report['execution'] = run_plan(analysis, plan, args.out, MockSheetMetalPort())

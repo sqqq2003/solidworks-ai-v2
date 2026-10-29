@@ -52,7 +52,9 @@ def code_hash():
 
 def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
                angle_degrees=None, k_factor=None, flip_direction=None,
-               relief_bend_indices=(), units_confirmed=False, bends_confirmed=False):
+               relief_bend_indices=(), units_confirmed=False, bends_confirmed=False,
+               exclude_bend_indices=(), bend_exclusions_confirmed=False,
+               bend_exclusion_reason=None):
     if not 0 <= profile_index < len(analysis.profiles):
         raise ValueError('selected profile does not exist')
     if outermost_containing_profile_index(analysis.profiles, profile_index) != profile_index:
@@ -67,7 +69,21 @@ def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
             raise ValueError('self-intersecting internal contour')
         if contained_hole_indices(analysis.profiles, index):
             raise ValueError('nested islands require explicit topology review')
-    bends = profile_bend_indices(profile, analysis.bend_lines, [analysis.profiles[i] for i in holes])
+    detected_bends = profile_bend_indices(
+        profile, analysis.bend_lines, [analysis.profiles[i] for i in holes])
+    excluded = tuple(dict.fromkeys(exclude_bend_indices))
+    if any(type(i) is not int or i not in detected_bends for i in excluded):
+        raise ValueError('excluded bend indices must belong to detected bends on the selected profile')
+    if type(bend_exclusions_confirmed) is not bool:
+        raise ValueError('bend exclusion confirmation must be boolean')
+    if bend_exclusions_confirmed and not excluded:
+        raise ValueError('bend exclusion confirmation requires at least one excluded bend')
+    if bend_exclusion_reason is not None and not isinstance(bend_exclusion_reason, str):
+        raise ValueError('bend exclusion reason must be text')
+    bend_exclusion_reason = (bend_exclusion_reason or '').strip() or None
+    if excluded and bend_exclusions_confirmed and not bend_exclusion_reason:
+        raise ValueError('confirmed bend exclusions require a review reason')
+    bends = tuple(index for index in detected_bends if index not in excluded)
     relief = tuple(dict.fromkeys(relief_bend_indices))
     if any(type(i) is not int or i not in bends for i in relief):
         raise ValueError('relief indices must belong to selected bend lines')
@@ -77,6 +93,14 @@ def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
     relief = tuple(i for i in bends if any(_bends_are_collinear(
         analysis.bend_lines[i], analysis.bend_lines[j]) for j in source_relief))
     pending = []
+    if excluded:
+        logger.info('bend exclusion review: detected=%s excluded=%s confirmed=%s reason=%s',
+                    list(detected_bends), list(excluded), bend_exclusions_confirmed,
+                    bend_exclusion_reason or '<missing>')
+        if not bend_exclusions_confirmed:
+            pending.append('bend_exclusions_not_confirmed')
+        if not bend_exclusion_reason:
+            pending.append('bend_exclusion_reason')
     if bends and not bends_confirmed:
         pending.append('bend_line_classification')
     for index in source_bends:
@@ -121,9 +145,13 @@ def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
             'source_sha256': file_hash(analysis.path), 'analysis_sha256': analysis_hash(analysis),
             'code_sha256': code_hash(), 'units': 'mm', 'source_units': analysis.units_name,
             'profile_index': profile_index, 'hole_indices': list(holes), 'bend_indices': list(bends),
+            'detected_bend_indices': list(detected_bends),
             'source_bend_indices': list(source_bends),
             'source_relief_bend_indices': list(source_relief),
             'relief_bend_indices': list(relief), 'bend_classification_confirmed': bool(bends_confirmed),
+            'excluded_bend_indices': list(excluded),
+            'bend_exclusions_confirmed': bend_exclusions_confirmed,
+            'bend_exclusion_reason': bend_exclusion_reason,
             'parameters': params,
             'parameter_source': 'explicit_operator_inputs', 'bend_allowance': allowance,
             'relief_rule': relief_rule, 'pending': pending,
@@ -338,6 +366,7 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
         result = {'status': 'simulated_pass' if port.simulated else 'native_features_verified',
                   'plan_id': plan_id, 'simulated_only': port.simulated,
                   'sw_live_verified': not port.simulated, 'mechanical_acceptance': 'unverified',
+                  'plan': plan,
                   'generation': generated, 'reopen': evidence,
                   'artifact_sha256': {p.name: file_hash(p) for p in (part, flat)}}
         (stage/'result.json').write_text(json.dumps(result, indent=2, default=str, allow_nan=False)+'\n')
