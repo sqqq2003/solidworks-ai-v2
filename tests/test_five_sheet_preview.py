@@ -86,5 +86,31 @@ class PreviewTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'正在执行'):
                 generate(self.manifest,self.output,resume=True,exporter=self.export)
 
+    def test_dimension_override_warning_survives_resume_without_changing_drawing(self):
+        doc=ezdxf.readfile(self.source)
+        dim=doc.modelspace().add_linear_dim(base=(0,20),p1=(0,0),p2=(680,0)).dimension
+        dim.dxf.text='640';dim.dxf.actual_measurement=680
+        dim.render()
+        doc.saveas(self.source);original=self.source.read_bytes()
+        for row in self.plan['sheets']:
+            row['source_sha256']=file_hash(self.source)
+            row['groups']['views'].append(dim.dxf.handle)
+        self.write_plan()
+        result=generate(self.manifest,self.output,exporter=self.export)
+        review=result['dimension_override_reviews'][NAMES[0]]
+        self.assertEqual(review['dimension_mismatch_count'],1)
+        self.assertEqual(review['dimension_mismatches'][0]['display_override'],'640')
+        self.assertEqual(review['dimension_mismatches'][0]['stored_measurement'],680)
+        self.assertFalse(review['geometry_verified'])
+        self.assertTrue(any('尺寸覆盖' in issue for issue in result['issues']))
+        receipt=self.output/NAMES[0]/'receipt.json';before=receipt.read_bytes()
+        def refuse_export(*_):raise AssertionError('completed output must be reused')
+        resumed=generate(self.manifest,self.output,resume=True,exporter=refuse_export)
+        self.assertEqual(resumed['dimension_override_reviews'],result['dimension_override_reviews'])
+        self.assertEqual(resumed['issues'],result['issues'])
+        self.assertEqual(receipt.read_bytes(),before)
+        self.assertEqual(self.source.read_bytes(),original)
+        self.assertFalse(resumed['production_approved'])
+
 
 if __name__=='__main__':unittest.main()

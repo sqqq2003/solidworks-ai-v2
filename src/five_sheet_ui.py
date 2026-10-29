@@ -7,6 +7,14 @@ import sys
 import uuid
 
 
+def completion_message(state):
+    issues=state.get('issues',[])
+    lines=['五图预览已生成，待工程复核。']
+    lines.extend('• '+str(value)[:1000] for value in issues[:100])
+    if len(issues)>100:lines.append(f'另有{len(issues)-100}项，详见输出目录中的任务记录。')
+    return '\n'.join(lines)
+
+
 def launch_preview(project_root,manifest,output,*,resume=False):
     root=Path(project_root).resolve();manifest=Path(manifest).resolve(strict=True)
     output=Path(output).resolve()
@@ -26,7 +34,8 @@ def launch_preview(project_root,manifest,output,*,resume=False):
 def open_five_sheet_preview(parent,project_root,on_message):
     import tkinter as tk
     from tkinter import ttk,filedialog,messagebox
-    win=tk.Toplevel(parent);win.title('五图版式预览');win.geometry('800x420')
+    from tkinter.scrolledtext import ScrolledText
+    win=tk.Toplevel(parent);win.title('五图版式预览');win.geometry('800x500')
     body=ttk.Frame(win,padding=20);body.pack(fill='both',expand=True)
     ttk.Label(body,text='生成钣金、方管、明细、总图和三视图预览',
               font=('Microsoft YaHei UI',13)).pack(anchor='w',pady=(0,14))
@@ -43,7 +52,12 @@ def open_five_sheet_preview(parent,project_root,on_message):
         ttk.Entry(form,textvariable=variable).grid(row=row,column=1,sticky='ew',padx=8)
         ttk.Button(form,text='选择',command=choose).grid(row=row,column=2)
     ttk.Label(body,text='输出DXF、PDF和图片。分区及原图变化时需重新核对；预览不代表加工批准。',wraplength=720).pack(anchor='w',pady=12)
-    ttk.Label(body,textvariable=status,wraplength=720).pack(anchor='w',pady=6)
+    details=ScrolledText(body,height=7,wrap='word',font=('Microsoft YaHei UI',10))
+    details.pack(fill='both',expand=True,pady=6)
+    def refresh_status(*_):
+        details.configure(state='normal');details.delete('1.0','end')
+        details.insert('1.0',status.get());details.configure(state='disabled')
+    status.trace_add('write',refresh_status);refresh_status()
     active={'process':None}
     def begin(resume=False):
         if active['process'] is not None and active['process'].poll() is None:return
@@ -69,8 +83,7 @@ def open_five_sheet_preview(parent,project_root,on_message):
                 try:state=json.loads((Path(destination)/'preview-state.json').read_text(encoding='utf-8'))
                 except (OSError,ValueError):state={}
                 if code==0 and state.get('status')=='completed_preview':
-                    issues=[str(value)[:180] for value in state.get('issues',[])[:3]]
-                    status.set('五图预览已生成，待工程复核。'+(' 待处理：'+'；'.join(issues) if issues else ''))
+                    status.set(completion_message(state))
                     on_message('五图预览完成',destination)
                 else:
                     detail=state.get('error','未取得完成记录，请查看任务日志。')

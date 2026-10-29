@@ -86,8 +86,14 @@ def model_fingerprint(doc):
 def _prepare(row,job_id,title):
     import ezdxf
     from dxf_paper_layout import add_partitioned_layout
+    from dxf_overview import inspect_dxf
     source=Path(row['source'])
     if file_hash(source)!=row['source_sha256']:raise ValueError('源图读取前已变化。')
+    overview=inspect_dxf(source)
+    if overview['sha256']!=row['source_sha256']:raise ValueError('源图预检时已变化。')
+    dimension_review={key:overview[key] for key in ('sha256','scope','unit_label',
+        'dimension_mismatches','dimension_mismatch_count','dimension_mismatches_truncated',
+        'geometry_verified','production_approved','caveats')}
     doc=ezdxf.readfile(source);before=model_fingerprint(doc)
     by_handle={e.dxf.handle:e for e in doc.modelspace()}
     try:groups={key:[by_handle[h] for h in handles] for key,handles in row['groups'].items()}
@@ -108,7 +114,8 @@ def _prepare(row,job_id,title):
         if group!='title':text(labels.get(group,group),(cell[0],cell[3]+4),3)
     if model_fingerprint(doc)!=before:raise ValueError('分区准备意外改动了模型实体。')
     if file_hash(source)!=row['source_sha256']:raise ValueError('源图读取时已变化。')
-    return {'doc':doc,'layout':layout,'fingerprint':before,'row':row}
+    return {'doc':doc,'layout':layout,'fingerprint':before,'row':row,
+            'dimension_review':dimension_review}
 
 
 def export_sheet(prepared,folder):
@@ -186,6 +193,12 @@ def generate(manifest,output,*,resume=False,exporter=None):
         try:
             journal.record('five_sheet_preview_started',output=str(output),resume=resume,job_id=state['job_id'])
             prepared=[_prepare(row,state['job_id'],plan.get('machine_name','五图')) for row in plan['sheets']]
+            state['dimension_override_reviews']={item['row']['name']:item['dimension_review'] for item in prepared}
+            for name,review in state['dimension_override_reviews'].items():
+                count=review['dimension_mismatch_count']
+                if count:
+                    issue=f'{name}：{count}处标注显示值与DXF存储测量值不同，需核对尺寸覆盖。'
+                    if issue not in state['issues']:state['issues'].append(issue)
             state['status']='running';state.pop('error',None);_json_write(output/STATE,state)
             for item in prepared:
                 row=item['row'];current=row['name'];destination=output/current
@@ -218,6 +231,7 @@ def generate(manifest,output,*,resume=False,exporter=None):
                 _json_write(staging/'receipt.json',{'job_id':state['job_id'],'manifest_sha256':digest,
                     'source_sha256':row['source_sha256'],'sha256':hashes,'layout':item['layout'],
                     'pdf_text_review':text_review,
+                    'dimension_override_review':item['dimension_review'],
                     'pdf_dimension_association':'unverified_glyph_preview','production_approved':False})
                 staging.rename(destination)
                 state['sheets'][current]={'status':'completed_preview','sha256':hashes,'reused':False}
