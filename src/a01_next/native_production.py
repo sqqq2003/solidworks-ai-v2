@@ -89,6 +89,11 @@ class A01ProductionDriver(ManufacturingDriver):
                 # part. Scope 1 follows the configuration proved above.
                 if int(dimension.SetSystemValue3(value, 1, None)) != 0:
                     raise RuntimeError('native observed dimension write refused')
+                self.guard()
+                # EditRebuild3 alone can leave the body stale after this API
+                # write even though the dimension reads back the target.
+                if model.ForceRebuild3(False) is not True:
+                    raise RuntimeError('native observed force rebuild failed')
                 return {'parameter': edit['parameter'], 'target_mm': edit['value'],
                         'native_acceptance': 'pending_geometry_readback'}
             receipt = change_owned_part(self, source_path=source,

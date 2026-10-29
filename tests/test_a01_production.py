@@ -144,6 +144,30 @@ class ProductionTests(unittest.TestCase):
         self.assertEqual([x[0] for x in entries],['dimension_change_started','dimension_change_readback','dimension_change_reopened'])
         self.assertEqual(len({x[1] for x in entries}),1)
 
+    def test_observed_write_forces_body_rebuild_and_refuses_rebuild_failure(self):
+        edit=prepare_request(self.request)['edits'][0]
+        copy=self.root/'observed.SLDPRT';copy.write_bytes(b'work copy')
+        parameter=edit['parameter']
+        contract={'confirmed':True,'confirmed_by':'synthetic trial',
+                  'source_sha256':sha(self.part),
+                  'dimensions_mm':{parameter:edit['dimension']},
+                  'checks':[{'field':'dimension:'+parameter,'mode':'target',
+                             'unit':'mm','value':edit['value'],'tolerance':.001}]}
+        model=MagicMock();model.ConfigurationManager=NS(ActiveConfiguration=NS(Name='Default'))
+        model.Parameter.return_value.SetSystemValue3.return_value=0
+        driver=A01ProductionDriver(None,self.root);driver.guard=MagicMock()
+        def transaction(_driver,**kwargs):
+            kwargs['apply_change'](model)
+            return {'status':'synthetic_callback_only'}
+        with patch('owned_part_transaction.change_owned_part',side_effect=transaction):
+            model.ForceRebuild3.return_value=True
+            driver.apply_mapped_dimensions_observed([edit],{str(self.part):str(copy)},{parameter:contract})
+            model.ForceRebuild3.assert_called_once_with(False)
+            model.ForceRebuild3.return_value=False
+            with self.assertRaisesRegex(RuntimeError,'force rebuild failed'):
+                driver.apply_mapped_dimensions_observed([edit],{str(self.part):str(copy)},{parameter:contract})
+        model.Save3.assert_not_called()
+
     def test_nonfinite_before_dimension_is_refused_before_write(self):
         model=MagicMock();dimension=MagicMock();dimension.SystemValue=float('nan');model.Parameter.return_value=dimension
         model.ConfigurationManager=NS(ActiveConfiguration=NS(Name='Default'))
