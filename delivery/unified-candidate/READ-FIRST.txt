@@ -1,0 +1,8 @@
+Source candidate; Windows runtime and SolidWorks are NOT included.
+Extract source.zip into a NEW directory. Run python work/verify_test_handoff.py .
+Install requirements-cloud.txt into a new environment. python app.py
+Cloud regression: python work/run_integrated_tests.py --out <new-directory>
+Workflow: python work/delivery.py prepare <request.json> --out <new-workspace>
+Native work is Windows-only, explicitly reviewed, on isolated work copies.
+Fill submission-template.json. Audit with work/delivery.py audit matrix.json submission.json --evidence-root <evidence> --out <new-report-directory>.
+A passed audit checks declared records and bytes, never manufacturing approval.

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "source_revision": "d65b7c64e8318bdfcd217ccf7e1c36f78a1a2164",
+  "package_sha256": "fe6c686edea6b54852b792a718277f1911ba549e6ffc267ed91964c2528282ff",
+  "file_count": 511,
+  "source_manifest_sha256": "73c22d1278e3d86d470d9ac5055987a1b193ef7ee0537df7efc250ff65347273",
+  "matrix_sha256": "49fa1b7b5169b97d0aa422120d715f2fb38ab776a7cd1e2542846395514356d9",
+  "native_acceptance": "not_run",
+  "manufacturing_approved": false,
+  "runtime_bundled": false,
+  "source_only": true,
+  "candidate_id": "ff6767edd8bd27aacb108f08b45d119e3dcf935976c88267f2f4038fdb3fe175"
+}

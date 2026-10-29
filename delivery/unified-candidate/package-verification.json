@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "source_revision": "d65b7c64e8318bdfcd217ccf7e1c36f78a1a2164",
+  "source_archive_sha256": "fe6c686edea6b54852b792a718277f1911ba549e6ffc267ed91964c2528282ff",
+  "kit_sha256": "937e5367194d6f600dd5c4f2a94a82de8c42e419493c2f67cd7e6a8de9056edd",
+  "package_integrity": "passed",
+  "extracted_source_integrity": "verified",
+  "source_files": 511,
+  "empty_template_audit": {
+    "status": "review_required",
+    "passed": 0,
+    "pending": 10
+  },
+  "native_acceptance": "not_run",
+  "windows_runtime_bundled": false
+}
