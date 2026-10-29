@@ -1,0 +1,33 @@
+{
+  "source_revision": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+  "scope": "targeted_file_sqlite_subprocess_and_fake_native_contracts_only",
+  "tests_run": 149,
+  "passed": 148,
+  "skipped": 1,
+  "failures": 0,
+  "errors": 0,
+  "full_regression_run": false,
+  "desktop_run": false,
+  "windows_solidworks_run": false,
+  "modules": [
+    "test_cad_checkpoint",
+    "test_cad_receipts",
+    "test_cad_recovery_native_contract",
+    "test_rollback_fault_tool",
+    "test_sw_session_safety",
+    "test_owned_session_ddd",
+    "test_s2_session_keepalive",
+    "test_roller_variant",
+    "test_project_delivery",
+    "test_delivery_revisions",
+    "test_delivery_cli",
+    "test_release_candidate",
+    "test_release_install",
+    "test_release_evidence",
+    "test_audit_comparison"
+  ],
+  "skip_reason": "historical uploaded original source baseline is absent from cloud pack",
+  "command": "XDG_CACHE_HOME=/workspace/cache PYTHONPATH=src:tests python -m unittest test_cad_checkpoint test_cad_receipts test_cad_recovery_native_contract test_rollback_fault_tool test_sw_session_safety test_owned_session_ddd test_s2_session_keepalive test_roller_variant test_project_delivery test_delivery_revisions test_delivery_cli test_release_candidate test_release_install test_release_evidence test_audit_comparison -v",
+  "native_acceptance": "not_run",
+  "manufacturing_approved": false
+}

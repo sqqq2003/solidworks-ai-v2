@@ -1,0 +1,51 @@
+{
+  "scope": "source_candidate_kit_integrity_and_new_directory_install_only",
+  "kit_sha256": "3b58b28ccef08f865dcb1c5af61eaab19c0a50b7b9e51d79842de58abfff3ba7",
+  "git_blob_sha": "d86e0e4acb36a09f6c105018ce1aa429ea253481",
+  "inspection": {
+    "schema_version": 1,
+    "status": "passed",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "3b58b28ccef08f865dcb1c5af61eaab19c0a50b7b9e51d79842de58abfff3ba7",
+    "source_revision": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+    "candidate_id": "7403ef85e83341dafa96d5f33ec57ae1ed158a3829684f4d3bdcb3a9ef9767e5",
+    "source_files": 526,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false
+  },
+  "installation": {
+    "schema_version": 1,
+    "status": "review_required",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "3b58b28ccef08f865dcb1c5af61eaab19c0a50b7b9e51d79842de58abfff3ba7",
+    "source_revision": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+    "candidate_id": "7403ef85e83341dafa96d5f33ec57ae1ed158a3829684f4d3bdcb3a9ef9767e5",
+    "source_files": 526,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false,
+    "phase": "source_installed_runtime_required",
+    "directory": "/workspace/recovery-v5-installed",
+    "app_directory": "/workspace/recovery-v5-installed/app",
+    "files_written": 528,
+    "next_steps": [
+      "Create a new Python environment and install app/requirements-cloud.txt.",
+      "Run python work/verify_test_handoff.py . inside app.",
+      "Run python app.py; native work still requires explicit Windows review."
+    ],
+    "original_installation_modified": false,
+    "code_executed": false
+  },
+  "candidate_verification": {
+    "status": "passed",
+    "issues": [],
+    "source_revision": "7524bc2e77d11fc089c529ffb3f03c6db5b9d949",
+    "scope": "candidate_file_integrity_only",
+    "manufacturing_approved": false
+  },
+  "native_acceptance": "not_run",
+  "manufacturing_approved": false
+}
