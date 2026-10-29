@@ -82,7 +82,7 @@ class ProductionTests(unittest.TestCase):
         driver.open_document=MagicMock(return_value=model);driver.close_document=MagicMock()
         edits=prepare_request(self.request)['edits']
         result=driver.apply_mapped_dimensions(edits,{str(self.part):str(self.root/'copy.SLDPRT')})
-        dimension.SetSystemValue3.assert_called_once_with(1.8,3,['Default'])
+        dimension.SetSystemValue3.assert_called_once_with(1.8,1,None)
         self.assertTrue(result[0]['reopened'])
 
     def test_configuration_checks_readback_without_redundant_switch(self):
@@ -121,7 +121,12 @@ class ProductionTests(unittest.TestCase):
     def test_dimension_journal_correlates_before_write_and_reopen(self):
         class Dimension:
             SystemValue=1.2
-            def SetSystemValue3(self,value,scope,configs):self.SystemValue=value;return 0
+            def SetSystemValue3(self,value,scope,configs):
+                # Native regression: specific-config writes returned success
+                # but left the dimension unchanged on the real tube part.
+                if scope == 1 and configs is None:
+                    self.SystemValue=value
+                return 0
         dimension=Dimension();model=MagicMock();model.Parameter.return_value=dimension
         model.ConfigurationManager=NS(ActiveConfiguration=NS(Name='Default'))
         model.Save3.return_value=(True,0,0)

@@ -78,13 +78,16 @@ class A01ProductionDriver(ManufacturingDriver):
         for edit, source, copy, contract in prepared:
             def apply(model, edit=edit):
                 self.guard()
+                activate_configuration(model, edit['configuration'])
                 if find_named_feature(model, edit['feature']) is None:
                     raise RuntimeError('mapped feature missing before observed change')
                 dimension = model.Parameter(edit['dimension'])
                 if dimension is None:
                     raise RuntimeError('mapped dimension missing before observed change')
                 value = edit['value'] / 1000
-                if int(dimension.SetSystemValue3(value, 3, [edit['configuration']])) != 0:
+                # SW2025 can return success for scope 3 without changing this
+                # part. Scope 1 follows the configuration proved above.
+                if int(dimension.SetSystemValue3(value, 1, None)) != 0:
                     raise RuntimeError('native observed dimension write refused')
                 return {'parameter': edit['parameter'], 'target_mm': edit['value'],
                         'native_acceptance': 'pending_geometry_readback'}
@@ -139,7 +142,7 @@ class A01ProductionDriver(ManufacturingDriver):
                     work_copy=str(path),configuration=edit['configuration'],unit_si=unit_si,
                     before_value_si=before,target_value_si=value)
                 try:
-                    if int(dimension.SetSystemValue3(value,3,[edit['configuration']]))!=0:
+                    if int(dimension.SetSystemValue3(value,1,None))!=0:
                         raise RuntimeError('native dimension write refused')
                     after=float(dimension.SystemValue)
                     if not math.isfinite(after) or not math.isclose(after,value,rel_tol=1e-9,abs_tol=1e-9):
