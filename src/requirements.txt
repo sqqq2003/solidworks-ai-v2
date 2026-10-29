@@ -1,2 +1,5 @@
 ezdxf>=1.0
+Pillow>=10.0
+matplotlib>=3.8
+pypdf>=6.0
 pywin32>=306; sys_platform == "win32"

@@ -48,19 +48,25 @@ def build(output):
         if (base/name).is_file():shutil.copy2(base/name,runtime/name)
     packages=Path(site.getsitepackages()[-1])
     shutil.copytree(packages,runtime/'Lib/site-packages',ignore=shutil.ignore_patterns('__pycache__','*.pyc','pip','pip-*.dist-info'))
-    # A minimal COM venv can omit Pillow although DXF glyph rendering imports
-    # PIL.Image. Reuse only the matching base interpreter's installed package;
-    # the PE dependency scan below also covers its compiled extensions.
+    # Reuse drawing dependencies from this same base interpreter when a
+    # minimal COM venv omitted them. Keep license/distribution metadata and
+    # package-local DLLs; the PE scan below also covers compiled extensions.
     target_packages=runtime/'Lib/site-packages'
-    if not (target_packages/'PIL').is_dir():
-        base_packages=base/'Lib/site-packages'
-        if not (base_packages/'PIL').is_dir():
-            raise RuntimeError('Pillow is required for the shipped drawing renderer')
-        for source in [base_packages/'PIL',base_packages/'pillow.libs',
-                       *base_packages.glob('pillow-*.dist-info')]:
-            if source.is_dir():
-                shutil.copytree(source,target_packages/source.name,
+    base_packages=base/'Lib/site-packages'
+    for module,distribution in [('PIL','pillow'),('matplotlib','matplotlib'),
+            ('contourpy','contourpy'),('cycler','cycler'),('dateutil','python_dateutil'),
+            ('kiwisolver','kiwisolver'),('six','six'),('packaging','packaging'),
+            ('fontTools','fonttools'),('pyparsing','pyparsing'),('numpy','numpy')]:
+        if (target_packages/module).is_dir() or (target_packages/(module+'.py')).is_file():continue
+        candidates=[base_packages/module,base_packages/(module+'.py')]
+        source=next((p for p in candidates if p.exists()),None)
+        if source is None:raise RuntimeError('drawing runtime dependency missing: '+module)
+        for path in [source,base_packages/(distribution+'.libs'),
+                     *base_packages.glob(distribution+'-*.dist-info')]:
+            if path.is_dir():
+                shutil.copytree(path,target_packages/path.name,
                                 ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+            elif path.is_file():shutil.copy2(path,target_packages/path.name)
     # Find a matching Tcl/Tk pair from this interpreter, without launching Tk.
     tcl_pair=None
     for library in (base/'Library/lib',base/'tcl'):
@@ -106,6 +112,8 @@ os.environ['TK_LIBRARY']=str(_root/'Library/lib/TK_RUNTIME')
             target=app/path.relative_to(repo);target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(path,target)
     for name in ('machine_spec.json','tasks.json'):
         target=app/'data'/name;target.parent.mkdir(exist_ok=True);shutil.copy2(repo/'data'/name,target)
+    docs=app/'docs';docs.mkdir()
+    shutil.copy2(repo/'docs/five-sheet-preview-workflow.md',docs/'five-sheet-preview-workflow.md')
     examples=app/'examples';examples.mkdir()
     import ezdxf
     document=ezdxf.new();document.units=4

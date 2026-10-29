@@ -3,14 +3,18 @@ import math
 from ezdxf import bbox
 
 
-def add_partitioned_layout(doc, groups, cells, *, name='SWAI_A3', page_size=(420,297)):
-    """Add A3 viewports for caller-reviewed model-entity groups.
+def add_partitioned_layout(doc, groups, cells, *, name='SWAI_A3', page_size=(420,297),
+                           layer_prefix='SWAI'):
+    """Add paper-space viewports for caller-reviewed model-entity groups.
 
     Each model entity must occur exactly once, including any hidden frame.
     Cells select visible groups; omitted groups remain in model space but are
     frozen in every viewport. Layer names change to isolate partitions.
     This is a presentation operation, never engineering approval.
     """
+    if not isinstance(layer_prefix,str) or not layer_prefix or any(c not in
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in layer_prefix):
+        raise ValueError('simple partition layer prefix required')
     if (len(page_size)!=2 or not all(math.isfinite(x) and x>0 for x in page_size)):
         raise ValueError('positive finite page dimensions required')
     if name in doc.layouts or not groups or not cells or set(cells)-set(groups):
@@ -43,7 +47,7 @@ def add_partitioned_layout(doc, groups, cells, *, name='SWAI_A3', page_size=(420
         for e in entities:
             pair=(key,e.dxf.layer)
             if pair not in layer_specs:
-                layer_name=f'SWAI_{len(layer_specs):03d}'
+                layer_name=f'{layer_prefix}_{len(layer_specs):03d}'
                 if layer_name in doc.layers:
                     raise ValueError('reserved paper partition layer already exists')
                 attrs=doc.layers.get(e.dxf.layer).dxf.all_existing_dxf_attribs().copy()

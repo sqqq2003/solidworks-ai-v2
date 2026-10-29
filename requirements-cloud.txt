@@ -1,3 +1,5 @@
 # Linux / cloud simulated tests only. Do not install pywin32 here.
 ezdxf==1.4.4
 pypdf==6.21.2
+Pillow==12.3.0
+matplotlib==3.11.2

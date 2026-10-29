@@ -603,6 +603,13 @@ class Workbench:
             names.update({'package_identified':'测试包版本','reference_relocation_started':'引用修复开始',
                           'reference_updated':'引用已更新','reference_relocation_failed':'引用修复失败',
                           'reference_relocation_finished':'引用修复结束'})
+            names.update({'five_sheet_preview_started':'五图版式任务开始',
+                          'five_sheet_preview_sheet_started':'单张预览开始',
+                          'five_sheet_preview_sheet_finished':'单张预览完成',
+                          'five_sheet_preview_reused':'复用已核对预览',
+                          'five_sheet_preview_finished':'五图预览完成',
+                          'five_sheet_preview_failed':'五图预览失败',
+                          'five_sheet_preview_cli_failed':'五图任务启动或执行失败'})
             for row in self.journal.events():text.insert('end',row['time']+'  '+row['level']+'  '+names.get(row['event'],row['event'])+'\n'+json.dumps(row['details'],ensure_ascii=False)+'\n\n')
             text.see('end')
         def export():

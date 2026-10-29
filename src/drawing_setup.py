@@ -82,4 +82,8 @@ def open_drawing_setup(parent,project_root,on_message):
             messagebox.showerror('无法检查母图',str(error),parent=win)
     bar=ttk.Frame(body);bar.pack(fill='x')
     ttk.Button(bar,text='五图母图预检…',command=inspect_five_sheet_template).pack(side='left')
+    def preview_five_sheets():
+        from five_sheet_ui import open_five_sheet_preview
+        open_five_sheet_preview(win,root,on_message)
+    ttk.Button(bar,text='五图版式预览…',command=preview_five_sheets).pack(side='left',padx=8)
     ttk.Button(bar,text='进入出图核对',command=start).pack(side='right')
