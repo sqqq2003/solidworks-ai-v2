@@ -33,8 +33,10 @@ def read_manifest(path):
     path=Path(path).resolve(strict=True)
     if path.stat().st_size>5_000_000:raise ValueError('五图清单超过大小限制。')
     raw=path.read_bytes();data=json.loads(raw.decode('utf-8-sig'))
-    if data.get('schema_version')!=1 or not isinstance(data.get('sheets'),list):
+    if not isinstance(data,dict) or data.get('schema_version')!=1 or not isinstance(data.get('sheets'),list):
         raise ValueError('请选择版本1的五图分区清单。')
+    if not isinstance(data.get('issues',[]),list) or any(not isinstance(v,str) for v in data.get('issues',[])):
+        raise ValueError('待复核问题必须为文字清单。')
     rows=data['sheets']
     if len(rows)!=5 or sorted(r.get('name','') for r in rows)!=sorted(NAMES):
         raise ValueError('清单必须各包含一张钣金图、方管图、明细图、总图和三视图。')
@@ -195,6 +197,8 @@ def generate(manifest,output,*,resume=False,exporter=None):
                         raise ValueError('已有输出不属于此任务，拒绝覆盖：'+current)
                     hashes=_verify(destination,row,item['fingerprint'])
                     if hashes!=receipt.get('sha256'):raise ValueError('已有输出被修改，拒绝自动恢复：'+current)
+                    from pdf_drawing_preflight import inspect_pdf
+                    state.setdefault('pdf_text_reviews',{})[current]=inspect_pdf(destination/(current+'.pdf'))
                     state['sheets'][current]={'status':'completed_preview','sha256':hashes,'reused':True}
                     _json_write(output/STATE,state)
                     journal.record('five_sheet_preview_reused',sheet=current,job_id=state['job_id'])
@@ -206,9 +210,14 @@ def generate(manifest,output,*,resume=False,exporter=None):
                 journal.record('five_sheet_preview_sheet_started',sheet=current,job_id=state['job_id'])
                 (exporter or export_sheet)(item,staging)
                 hashes=_verify(staging,row,item['fingerprint'])
+                from pdf_drawing_preflight import inspect_pdf
+                text_review=inspect_pdf(staging/(current+'.pdf'))
+                text_review['source']=str(destination/(current+'.pdf'))
+                state.setdefault('pdf_text_reviews',{})[current]=text_review
                 if file_hash(row['source'])!=row['source_sha256']:raise ValueError('导出时源图发生变化。')
                 _json_write(staging/'receipt.json',{'job_id':state['job_id'],'manifest_sha256':digest,
                     'source_sha256':row['source_sha256'],'sha256':hashes,'layout':item['layout'],
+                    'pdf_text_review':text_review,
                     'pdf_dimension_association':'unverified_glyph_preview','production_approved':False})
                 staging.rename(destination)
                 state['sheets'][current]={'status':'completed_preview','sha256':hashes,'reused':False}
@@ -217,6 +226,9 @@ def generate(manifest,output,*,resume=False,exporter=None):
             if any(file_hash(row['source'])!=row['source_sha256'] for row in plan['sheets']):
                 raise ValueError('任务结束时源图已变化。')
             state['status']='completed_preview';state['cad_executed']=False
+            if any(review['status']=='blocked' for review in state.get('pdf_text_reviews',{}).values()):
+                issue='PDF文字预检未通过，需核对原生导出与标题占位。'
+                if issue not in state['issues']:state['issues'].append(issue)
             _json_write(output/STATE,state)
             journal.record('five_sheet_preview_finished',output=str(output),job_id=state['job_id'])
             return state

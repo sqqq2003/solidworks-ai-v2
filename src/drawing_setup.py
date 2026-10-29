@@ -86,4 +86,22 @@ def open_drawing_setup(parent,project_root,on_message):
         from five_sheet_ui import open_five_sheet_preview
         open_five_sheet_preview(win,root,on_message)
     ttk.Button(bar,text='五图版式预览…',command=preview_five_sheets).pack(side='left',padx=8)
+    def inspect_drawing_pdf():
+        path=filedialog.askopenfilename(parent=win,title='选择需要核验的工程图PDF',filetypes=[('PDF图纸','*.pdf')])
+        if not path:return
+        try:
+            from pdf_drawing_preflight import inspect_pdf
+            from app_logging import get_journal
+            report=inspect_pdf(path)
+            folder=root/'runtime/pdf-preflights';folder.mkdir(parents=True,exist_ok=True)
+            target=folder/(uuid.uuid4().hex+'.json')
+            target.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+            get_journal().record('drawing_pdf_preflight',report=str(target),
+                                 status=report['status'],blockers=report['blockers'])
+            details='；'.join(report['blockers']) or '文字可回读，仍需核对标题字段和尺寸位置。'
+            messagebox.showinfo('工程图PDF预检',
+                f"页数：{len(report['pages'])}\n文字数：{sum(p['text_characters'] for p in report['pages'])}\n"
+                f"核对结果：{details}\n\n尚未完成原生CAD尺寸与PDF位置关联，不代表制造验收通过。\n记录：{target}",parent=win)
+        except Exception as error:messagebox.showerror('无法核验PDF',str(error),parent=win)
+    ttk.Button(bar,text='PDF出图预检…',command=inspect_drawing_pdf).pack(side='left')
     ttk.Button(bar,text='进入出图核对',command=start).pack(side='right')

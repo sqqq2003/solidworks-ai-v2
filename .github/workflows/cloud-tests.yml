@@ -1,7 +1,7 @@
 name: Portable Python regression
 on:
   push:
-    branches: [dev/cloud-ai]
+    branches: [dev/cloud-ai, dev/code-completion-20261028]
   workflow_dispatch:
 permissions:
   contents: read

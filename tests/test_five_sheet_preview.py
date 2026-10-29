@@ -46,6 +46,8 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(first.stat().st_mtime_ns,timestamp)
         self.assertEqual(result['status'],'completed_preview')
         self.assertFalse(result['production_approved']);self.assertEqual(before,self.source.read_bytes())
+        self.assertEqual(len(result['pdf_text_reviews']),5)
+        self.assertTrue(all(r['status']=='blocked' for r in result['pdf_text_reviews'].values()))
     def test_modified_completed_output_is_not_overwritten_on_resume(self):
         generate(self.manifest,self.output,exporter=self.export)
         image=self.output/NAMES[0]/(NAMES[0]+'.png')
