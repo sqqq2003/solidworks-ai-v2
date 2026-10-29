@@ -1,0 +1,34 @@
+test_delivery_button_runs_existing_prepare_api_and_displays_result (test_delivery_desktop.DeliveryDesktopTests.test_delivery_button_runs_existing_prepare_api_and_displays_result) ... ok
+test_main_desktop_keeps_api_connection_and_new_delivery_entry (test_delivery_desktop.DeliveryDesktopTests.test_main_desktop_keeps_api_connection_and_new_delivery_entry) ... ok
+test_stop_model_reply_works_when_composer_is_empty (test_delivery_desktop.DeliveryDesktopTests.test_stop_model_reply_works_when_composer_is_empty) ... ok
+test_analyze_allows_blank_manufacturing_parameters (test_desktop_form.DesktopFormTests.test_analyze_allows_blank_manufacturing_parameters) ... ok
+test_real_dxf_analysis_through_form_and_cli (test_desktop_form.DesktopFormTests.test_real_dxf_analysis_through_form_and_cli) ... ok
+test_roller_and_turned_do_not_parse_unused_sheet_values (test_desktop_form.DesktopFormTests.test_roller_and_turned_do_not_parse_unused_sheet_values) ... ok
+test_sheet_plan_still_requires_explicit_manufacturing_parameters (test_desktop_form.DesktopFormTests.test_sheet_plan_still_requires_explicit_manufacturing_parameters) ... ok
+test_analyze_does_not_demand_hidden_bend_parameters (test_desktop_jobs.DesktopJobsTests.test_analyze_does_not_demand_hidden_bend_parameters) ... ok
+test_confirmed_native_job_is_bound_to_input_bytes (test_desktop_jobs.DesktopJobsTests.test_confirmed_native_job_is_bound_to_input_bytes) ... ok
+test_machine_task_does_not_parse_unrelated_numeric_fields (test_desktop_jobs.DesktopJobsTests.test_machine_task_does_not_parse_unrelated_numeric_fields) ... ok
+test_native_generation_still_requires_review (test_desktop_jobs.DesktopJobsTests.test_native_generation_still_requires_review) ... ok
+test_roller_ignores_sheet_only_fields (test_desktop_jobs.DesktopJobsTests.test_roller_ignores_sheet_only_fields) ... ok
+test_sheet_plan_requires_explicit_job_parameters (test_desktop_jobs.DesktopJobsTests.test_sheet_plan_requires_explicit_job_parameters) ... ok
+test_analysis_summary_exposes_limits (test_desktop_ui.DesktopUITests.test_analysis_summary_exposes_limits) ... ok
+test_analysis_warnings_are_visible (test_desktop_ui.DesktopUITests.test_analysis_warnings_are_visible) ... ok
+test_batch_review_button_is_read_only (test_desktop_ui.DesktopUITests.test_batch_review_button_is_read_only) ... ok
+test_direct_run_only_starts_after_successful_validation (test_desktop_ui.DesktopUITests.test_direct_run_only_starts_after_successful_validation) ... ok
+test_direct_run_preserves_existing_queue (test_desktop_ui.DesktopUITests.test_direct_run_preserves_existing_queue) ... ok
+test_dxf_overview_runs_without_creating_a_cad_job (test_desktop_ui.DesktopUITests.test_dxf_overview_runs_without_creating_a_cad_job) ... ok
+test_environment_shows_separate_evidence_states (test_desktop_ui.DesktopUITests.test_environment_shows_separate_evidence_states) ... ok
+test_export_cannot_overwrite_existing_request (test_desktop_ui.DesktopUITests.test_export_cannot_overwrite_existing_request) ... ok
+test_failed_result_explains_contour_limit_and_offers_same_file (test_desktop_ui.DesktopUITests.test_failed_result_explains_contour_limit_and_offers_same_file) ... ok
+test_input_changes_clear_confirmation (test_desktop_ui.DesktopUITests.test_input_changes_clear_confirmation) ... ok
+test_instruction_creates_review_only (test_desktop_ui.DesktopUITests.test_instruction_creates_review_only) ... ok
+test_native_result_does_not_discard_pending_queue (test_desktop_ui.DesktopUITests.test_native_result_does_not_discard_pending_queue) ... ok
+test_preview_layer_filter_only_changes_visual_display (test_desktop_ui.DesktopUITests.test_preview_layer_filter_only_changes_visual_display) ... ok
+test_quick_review_selects_file_once_and_never_queues_generation (test_desktop_ui.DesktopUITests.test_quick_review_selects_file_once_and_never_queues_generation) ... ok
+test_settings_drawer_and_relevant_parameters (test_desktop_ui.DesktopUITests.test_settings_drawer_and_relevant_parameters) ... ok
+test_unverified_native_result_shows_file_and_missing_reopen (test_desktop_ui.DesktopUITests.test_unverified_native_result_shows_file_and_missing_reopen) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 2.883s
+
+OK

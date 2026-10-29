@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "candidate_sha": "record actual full git HEAD at test time",
+  "source_pins": "source-versions.json",
+  "native_status": "not_run",
+  "cases": [
+    {
+      "id": "INT-OWNED",
+      "case": "minimal lifecycle/reopen/anchor/process exit",
+      "entry": "docs/issue39-unified-patch.md",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-ROLLER",
+      "case": "real roller including both shaft ends overall800 and preserved interfaces",
+      "entry": "docs/issue24-roller800-handoff.md",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-PARTS",
+      "case": "plate/bracket/shaft/two-bend editable features and save/reopen",
+      "entry": "docs/issue19-unified-runbook.md",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-P248",
+      "case": "golden four bends/geometric readback/flat DXF/normal exit after PR43 integration",
+      "entry": "examples/p248_golden.json",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-MACHINE",
+      "case": "scan/map/review/assembly/drive/mates/motion/interference/drawings/BOM references",
+      "entry": "docs/production-flow-handoff.md",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-PLATFORM",
+      "case": "mapping approval/standards/manufacturing/version/knowledge/GUI",
+      "entry": "delivery/design-platform/windows-matrix.json",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-ENGINEERING",
+      "case": "Issue50 engineering review and native transaction bridge",
+      "entry": "delivery/issue50/windows-matrix.json",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    },
+    {
+      "id": "INT-UI",
+      "case": "desktop unified queue, native recipe and batch stop/recovery",
+      "entry": "app.py",
+      "status": "not_run",
+      "evidence": [
+        "Git SHA and source/input hashes",
+        "SW/Python/template versions",
+        "independent dimensions/features/interfaces checks",
+        "save/reopen/reference verification",
+        "actual owned PID and exitcode",
+        "original source hash unchanged"
+      ]
+    }
+  ],
+  "rules": [
+    "do not interrupt active #19/#24/#45 tests",
+    "new checkout and output root",
+    "regenerate review/code fingerprints; never overlay old ZIP",
+    "unknown ownership or live worker: preserve and stop native queue; no kill",
+    "one evidence PR to #46 and integration PR"
+  ]
+}

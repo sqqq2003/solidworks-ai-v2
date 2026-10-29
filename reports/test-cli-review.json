@@ -1,0 +1,205 @@
+{
+  "machine_id": "A01",
+  "spec_revision": "draft-001",
+  "status": "review_required",
+  "scope": "parameter_preflight_only",
+  "cad_executed": false,
+  "cad_release_approved": false,
+  "target_envelope_mm": {
+    "length": 1800.0,
+    "width": 900.0,
+    "height": 1500.0
+  },
+  "parameter_order": [
+    "length",
+    "width",
+    "height",
+    "front_allowance",
+    "rear_allowance",
+    "left_allowance",
+    "right_allowance",
+    "top_allowance",
+    "bottom_allowance",
+    "frame_length",
+    "frame_width",
+    "column_height"
+  ],
+  "values_mm": {
+    "length": 1800.0,
+    "width": 900.0,
+    "height": 1500.0,
+    "front_allowance": null,
+    "rear_allowance": null,
+    "left_allowance": null,
+    "right_allowance": null,
+    "top_allowance": null,
+    "bottom_allowance": null,
+    "frame_length": null,
+    "frame_width": null,
+    "column_height": null
+  },
+  "unresolved": [
+    {
+      "parameter": "front_allowance",
+      "reason": "Requires confirmed drawing value and source"
+    },
+    {
+      "parameter": "rear_allowance",
+      "reason": "Requires confirmed drawing value and source"
+    },
+    {
+      "parameter": "left_allowance",
+      "reason": "Requires confirmed drawing value and source"
+    },
+    {
+      "parameter": "right_allowance",
+      "reason": "Requires confirmed drawing value and source"
+    },
+    {
+      "parameter": "top_allowance",
+      "reason": "Requires confirmed drawing value and source"
+    },
+    {
+      "parameter": "bottom_allowance",
+      "reason": "Requires confirmed drawing value and source"
+    },
+    {
+      "parameter": "frame_length",
+      "reason": "Upstream dimensions unresolved"
+    },
+    {
+      "parameter": "frame_width",
+      "reason": "Upstream dimensions unresolved"
+    },
+    {
+      "parameter": "column_height",
+      "reason": "Upstream dimensions unresolved"
+    },
+    {
+      "parameter": "engineering_approval",
+      "reason": "A01 template and valid operating ranges require engineering confirmation"
+    },
+    {
+      "parameter": "template_identity",
+      "reason": "A01 assembly identity is not verified"
+    }
+  ],
+  "range_checks": [],
+  "parameter_register": {
+    "length": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": "user_target",
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "width": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": "user_target",
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "height": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": "user_target",
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "front_allowance": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "rear_allowance": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "left_allowance": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "right_allowance": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "top_allowance": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "bottom_allowance": {
+      "unit": "mm",
+      "depends_on": [],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "frame_length": {
+      "unit": "mm",
+      "depends_on": [
+        "length",
+        "front_allowance",
+        "rear_allowance"
+      ],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "frame_width": {
+      "unit": "mm",
+      "depends_on": [
+        "width",
+        "left_allowance",
+        "right_allowance"
+      ],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    },
+    "column_height": {
+      "unit": "mm",
+      "depends_on": [
+        "height",
+        "top_allowance",
+        "bottom_allowance"
+      ],
+      "source": null,
+      "confirmed_range_mm": null,
+      "confirmation_status": "unconfirmed",
+      "production_approved": false
+    }
+  },
+  "preserve_interfaces": [
+    "电机、轴承等采购件尺寸",
+    "轴承配合与轴颈接口",
+    "齿形、齿距及传动接口",
+    "板厚和螺纹规格（除非有明确工艺变更）"
+  ],
+  "note": "A passed parameter preflight does not certify geometry, mates or motion."
+}

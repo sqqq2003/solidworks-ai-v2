@@ -1,0 +1,12 @@
+{
+  "scope": "mocked subprocess control only; no native worker or COM launched",
+  "passed": 5,
+  "checks": [
+    "safe failed worker isolation and summary",
+    "failed resume creates new attempt",
+    "changed batch input rejected",
+    "timeout blocks following native workers",
+    "live worker recovery refused"
+  ],
+  "native_acceptance": "pending_windows_validation"
+}

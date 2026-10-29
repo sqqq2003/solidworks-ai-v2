@@ -2194,6 +2194,12 @@ def apply_rectangular_relief_expansion(
     new_holes: list[tuple[Primitive, tuple[tuple[float, float], ...]]] = []
     for hole, hole_points in hole_profiles:
         if is_small_rectangular_relief_hole(hole, profile):
+            notch = convert_border_hole_to_notch(profile, hole, grow=extra)
+            if notch is not None:
+                # 贴边槽孔转成外轮廓缺口，并从孔列表删除该孔。
+                profile = notch
+                changed += 1
+                continue
             sign_x, sign_y = _rect_hole_growth_signs(hole, bend_lines, profile)
             grown = expand_rect_hole_one_side(hole, extra, sign_x, sign_y)
             if grown.points != hole.points:
@@ -2203,6 +2209,7 @@ def apply_rectangular_relief_expansion(
                 continue
         new_holes.append((hole, hole_points))
     return profile, tuple(new_holes), changed
+
 
 
 # 补槽不预开固定长度。每次失败只在向上、向内各加一点点。
@@ -2362,11 +2369,22 @@ def ensure_intersection_reliefs(
                     break
             if blocked:
                 continue
+            notch_profile = _border_intersection_notch(
+                profile, point, extent_x, extent_y
+            )
+            if notch_profile is not None:
+                # 距板边 ≤2mm：补槽跨过端头从板边伸进材料，直接开成缺口，
+                # 不再留与外环相交的内孔。找不到可贴的直角边才退回板内孔。
+                profile = notch_profile
+                bounds = primitive_bounds(profile)
+                seen.append(point)
+                continue
             added.append(_rectangle_hole(min_x, min_y, max_x, max_y))
             seen.append(point)
     if not added:
         return profile, hole_profiles, 0
     return profile, hole_profiles + tuple(added), len(added)
+
 
 
 def suggest_relief_cutouts(
@@ -6409,4 +6427,277 @@ def generate_roller_part(
             if com_initialized:
                 pythoncom.CoUninitialize()
 
+
+
+
+# Reused offline recognition/geometry contracts from PR #43/#62.
+_COM_DISCONNECT_HRESULTS = frozenset(
+    {
+        -2147220995,  # CO_E_OBJNOTCONNECTED (Issue39 native evidence)
+        -2147417848,  # 0x80010108 RPC_E_DISCONNECTED
+        -2147023174,  # 0x800706BA RPC_S_SERVER_UNAVAILABLE
+        -2147418111,  # 0x80010001 RPC_E_CALL_REJECTED（偶发，当断连处理）
+        -2147467261,  # 0x80004003 E_POINTER（对象已释放）
+    }
+)
+
+
+ARTIFACT_LOOP_MAX_EDGE_MM = 2.0
+
+
+ARTIFACT_LOOP_MAX_AREA_MM2 = 0.6
+
+
+def _closed_loop_metrics(
+    profile: Primitive,
+) -> tuple[float, float] | None:
+    """闭环的最大边长与面积（mm / mm²）；开环或不足三点时返回 None。"""
+
+    if not profile.closed:
+        return None
+    ring = _profile_ring_points(profile)
+    if len(ring) < 3:
+        return None
+    edges = list(zip(ring, ring[1:] + ring[:1]))
+    max_edge = max(math.dist(start, end) for start, end in edges)
+    area = abs(
+        sum(start[0] * end[1] - end[0] * start[1] for start, end in edges)
+    ) / 2.0
+    return max_edge, area
+
+
+def _is_drawing_artifact_loop(profile: Primitive) -> bool:
+    """尺寸箭头之类的图纸标注残留：闭环最大边 ≤2 mm 且面积 ≤0.6 mm²。
+
+    Φ2 孔面积 3.14 mm²，3×3 mm 方孔最大边 3 mm，两者都照常切。
+    """
+
+    metrics = _closed_loop_metrics(profile)
+    if metrics is None:
+        return False
+    max_edge, area = metrics
+    return (
+        max_edge <= ARTIFACT_LOOP_MAX_EDGE_MM
+        and area <= ARTIFACT_LOOP_MAX_AREA_MM2
+    )
+
+
+BORDER_NOTCH_MIN_COVERAGE = 0.8
+
+
+BORDER_NOTCH_MAX_GAP_MM = 0.75
+
+
+BORDER_NOTCH_EDGE_TOL_MM = 1e-6
+
+
+BORDER_RELIEF_MAX_DISTANCE_MM = 2.0
+
+
+def _ring_orientation_ccw(ring: list[tuple[float, float]]) -> bool:
+    area = 0.0
+    for index in range(len(ring)):
+        x1, y1 = ring[index]
+        x2, y2 = ring[(index + 1) % len(ring)]
+        area += x1 * y2 - x2 * y1
+    return area > 0
+
+
+def _border_edge_candidates(
+    profile: Primitive,
+) -> tuple[
+    tuple[int, tuple[float, float], tuple[float, float], tuple[float, float], float],
+    ...,
+]:
+    """外轮廓的轴对齐边：(边序号, 起点, 单位方向, 内法向, 边长)。"""
+
+    ring = _profile_ring_points(profile)
+    if len(ring) < 3:
+        return ()
+    ccw = _ring_orientation_ccw(ring)
+    edges = []
+    for index in range(len(ring)):
+        start = ring[index]
+        end = ring[(index + 1) % len(ring)]
+        if not _is_axis_aligned_pair(start, end):
+            continue
+        length = math.dist(start, end)
+        if length <= 1e-9:
+            continue
+        u = ((end[0] - start[0]) / length, (end[1] - start[1]) / length)
+        normal = (-u[1], u[0]) if ccw else (u[1], -u[0])
+        edges.append((index, start, u, normal, length))
+    return tuple(edges)
+
+
+def _cut_border_notch(
+    profile: Primitive,
+    edge_index: int,
+    mouth_start_s: float,
+    mouth_end_s: float,
+    depth_mm: float,
+) -> Primitive:
+    """把外轮廓第 edge_index 条边挖成三边直角缺口，其余曲线段原样保留。"""
+
+    ring = _profile_ring_points(profile)
+    count = len(ring)
+    if not 0 <= edge_index < count or depth_mm <= 1e-9:
+        return profile
+    start = ring[edge_index]
+    end = ring[(edge_index + 1) % count]
+    length = math.dist(start, end)
+    if length <= 1e-9:
+        return profile
+    u = ((end[0] - start[0]) / length, (end[1] - start[1]) / length)
+    normal = (-u[1], u[0]) if _ring_orientation_ccw(ring) else (u[1], -u[0])
+    mouth_start = min(max(mouth_start_s, 0.0), length)
+    mouth_end = min(max(mouth_end_s, 0.0), length)
+    if mouth_end - mouth_start <= 1e-9:
+        return profile
+
+    def _at(along: float, depth: float) -> tuple[float, float]:
+        return (
+            start[0] + u[0] * along + normal[0] * depth,
+            start[1] + u[1] * along + normal[1] * depth,
+        )
+
+    inserts: list[tuple[float, float]] = []
+    if mouth_start > BORDER_NOTCH_EDGE_TOL_MM:
+        inserts.append(_at(mouth_start, 0.0))
+    inserts.append(_at(mouth_start, depth_mm))
+    inserts.append(_at(mouth_end, depth_mm))
+    if mouth_end < length - BORDER_NOTCH_EDGE_TOL_MM:
+        inserts.append(_at(mouth_end, 0.0))
+    new_ring = list(ring[: edge_index + 1]) + inserts + list(ring[edge_index + 1 :])
+
+    if profile.curve_segments:
+        rebuilt: list[SketchSegment] = []
+        replaced = False
+        for segment in profile.curve_segments:
+            if (
+                not replaced
+                and segment.center is None
+                and math.dist(segment.start, start) <= 1e-9
+                and math.dist(segment.end, end) <= 1e-9
+            ):
+                chain = [start, *inserts, end]
+                rebuilt.extend(
+                    SketchSegment(a, b)
+                    for a, b in zip(chain, chain[1:])
+                    if math.dist(a, b) > 1e-12
+                )
+                replaced = True
+                continue
+            rebuilt.append(segment)
+        if replaced:
+            return replace(
+                profile,
+                points=tuple(new_ring) + (new_ring[0],),
+                curve_segments=tuple(rebuilt),
+            )
+    return _polyline_from_ring(profile, new_ring)
+
+
+def convert_border_hole_to_notch(
+    outer: Primitive,
+    hole: Primitive,
+    grow: float = 0.0,
+) -> Primitive | None:
+    """贴板边的矩形槽孔 → 外轮廓缺口；不贴边或搭边不足时返回 None。
+
+    与外环相交的内环 SolidWorks 不接受，越过板边的部分也没有材料可切，
+    所以这种孔要挖成板边缺口并从孔列表删除。孔离板边只剩 ≤0.75mm 细缝
+    （图纸画法/浮点误差）时先把那一侧拉伸到板边，不留悬空窄条。
+    """
+
+    if grow < 0:
+        raise ValueError("缺口扩量不能为负数")
+    if not outer.closed or not hole.closed:
+        return None
+    bounds = axis_aligned_rect_bounds(hole)
+    if bounds is None:
+        return None
+    corners = (
+        (bounds[0], bounds[1]),
+        (bounds[2], bounds[1]),
+        (bounds[2], bounds[3]),
+        (bounds[0], bounds[3]),
+    )
+    best: tuple[tuple[float, float], int, float, float, float] | None = None
+    for edge_index, start, u, normal, length in _border_edge_candidates(outer):
+        across = tuple(
+            (point[0] - start[0]) * normal[0] + (point[1] - start[1]) * normal[1]
+            for point in corners
+        )
+        along = tuple(
+            (point[0] - start[0]) * u[0] + (point[1] - start[1]) * u[1]
+            for point in corners
+        )
+        if min(across) < -BORDER_NOTCH_EDGE_TOL_MM:
+            continue  # 孔越过板边：不是贴边孔
+        if min(across) > BORDER_NOTCH_MAX_GAP_MM:
+            continue  # 离板边太远：仍是内孔
+        span = max(along) - min(along)
+        if span <= 1e-9:
+            continue
+        overlap = min(max(along), length) - max(min(along), 0.0)
+        if overlap < BORDER_NOTCH_MIN_COVERAGE * span - 1e-9:
+            continue  # 搭边不足 80%：转缺口切不干净，保持为孔
+        depth = max(across) + grow
+        if depth <= 1e-9:
+            continue
+        # 角部孔会同时贴两条边：先比搭边比例，再比实际贴合长度（缺口开在
+        # 孔真正沿着走的那条边上），仍相同则按轮廓边顺序，保证结果确定。
+        candidate = (
+            (overlap / span, overlap),
+            edge_index,
+            min(along) - grow / 2.0,
+            max(along) + grow / 2.0,
+            depth,
+        )
+        if best is None or candidate[0] > best[0]:
+            best = candidate
+    if best is None:
+        return None
+    _rank, edge_index, mouth_start, mouth_end, depth = best
+    notch = _cut_border_notch(outer, edge_index, mouth_start, mouth_end, depth)
+    return None if notch.points == outer.points else notch
+
+
+def _border_intersection_notch(
+    profile: Primitive,
+    point: tuple[float, float],
+    extent_x: float,
+    extent_y: float,
+) -> Primitive | None:
+    """交汇点距板边 ≤2mm 时，补槽从板边伸进材料并转成缺口。
+
+    深度 = 到板边的距离 + 本级增量（跨过端头），宽度 = 另一轴增量，
+    以交汇点为中心。找不到可贴的直角边就返回 None，退回板内孔。
+    """
+
+    best: tuple[float, int, float, float, float] | None = None
+    for edge_index, start, u, normal, length in _border_edge_candidates(profile):
+        across = (point[0] - start[0]) * normal[0] + (point[1] - start[1]) * normal[1]
+        along = (point[0] - start[0]) * u[0] + (point[1] - start[1]) * u[1]
+        if across < -BORDER_NOTCH_EDGE_TOL_MM:
+            continue
+        if across > BORDER_RELIEF_MAX_DISTANCE_MM:
+            continue
+        if not 0.0 <= along <= length:
+            continue
+        vertical_edge = abs(u[0]) <= 1e-12
+        depth = across + (extent_x if vertical_edge else extent_y)
+        width = extent_y if vertical_edge else extent_x
+        if depth <= 1e-9 or width <= 1e-9:
+            continue
+        distance = abs(across)
+        candidate = (-distance, edge_index, along - width / 2.0, along + width / 2.0, depth)
+        if best is None or candidate[0] > best[0]:
+            best = candidate
+    if best is None:
+        return None
+    _rank, edge_index, mouth_start, mouth_end, depth = best
+    notch = _cut_border_notch(profile, edge_index, mouth_start, mouth_end, depth)
+    return None if notch.points == profile.points else notch
 

@@ -1,0 +1,165 @@
+{
+  "units": "mm",
+  "target_overall_mm": 800,
+  "source_kind": "synthetic_fixture_not_OEM",
+  "source_document": "fixture.SLDPRT",
+  "configuration": "Default",
+  "axis": "x",
+  "protected_parameters": [
+    "shaft_diameter",
+    "bearing_diameter"
+  ],
+  "interface_inventory_status": "confirmed",
+  "interface_inventory_source": "synthetic reviewed fixture",
+  "dependency_inventory_status": "confirmed",
+  "dependency_inventory_source": "synthetic fixture equation",
+  "dependencies": [
+    {
+      "parameter": "shaft_length",
+      "depends_on": [
+        "overall_length"
+      ],
+      "offset_mm": 0
+    }
+  ],
+  "measurements": {
+    "overall_length": {
+      "value": 1000,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    },
+    "barrel_length": {
+      "value": 945,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    },
+    "left_projection": {
+      "value": 20,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    },
+    "right_projection": {
+      "value": 35,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    },
+    "shaft_diameter": {
+      "value": 12,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    },
+    "bearing_diameter": {
+      "value": 15,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    },
+    "shaft_length": {
+      "value": 1000,
+      "confirmed": true,
+      "source": "synthetic fixture"
+    }
+  },
+  "mappings": {
+    "schema_version": 1,
+    "parameters": [
+      {
+        "parameter": "overall_length",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D1@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      },
+      {
+        "parameter": "barrel_length",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D2@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      },
+      {
+        "parameter": "left_projection",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D3@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      },
+      {
+        "parameter": "right_projection",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D4@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      },
+      {
+        "parameter": "shaft_diameter",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D5@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      },
+      {
+        "parameter": "bearing_diameter",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D6@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      },
+      {
+        "parameter": "shaft_length",
+        "document": "fixture.SLDPRT",
+        "configuration": "Default",
+        "feature": "Sketch1",
+        "dimension": "D7@Sketch1",
+        "unit": "mm",
+        "source": "synthetic fixture",
+        "allowed_range": [
+          1,
+          2000
+        ],
+        "status": "confirmed"
+      }
+    ]
+  }
+}

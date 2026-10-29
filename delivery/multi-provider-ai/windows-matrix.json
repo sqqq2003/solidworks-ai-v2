@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "real_provider_connections": "not_run",
+  "checks": [
+    {
+      "id": "responses",
+      "case": "OpenAI Responses",
+      "status": "not_run",
+      "verify": [
+        "actual SHA/model/base/protocol with no secret values",
+        "one text reply",
+        "supported function roundtrip or explicit tools disabled",
+        "stop/new task",
+        "no CAD file upload/native write",
+        "no cross-service key reuse"
+      ]
+    },
+    {
+      "id": "chat_completions",
+      "case": "one actual compatible service",
+      "status": "not_run",
+      "verify": [
+        "actual SHA/model/base/protocol with no secret values",
+        "one text reply",
+        "supported function roundtrip or explicit tools disabled",
+        "stop/new task",
+        "no CAD file upload/native write",
+        "no cross-service key reuse"
+      ]
+    },
+    {
+      "id": "anthropic",
+      "case": "Claude Messages",
+      "status": "not_run",
+      "verify": [
+        "actual SHA/model/base/protocol with no secret values",
+        "one text reply",
+        "supported function roundtrip or explicit tools disabled",
+        "stop/new task",
+        "no CAD file upload/native write",
+        "no cross-service key reuse"
+      ]
+    },
+    {
+      "id": "gemini",
+      "case": "Gemini Developer API",
+      "status": "not_run",
+      "verify": [
+        "actual SHA/model/base/protocol with no secret values",
+        "one text reply",
+        "supported function roundtrip or explicit tools disabled",
+        "stop/new task",
+        "no CAD file upload/native write",
+        "no cross-service key reuse"
+      ]
+    },
+    {
+      "id": "local",
+      "case": "Ollama or LM Studio",
+      "status": "not_run",
+      "verify": [
+        "actual SHA/model/base/protocol with no secret values",
+        "one text reply",
+        "supported function roundtrip or explicit tools disabled",
+        "stop/new task",
+        "no CAD file upload/native write",
+        "no cross-service key reuse"
+      ]
+    },
+    {
+      "id": "text_only",
+      "case": "model without function calling",
+      "status": "not_run",
+      "verify": [
+        "actual SHA/model/base/protocol with no secret values",
+        "one text reply",
+        "supported function roundtrip or explicit tools disabled",
+        "stop/new task",
+        "no CAD file upload/native write",
+        "no cross-service key reuse"
+      ]
+    }
+  ]
+}

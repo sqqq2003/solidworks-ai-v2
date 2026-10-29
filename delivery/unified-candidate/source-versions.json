@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "baseline": "62a9c913d89c5b01d261f997117bbce27966f3c4",
+  "sources": [
+    {
+      "pr": 62,
+      "sha": "d3bdaca6369ba02a6bff10148cc8daa0c07b366a",
+      "scope": "unified platform + AI + DWG/coexist patches"
+    },
+    {
+      "pr": 58,
+      "sha": "944345a80ea93365aa3635c99ead0199af8bde4f",
+      "scope": "decision bridge and single-parameter evidence"
+    }
+  ],
+  "policy": "latest dev native COM/drawing/diagnostic implementation retained; earlier offline feature contracts selectively merged",
+  "native_acceptance": "pending_windows_validation"
+}

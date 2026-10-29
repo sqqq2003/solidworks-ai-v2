@@ -48,20 +48,15 @@ class WindowsProcessLifetime:
 def _native_candidate(pid):
     import pythoncom
     import win32com.client
-    # Read-only discovery; never Dispatch a ProgID (which can create another PID).
-    try:
-        app = win32com.client.GetActiveObject('SldWorks.Application')
-        if _read_pid(app) == pid:
-            return app
-    except Exception:
-        pass
+    # Never use the user's globally active window for a newly launched task.
+    expected = f'solidworks_pid_{int(pid)}'
     rot = pythoncom.GetRunningObjectTable()
     for count, moniker in enumerate(rot.EnumRunning()):
-        if count >= 256:
+        if count >= 4096:
             break
         try:
             name = moniker.GetDisplayName(pythoncom.CreateBindCtx(0), None).casefold()
-            if 'solidworks' not in name and 'sldworks' not in name:
+            if name.lstrip('!') != expected:
                 continue
             # ROT returns IUnknown. Query IDispatch before wrapping; otherwise
             # pywin32 calls GetTypeInfo on PyIUnknown and silently misses every
@@ -226,7 +221,8 @@ class OwnedBinding:
         # teardown. poll() is None while the process is still exiting; a
         # code of 0 is required for "stable exit", 139 / 0xC0000005 (-1073741819)
         # is the known teardown-crash class. pending_windows_validation.
-        return {'ownership': 'spawned_pid_and_live_handle', 'pid': self.lifetime.pid,
+        return {'instance_mode':'new_process_alongside_existing', 'connection_policy':'spawned_pid_rot_only',
+                'ownership': 'spawned_pid_and_live_handle', 'pid': self.lifetime.pid,
                 'image': self.lifetime.executable, 'attached_existing': False,
                 'native_verification': 'session_only_not_cad_acceptance',
                 'cleanup_status': self.cleanup_status, 'cleanup_error': self.cleanup_error,

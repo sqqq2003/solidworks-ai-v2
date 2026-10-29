@@ -36,6 +36,11 @@ def imports(path):
 
 def build(output):
     repo=Path(__file__).resolve().parents[1];base=Path(sys.base_prefix)
+    if sys.platform!='win32':raise RuntimeError('Windows runtime packaging requires Windows; use work/delivery.py candidate on cloud')
+    import subprocess
+    if subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=repo).strip():
+        raise ValueError('commit tracked source changes before portable packaging')
+    revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo).decode().strip()
     output=Path(output).resolve();output.mkdir(parents=True,exist_ok=False)
     runtime=output/'runtime';runtime.mkdir();app=output/'app';app.mkdir()
     ignored=shutil.ignore_patterns('__pycache__','*.pyc','test','tests','idlelib','ensurepip','site-packages')
@@ -73,21 +78,16 @@ for _path in (_root/'DLLs',_root/'Lib/site-packages/pywin32_system32'):
 os.environ['TCL_LIBRARY']=str(_root/'Library/lib/tcl9.0')
 os.environ['TK_LIBRARY']=str(_root/'Library/lib/tk9.0')
 ''',encoding='utf-8')
-    root_files=('app.py','drawing_trial_app.py','a01.py','engineering_controls.py')
-    for name in root_files:shutil.copy2(repo/name,app/name)
-    for folder in ('src','work','dependency_engine','feature_tree','dxf_extract','offline_verify'):
-        for path in (repo/folder).rglob('*.py'):
-            if '__pycache__' in path.parts:continue
-            target=app/path.relative_to(repo);target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(path,target)
-    for name in ('machine_spec.json','tasks.json'):
-        target=app/'data'/name;target.parent.mkdir(exist_ok=True);shutil.copy2(repo/'data'/name,target)
-    examples=app/'examples';examples.mkdir()
+    from prepare_test_handoff import collect
+    for relative in collect(repo):
+        target=app/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(repo/relative,target)
+    examples=app/'examples';examples.mkdir(exist_ok=True)
     import ezdxf
     document=ezdxf.new();document.units=4
     document.modelspace().add_lwpolyline([(0,0),(100,0),(100,60),(0,60)],close=True);document.saveas(examples/'synthetic-100x60.dxf')
     (output/'启动工作台.cmd').write_bytes(b'@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0runtime\\pythonw.exe" -X utf8 "%~dp0app\\app.py"\r\n')
     (output/'运行环境检查.cmd').write_bytes(b'@echo off\r\ncd /d "%~dp0"\r\n"%~dp0runtime\\python.exe" -X utf8 "%~dp0app\\work\\portable_doctor.py"\r\npause\r\n')
-    (output/'build-info.json').write_text(json.dumps({'python':sys.version,'architecture':'Windows x64','runtime_origin':'local verified Python/Tk/pywin32/comtypes environment','bundled_additional_dlls':sorted(set(native)),'customer_cad_included':False,'solidworks_included':False,'host_runtime_paths_required':False,'source_files':[{'path':str(p.relative_to(app)),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in app.rglob('*') if p.is_file()]},ensure_ascii=False,indent=2),encoding='utf-8')
+    (output/'build-info.json').write_text(json.dumps({'source_revision':revision,'sw_live_acceptance':'not_run','python':sys.version,'architecture':'Windows x64','runtime_origin':'local verified Python/Tk/pywin32/comtypes environment','bundled_additional_dlls':sorted(set(native)),'customer_cad_included':False,'solidworks_included':False,'host_runtime_paths_required':False,'source_files':[{'path':str(p.relative_to(app)),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in app.rglob('*') if p.is_file()]},ensure_ascii=False,indent=2),encoding='utf-8')
     return output
 
 

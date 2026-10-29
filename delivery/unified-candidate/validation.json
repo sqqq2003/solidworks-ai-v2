@@ -1,0 +1,187 @@
+{
+  "scope": "integrated_offline_only",
+  "status": "passed",
+  "run": 1081,
+  "passed": 1058,
+  "skipped": 23,
+  "suites": [
+    {
+      "id": "repository",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "work/run_cloud_tests.py"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 998,
+      "passed": 975,
+      "skipped": 23,
+      "skip_reasons": [
+        {
+          "test": "test_delivery_button_runs_existing_prepare_api_and_displays_result (test_delivery_desktop.DeliveryDesktopTests.test_delivery_button_runs_existing_prepare_api_and_displays_result)",
+          "reason": "desktop display required"
+        },
+        {
+          "test": "test_main_desktop_keeps_api_connection_and_new_delivery_entry (test_delivery_desktop.DeliveryDesktopTests.test_main_desktop_keeps_api_connection_and_new_delivery_entry)",
+          "reason": "desktop display required"
+        },
+        {
+          "test": "test_stop_model_reply_works_when_composer_is_empty (test_delivery_desktop.DeliveryDesktopTests.test_stop_model_reply_works_when_composer_is_empty)",
+          "reason": "desktop display required"
+        },
+        {
+          "test": "test_analysis_summary_exposes_limits (test_desktop_ui.DesktopUITests.test_analysis_summary_exposes_limits)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_analysis_warnings_are_visible (test_desktop_ui.DesktopUITests.test_analysis_warnings_are_visible)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_batch_review_button_is_read_only (test_desktop_ui.DesktopUITests.test_batch_review_button_is_read_only)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_direct_run_only_starts_after_successful_validation (test_desktop_ui.DesktopUITests.test_direct_run_only_starts_after_successful_validation)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_direct_run_preserves_existing_queue (test_desktop_ui.DesktopUITests.test_direct_run_preserves_existing_queue)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_dxf_overview_runs_without_creating_a_cad_job (test_desktop_ui.DesktopUITests.test_dxf_overview_runs_without_creating_a_cad_job)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_environment_shows_separate_evidence_states (test_desktop_ui.DesktopUITests.test_environment_shows_separate_evidence_states)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_export_cannot_overwrite_existing_request (test_desktop_ui.DesktopUITests.test_export_cannot_overwrite_existing_request)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_failed_result_explains_contour_limit_and_offers_same_file (test_desktop_ui.DesktopUITests.test_failed_result_explains_contour_limit_and_offers_same_file)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_input_changes_clear_confirmation (test_desktop_ui.DesktopUITests.test_input_changes_clear_confirmation)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_instruction_creates_review_only (test_desktop_ui.DesktopUITests.test_instruction_creates_review_only)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_native_result_does_not_discard_pending_queue (test_desktop_ui.DesktopUITests.test_native_result_does_not_discard_pending_queue)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_preview_layer_filter_only_changes_visual_display (test_desktop_ui.DesktopUITests.test_preview_layer_filter_only_changes_visual_display)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_quick_review_selects_file_once_and_never_queues_generation (test_desktop_ui.DesktopUITests.test_quick_review_selects_file_once_and_never_queues_generation)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_settings_drawer_and_relevant_parameters (test_desktop_ui.DesktopUITests.test_settings_drawer_and_relevant_parameters)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_unverified_native_result_shows_file_and_missing_reopen (test_desktop_ui.DesktopUITests.test_unverified_native_result_shows_file_and_missing_reopen)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+          "reason": "测试用滚筒 DWG 不在 uploads"
+        },
+        {
+          "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+          "reason": "本机未安装 LibreDWG dwg2dxf"
+        },
+        {
+          "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+          "reason": "Drawing1_e7b7.dwg 未上传"
+        },
+        {
+          "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+          "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+        }
+      ],
+      "failures": 0,
+      "errors": 0,
+      "cross_process_lock_passed": true,
+      "logs_sha256": {
+        "repository.stdout.log": "5d5b07f9c516ca7ad4c787095579125241eee1ec6ef31a4765ae78fc5e798644",
+        "repository.stderr.log": "96f101e0d48e6b812858912f17219af677fcb44bfbdd4d122e3ad0ba8fd59d5e"
+      }
+    },
+    {
+      "id": "original-feature-contracts",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/pending_features",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 36,
+      "skipped": 0,
+      "passed": 36,
+      "logs_sha256": {
+        "original-feature-contracts.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original-feature-contracts.stderr.log": "325e55f82792369a9be1578f47075ae7afe5e2350171267e73eca9c009fc2465"
+      }
+    },
+    {
+      "id": "feature-tree",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "feature_tree/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 31,
+      "skipped": 0,
+      "passed": 31,
+      "logs_sha256": {
+        "feature-tree.stdout.log": "a558f7be00746979ff61aec56faee4ee99b6a4ddd683602a7ccb559102022268",
+        "feature-tree.stderr.log": "5af574c41c758108cff1f3a37b6ad6f20e5137078af8a573763079d015d19620"
+      }
+    },
+    {
+      "id": "geometry-ir",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "geometry_ir/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 16,
+      "skipped": 0,
+      "passed": 16,
+      "logs_sha256": {
+        "geometry-ir.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "geometry-ir.stderr.log": "274b26a69739be13537d2bb8977457bfec9c21f90023eb5f025f4229d5370938"
+      }
+    }
+  ],
+  "solidworks_live_verified": false,
+  "native_acceptance": "pending_windows_validation"
+}

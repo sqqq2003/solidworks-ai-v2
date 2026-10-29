@@ -1,0 +1,87 @@
+{
+  "kerf": {
+    "value": 3,
+    "unit": "mm",
+    "source": "synthetic engineering example"
+  },
+  "profiles": [
+    {
+      "id": "tube",
+      "source": "user synthetic profile table",
+      "revision": "A",
+      "material": "steel",
+      "area": {
+        "value": 300,
+        "unit": "mm^2",
+        "source": "synthetic engineering example"
+      },
+      "density": {
+        "value": 7850,
+        "unit": "kg/m^3",
+        "source": "synthetic engineering example"
+      },
+      "stock_length": {
+        "value": 6000,
+        "unit": "mm",
+        "source": "synthetic engineering example"
+      }
+    }
+  ],
+  "members": [
+    {
+      "id": "rail1",
+      "profile": "tube",
+      "start_mm": [
+        0,
+        0,
+        0
+      ],
+      "end_mm": [
+        1000,
+        0,
+        0
+      ],
+      "quantity": 2,
+      "end_allowance": {
+        "value": 1,
+        "unit": "mm",
+        "source": "synthetic engineering example"
+      },
+      "cut_type": "square",
+      "source": "synthetic frame"
+    },
+    {
+      "id": "rail2",
+      "profile": "tube",
+      "start_mm": [
+        0,
+        0,
+        0
+      ],
+      "end_mm": [
+        0,
+        500,
+        0
+      ],
+      "quantity": 2,
+      "end_allowance": {
+        "value": 1,
+        "unit": "mm",
+        "source": "synthetic engineering example"
+      },
+      "cut_type": "square",
+      "source": "synthetic frame"
+    }
+  ],
+  "connections": [
+    {
+      "id": "joint1",
+      "members": [
+        "rail1",
+        "rail2"
+      ],
+      "weld_spec": "pending welding engineer review",
+      "source": "synthetic connection"
+    }
+  ]
+}

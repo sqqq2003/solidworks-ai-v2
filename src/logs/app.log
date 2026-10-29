@@ -1,0 +1,650 @@
+2026-10-29 04:51:57,252 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-dbab999221ab
+2026-10-29 04:51:57,254 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-dbab999221ab
+2026-10-29 04:51:57,257 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-830f465b8376
+2026-10-29 04:51:57,257 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:51:57,257 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:51:57,258 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-b9895d44b878
+2026-10-29 04:51:57,259 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:51:57,259 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:51:57,260 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-29793d01dafc
+2026-10-29 04:51:57,260 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:51:57,260 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:51:57,262 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-45d331fb9d22
+2026-10-29 04:51:57,263 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-eb463d772287
+2026-10-29 04:51:57,263 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:51:57,263 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:51:57,264 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-31a3f2f4298c
+2026-10-29 04:51:57,265 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:51:57,265 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:51:57,266 WARNING [MainThread] cad_analyzer: DWG 转换器 solidworks 已转换，识别失败：A-01左右牙条牙套.dwg（Contour search limit reached）
+Traceback (most recent call last):
+  File "/workspace/release-v3/src/cad_analyzer.py", line 1869, in analyze_cad_file
+    analysis = analyze_dxf(converted_path, display_path=source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: Contour search limit reached
+2026-10-29 04:51:57,268 INFO    [MainThread] sw_session: running convert_dwg_with_solidworks on task STA sw-task-8c72f71831f0
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:51:57,273 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:51:57,275 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:51:57,275 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:51:57,283 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:51:57,284 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:51:57,284 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:51:57,290 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:51:57,292 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:51:57,292 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:51:57,298 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:51:57,299 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:51:57,300 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:51:57,301 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:51:57,331 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:51:57,331 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:51:57,331 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:51:57,331 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:51:57,331 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'not_fixed_xy_plane': 1}
+2026-10-29 04:51:57,331 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'anchor_outside_trimmed_face': 1}
+2026-10-29 04:51:57,332 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={'AttributeError': 2}
+2026-10-29 04:51:57,332 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-29 04:51:57,333 INFO    [MainThread] solidworks_generator: 自动折弯成功：bends=(3, 4) face=0 pos=1 flip=False defaultR=False cba=False pick=(50.000,40.000)
+2026-10-29 04:51:57,333 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'AttributeError': 2}
+2026-10-29 04:51:57,335 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(50.0, 40.0) bends=(1, 2, 3, 4)
+2026-10-29 04:51:57,338 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:51:57,338 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:51:57,345 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'AttributeError': 1}
+2026-10-29 04:51:57,360 INFO    [MainThread] run_recovery: recovered stale publish lock from /tmp/tmp4h7p57oa/.label.lock.archived-20261029_045157-6b892e07 (pid=1989 alive=False age=0.0s)
+2026-10-29 04:51:57,361 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmp3zq5apco/.label-aaa -> /tmp/tmp3zq5apco/orphaned/.label-aaa-531909bc
+2026-10-29 04:51:57,363 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:51:57,363 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:51:57,363 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:51:57,363 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:51:57,363 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:51:57,363 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:51:57,364 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:51:57,364 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:51:57,364 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:51:57,364 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:51:57,364 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:51:57,366 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:51:57,366 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:51:57,380 INFO    [MainThread] sheet_metal_pipeline: resuming plan 82f499c7184a50a4352a48f396152539c1f6e896b17a88f215938058219eab6f from checkpoint S1 in /tmp/tmpv7co9g88/out2/.simulation-82f499c7184a50a4352a48f396152539c1f6e896b17a88f215938058219eab6f-crashsim
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:51:57,382 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:51:57,384 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:51:57,384 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:51:57,395 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmp_mf2psku/out3/.simulation-4b72d666e44fa1e54762ad904c08e414f949155692b93fd8bd53945e0017ba8b-junk -> /tmp/tmp_mf2psku/out3/orphaned/.simulation-4b72d666e44fa1e54762ad904c08e414f949155692b93fd8bd53945e0017ba8b-junk-e728c4d7
+2026-10-29 04:51:57,395 INFO    [MainThread] sheet_metal_pipeline: quarantined orphan staging: ['/tmp/tmp_mf2psku/out3/orphaned/.simulation-4b72d666e44fa1e54762ad904c08e414f949155692b93fd8bd53945e0017ba8b-junk-e728c4d7']
+2026-10-29 04:53:00,295 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-2e93159a31ca
+2026-10-29 04:53:00,296 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-2e93159a31ca
+2026-10-29 04:53:00,299 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-6e99952c3204
+2026-10-29 04:53:00,299 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:00,300 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:00,301 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-39fb15beefca
+2026-10-29 04:53:00,301 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:00,301 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:00,302 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-f18aac9c7c4a
+2026-10-29 04:53:00,303 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:00,303 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:00,305 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-a7f99eb80742
+2026-10-29 04:53:00,306 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-3d71e68adc03
+2026-10-29 04:53:00,307 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:00,307 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:00,308 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-8063bf42c5e5
+2026-10-29 04:53:00,308 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:00,308 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:00,309 WARNING [MainThread] cad_analyzer: DWG 转换器 solidworks 已转换，识别失败：A-01左右牙条牙套.dwg（Contour search limit reached）
+Traceback (most recent call last):
+  File "/workspace/release-v3/src/cad_analyzer.py", line 1869, in analyze_cad_file
+    analysis = analyze_dxf(converted_path, display_path=source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: Contour search limit reached
+2026-10-29 04:53:00,311 INFO    [MainThread] sw_session: running convert_dwg_with_solidworks on task STA sw-task-da8378b155e0
+2026-10-29 04:53:00,316 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:00,317 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:00,319 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:00,319 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:00,327 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:00,327 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:00,327 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:00,327 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:00,327 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:00,328 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:00,328 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:00,328 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:00,328 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:00,328 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:00,328 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:00,330 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:00,330 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:00,338 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:00,338 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:00,338 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:00,339 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:00,341 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:00,341 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:00,347 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:00,349 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:00,349 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:00,382 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:53:00,382 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:53:00,382 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:53:00,382 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:53:00,382 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'not_fixed_xy_plane': 1}
+2026-10-29 04:53:00,382 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'anchor_outside_trimmed_face': 1}
+2026-10-29 04:53:00,383 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={'AttributeError': 2}
+2026-10-29 04:53:00,383 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-29 04:53:00,383 INFO    [MainThread] solidworks_generator: 自动折弯成功：bends=(3, 4) face=0 pos=1 flip=False defaultR=False cba=False pick=(50.000,40.000)
+2026-10-29 04:53:00,383 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'AttributeError': 2}
+2026-10-29 04:53:00,385 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(50.0, 40.0) bends=(1, 2, 3, 4)
+2026-10-29 04:53:00,387 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:53:00,388 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:53:00,394 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'AttributeError': 1}
+2026-10-29 04:53:00,409 INFO    [MainThread] run_recovery: recovered stale publish lock from /tmp/tmp2ltc0v13/.label.lock.archived-20261029_045300-afccdcbb (pid=2314 alive=False age=0.0s)
+2026-10-29 04:53:00,411 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmp3yj563e6/.label-aaa -> /tmp/tmp3yj563e6/orphaned/.label-aaa-bc874a99
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:00,412 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:00,416 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:00,416 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:00,430 INFO    [MainThread] sheet_metal_pipeline: resuming plan b8755efbbc6f68fa65eda7cf6d643b4f5925b33e25bec8e02db96b6b53f7a458 from checkpoint S1 in /tmp/tmp8jvd4t28/out2/.simulation-b8755efbbc6f68fa65eda7cf6d643b4f5925b33e25bec8e02db96b6b53f7a458-crashsim
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:00,432 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:00,434 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:00,434 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:00,445 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmpo0kgi_8_/out3/.simulation-d1709c71fe7f60a886ed234953c489321b74df28d4e4bfd694facbe6de5de031-junk -> /tmp/tmpo0kgi_8_/out3/orphaned/.simulation-d1709c71fe7f60a886ed234953c489321b74df28d4e4bfd694facbe6de5de031-junk-314c36eb
+2026-10-29 04:53:00,445 INFO    [MainThread] sheet_metal_pipeline: quarantined orphan staging: ['/tmp/tmpo0kgi_8_/out3/orphaned/.simulation-d1709c71fe7f60a886ed234953c489321b74df28d4e4bfd694facbe6de5de031-junk-314c36eb']
+2026-10-29 04:53:43,793 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-6dbcb680388d
+2026-10-29 04:53:43,794 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-6dbcb680388d
+2026-10-29 04:53:43,797 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-e391a8d81c7e
+2026-10-29 04:53:43,797 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:43,797 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:43,798 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-d0264d585929
+2026-10-29 04:53:43,798 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:43,798 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:43,800 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-10eb00e38715
+2026-10-29 04:53:43,800 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:43,800 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:43,801 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-b5e826f6f2a7
+2026-10-29 04:53:43,803 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-92e678ee492a
+2026-10-29 04:53:43,803 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:43,803 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:43,804 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-0d1323dda3e6
+2026-10-29 04:53:43,805 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:53:43,805 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:53:43,806 WARNING [MainThread] cad_analyzer: DWG 转换器 solidworks 已转换，识别失败：A-01左右牙条牙套.dwg（Contour search limit reached）
+Traceback (most recent call last):
+  File "/workspace/release-v3/src/cad_analyzer.py", line 1869, in analyze_cad_file
+    analysis = analyze_dxf(converted_path, display_path=source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: Contour search limit reached
+2026-10-29 04:53:43,808 INFO    [MainThread] sw_session: running convert_dwg_with_solidworks on task STA sw-task-ab3cd74af751
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:43,813 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:43,815 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:43,815 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:43,821 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:43,823 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:43,823 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:43,829 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:43,829 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:43,829 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:43,829 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:43,829 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:43,829 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:43,830 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:43,830 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:43,830 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:43,830 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:43,830 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:43,831 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:43,831 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:43,837 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:43,838 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:43,838 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:43,838 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:43,839 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:43,839 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:43,868 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:53:43,868 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:53:43,868 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:53:43,868 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:53:43,868 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'not_fixed_xy_plane': 1}
+2026-10-29 04:53:43,869 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'anchor_outside_trimmed_face': 1}
+2026-10-29 04:53:43,869 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={'AttributeError': 2}
+2026-10-29 04:53:43,869 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-29 04:53:43,870 INFO    [MainThread] solidworks_generator: 自动折弯成功：bends=(3, 4) face=0 pos=1 flip=False defaultR=False cba=False pick=(50.000,40.000)
+2026-10-29 04:53:43,870 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'AttributeError': 2}
+2026-10-29 04:53:43,871 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(50.0, 40.0) bends=(1, 2, 3, 4)
+2026-10-29 04:53:43,874 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:53:43,874 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:53:43,880 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'AttributeError': 1}
+2026-10-29 04:53:43,896 INFO    [MainThread] run_recovery: recovered stale publish lock from /tmp/tmpv3afkxci/.label.lock.archived-20261029_045343-c3150a3b (pid=2671 alive=False age=0.0s)
+2026-10-29 04:53:43,897 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmplagiom8_/.label-aaa -> /tmp/tmplagiom8_/orphaned/.label-aaa-877387ae
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:43,898 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:43,900 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:43,900 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:43,916 INFO    [MainThread] sheet_metal_pipeline: resuming plan 5e4a64a2100bf42f4b9d69c8f1d43b04a49fcab7387f75dedc3d179757dbcd06 from checkpoint S1 in /tmp/tmppjzuuzr1/out2/.simulation-5e4a64a2100bf42f4b9d69c8f1d43b04a49fcab7387f75dedc3d179757dbcd06-crashsim
+2026-10-29 04:53:43,917 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:53:43,918 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:53:43,919 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:53:43,920 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:53:43,931 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmpu4qsjvyx/out3/.simulation-55c8526ef1cd9051c6eda70c7861c832341001dd73a408e78ed2d60073a1eeea-junk -> /tmp/tmpu4qsjvyx/out3/orphaned/.simulation-55c8526ef1cd9051c6eda70c7861c832341001dd73a408e78ed2d60073a1eeea-junk-c2c6848e
+2026-10-29 04:53:43,931 INFO    [MainThread] sheet_metal_pipeline: quarantined orphan staging: ['/tmp/tmpu4qsjvyx/out3/orphaned/.simulation-55c8526ef1cd9051c6eda70c7861c832341001dd73a408e78ed2d60073a1eeea-junk-c2c6848e']
+2026-10-29 04:55:25,743 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-d3bace37d747
+2026-10-29 04:55:25,744 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-d3bace37d747
+2026-10-29 04:55:25,747 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-df3e14825356
+2026-10-29 04:55:25,747 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:55:25,747 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:55:25,749 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-091a102cd459
+2026-10-29 04:55:25,749 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:55:25,749 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:55:25,750 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-3b5bbf29c107
+2026-10-29 04:55:25,750 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:55:25,750 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:55:25,752 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-03590a6c041c
+2026-10-29 04:55:25,753 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-4df3525b87c1
+2026-10-29 04:55:25,754 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:55:25,754 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:55:25,755 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-139ab07bc1ac
+2026-10-29 04:55:25,756 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 04:55:25,756 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 04:55:25,757 WARNING [MainThread] cad_analyzer: DWG 转换器 solidworks 已转换，识别失败：A-01左右牙条牙套.dwg（Contour search limit reached）
+Traceback (most recent call last):
+  File "/workspace/release-v3/src/cad_analyzer.py", line 1869, in analyze_cad_file
+    analysis = analyze_dxf(converted_path, display_path=source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: Contour search limit reached
+2026-10-29 04:55:25,759 INFO    [MainThread] sw_session: running convert_dwg_with_solidworks on task STA sw-task-35c8afee69db
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:55:25,765 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:55:25,767 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:55:25,767 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:55:25,777 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:55:25,779 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:55:25,779 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:55:25,785 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:55:25,785 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:55:25,785 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:55:25,785 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:55:25,785 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:55:25,786 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:55:25,786 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:55:25,786 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:55:25,786 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:55:25,786 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:55:25,786 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:55:25,787 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:55:25,788 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:55:25,794 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:55:25,794 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:55:25,795 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:55:25,797 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:55:25,797 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:55:25,831 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:55:25,831 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:55:25,831 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:55:25,832 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 04:55:25,832 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'not_fixed_xy_plane': 1}
+2026-10-29 04:55:25,832 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'anchor_outside_trimmed_face': 1}
+2026-10-29 04:55:25,833 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={'AttributeError': 2}
+2026-10-29 04:55:25,833 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-29 04:55:25,833 INFO    [MainThread] solidworks_generator: 自动折弯成功：bends=(3, 4) face=0 pos=1 flip=False defaultR=False cba=False pick=(50.000,40.000)
+2026-10-29 04:55:25,833 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'AttributeError': 2}
+2026-10-29 04:55:25,836 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(50.0, 40.0) bends=(1, 2, 3, 4)
+2026-10-29 04:55:25,839 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 04:55:25,839 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 04:55:25,847 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'AttributeError': 1}
+2026-10-29 04:55:25,863 INFO    [MainThread] run_recovery: recovered stale publish lock from /tmp/tmp4rkfc4ok/.label.lock.archived-20261029_045525-755ae46e (pid=3082 alive=False age=0.0s)
+2026-10-29 04:55:25,864 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmpgr5c38lm/.label-aaa -> /tmp/tmpgr5c38lm/orphaned/.label-aaa-ce28aa56
+2026-10-29 04:55:25,866 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:55:25,867 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:55:25,869 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:55:25,869 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:55:25,886 INFO    [MainThread] sheet_metal_pipeline: resuming plan c7bc97dfa6c47fc6427473d57afaa8f6f9b96866dd42ae34f9f4193e117b02c2 from checkpoint S1 in /tmp/tmphsd60z8r/out2/.simulation-c7bc97dfa6c47fc6427473d57afaa8f6f9b96866dd42ae34f9f4193e117b02c2-crashsim
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 04:55:25,888 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 04:55:25,889 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 04:55:25,890 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 04:55:25,890 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 04:55:25,905 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmp_s929o76/out3/.simulation-61998bebf3322acba24bc83042cfaa8d03fa646848c12f8402f69a5c5e02719c-junk -> /tmp/tmp_s929o76/out3/orphaned/.simulation-61998bebf3322acba24bc83042cfaa8d03fa646848c12f8402f69a5c5e02719c-junk-4dfba8a8
+2026-10-29 04:55:25,905 INFO    [MainThread] sheet_metal_pipeline: quarantined orphan staging: ['/tmp/tmp_s929o76/out3/orphaned/.simulation-61998bebf3322acba24bc83042cfaa8d03fa646848c12f8402f69a5c5e02719c-junk-4dfba8a8']
+2026-10-29 05:01:41,089 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-a88d5a3eefdd
+2026-10-29 05:01:41,091 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-a88d5a3eefdd
+2026-10-29 05:01:41,093 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-65f44278d1b6
+2026-10-29 05:01:41,093 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 05:01:41,093 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 05:01:41,094 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-3fd2a3a787eb
+2026-10-29 05:01:41,095 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 05:01:41,095 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 05:01:41,096 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-37115e0dbba2
+2026-10-29 05:01:41,096 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 05:01:41,096 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 05:01:41,097 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-71729a31b9d7
+2026-10-29 05:01:41,099 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-67f5d084886e
+2026-10-29 05:01:41,099 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 05:01:41,099 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 05:01:41,101 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-ad799e13072b
+2026-10-29 05:01:41,101 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-10-29 05:01:41,101 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-29 05:01:41,102 WARNING [MainThread] cad_analyzer: DWG 转换器 solidworks 已转换，识别失败：A-01左右牙条牙套.dwg（Contour search limit reached）
+Traceback (most recent call last):
+  File "/workspace/release-v3/src/cad_analyzer.py", line 1869, in analyze_cad_file
+    analysis = analyze_dxf(converted_path, display_path=source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: Contour search limit reached
+2026-10-29 05:01:41,104 INFO    [MainThread] sw_session: running convert_dwg_with_solidworks on task STA sw-task-cb2bb1822da1
+2026-10-29 05:01:41,109 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 05:01:41,109 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 05:01:41,109 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 05:01:41,110 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 05:01:41,111 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 05:01:41,112 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 05:01:41,121 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 05:01:41,121 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 05:01:41,122 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 05:01:41,124 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 05:01:41,124 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 05:01:41,132 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 05:01:41,133 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 05:01:41,133 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 05:01:41,133 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 05:01:41,134 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 05:01:41,135 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 05:01:41,143 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 05:01:41,143 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 05:01:41,143 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 05:01:41,143 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 05:01:41,143 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 05:01:41,144 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 05:01:41,144 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 05:01:41,144 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 05:01:41,144 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 05:01:41,144 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 05:01:41,144 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 05:01:41,145 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 05:01:41,146 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 05:01:41,178 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 05:01:41,178 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 05:01:41,178 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 05:01:41,178 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-10-29 05:01:41,179 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'not_fixed_xy_plane': 1}
+2026-10-29 05:01:41,179 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'anchor_outside_trimmed_face': 1}
+2026-10-29 05:01:41,180 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={'AttributeError': 2}
+2026-10-29 05:01:41,180 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-29 05:01:41,180 INFO    [MainThread] solidworks_generator: 自动折弯成功：bends=(3, 4) face=0 pos=1 flip=False defaultR=False cba=False pick=(50.000,40.000)
+2026-10-29 05:01:41,180 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'AttributeError': 2}
+2026-10-29 05:01:41,182 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(50.0, 40.0) bends=(1, 2, 3, 4)
+2026-10-29 05:01:41,184 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-10-29 05:01:41,184 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-10-29 05:01:41,190 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'AttributeError': 1}
+2026-10-29 05:01:41,207 INFO    [MainThread] run_recovery: recovered stale publish lock from /tmp/tmpulc3jibf/.label.lock.archived-20261029_050141-c8067beb (pid=3591 alive=False age=0.0s)
+2026-10-29 05:01:41,209 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmpu2ylx_hz/.label-aaa -> /tmp/tmpu2ylx_hz/orphaned/.label-aaa-77e3355b
+2026-10-29 05:01:41,213 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 05:01:41,214 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 05:01:41,216 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 05:01:41,216 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 05:01:41,234 INFO    [MainThread] sheet_metal_pipeline: resuming plan 44563d5f3d24e16a1fb396614eb26f854071768b0779661910946848206b3798 from checkpoint S1 in /tmp/tmpoga7iz4h/out2/.simulation-44563d5f3d24e16a1fb396614eb26f854071768b0779661910946848206b3798-crashsim
+2026-10-29 05:01:41,235 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-10-29 05:01:41,235 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-29 05:01:41,236 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-29 05:01:41,238 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-10-29 05:01:41,238 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-10-29 05:01:41,250 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmphzr3glye/out3/.simulation-4674851c651148c55634513f7cd3189aaaa20c249f1f4dc24f226a59998a99f7-junk -> /tmp/tmphzr3glye/out3/orphaned/.simulation-4674851c651148c55634513f7cd3189aaaa20c249f1f4dc24f226a59998a99f7-junk-3bb574d5
+2026-10-29 05:01:41,250 INFO    [MainThread] sheet_metal_pipeline: quarantined orphan staging: ['/tmp/tmphzr3glye/out3/orphaned/.simulation-4674851c651148c55634513f7cd3189aaaa20c249f1f4dc24f226a59998a99f7-junk-3bb574d5']

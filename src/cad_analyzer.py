@@ -56,6 +56,22 @@ class DrawingText:
 
 
 @dataclass(frozen=True)
+class DrawingDimension:
+    """图纸标注（DIMENSION）。坐标与数值已换算成毫米。
+
+    kind 为 diameter / radius / linear；linear 用 start/end 表示测量方向，
+    供「只取沿轴长度」「按直径标注中点定轴线」使用。text 保留原始标注
+    文本（含 %%c、内M<>-25深 等占位写法），便于读螺纹与替换占位数值。
+    """
+
+    kind: str
+    value: float
+    start: Point | None = None
+    end: Point | None = None
+    text: str = ""
+
+
+@dataclass(frozen=True)
 class DrawingAnalysis:
     path: Path
     units_name: str
@@ -71,6 +87,9 @@ class DrawingAnalysis:
     text_entities: tuple[DrawingText, ...] = ()
     # DWG 转换出的 DXF 路径：尺寸标注（DIMENSION）要用 ezdxf 读，DWG 本身读不了。
     dxf_path: Path | None = None
+    # 图纸标注：尺寸驱动车件用。默认空，空时规划走既有几何/文字路径，
+    # 不改变旧行为；只有显式提供标注才启用尺寸驱动规划。
+    dimensions: tuple[DrawingDimension, ...] = ()
 
 
 def _is_effectively_straight(primitive: Primitive) -> bool:

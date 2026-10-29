@@ -1,0 +1,105 @@
+{
+  "results": [
+    {
+      "id": "plate",
+      "features": [
+        {
+          "id": "plate0",
+          "kind": "sketch",
+          "simulated": true
+        },
+        {
+          "id": "plate1",
+          "kind": "extrude",
+          "simulated": true
+        },
+        {
+          "id": "plate2",
+          "kind": "sketch",
+          "simulated": true
+        },
+        {
+          "id": "plate3",
+          "kind": "cut",
+          "simulated": true
+        }
+      ],
+      "status": "mock_only",
+      "cad_executed": false,
+      "native_acceptance": "pending_windows_validation"
+    },
+    {
+      "id": "bracket",
+      "features": [
+        {
+          "id": "bracket0",
+          "kind": "sketch",
+          "simulated": true
+        },
+        {
+          "id": "bracket1",
+          "kind": "extrude",
+          "simulated": true
+        },
+        {
+          "id": "bracket2",
+          "kind": "fillet",
+          "simulated": true
+        }
+      ],
+      "status": "mock_only",
+      "cad_executed": false,
+      "native_acceptance": "pending_windows_validation"
+    },
+    {
+      "id": "shaft",
+      "features": [
+        {
+          "id": "shaft0",
+          "kind": "sketch",
+          "simulated": true
+        },
+        {
+          "id": "shaft1",
+          "kind": "revolve",
+          "simulated": true
+        }
+      ],
+      "status": "mock_only",
+      "cad_executed": false,
+      "native_acceptance": "pending_windows_validation"
+    },
+    {
+      "id": "two_bends",
+      "features": [
+        {
+          "id": "two_bends0",
+          "kind": "sketch",
+          "simulated": true
+        },
+        {
+          "id": "two_bends1",
+          "kind": "base_flange",
+          "simulated": true
+        },
+        {
+          "id": "two_bends2",
+          "kind": "sketched_bend",
+          "simulated": true
+        },
+        {
+          "id": "two_bends3",
+          "kind": "sketched_bend",
+          "simulated": true
+        }
+      ],
+      "status": "mock_only",
+      "cad_executed": false,
+      "native_acceptance": "pending_windows_validation"
+    }
+  ],
+  "status": "review_required",
+  "cad_executed": false,
+  "plan": {},
+  "native_acceptance": "pending_windows_validation"
+}

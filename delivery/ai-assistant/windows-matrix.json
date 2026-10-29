@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "source_revision": "record actual PR head SHA",
+  "real_api": "not_run",
+  "solidworks": "not_run",
+  "cases": [
+    {
+      "id": "AI-01",
+      "case": "missing key/model must not claim connected; local mode still works",
+      "status": "not_run"
+    },
+    {
+      "id": "AI-02",
+      "case": "operator-configured real API: basic Chinese design discussion",
+      "status": "not_run"
+    },
+    {
+      "id": "AI-03",
+      "case": "explicit sourced mechanical inputs and tool result check",
+      "status": "not_run"
+    },
+    {
+      "id": "AI-04",
+      "case": "unknown native/shell/file tools refused; no CAD or files written",
+      "status": "not_run"
+    },
+    {
+      "id": "AI-05",
+      "case": "stop/new task/model switch and late reply handling",
+      "status": "not_run"
+    },
+    {
+      "id": "AI-06",
+      "case": "401/403/429/network timeout; no key/header logged",
+      "status": "not_run"
+    },
+    {
+      "id": "AI-07",
+      "case": "save review request refuses overwrite; no implicit CAD execution",
+      "status": "not_run"
+    }
+  ],
+  "handoff": "one evidence PR to #46; do not interrupt #53/#54 native/UI tasks"
+}

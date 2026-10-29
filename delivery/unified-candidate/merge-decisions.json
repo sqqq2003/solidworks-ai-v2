@@ -1,0 +1,1022 @@
+[
+  {
+    "path": "CODEX_REVIEW.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "README.md",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "TASK_STATUS.md",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "app.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "delivery/ai-assistant/gui-checks.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/ai-assistant/validation.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/ai-assistant/windows-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/coexisting-instance/offline-tests.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/coexisting-instance/validation.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/design-platform/windows-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/feature-tree.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/geometry-ir.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/merge-decisions.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/offline-checks.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/original-feature-contracts.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/repository.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/source-manifest.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/source-versions.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/integrated-v2/windows-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/capabilities.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/compiled-jobs.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/golden-gate-checks.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/issue19-unified-source-and-gork.zip",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/offline-checks.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/offline-report.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/p248-golden.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/source-manifest.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/supervisor-checks.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/two-bend-mock-summary.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue19-unified/windows-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue39-unified/offline-checks.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue39-unified/source-manifest.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue50/offline-checks.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue50/source-manifest.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/issue50/windows-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/multi-provider-ai/gui-checks.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/multi-provider-ai/validation.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/multi-provider-ai/windows-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/pr21/manifest.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/pr21/sw2022-interface-patch.zip",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/ui-workbench/gui-checks.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "delivery/ui-workbench/validation.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/bend-relief-research.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/codex-workbench-ui.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/coexisting-solidworks.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/design-platform-batch.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue19-batch-delivery.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue19-capability-checklist.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue19-completion-boundaries.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue19-review.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue19-unified-runbook.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue24-roller800-handoff.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue39-unified-patch.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue50-gap-analysis.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/issue50-handoff.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/multi-provider-ai.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/native-acceptance-recovery.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/native-preflight-audit.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/openai-assistant.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/plan-conformance-review.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/platform-development-order.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/pr21-validation-review.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/pr22-export-recheck.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/pr22-r2-review.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/pr22-validation-review.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/previews/workbench-home.png",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/previews/workbench-review.png",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/previews/workbench-small.png",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/production-file-review.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/production-flow-handoff.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/test-handoff-audit.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "docs/unified-integration.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/ai-design-request.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/design-platform-batch.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/gork46-audit-matrix.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/gork46-empty-submission.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-assembly.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-batch.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-change_report.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-changes.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-costs.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-dimensions.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-instruction.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-native-review.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-proposals.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-review.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-similarity.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-tolerance-axial-gap.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-tolerance-roller-installation.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-tolerances.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-transmission.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/issue50-weldments.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/make_issue50_examples.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/modeling_batch.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/offline-result.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/p248_golden.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/production_recipes.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/ql5050px_production.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/roller-design-intent.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/roller-impact-plan.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/roller800-pending.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/roller800-synthetic.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "examples/unified-project.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/README.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/examples/l_bracket_tree.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/examples/sheetmetal_unfold_tree.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/mock_backend.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/plan_convert.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/tests/test_feature_tree.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/tests/test_feature_tree_completion.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/tree.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "feature_tree/unfold.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/README.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/build.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/cli.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/examples/revolve_tree.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/examples/sheetmetal_ir_example.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/examples/sheetmetal_tree.json",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/ir.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/mock.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/tests/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/tests/test_geometry_ir.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "geometry_ir/validate.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "results/windows/p248_wb_20261025_attempt1.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "results/windows/p248_wb_20261025_attempt2.log",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "results/windows/p248_wb_retest_20261025.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ai_assistant/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ai_assistant/client.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ai_assistant/protocols.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ai_assistant/session.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ai_assistant/tools.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/cad_analyzer.py",
+    "decision": "three_way_merged"
+  },
+  {
+    "path": "src/design_platform/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/assistant.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/calculations.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/catalogue.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/desktop.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/knowledge.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/manufacturing.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/mapping.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/native.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/projects.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/rules.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/templates.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_platform/workflow.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_review/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_review/acceptance.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_review/impact.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/design_review/repair.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/desktop_jobs.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/desktop_ui.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/dwg_converter.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/engineering_intelligence/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/assembly.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/changes.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/common.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/costs.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/dimensions.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/native_review.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/proposals.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/review.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/similarity.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/transmission.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/weldments.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/engineering_intelligence/workflow.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/minimal_session_batch.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/owned_document_lifetime.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/part_verification.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/project_workbench.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/ql5050px/acceptance_report.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/cad_features.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/cad_topology.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/com_selection.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/ql5050px/editable_features.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/ql5050px/feature_operations.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/ql5050px/golden_gate.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/modeling_delivery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/modeling_gui.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/modeling_recovery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/modeling_supervisor.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/modeling_validation.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/modeling_worker.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/native_drawings.py",
+    "decision": "three_way_merged"
+  },
+  {
+    "path": "src/ql5050px/native_environment.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/native_machine.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/ql5050px/native_part_host.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/part_recipes.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/production.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/production_acceptance.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/production_review.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/recipe_worker.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/sheet_feature_data.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/staged_modeling.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/ql5050px/workflow.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/roller_variant/__init__.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/roller_variant/delivery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/roller_variant/execution.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/roller_variant/native.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/roller_variant/planning.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/run_recovery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/sheet_metal_pipeline.py",
+    "decision": "three_way_merged"
+  },
+  {
+    "path": "src/sheet_metal_windows.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/solidworks_generator.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/sw_compat/__init__.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/sw_compat/dispatch.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/sw_compat/typelib.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/sw_owned_launch.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/sw_session.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/sw_tool_cli.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/test_handoff_audit.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "src/turned_part.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "src/unified_project.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/pending_features/README.md",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/pending_features/test_border_relief_notch.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/pending_features/test_spur_segments.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/pending_features/test_turned_part.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_acceptance_recovery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_ai_assistant.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_ai_protocols.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_bend_geometry.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_design_review.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_desktop_jobs.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "tests/test_desktop_ui.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "tests/test_dwg_owned_conversion.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "tests/test_engineering_intelligence.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_manufacturing_release_audit.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_minimal_session_batch.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_modeling_validation.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_modeling_worker_lifecycle.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_owned_document_lifetime.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_owned_launch_preflight.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_production_delivery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_production_flow.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_r2_feature_diagnostics.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_roller_variant.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_s2_session_keepalive.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_sheet_metal_pipeline.py",
+    "decision": "three_way_merged"
+  },
+  {
+    "path": "tests/test_sw2022_feature_interfaces.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_test_handoff_audit.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "tests/test_unified_project.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/ai_assistant.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/audit_test_handoff.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/design_platform.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/design_review.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/engineering_intelligence.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/prepare_issue39_retest.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/prepare_modeling_delivery.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/project.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/roller_variant.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/run_cloud_tests.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  },
+  {
+    "path": "work/run_integrated_tests.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/run_reviewed_parts.py",
+    "decision": "reuse_coexist_addition_or_change"
+  },
+  {
+    "path": "work/run_sheet_metal.py",
+    "decision": "latest_dev_preserved_with_explicit_compatible_integration; see docs/unified-candidate.md"
+  }
+]

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "coverage": "initial handoff checkpoints; detailed engineering matrices remain mandatory in Issue46",
+  "lanes": [
+    {
+      "id": "native-patch",
+      "sha": "9229517de6511218fca6ada050872d6f4cef72ea",
+      "checks": [
+        {
+          "id": "offline-contracts",
+          "scope": "offline"
+        },
+        {
+          "id": "minimal-three-exits",
+          "scope": "native"
+        },
+        {
+          "id": "sheet-S1-S2-flat",
+          "scope": "native"
+        },
+        {
+          "id": "four-part-recipes",
+          "scope": "native"
+        },
+        {
+          "id": "p248-four-bends",
+          "scope": "native"
+        }
+      ]
+    },
+    {
+      "id": "roller800",
+      "sha": "e865b3dbbccbeef414f6ce41ba54bfea22923445",
+      "checks": [
+        {
+          "id": "offline-contracts",
+          "scope": "offline"
+        },
+        {
+          "id": "real-roller-overall800",
+          "scope": "native"
+        }
+      ]
+    },
+    {
+      "id": "platform",
+      "sha": "37cff9de571de63c728c2ec003b3b21f0a1609d7",
+      "checks": [
+        {
+          "id": "offline-contracts",
+          "scope": "offline"
+        },
+        {
+          "id": "platform-native-transaction",
+          "scope": "native"
+        }
+      ]
+    },
+    {
+      "id": "contracts43",
+      "sha": "ddc30267bdc30ccd5c6d3ecc670dcdf87ee94bf2",
+      "checks": [
+        {
+          "id": "offline-contracts",
+          "scope": "offline"
+        }
+      ]
+    },
+    {
+      "id": "features44",
+      "sha": "c883d978c7d7e54661fde1fe9764d447bfd61333",
+      "checks": [
+        {
+          "id": "offline-contracts",
+          "scope": "offline"
+        },
+        {
+          "id": "native-feature-reopen",
+          "scope": "native"
+        }
+      ]
+    }
+  ]
+}

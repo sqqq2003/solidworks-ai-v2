@@ -533,6 +533,7 @@ def main(argv=None) -> int:
                         help="installed SLDWORKS.exe absolute path")
     parser.add_argument("--repeat", type=int, default=3,
                         help="spawn/teardown repetitions (default 3)")
+    parser.add_argument("--output-dir",help="new log directory for the multi-process repetition batch")
     args = parser.parse_args(argv)
     if sys.platform != "win32":
         print(json.dumps({
@@ -541,6 +542,12 @@ def main(argv=None) -> int:
             "pending_windows_validation": True,
         }, ensure_ascii=False))
         return 2
+    if args.repeat>1:
+        from minimal_session_batch import run_batch
+        directory=Path(args.output_dir) if args.output_dir else Path(tempfile.gettempdir())/('sw-minimal-'+uuid.uuid4().hex)
+        result=run_batch(args.sw_exe,args.repeat,directory)
+        print(json.dumps(result,ensure_ascii=False,indent=2))
+        return 0 if result['status']=='teardown_clean' else 1
     sys.path[:0] = [str(Path(__file__).resolve().parent)]
     from sw_session import run_on_task_sta
     from sw_owned_launch import owned_solidworks
@@ -563,7 +570,7 @@ def main(argv=None) -> int:
             }
         reports.append(run_on_task_sta(live_job, timeout=300,
                                        task_name="minimal-teardown"))
-    ok = all(rep["exit_code"] == 0 for rep in reports)
+    ok = all(type(rep["exit_code"]) is int and rep["exit_code"] == 0 and not rep["session"].get("cleanup_error") and rep["session"].get("cleanup_status") in {"exit_requested","process_exited_cleanly"} for rep in reports)
     print(json.dumps({
         "status": "teardown_clean" if ok else "teardown_failed",
         "repetitions": reports,
@@ -574,5 +581,6 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 

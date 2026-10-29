@@ -1,0 +1,37 @@
+test_fillet_placeholder_is_pending_not_guessed (test_feature_tree.TestExecutionSemantics.test_fillet_placeholder_is_pending_not_guessed) ... ok
+test_missing_bend_param_is_pending_and_stops (test_feature_tree.TestExecutionSemantics.test_missing_bend_param_is_pending_and_stops) ... ok
+test_mock_record_complete_and_readback_matches_formula (test_feature_tree.TestExecutionSemantics.test_mock_record_complete_and_readback_matches_formula) ... ok
+test_no_defaults_in_module_sources (test_feature_tree.TestExecutionSemantics.test_no_defaults_in_module_sources) ... ok
+test_cycle_refused (test_feature_tree.TestOrderingAndRefusal.test_cycle_refused) ... ok
+test_duplicate_id_refused (test_feature_tree.TestOrderingAndRefusal.test_duplicate_id_refused) ... ok
+test_missing_dependency_refused (test_feature_tree.TestOrderingAndRefusal.test_missing_dependency_refused) ... ok
+test_topo_order_respects_dependencies (test_feature_tree.TestOrderingAndRefusal.test_topo_order_respects_dependencies) ... ok
+test_units_must_be_explicit_mm (test_feature_tree.TestOrderingAndRefusal.test_units_must_be_explicit_mm) ... ok
+test_unknown_type_refused (test_feature_tree.TestOrderingAndRefusal.test_unknown_type_refused) ... ok
+test_all_five_plan_types_convert (test_feature_tree.TestPlanConversion.test_all_five_plan_types_convert) ... ok
+test_cli_end_to_end_on_plan_sample (test_feature_tree.TestPlanConversion.test_cli_end_to_end_on_plan_sample) ... ok
+test_cli_end_to_end_on_tree_examples (test_feature_tree.TestPlanConversion.test_cli_end_to_end_on_tree_examples) ... ok
+test_conversion_without_job_params_keeps_bends_pending (test_feature_tree.TestPlanConversion.test_conversion_without_job_params_keeps_bends_pending) ... ok
+test_no_defaults_in_completion_sources (test_feature_tree_completion.TestCompletionHygiene.test_no_defaults_in_completion_sources) ... ok
+test_old_trees_execute_unchanged (test_feature_tree_completion.TestCompletionHygiene.test_old_trees_execute_unchanged) ... ok
+test_l_bracket_example_end_to_end (test_feature_tree_completion.TestLBracketExample.test_l_bracket_example_end_to_end) ... ok
+test_angle_out_of_range_is_failed (test_feature_tree_completion.TestRevolve.test_angle_out_of_range_is_failed) ... ok
+test_axis_crossing_is_pending_not_repaired (test_feature_tree_completion.TestRevolve.test_axis_crossing_is_pending_not_repaired) ... ok
+test_degenerate_profile_is_pending (test_feature_tree_completion.TestRevolve.test_degenerate_profile_is_pending) ... ok
+test_full_turn_volume_uses_pappus (test_feature_tree_completion.TestRevolve.test_full_turn_volume_uses_pappus) ... ok
+test_missing_angle_is_pending (test_feature_tree_completion.TestRevolve.test_missing_angle_is_pending) ... ok
+test_open_profile_is_pending_not_guessed (test_feature_tree_completion.TestRevolve.test_open_profile_is_pending_not_guessed) ... ok
+test_partial_angle_scales_volume (test_feature_tree_completion.TestRevolve.test_partial_angle_scales_volume) ... ok
+test_profile_on_axis_edge_is_allowed (test_feature_tree_completion.TestRevolve.test_profile_on_axis_edge_is_allowed) ... ok
+test_unwired_profile_is_pending (test_feature_tree_completion.TestRevolve.test_unwired_profile_is_pending) ... ok
+test_missing_k_factor_is_pending (test_feature_tree_completion.TestUnfold.test_missing_k_factor_is_pending) ... ok
+test_non_sheetmetal_features_are_excluded (test_feature_tree_completion.TestUnfold.test_non_sheetmetal_features_are_excluded) ... ok
+test_two_bend_math (test_feature_tree_completion.TestUnfold.test_two_bend_math) ... ok
+test_unfold_cli_end_to_end (test_feature_tree_completion.TestUnfold.test_unfold_cli_end_to_end) ... ok
+test_unfold_cli_pending_exit_code (test_feature_tree_completion.TestUnfold.test_unfold_cli_pending_exit_code) ... unfold pending: bend_pending:bend-2:missing_param:thickness_mm
+ok
+
+----------------------------------------------------------------------
+Ran 31 tests in 0.011s
+
+OK

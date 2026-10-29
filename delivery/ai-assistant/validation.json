@@ -1,0 +1,152 @@
+{
+  "scope": "offline API/UI integration; no real model request and no SolidWorks",
+  "status": "passed",
+  "run": 815,
+  "passed": 804,
+  "skipped": 11,
+  "suites": [
+    {
+      "id": "repository",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "work/run_cloud_tests.py"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 732,
+      "passed": 721,
+      "skipped": 11,
+      "skip_reasons": [
+        {
+          "test": "test_api_reply_uses_worker_and_remains_advisory (test_desktop_ui.DesktopUITests.test_api_reply_uses_worker_and_remains_advisory)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_export_cannot_overwrite_existing_request (test_desktop_ui.DesktopUITests.test_export_cannot_overwrite_existing_request)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_input_changes_clear_confirmation (test_desktop_ui.DesktopUITests.test_input_changes_clear_confirmation)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_instruction_creates_review_only (test_desktop_ui.DesktopUITests.test_instruction_creates_review_only)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_native_result_does_not_discard_pending_queue (test_desktop_ui.DesktopUITests.test_native_result_does_not_discard_pending_queue)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_new_task_discards_late_api_reply (test_desktop_ui.DesktopUITests.test_new_task_discards_late_api_reply)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_settings_drawer_and_relevant_parameters (test_desktop_ui.DesktopUITests.test_settings_drawer_and_relevant_parameters)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+          "reason": "测试用滚筒 DWG 不在 uploads"
+        },
+        {
+          "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+          "reason": "本机未安装 LibreDWG dwg2dxf"
+        },
+        {
+          "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+          "reason": "Drawing1_e7b7.dwg 未上传"
+        },
+        {
+          "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+          "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+        }
+      ],
+      "failures": 0,
+      "errors": 0,
+      "cross_process_lock_passed": true,
+      "logs_sha256": {
+        "repository.stdout.log": "7191e5bd952424bc6088a38d3ba1844a78d1d38038e67987caddd347fec4d25c",
+        "repository.stderr.log": "078be1487935f90a08ad77fd49e868cc183767ec4eace43894269b6ee2df6048"
+      }
+    },
+    {
+      "id": "original-feature-contracts",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/pending_features",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 36,
+      "skipped": 0,
+      "passed": 36,
+      "logs_sha256": {
+        "original-feature-contracts.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original-feature-contracts.stderr.log": "b109d706fde9012eed63026e725800a39a0374f50b37ee631064da2a153dafe2"
+      }
+    },
+    {
+      "id": "feature-tree",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "feature_tree/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 31,
+      "skipped": 0,
+      "passed": 31,
+      "logs_sha256": {
+        "feature-tree.stdout.log": "a558f7be00746979ff61aec56faee4ee99b6a4ddd683602a7ccb559102022268",
+        "feature-tree.stderr.log": "333d8729ddd09bee719e78fdc89784366bb5d9ba85c78ab2a955a3befb01dbfd"
+      }
+    },
+    {
+      "id": "geometry-ir",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "geometry_ir/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 16,
+      "skipped": 0,
+      "passed": 16,
+      "logs_sha256": {
+        "geometry-ir.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "geometry-ir.stderr.log": "49eb503eea364acd0a2913d0598d23207491e0ebbe1256df0ebf48013addcc02"
+      }
+    }
+  ],
+  "solidworks_live_verified": false,
+  "native_acceptance": "pending_windows_validation",
+  "focused_api_checks": {
+    "run": 21,
+    "passed": 21,
+    "transport": "fake HTTP only",
+    "included_in_regression": true
+  },
+  "virtual_display_checks": {
+    "run": 7,
+    "passed": 7,
+    "platform": "Linux system Tk8.6 with virtual X display",
+    "real_api_called": false
+  },
+  "real_api_verification": "not_run; no local API key/model configured"
+}

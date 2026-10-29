@@ -1,0 +1,39 @@
+{
+  "components": [
+    {
+      "id": "frame",
+      "fixed": true
+    },
+    {
+      "id": "roller",
+      "expected_dof": 1
+    }
+  ],
+  "mates": [
+    {
+      "id": "concentric",
+      "a": "frame",
+      "b": "roller",
+      "type": "concentric",
+      "moving": "roller"
+    },
+    {
+      "id": "axial",
+      "a": "frame",
+      "b": "roller",
+      "type": "distance",
+      "moving": "roller"
+    }
+  ],
+  "joints": [
+    {
+      "id": "lift",
+      "component": "roller",
+      "minimum": 0,
+      "maximum": 100,
+      "position": 20,
+      "unit": "mm",
+      "source": "synthetic travel"
+    }
+  ]
+}
