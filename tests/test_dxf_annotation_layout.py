@@ -4,10 +4,26 @@ import unittest
 import ezdxf
 from ezdxf import bbox
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src'))
-from dxf_annotation_layout import fit_single_line_mtext
+from dxf_annotation_layout import fit_single_line_mtext, rendered_mtext_extent
 
 
 class AnnotationLayoutTests(unittest.TestCase):
+    def test_already_small_text_is_not_reported_above_minimum(self):
+        text=ezdxf.new().modelspace().add_mtext('small',dxfattribs={'char_height':1})
+        with self.assertRaisesRegex(ValueError,'below'):
+            fit_single_line_mtext(text,(0,0,100,100),padding=1,minimum_height=2)
+
+    def test_renderer_glyph_bounds_fit_cell_with_explicit_measurement(self):
+        doc=ezdxf.new()
+        text=doc.modelspace().add_mtext('Part 640mm',dxfattribs={'char_height':12})
+        fit_single_line_mtext(text,(0,0,60,14),padding=2,minimum_height=2,
+                              extent_reader=rendered_mtext_extent)
+        extent=rendered_mtext_extent(text)
+        self.assertGreaterEqual(extent.extmin.x,2-1e-7)
+        self.assertLessEqual(extent.extmax.x,58+1e-7)
+        self.assertGreaterEqual(extent.extmin.y,2-1e-7)
+        self.assertLessEqual(extent.extmax.y,12+1e-7)
+        self.assertEqual(text.text,'Part 640mm')
     def test_content_and_style_preserved_and_actual_extents_inside_cell(self):
         doc = ezdxf.new()
         text = doc.modelspace().add_mtext('Machine 1000 x 800', dxfattribs={'char_height':10, 'width':2})

@@ -5,7 +5,16 @@ from ezdxf.entities import get_font_name
 from ezdxf.fonts import fonts
 
 
-def fit_single_line_mtext(entity, bounds, *, padding, minimum_height):
+def rendered_mtext_extent(entity):
+    """Measure the same glyph paths used by the DXF preview renderer."""
+    from ezdxf.addons.drawing import Frontend, RenderContext
+    from ezdxf.addons.drawing.recorder import Recorder
+    recorder=Recorder()
+    Frontend(RenderContext(entity.doc),recorder).draw_entities([entity])
+    return recorder.player().bbox()
+
+
+def fit_single_line_mtext(entity, bounds, *, padding, minimum_height, extent_reader=None):
     """Fit one MTEXT into a caller-specified cell, committing only on success.
 
     Content and style are preserved. Numerical extents depend on installed
@@ -25,6 +34,8 @@ def fit_single_line_mtext(entity, bounds, *, padding, minimum_height):
         raise ValueError('cell has no usable area')
     if abs(float(entity.dxf.rotation)) > 1e-8:
         raise ValueError('rotated text requires an explicit rotated layout')
+    if not math.isfinite(entity.dxf.char_height) or entity.dxf.char_height < minimum_height:
+        raise ValueError('existing text is below the specified minimum height')
     candidate = entity.copy()
     candidate.dxf.attachment_point = 5
     candidate.dxf.flow_direction = 1
@@ -40,7 +51,7 @@ def fit_single_line_mtext(entity, bounds, *, padding, minimum_height):
                            for c in plain) * candidate.dxf.char_height
         style_width = float(entity.doc.styles.get(entity.dxf.style).dxf.width) if entity.doc else 1.0
         candidate.dxf.width = max(font.text_width(plain)*1.1, conservative, 1e-6) * max(1.0, style_width) * 1.5
-        extent = bbox.extents([candidate])
+        extent = extent_reader(candidate) if extent_reader else bbox.extents([candidate])
         if not extent.has_data:
             raise ValueError('text extent unavailable')
         scale = min(width/max(extent.size.x, 1e-12), height/max(extent.size.y, 1e-12))
