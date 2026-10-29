@@ -144,7 +144,7 @@ def workflow_status(root):
             'native_write_allowed': False, 'manufacturing_approved': False}
 
 
-def execute_workflow(root, *, sw_exe, approval_sha256):
+def execute_workflow(root, *, sw_exe, approval_sha256, state_db=None):
     """Explicit Windows-only call to the existing isolated roller implementation."""
     root, manifest, request, plan = verify_workspace(root)
     if manifest['pending']: raise ValueError('workspace is blocked')
@@ -157,7 +157,8 @@ def execute_workflow(root, *, sw_exe, approval_sha256):
               'approval_sha256': approval['approval_sha256'], 'sw_exe': str(executable)})
     from roller_variant.native import run_native
     try:
-        report = run_native(request['roller'], root/'native-output', executable)
+        options = {'state_db': state_db} if state_db is not None else {}
+        report = run_native(request['roller'], root/'native-output', executable, **options)
     except Exception as exc:
         report = {'status': 'failed', 'error': type(exc).__name__+': '+str(exc),
                   'recovery': 'preserve_session_and_work_copy; do not repeat this workspace'}

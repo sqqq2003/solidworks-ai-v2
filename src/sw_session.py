@@ -128,6 +128,8 @@ class SessionLease:
     # partial_com_disconnect / partial_rebind_failed after a file is on disk.
     # This is not a modeling pass and does not call ExitApp.
     post_save_outcome: str | None = None
+    durable_write_guard: Callable[[], None] | None = None
+    close_doc_only: bool = False
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)
@@ -363,7 +365,7 @@ class SwTaskWorker:
                 break
             if self.lease.abandon.is_set() or time.monotonic() >= deadline:
                 exclusive = self.lease.verified_exclusive
-                if exclusive:
+                if exclusive and not self.lease.close_doc_only:
                     try:
                         terminate_owned_process(self.lease)
                     except SessionOwnershipError:
@@ -376,11 +378,13 @@ class SwTaskWorker:
                 # saves are refused. reset_for_tests is not a recovery path.
                 self.lease.writes_blocked = True
                 self._poison("call timed out or the watchdog abandoned the wait")
-                if exclusive:
+                if exclusive and not self.lease.close_doc_only:
                     detail = (
                         " An owned pid terminate was requested from outside the "
                         "STA. ExitApp was not called from the watchdog thread."
                     )
+                elif self.lease.close_doc_only:
+                    detail = " CloseDoc-only policy forbids ExitApp and process termination; reconcile is required."
                 else:
                     detail = (
                         " ExitApp, CloseAllDocuments, and process kill were refused "
@@ -594,7 +598,8 @@ def _win_mutex_release(resource: Any) -> None:
     kernel32.CloseHandle(handle)
 
 
-def run_on_task_sta(fn: Callable, *, timeout: float, task_name: str = "sw-task") -> Any:
+def run_on_task_sta(fn: Callable, *, timeout: float, task_name: str = "sw-task",
+                    durable_attempt: tuple | None = None) -> Any:
     """Run ``fn`` on the single task STA. The caller waits at most ``timeout``.
 
     A second caller in this process fails immediately. A second process fails
@@ -605,6 +610,8 @@ def run_on_task_sta(fn: Callable, *, timeout: float, task_name: str = "sw-task")
     """
 
     if on_task_sta():
+        if durable_attempt is not None:
+            durable_attempt[0].assert_writer(*durable_attempt[1:])
         return fn()
     acquired = _worker_lock.acquire(blocking=False)
     if not acquired:
@@ -616,7 +623,14 @@ def run_on_task_sta(fn: Callable, *, timeout: float, task_name: str = "sw-task")
     worker: SwTaskWorker | None = None
     try:
         token = _WRITER_LOCK.acquire()
+        if durable_attempt is None:
+            from cad_receipts import assert_no_unresolved
+            assert_no_unresolved()
+        else:
+            durable_attempt[0].assert_writer(*durable_attempt[1:])
         worker = ensure_worker()
+        if durable_attempt is not None:
+            worker.lease.close_doc_only = True
         logger.info("running %s on task STA %s", task_name, worker.lease.task_id)
         try:
             return worker.call(fn, timeout=timeout, lock_token=token)
@@ -822,6 +836,11 @@ def require_model_write(lease: SessionLease | None = None) -> SessionLease:
         raise SessionOwnershipError(
             "refusing model write: GetActiveObject/Dispatch alone is not exclusive ownership"
         )
+    if lease.durable_write_guard is not None:
+        lease.durable_write_guard()
+    else:
+        from cad_receipts import assert_no_unresolved
+        assert_no_unresolved()
     if lease.native_launch is not None:
         lease.native_launch.validate(lease)
     return lease
@@ -912,6 +931,8 @@ def _listed_open_titles(lease: SessionLease, app: Any) -> list[str]:
 
 
 def exit_owned_application(lease: SessionLease, app: Any) -> None:
+    if lease.close_doc_only:
+        raise SessionOwnershipError('CloseDoc-only lease forbids ExitApp')
     _require_sta(lease)
     _require_bound_application(lease, app, "ExitApp")
     if lease.disconnected:
@@ -1127,6 +1148,8 @@ def terminate_owned_process(
 ) -> None:
     """Signal the exact spawned PID. Never a process-name kill."""
 
+    if lease.close_doc_only:
+        raise SessionOwnershipError('CloseDoc-only lease forbids process termination')
     if lease.terminate_sent:
         return
     if not lease.verified_exclusive or lease.spawned_pid is None or lease.probe is None:

@@ -21,7 +21,9 @@ def main(argv=None):
     p=sub.add_parser('install');p.add_argument('archive',type=Path);p.add_argument('--kit-sha256',required=True);p.add_argument('--out',type=Path,required=True)
     p=sub.add_parser('compare-audits');p.add_argument('before',type=Path);p.add_argument('after',type=Path);p.add_argument('--out',type=Path,required=True)
     p=sub.add_parser('approve');p.add_argument('workspace',type=Path);p.add_argument('--reviewer',required=True);p.add_argument('--review-sha256',required=True)
-    p=sub.add_parser('execute');p.add_argument('workspace',type=Path);p.add_argument('--sw-exe',type=Path,required=True);p.add_argument('--approval-sha256',required=True)
+    p=sub.add_parser('execute');p.add_argument('workspace',type=Path);p.add_argument('--sw-exe',type=Path,required=True);p.add_argument('--approval-sha256',required=True);p.add_argument('--state-db',type=Path)
+    p=sub.add_parser('receipts');p.add_argument('--state-db',type=Path);p.add_argument('--key')
+    p=sub.add_parser('reconcile');p.add_argument('--state-db',type=Path);p.add_argument('--key',required=True)
     p=sub.add_parser('diagnose');p.add_argument('archive',type=Path);p.add_argument('--out',type=Path,required=True)
     p=sub.add_parser('audit');p.add_argument('matrix',type=Path);p.add_argument('submission',type=Path);p.add_argument('--evidence-root',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--previous-report',type=Path)
     args=parser.parse_args(argv)
@@ -58,7 +60,16 @@ def main(argv=None):
             result=approve_workflow(args.workspace,reviewer=args.reviewer,review_sha256=args.review_sha256)
         elif args.command=='execute':
             from project_delivery import execute_workflow
-            result=execute_workflow(args.workspace,sw_exe=args.sw_exe,approval_sha256=args.approval_sha256)
+            result=execute_workflow(args.workspace,sw_exe=args.sw_exe,approval_sha256=args.approval_sha256,state_db=args.state_db)
+        elif args.command=='receipts':
+            from cad_receipts import ReceiptStore
+            store=ReceiptStore(args.state_db)
+            result={'status':'review_required','receipt':store.get(args.key) if args.key else None,
+                    'unresolved':store.unresolved(),'manufacturing_approved':False}
+        elif args.command=='reconcile':
+            from cad_reconcile import reconcile_native
+            result={'status':'review_required','receipt':reconcile_native(args.key,state_db=args.state_db),
+                    'manufacturing_approved':False}
         elif args.command=='diagnose':
             from release_evidence import inspect_diagnostics
             result=inspect_diagnostics(args.archive);write_new(args.out,result)

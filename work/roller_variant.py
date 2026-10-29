@@ -6,6 +6,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=('plan','package','inspect','native'))
     p.add_argument('--request',type=Path,required=True);p.add_argument('--out',type=Path);p.add_argument('--sw-exe',type=Path)
+    p.add_argument('--state-db',type=Path);p.add_argument('--idempotency-key')
     args=p.parse_args()
     try:
         request=json.loads(args.request.read_text(encoding='utf-8-sig'))
@@ -19,7 +20,8 @@ def main():
         else:
             if not args.out or not args.sw_exe:raise ValueError('--out and --sw-exe required')
             from roller_variant.native import run_native
-            result=run_native(request,args.out,args.sw_exe,inspect_only=args.action=='inspect')
+            result=run_native(request,args.out,args.sw_exe,inspect_only=args.action=='inspect',
+                              state_db=args.state_db,idempotency_key=args.idempotency_key)
         print(json.dumps(result,ensure_ascii=False,indent=2))
         return 1 if result['status']=='failed' else 3
     except (OSError,ValueError,RuntimeError,KeyError,TypeError) as exc:
