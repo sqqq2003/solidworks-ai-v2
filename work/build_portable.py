@@ -48,6 +48,19 @@ def build(output):
         if (base/name).is_file():shutil.copy2(base/name,runtime/name)
     packages=Path(site.getsitepackages()[-1])
     shutil.copytree(packages,runtime/'Lib/site-packages',ignore=shutil.ignore_patterns('__pycache__','*.pyc','pip','pip-*.dist-info'))
+    # A minimal COM venv can omit Pillow although DXF glyph rendering imports
+    # PIL.Image. Reuse only the matching base interpreter's installed package;
+    # the PE dependency scan below also covers its compiled extensions.
+    target_packages=runtime/'Lib/site-packages'
+    if not (target_packages/'PIL').is_dir():
+        base_packages=base/'Lib/site-packages'
+        if not (base_packages/'PIL').is_dir():
+            raise RuntimeError('Pillow is required for the shipped drawing renderer')
+        for source in [base_packages/'PIL',base_packages/'pillow.libs',
+                       *base_packages.glob('pillow-*.dist-info')]:
+            if source.is_dir():
+                shutil.copytree(source,target_packages/source.name,
+                                ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     # Find a matching Tcl/Tk pair from this interpreter, without launching Tk.
     tcl_pair=None
     for library in (base/'Library/lib',base/'tcl'):
