@@ -235,6 +235,13 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
             manifest = json.loads((destination/'result.json').read_text())
             if manifest['plan_id'] != plan_id or manifest['simulated_only'] != port.simulated:
                 raise RuntimeError('existing artifact manifest does not match')
+            stored_plan = manifest.get('plan')
+            if not isinstance(stored_plan, dict) or stored_plan != plan:
+                raise RuntimeError('existing result plan mismatch')
+            stored_plan_payload = dict(stored_plan)
+            stored_plan_id = stored_plan_payload.pop('plan_id', None)
+            if stored_plan_id != plan_id or digest(stored_plan_payload) != plan_id:
+                raise RuntimeError('existing result plan hash mismatch')
             expected_status = 'simulated_pass' if port.simulated else 'native_features_verified'
             if manifest.get('status') != expected_status or manifest.get('sw_live_verified') != (not port.simulated):
                 raise RuntimeError('existing result status inconsistent with backend')

@@ -132,6 +132,18 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(third['status'], 'failed')
         self.assertIn('artifact changed', third['error'])
 
+    def test_resume_rejects_tampered_plan_metadata(self):
+        plan = self.plan(exclude_bend_indices=(0,), bend_exclusions_confirmed=True,
+                         bend_exclusion_reason='drawing note reviewed')
+        result = run_plan(self.analysis, plan, self.root/'tampered-plan', MockSheetMetalPort())
+        manifest_path = Path(result['output_dir'])/'result.json'
+        manifest = json.loads(manifest_path.read_text())
+        manifest['plan']['bend_exclusion_reason'] = 'tampered after publish'
+        manifest_path.write_text(json.dumps(manifest), encoding='utf-8')
+        resumed = run_plan(self.analysis, plan, self.root/'tampered-plan', MockSheetMetalPort())
+        self.assertEqual(resumed['status'], 'failed')
+        self.assertIn('existing result plan mismatch', resumed['error'])
+
     def test_source_geometry_and_plan_edits_invalidate(self):
         plan = self.plan()
         changed = dict(plan)
