@@ -5713,8 +5713,12 @@ def generate_roller_part(
     lease = None
     try:
         lease = current_lease()
-        pythoncom.CoInitialize()
-        com_initialized = True
+        # Match the sheet-metal path: the task STA owns the apartment for
+        # generation AND subsequent save/reopen inspection. Do not release
+        # that apartment from this nested generator.
+        if not getattr(lease, "com_initialized", False):
+            pythoncom.CoInitialize()
+            com_initialized = True
         solidworks, started_solidworks = _connect_task_solidworks(
             lease, win32com, pythoncom
         )

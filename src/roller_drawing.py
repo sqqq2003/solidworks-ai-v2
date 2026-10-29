@@ -593,6 +593,12 @@ def _has_roller_part_callout(text: str) -> bool:
 def _parse_note(note: str) -> tuple[str | None, float | None, int | None, float | None]:
     """从图纸注记判断滚筒类型。斜滚筒线专用图常只写「斜滚筒」。"""
 
+    # Conveyor titles and BOM headings describe a machine, not its roller
+    # length. A separate roller dimension callout may still be parsed below.
+    if re.search(r"滚筒\s*线", note) and not re.search(
+        r"滚筒\s*尺寸|[ΦφØø∅]\s*\d|(?:壁厚|臂厚)", note
+    ):
+        return None, None, None, None
     # 滚筒架 / 钣金展开等：名字里有「滚筒」也不当滚筒零件。
     if _is_roller_frame_or_sheet_context(note) and not _has_roller_part_callout(note):
         return None, None, None, None

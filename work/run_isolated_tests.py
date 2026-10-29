@@ -6,9 +6,14 @@ import subprocess
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-CHILD="""import json,sys,unittest
+CHILD="""import json,os,sys,tempfile,unittest
 from pathlib import Path
 sys.path[:0]=[str(Path.cwd()),str(Path.cwd()/'src')]
+import sw_session
+# Like run_cloud_tests.py, these jobs use fake COM only. Their ownership
+# probes must not contend with a live native acceptance writer.
+sw_session._WRITER_MUTEX_NAME = 'Local\\\\A01IsolatedTests-' + str(os.getpid())
+sw_session._WRITER_LOCK_FILE = Path(tempfile.gettempdir()) / ('a01-isolated-tests-' + str(os.getpid()) + '.lock')
 suite=unittest.TestLoader().discover(sys.argv[1],pattern=sys.argv[2])
 result=unittest.TextTestRunner(verbosity=1).run(suite)
 print(json.dumps(dict(run=result.testsRun,failures=len(result.failures),errors=len(result.errors),skipped=len(result.skipped))))

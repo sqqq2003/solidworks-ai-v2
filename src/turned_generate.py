@@ -895,6 +895,18 @@ def _fit_chain(points: list[Point]) -> SketchPathSegment | None:
     start, end = points[0], points[-1]
     if len(points) == 2:
         return SketchPathSegment("line", start, end)
+    # Preserve analytic shaft lands. A long horizontal/vertical segment must
+    # not absorb a neighbouring small fillet just because its chord error is
+    # below the fitting tolerance; that turns a cylinder into a shallow cone.
+    for left, right in zip(points, points[1:]):
+        if math.dist(left, right) < 1.0:
+            continue
+        if abs(left[1] - right[1]) <= 1e-7:
+            if any(abs(p[1] - left[1]) > 1e-7 for p in points):
+                return None
+        elif abs(left[0] - right[0]) <= 1e-7:
+            if any(abs(p[0] - left[0]) > 1e-7 for p in points):
+                return None
     max_deviation = max(
         _point_line_distance(point, start, end) for point in points[1:-1]
     )

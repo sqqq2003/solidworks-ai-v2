@@ -43,6 +43,17 @@ def _dimension(
 
 
 class RollerDrawingExtractionTests(unittest.TestCase):
+    def test_conveyor_title_is_not_a_roller_specification(self) -> None:
+        entities = (
+            _mtext(0, 0, '1.0米无动力滚筒线明细表（单台数量）'),
+            _mtext(0, -600, '201不锈钢无动力滚筒-壁厚1.2mm'),
+            _dimension(100, -500, 650),
+        )
+        variants = extract_roller_variants(None, entities)
+        self.assertEqual(len(variants), 1)
+        self.assertEqual(variants[0].overall_length_mm, 650)
+        self.assertNotIn('明细表', variants[0].note)
+
     def test_decodes_solidworks_unicode_escapes(self) -> None:
         self.assertEqual(
             decode_solidworks_text(

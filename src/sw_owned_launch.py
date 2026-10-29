@@ -83,6 +83,13 @@ def _read_pid(app):
         return int(value() if callable(value) else value)
     except Exception as exc:
         normalized = normalize_com_disconnect(exc)
+        if isinstance(exc, AttributeError) and 'GetProcessID' in str(exc):
+            # A stale dynamic IDispatch can lose member lookup after SaveAs /
+            # CloseDoc without exposing an RPC HRESULT. It is not PID proof.
+            # Treat it as an unusable connection; recovery still has to
+            # rediscover and verify this exact retained process lifetime.
+            from sw_session import ComSessionDisconnected
+            normalized = ComSessionDisconnected('owned COM PID member unavailable: ' + str(exc))
         if normalized is not None:
             raise normalized from exc
         raise

@@ -633,7 +633,8 @@ def _radius_at(
     incoming: bool,
 ) -> float | None:
     best: float | None = None
-    tolerance = 0.03
+    # Analytic event coordinates must not extend a small fillet over a shaft land.
+    tolerance = 1e-7
     for x0, r0, x1, r1 in segments:
         if x1 - x0 <= 1e-6:
             continue
@@ -651,13 +652,13 @@ def _radius_at(
     return best
 
 
-def _cluster_axis(values: list[float], tolerance: float = 0.02) -> list[float]:
+def _cluster_axis(values: list[float], tolerance: float = 1e-7) -> list[float]:
     if not values:
         return []
     ordered = sorted(values)
     groups: list[list[float]] = [[ordered[0]]]
     for value in ordered[1:]:
-        if value - groups[-1][-1] <= tolerance:
+        if value - groups[-1][0] <= tolerance:
             groups[-1].append(value)
         else:
             groups.append([value])

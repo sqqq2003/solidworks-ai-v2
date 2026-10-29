@@ -1264,6 +1264,7 @@ def _walk_closed_loop(
         ordered: list[Point],
         ordered_curves: list[SketchSegment],
         used: set[int],
+        seen_vertices: set[tuple[int, int]],
     ) -> tuple[list[Point], list[SketchSegment], set[int]] | None:
         if budget is not None and not budget.take():
             return None
@@ -1274,6 +1275,25 @@ def _walk_closed_loop(
             closed[-1] = closed[0]
             return closed, list(ordered_curves), set(used)
         if len(used) >= len(active):
+            return None
+        # Reject branches disconnected from the starting vertex after the
+        # current path is removed. Attached table/detail cycles otherwise
+        # cause exponential backtracking although none can close this path.
+        pending_vertices = [current_key]
+        reachable = {current_key}
+        while pending_vertices and start_key not in reachable:
+            vertex = pending_vertices.pop()
+            for edge_index in adjacency[vertex]:
+                if edge_index not in active or edge_index in used:
+                    continue
+                edge = segments[edge_index]
+                other = (key(edge.points[-1]) if key(edge.points[0]) == vertex
+                         else key(edge.points[0]))
+                if other in reachable or (other in seen_vertices and other != start_key):
+                    continue
+                reachable.add(other)
+                pending_vertices.append(other)
+        if start_key not in reachable:
             return None
         candidates = [
             candidate
@@ -1318,6 +1338,14 @@ def _walk_closed_loop(
 
         candidates.sort(key=_candidate_rank)
         for next_index in candidates:
+            edge = segments[next_index]
+            endpoint = (key(edge.points[-1]) if key(edge.points[0]) == current_key
+                        else key(edge.points[0]))
+            # A manufacturing contour is a simple cycle. Revisiting an
+            # intermediate vertex explores combinations of attached cycles,
+            # not new contours, and can exhaust the shared search budget.
+            if endpoint in seen_vertices and endpoint != start_key:
+                continue
             next_ordered = list(ordered)
             next_curves = list(ordered_curves)
             next_used = set(used)
@@ -1329,12 +1357,14 @@ def _walk_closed_loop(
                 current_key,
                 key,
             )
-            found = search(next_key, next_ordered, next_curves, next_used)
+            found = search(next_key, next_ordered, next_curves, next_used,
+                           seen_vertices | {next_key})
             if found is not None:
                 return found
         return None
 
-    return search(key(end), seed_ordered, seed_curves, seed_used)
+    return search(key(end), seed_ordered, seed_curves, seed_used,
+                  {start_key, key(end)})
 
 
 def _split_lines_at_tjunctions(
