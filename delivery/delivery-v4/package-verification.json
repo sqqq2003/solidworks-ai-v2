@@ -1,0 +1,21 @@
+{
+  "source_revision": "7a36cdacbaf805e8459a1ea8549df8185dbf1659",
+  "source_files": 517,
+  "kit_sha256": "d66b4c129edfd8866aa1d6c85300a0ef55aa92233872105c2b3f5d9277dcb090",
+  "phase": "source_installed_runtime_required",
+  "source_code_executed": false,
+  "candidate_verification": {
+    "status": "passed",
+    "issues": [],
+    "source_revision": "7a36cdacbaf805e8459a1ea8549df8185dbf1659",
+    "scope": "candidate_file_integrity_only",
+    "manufacturing_approved": false
+  },
+  "source_verification": {
+    "status": "verified",
+    "revision": "7a36cdacbaf805e8459a1ea8549df8185dbf1659",
+    "mismatches": [],
+    "note": "Integrity check is not native CAD acceptance."
+  },
+  "solidworks_live_verified": false
+}

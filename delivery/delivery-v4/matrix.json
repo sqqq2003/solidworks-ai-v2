@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "unified",
+      "sha": "7a36cdacbaf805e8459a1ea8549df8185dbf1659",
+      "checks": [
+        {
+          "id": "cloud_regression",
+          "scope": "offline"
+        },
+        {
+          "id": "desktop_and_api",
+          "scope": "offline"
+        },
+        {
+          "id": "coexisting_instances",
+          "scope": "native"
+        },
+        {
+          "id": "dwg_analyze",
+          "scope": "native"
+        },
+        {
+          "id": "sheet_rebuild_flat_pattern",
+          "scope": "native"
+        },
+        {
+          "id": "roller_800_interfaces",
+          "scope": "native"
+        },
+        {
+          "id": "assembly_motion_interference",
+          "scope": "native"
+        },
+        {
+          "id": "drawings_bom_manufacturing",
+          "scope": "native"
+        },
+        {
+          "id": "save_reopen_references",
+          "scope": "native"
+        },
+        {
+          "id": "process_exit_and_source_unchanged",
+          "scope": "native"
+        }
+      ]
+    }
+  ]
+}
