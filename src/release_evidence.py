@@ -9,6 +9,40 @@ import zipfile
 from test_handoff_audit import audit_handoff, validate_matrix
 
 
+def _drawing_visual_hold(row,evidence_root):
+    """Validate a hash-bound human decision export, never infer from SaveAs."""
+    from drawing_review import CHECKLIST
+    from project_delivery import read_json,file_hash
+    reference=row.get('visual_acceptance',{})
+    try:
+        name,digest=reference['path'],reference['sha256']
+        path=PurePosixPath(name)
+        if path.is_absolute() or '..' in path.parts or '\\' in name or ':' in name:raise ValueError('unsafe review path')
+        root=Path(evidence_root).resolve();full=(root/name).resolve(strict=True)
+        if not full.is_relative_to(root) or full.stat().st_size>2*1024*1024:raise ValueError('review outside bounded inbox')
+        if not any(a.get('path')==name and a.get('sha256')==digest for a in row.get('artifacts',[])):raise ValueError('review export not declared artifact')
+        if file_hash(full)!=digest:raise ValueError('review export hash changed')
+        proof=read_json(full)
+        if (proof.get('schema_version')!=1 or proof.get('scope')!='human_visual_layout_review_export' or
+                proof.get('source_revision')!=row['sha'] or proof.get('state')!='accepted' or
+                proof.get('visual_accepted') is not True or proof.get('delivery_accepted') is not True or
+                proof.get('issues') or not proof.get('pages')):raise ValueError('visual acceptance pending or trial-only')
+        seen=set()
+        for page in proof['pages']:
+            identity=page['evidence_sha256']
+            if (identity in seen or not re.fullmatch('[a-f0-9]{64}',identity) or page.get('state')!='accepted' or
+                    page.get('visual_accepted') is not True or page.get('delivery_accepted') is not True or
+                    not isinstance(page.get('reviewer'),str) or not page['reviewer'].strip() or
+                    any(page.get('checklist',{}).get(k) is not True for k in CHECKLIST) or
+                    not page.get('artifact_sha256') or
+                    any(not re.fullmatch('[a-f0-9]{64}',v) for v in page['artifact_sha256'].values())):
+                raise ValueError('visual page decision incomplete')
+            seen.add(identity)
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):
+        return 'drawing_visual_acceptance_missing_stale_or_incomplete'
+    return None
+
+
 def audit_submission(matrix, submission, evidence_root):
     validate_matrix(matrix)
     normalized = deepcopy(submission)
@@ -18,6 +52,9 @@ def audit_submission(matrix, submission, evidence_root):
         key = (row.get('lane'), row.get('id'))
         if row.get('scope') == 'native':
             reasons = []
+            if row.get('id') in {'drawings_bom_manufacturing','drawing_visual_acceptance'}:
+                hold=_drawing_visual_hold(row,evidence_root)
+                if hold:reasons.append(hold)
             if row.get('simulated_only') is not False: reasons.append('native_execution_not_declared')
             if row.get('session', {}).get('ownership') != 'spawned_pid_and_live_handle' or row.get('session', {}).get('attached_existing') is not False:
                 reasons.append('owned_session_evidence_missing')

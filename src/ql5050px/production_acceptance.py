@@ -42,10 +42,14 @@ def audit_production(directory):
     if not isinstance(digest,str) or not re.fullmatch('[a-f0-9]{64}',digest):errors.append('missing_review_digest')
     input_review=checkpoint.get('input_verification',{})
     if input_review.get('status')!='declared_files_verified':errors.append('unsealed_inputs')
+    from drawing_review import inspect_drawing_batch
+    visual=inspect_drawing_batch(root)
     return {'schema_version':1,'review_sha256':digest if isinstance(digest,str) and re.fullmatch('[a-f0-9]{64}',digest) else None,
         'status':'review_required','reported_status':checkpoint.get('status'),'stages':stages,
         'artifact_checks':artifacts,'evidence_errors':sorted(set(errors)),
         'execution_evidence_complete':not errors,
+        'drawing_visual_acceptance':visual,'drawing_delivery_accepted':visual['delivery_accepted'],
+        'delivery_accepted':False,
         'mechanical_findings':{'native_reported':native_reported,'mate_records':len(findings.get('mates',[])),
             'interference_records':len(findings.get('interference',[])),'motion_samples':len(findings.get('motion',[]))},
         'scope':'reported stages and file integrity; no independent CAD inspection or mechanical approval',

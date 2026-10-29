@@ -44,6 +44,11 @@ def find_named_feature(model, name):
 
 
 class A01ProductionDriver(ManufacturingDriver):
+    requires_pdf_evidence=True
+
+    def edit_transaction(self,edits,copies,root_document=None,configuration=None):
+        from drawing_checkpoint import protect_drawing_edits
+        return protect_drawing_edits(self,edits,copies,root_document,configuration)
     def _save(self,model):
         self.guard()
         self.verify_references(model)
@@ -57,6 +62,12 @@ class A01ProductionDriver(ManufacturingDriver):
             raise RuntimeError('work-copy save unverified')
 
     def apply_mapped_dimensions(self,edits,copies):
+        if not getattr(self,'_drawing_transaction_active',False):
+            with self.edit_transaction(edits,copies):
+                return self._apply_mapped_dimensions(edits,copies)
+        return self._apply_mapped_dimensions(edits,copies)
+
+    def _apply_mapped_dimensions(self,edits,copies):
         from app_logging import get_journal
         journal=get_journal()
         self.guard()
@@ -215,24 +226,50 @@ class A01ProductionDriver(ManufacturingDriver):
         result=super().export_manufacturing(plan,assembly_receipt,destination)
         from .production import sha
         for item in result['results']:
+            from drawing_review import DrawingEvidence
+            evidence=DrawingEvidence.load(item['drawing_evidence'])
             path=Path(item['path']);pdf=path.with_suffix('.pdf')
-            if pdf.exists():raise FileExistsError(pdf)
-            drawing=self.open_document(path)
             try:
-                from ..ql5050px.drawing_verification import export_pdf
-                item['pdf_validation']=export_pdf(self,drawing,pdf)
-            finally:self.close_document(drawing)
+                with evidence.observe_com():
+                    if pdf.exists():raise FileExistsError(pdf)
+                    drawing=self.open_document(path)
+                    try:
+                        from ..ql5050px.drawing_verification import export_pdf
+                        item['pdf_validation']=export_pdf(self,drawing,pdf)
+                    finally:self.close_document(drawing)
+                evidence.artifact('pdf',pdf)
+                evidence.data['pdf_validation']=item['pdf_validation']
+                evidence.finish()
+            except Exception as error:
+                evidence.fail(error)
+                raise
             item.update(pdf=str(pdf),pdf_sha256=sha(pdf),slddrw_sha256=sha(path),pdf_layout_review='pending')
         return result
 
 
-def run_production(request,sw_exe,output):
+def run_production(request,sw_exe,output,*,state_db=None,idempotency_key=None):
     from .production import prepare_request,execute_request
     prepare_request(request)
     from sw_session import run_on_task_sta,current_lease
     from sw_owned_launch import owned_solidworks
     def job():
         root=Path(output).resolve();root.mkdir(parents=True,exist_ok=False)
-        with owned_solidworks(Path(sw_exe)):
-            return execute_request(request,A01ProductionDriver(current_lease(),root),root)
-    return run_on_task_sta(job,timeout=900,task_name='a01-production-copy')
+        with owned_solidworks(Path(sw_exe)) as binding:
+            from drawing_run import note_drawing_process
+            note_drawing_process(current_lease())
+            driver=A01ProductionDriver(current_lease(),root)
+            try:result=execute_request(request,driver,root)
+            except Exception as error:
+                result={'status':'failed','error':str(error),
+                        'rollback':getattr(driver,'last_drawing_rollback',{'state':'not_confirmed'}),
+                        'manufacturing_approved':False}
+        result['session']=binding.evidence()
+        return result
+    from drawing_run import run_receipted_drawing
+    from cad_checkpoint import digest_file
+    originals={str(Path(p).resolve()):digest_file(p) for p in
+               {request['source_assembly'],*request['document_sha256']}}
+    templates={str(Path(t[k]).resolve()):digest_file(t[k]) for t in request.get('drawing_plan',{}).get('tasks',[])
+               for k in ('template','bom_template','sheet_format') if t.get(k)} if request.get('drawing_plan') else {}
+    return run_receipted_drawing(request['source_assembly'],originals,{'entry':'a01','request':request,'template_sha256':templates},job,
+        timeout=900,task_name='a01-production-copy',state_db=state_db,key=idempotency_key)

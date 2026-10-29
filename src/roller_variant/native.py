@@ -77,7 +77,9 @@ class RollerDriver(NativeMachineDriver):
         for path,configuration in sorted(self.scopes):
             model=self.open_document(path,configuration)
             try:
-                if not model.ShowConfiguration2(configuration):raise RuntimeError('configuration unavailable')
+                activate=getattr(self,'snapshot_activate_configuration',None)
+                if activate:activate(model,configuration)
+                elif not model.ShowConfiguration2(configuration):raise RuntimeError('configuration unavailable')
                 result.append({'document':Path(path).name,'configuration':configuration,
                     'features':[(str(f.Name),str(f.GetTypeName2())) for f in sw._features(model,module)]})
             finally:self.close_document(model)
@@ -148,7 +150,9 @@ class RollerDriver(NativeMachineDriver):
         for path,configuration in sorted(self.scopes):
             model=self.open_document(path,configuration)
             try:
-                if not model.ShowConfiguration2(configuration):raise RuntimeError('configuration unavailable')
+                activate=getattr(self,'snapshot_activate_configuration',None)
+                if activate:activate(model,configuration)
+                elif not model.ShowConfiguration2(configuration):raise RuntimeError('configuration unavailable')
                 if int(read_member(model,'GetType'))==1:
                     bounds,boxes=solid_inventory(sw._as_interface(module,model,'IPartDoc'),sw,module)
                     bodies={'solid_count':len(boxes),'solid_bounds_mm':sorted(boxes),'union_mm':bounds}

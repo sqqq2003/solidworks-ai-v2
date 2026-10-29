@@ -23,6 +23,7 @@ def require_no_running_solidworks(inventory=None):
 
 
 class TrialDriver(A01ProductionDriver):
+    partial_model_test=True
     def __init__(self,lease,root,models,report):
         super().__init__(lease,root);self.models=Path(models).resolve();self.report=report
 
@@ -66,21 +67,29 @@ def run_trial(request):
     if request.get('explicit_partial_model_test') is not True:raise ValueError('explicit trial-mode confirmation required')
     from sw_session import run_on_task_sta,current_lease
     from sw_owned_launch import owned_solidworks
-    root=Path(request['output']).resolve();root.mkdir(parents=True,exist_ok=False)
+    root=Path(request['output']).resolve()
     models=Path(request['models']).resolve();assembly=Path(request['assembly']).resolve()
     if not assembly.is_relative_to(models):raise ValueError('assembly outside isolated model root')
     originals={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in models.rglob('*') if p.is_file() and not p.name.startswith('~$')}
-    report={'mode':'explicit_partial_model_test','manufacturing_approved':False,'status':'running','cells':[]}
+    report={'mode':'explicit_partial_model_test','manufacturing_approved':False,'status':'running','cells':[],
+            'acceptance_state':'reviewing','delivery_accepted':False}
+    created_output=False
     def checkpoint():
-        (root/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2,default=str),encoding='utf-8')
+        from drawing_review import atomic_json
+        atomic_json(root/'result.json',report)
         from app_logging import get_journal
         get_journal().record('native_drawing_checkpoint',output=str(root),status=report['status'],cells=[{'tag':c['tag'],'status':c['status']} for c in report['cells']])
     def job():
+        nonlocal created_output
+        root.mkdir(parents=True,exist_ok=False)
+        created_output=True
         binding=None
         try:
             report['launch_preflight']=require_no_running_solidworks()
             checkpoint()
             with owned_solidworks(Path(request['sw_exe'])) as binding:
+                from drawing_run import note_drawing_process
+                note_drawing_process(current_lease())
                 driver=TrialDriver(current_lease(),root,models,report)
                 source=driver.open_document(assembly,readonly=True)
                 config=str(source.ConfigurationManager.ActiveConfiguration.Name)
@@ -91,6 +100,7 @@ def run_trial(request):
                     try:
                         cell['drawing']=driver.export_manufacturing({'status':'ready_for_native','tasks':[task]},{'documents':{'machine':{'path':str(assembly),'configuration':config}}},root/tag)
                         cell['status']='pass_pending_visual'
+                        cell.update(acceptance_state='reviewing',delivery_accepted=False)
                     except (ValueError,RuntimeError) as error:
                         message=str(error);cell['error']=message
                         if 'layout_does_not_fit' not in message and 'layout_title_block_conflict' not in message:raise
@@ -104,10 +114,22 @@ def run_trial(request):
         finally:
             if binding:report['session']=binding.evidence()
             checkpoint()
-    try:run_on_task_sta(job,timeout=1800,task_name='one-click-drawing-trial')
+        report['source_hash_mismatches']=[p for p,h in originals.items() if not Path(p).is_file() or hashlib.sha256(Path(p).read_bytes()).hexdigest()!=h]
+        report['output']=str(root)
+        return report
+    try:
+        from drawing_run import run_receipted_drawing
+        payload={k:v for k,v in request.items() if k not in {'output','idempotency_key','state_db'}}
+        templates={str(Path(p).resolve()):hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in
+                   {request['templates'][case['sheet']] for case in request['cases']}|{request['bom_template']}}
+        returned=run_receipted_drawing(assembly,originals,{'entry':'drawing_trial','request':payload,'template_sha256':templates},job,
+            timeout=1800,task_name='one-click-drawing-trial',state_db=request.get('state_db'),key=request.get('idempotency_key'))
+        if returned.get('request_receipt',{}).get('replayed'):return returned
+        report.update(returned)
     except Exception as error:
         from app_logging import get_journal
         get_journal().exception('native_drawing_failed',error,hresult=getattr(error,'hresult',None))
         report.update(status='failed',error=str(error),traceback=traceback.format_exc())
     report['source_hash_mismatches']=[p for p,h in originals.items() if not Path(p).is_file() or hashlib.sha256(Path(p).read_bytes()).hexdigest()!=h]
-    checkpoint();return report
+    if created_output:checkpoint()
+    return report

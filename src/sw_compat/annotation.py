@@ -9,7 +9,7 @@ has ``_oleobj_``. No session rebind.
 
 from part_verification import is_member_not_found
 
-from .com_access import read_com_member
+from .com_access import read_com_member,record_member_error
 
 
 def _cast_annotation(raw):
@@ -54,6 +54,7 @@ def set_annotation_position(owner, x, y, z=0):
         try:
             ok = read_com_member(target, 'SetPosition2', x, y, z)
         except Exception as exc:
+            record_member_error('SetPosition2',exc)
             last = exc
             if is_member_not_found(exc):
                 continue
@@ -72,6 +73,7 @@ def read_annotation_position(owner):
         try:
             return read_com_member(target, 'GetPosition')
         except Exception as exc:
+            record_member_error('GetPosition',exc)
             last = exc
             if is_member_not_found(exc):
                 continue
