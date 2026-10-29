@@ -1,0 +1,32 @@
+{
+  "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+  "scope": "targeted_fake_native_and_real_file_sqlite_subprocess_contracts",
+  "tests_run": 177,
+  "passed": 176,
+  "skipped": 1,
+  "failures": 0,
+  "errors": 0,
+  "modules": [
+    "test_drawing_review",
+    "test_drawing_pipeline_contract",
+    "test_drawing_verification",
+    "test_drawing_trial_ui",
+    "test_drawing_trial_process_guard",
+    "test_a01_production",
+    "test_production_delivery",
+    "test_release_evidence",
+    "test_release_candidate",
+    "test_cad_checkpoint",
+    "test_cad_receipts",
+    "test_cad_recovery_native_contract",
+    "test_sw_session_safety",
+    "test_owned_session_ddd",
+    "test_s2_session_keepalive"
+  ],
+  "command": "XDG_CACHE_HOME=/workspace/cache PYTHONPATH=src:tests:. python -m unittest test_drawing_review test_drawing_pipeline_contract test_drawing_verification test_drawing_trial_ui test_drawing_trial_process_guard test_a01_production test_production_delivery test_release_evidence test_release_candidate test_cad_checkpoint test_cad_receipts test_cad_recovery_native_contract test_sw_session_safety test_owned_session_ddd test_s2_session_keepalive -v",
+  "skip_reason": "historical uploaded original source baseline absent from source package",
+  "full_regression_run": false,
+  "windows_solidworks_run": false,
+  "human_visual_review_run": false,
+  "manufacturing_approved": false
+}

@@ -1,0 +1,19 @@
+{
+  "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+  "scope": "actual_Tk_controls_with_fake_native_worker_only",
+  "tests_run": 1,
+  "passed": 1,
+  "skipped": 0,
+  "failures": 0,
+  "errors": 0,
+  "environment": "Linux virtual X display; system Python 3.13/Tk8.6",
+  "command": "DISPLAY=:97 XDG_CACHE_HOME=/workspace/cache PYTHONPATH=src:tests:.:/workspace/ui-tools/python313 /usr/bin/python3 -m unittest test_drawing_trial_desktop -v",
+  "assertions": [
+    "generation button does not accept visual review",
+    "four explicit checklist controls present",
+    "accept/reject buttons fit inside window"
+  ],
+  "windows_solidworks_run": false,
+  "human_visual_review_run": false,
+  "manufacturing_approved": false
+}
