@@ -20,15 +20,19 @@ def file_hash(path):
     return h.hexdigest()
 
 
-def read_json(path):
+def parse_json(text):
     def pairs(rows):
         result = {}
         for key, value in rows:
             if key in result: raise ValueError('duplicate JSON key: ' + key)
             result[key] = value
         return result
-    return json.loads(Path(path).read_text(encoding='utf-8-sig'), object_pairs_hook=pairs,
+    return json.loads(text, object_pairs_hook=pairs,
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite JSON: '+value)))
+
+
+def read_json(path):
+    return parse_json(Path(path).read_text(encoding='utf-8-sig'))
 
 
 def write_new(path, value):
@@ -50,7 +54,7 @@ def source_files(request):
     return sorted({str(Path(p).expanduser().resolve()) for p in paths if isinstance(p, str) and p})
 
 
-def prepare_workflow(request, destination):
+def prepare_workflow(request, destination, *, lineage=None):
     """Generate existing unified plans and bind their bytes, without starting CAD."""
     root = Path(destination).resolve()
     root.mkdir(parents=True, exist_ok=False)
@@ -72,6 +76,9 @@ def prepare_workflow(request, destination):
                 'source_sha256': source, 'planning_files': files, 'code_sha256': code_hashes(),
                 'review_sha256': impact.get('review_sha256') if impact else None,
                 'pending': pending, 'cad_executed': False, 'native_write_allowed': False}
+    if lineage is not None:
+        write_new(root/'revision.json',lineage)
+        manifest['revision_sha256']=file_hash(root/'revision.json')
     manifest['workspace_id'] = review_digest(manifest)
     write_new(root/'workflow.json', manifest)
     return workflow_status(root)
@@ -83,6 +90,8 @@ def verify_workspace(root):
     payload = dict(manifest); identity = payload.pop('workspace_id', None)
     if manifest.get('schema_version') != 1 or review_digest(payload) != identity:
         raise ValueError('workspace manifest changed or unsupported')
+    if manifest.get('revision_sha256') and file_hash(root/'revision.json')!=manifest['revision_sha256']:
+        raise ValueError('revision lineage changed')
     if code_hashes() != manifest['code_sha256']: raise ValueError('implementation changed; prepare and review again')
     for relative, sha in manifest['planning_files'].items():
         path = (root / relative).resolve()
@@ -156,3 +165,95 @@ def execute_workflow(root, *, sw_exe, approval_sha256):
                   manufacturing_approved=False, independent_engineering_review_required=True)
     write_new(root/'execution.json', report)
     return report
+
+
+def inspect_workspace(root):
+    """Read a stale/blocked workspace for recovery guidance, without authorizing it."""
+    root = Path(root).resolve(strict=True)
+    issues = []
+    def issue(code, **detail): issues.append({'code': code, **detail})
+    try:
+        manifest = read_json(root/'workflow.json')
+        payload = dict(manifest); identity = payload.pop('workspace_id', None)
+        if not all(isinstance(manifest.get(k),dict) for k in ('code_sha256','planning_files','source_sha256')) or not isinstance(manifest.get('pending'),list):
+            raise ValueError('incomplete workspace manifest')
+        if manifest.get('schema_version') != 1 or review_digest(payload) != identity:
+            raise ValueError('manifest identity changed')
+    except (OSError, ValueError, TypeError) as exc:
+        return {'status':'failed','phase':'invalid_workspace','issues':[{'code':'manifest_invalid','detail':str(exc)}],
+                'native_write_allowed':False,'manufacturing_approved':False}
+    if manifest.get('revision_sha256'):
+        try:
+            if file_hash(root/'revision.json')!=manifest['revision_sha256']:issue('revision_lineage_changed')
+        except OSError:issue('revision_lineage_missing')
+    current = code_hashes()
+    changed_code = sorted(k for k in set(current)|set(manifest['code_sha256'])
+                          if current.get(k) != manifest['code_sha256'].get(k))
+    if changed_code: issue('implementation_changed', files=changed_code)
+    for name, expected in manifest['planning_files'].items():
+        path = (root/name).resolve()
+        if not path.is_relative_to(root): issue('planning_path_outside_workspace', path=name);continue
+        try:
+            if file_hash(path) != expected: issue('planning_file_changed', path=name)
+        except OSError: issue('planning_file_missing', path=name)
+    for name, expected in manifest['source_sha256'].items():
+        try:
+            if file_hash(name) != expected: issue('source_model_changed', path=name)
+        except OSError: issue('source_model_missing', path=name)
+    for pending in manifest['pending']: issue('input_confirmation_required', detail=pending)
+    attempted = (root/'execution-claim.json').exists()
+    if attempted: issue('execution_attempt_requires_independent_review')
+    review = None
+    if not any(x['code'].startswith('planning_') for x in issues):
+        try:
+            plan = read_json(root/'planning/release-result.json')
+            review = plan.get('stages',{}).get('roller_impact')
+            if (root/'approval.json').exists():
+                try: checked_approval(root,manifest,plan)
+                except (ValueError,OSError,KeyError,TypeError): issue('approval_invalid')
+        except (ValueError,OSError,KeyError,TypeError): issue('planning_report_unreadable')
+    guidance = []
+    if attempted: guidance.append('Preserve native process/work copy and evidence; this workspace cannot execute again.')
+    elif issues: guidance.append('Supply a revised full request and create a new workspace; previous approval will not carry over.')
+    else: guidance.append('Use the existing named review and explicit Windows execution steps.')
+    return {'schema_version':1,'status':'review_required','phase':'execution_review_required' if attempted else
+            'revision_required' if issues else 'ready_for_review', 'workspace_id':identity,
+            'issues':issues, 'guidance':guidance, 'review_summary':{
+                'changes':review.get('changes',[]) if review else [],
+                'protected_interfaces':review.get('protected_readbacks',[]) if review else [],
+                'risks':review.get('risks',[]) if review else []},
+            'revision_allowed':not attempted,'native_write_allowed':False,'manufacturing_approved':False}
+
+
+def request_changes(before, after, path=''):
+    """Describe a request revision; no parameter inference or implicit approvals."""
+    if isinstance(before,dict) and isinstance(after,dict):
+        rows=[]
+        for key in sorted(set(before)|set(after)):
+            location=path+'/'+str(key).replace('~','~0').replace('/','~1')
+            if key not in before:rows.append({'path':location,'change':'added','after':after[key]})
+            elif key not in after:rows.append({'path':location,'change':'removed','before':before[key]})
+            else:rows.extend(request_changes(before[key],after[key],location))
+        return rows
+    if review_digest(before)==review_digest(after):return []
+    return [{'path':path or '/','change':'modified','before':before,'after':after}]
+
+
+def revise_workflow(root, request, destination, *, reason):
+    """Replan a new version. Never copy an approval or reset an execution claim."""
+    if not isinstance(reason,str) or not reason.strip():raise ValueError('revision reason required')
+    root=Path(root).resolve(strict=True);destination=Path(destination).resolve()
+    if destination.is_relative_to(root):raise ValueError('revision must use an independent sibling workspace')
+    manifest=read_json(root/'workflow.json');payload=dict(manifest);identity=payload.pop('workspace_id',None)
+    if manifest.get('schema_version')!=1 or review_digest(payload)!=identity:raise ValueError('invalid parent workspace')
+    if (root/'execution-claim.json').exists():
+        raise ValueError('native attempt unresolved: preserve its evidence; revision cannot bypass an execution claim')
+    original=read_json(root/'planning/request.json')
+    if review_digest(original)!=manifest['request_sha256']:raise ValueError('parent request changed')
+    changes=request_changes(original,request)
+    if not changes and code_hashes()==manifest['code_sha256']:
+        raise ValueError('revised request and implementation are identical; no new plan created')
+    revision={'schema_version':1,'parent_workspace_id':identity,'parent_manifest_sha256':file_hash(root/'workflow.json'),
+              'reason':reason.strip(),'changes':changes,'approval_carried_over':False,'native_write_allowed':False}
+    report=prepare_workflow(request,destination,lineage=revision)
+    return {**report,'revision':revision}

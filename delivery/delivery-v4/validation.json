@@ -1,0 +1,20 @@
+{
+  "scope": "targeted_delivery_offline_only",
+  "tests_run": 51,
+  "passed": 51,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "patterns": [
+    "test_project_delivery.py",
+    "test_delivery_revisions.py",
+    "test_release_candidate.py",
+    "test_release_evidence.py",
+    "test_release_install.py",
+    "test_audit_comparison.py",
+    "test_delivery_cli.py"
+  ],
+  "full_project_regression": "not_repeated_for_this_delivery_only_increment",
+  "solidworks_live_verified": false,
+  "windows_acceptance": "not_run"
+}

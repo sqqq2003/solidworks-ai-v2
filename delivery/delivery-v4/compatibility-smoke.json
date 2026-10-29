@@ -1,0 +1,13 @@
+{
+  "scope": "published PR63 source kit compatibility",
+  "input_kit_sha256": "937e5367194d6f600dd5c4f2a94a82de8c42e419493c2f67cd7e6a8de9056edd",
+  "source_revision": "d65b7c64e8318bdfcd217ccf7e1c36f78a1a2164",
+  "source_files": 511,
+  "inspection": "passed",
+  "source_extraction": "passed",
+  "post_install_candidate_verification": "passed",
+  "extracted_source_verification": "verified",
+  "source_code_executed": false,
+  "windows_runtime_installed": false,
+  "solidworks_started": false
+}
