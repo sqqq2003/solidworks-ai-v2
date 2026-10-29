@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_SUFFIXES = {'.py','.md','.json','.txt','.yml','.yaml'}
 SOURCE_ROOTS = {'src':{'.py','.md'},'tests':{'.py','.json','.md'},
     'examples':{'.py','.json','.md'},'docs':{'.md'},'work':{'.py'},
-    '.github':{'.yml','.yaml'}}
+    '.github':{'.yml','.yaml'},
+    **{name:{'.py','.md','.json'} for name in ('geometry_ir','feature_tree','dependency_engine','dxf_extract','offline_verify')}}
 CONFIG_FILES = {'data/machine_spec.json','data/tasks.json','docs/ql5050px-handoff-index.json'}
 
 
@@ -26,32 +27,40 @@ def allowed_source(path):
     return path.suffix in SOURCE_ROOTS.get(path.parts[0],set())
 
 
-def collect(root):
+def collect(root, source_index=None):
     root = Path(root).resolve()
     # Only deliberately versioned source paths; never collect untracked files.
-    names = subprocess.check_output(['git','ls-files','--cached','-z'],cwd=root).decode().split('\0')
+    names = (list(source_index['files']) if source_index is not None else
+        subprocess.check_output(['git','ls-files','--cached','-z'],cwd=root).decode().split('\0'))
     result = []
     for name in sorted(set(names)-{''}):
         path = Path(name)
         if (not allowed_source(path) or path.parts[0] in {'.git','runtime','results','legacy','backups'}
                 or any(part.startswith('.env') or any(word in part.casefold() for word in ('secret','credential','private_key')) for part in path.parts)):
             continue
+        if path.is_absolute() or '..' in path.parts or '\\' in name:raise ValueError('unsafe source index path')
         full = root/path
+        if not full.resolve().is_relative_to(root) or any((root/Path(*path.parts[:i])).is_symlink() for i in range(1,len(path.parts)+1)):
+            raise ValueError('external/symlinked source path refused: '+name)
+        if source_index is not None:
+            data=full.read_bytes()
+            actual=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+            if actual!=source_index['files'][name]:raise ValueError('source snapshot differs from pinned Git blob: '+name)
         if full.is_symlink() or not full.is_file():
             continue
         result.append(path)
     return result
 
 
-def build_package(root, output, revision):
+def build_package(root, output, revision, *, source_index=None):
     root, output = Path(root).resolve(),Path(output).resolve()
     if output.exists():
         raise FileExistsError('test package already exists; use a new path')
-    files = collect(root)
-    dirty = bool(subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=root).strip())
+    files = collect(root, source_index) if source_index is not None else collect(root)
+    dirty = False if source_index is not None else bool(subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=root).strip())
     manifest = {'schema_version':1,'revision':revision,'scope':'whole_project_source_only',
         'tracked_workspace_dirty':dirty,'untracked_files_included':False,
-        'collection_policy':'tracked_source_allowlist_v2',
+        'collection_policy':'pinned_git_blob_source_index' if source_index is not None else 'tracked_source_allowlist_v2',
         'sw_live_acceptance':'pending','excluded':['customer CAD','credentials','git history','results/windows'],
         'files':{p.as_posix():hashlib.sha256((root/p).read_bytes()).hexdigest() for p in files}}
     output.parent.mkdir(parents=True,exist_ok=True)

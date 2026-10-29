@@ -1,0 +1,193 @@
+{
+  "jobs": [
+    {
+      "id": "plate",
+      "plan": {
+        "features": [
+          {
+            "id": "plate0",
+            "kind": "sketch",
+            "depends_on": [],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "plate1",
+            "kind": "extrude",
+            "depends_on": [
+              "plate0"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "plate2",
+            "kind": "sketch",
+            "depends_on": [
+              "plate1"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "plate3",
+            "kind": "cut",
+            "depends_on": [
+              "plate2"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "bracket",
+      "plan": {
+        "features": [
+          {
+            "id": "bracket0",
+            "kind": "sketch",
+            "depends_on": [],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "bracket1",
+            "kind": "extrude",
+            "depends_on": [
+              "bracket0"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "bracket2",
+            "kind": "fillet",
+            "depends_on": [
+              "bracket1"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "shaft",
+      "plan": {
+        "features": [
+          {
+            "id": "shaft0",
+            "kind": "sketch",
+            "depends_on": [],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "shaft1",
+            "kind": "revolve",
+            "depends_on": [
+              "shaft0"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "two_bends",
+      "plan": {
+        "features": [
+          {
+            "id": "two_bends0",
+            "kind": "sketch",
+            "depends_on": [],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "two_bends1",
+            "kind": "base_flange",
+            "depends_on": [
+              "two_bends0"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "two_bends2",
+            "kind": "sketched_bend",
+            "depends_on": [
+              "two_bends1"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          },
+          {
+            "id": "two_bends3",
+            "kind": "sketched_bend",
+            "depends_on": [
+              "two_bends2"
+            ],
+            "confirmed": true,
+            "unit": "mm",
+            "evidence": [
+              "synthetic contract only"
+            ],
+            "parameters": {}
+          }
+        ]
+      }
+    }
+  ]
+}

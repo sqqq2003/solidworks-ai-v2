@@ -31,13 +31,20 @@ TREE_VERSION = "feature-tree/1"
 # Feature types the IR accepts. "fillet" and "chamfer" are placeholders:
 # they are valid IR nodes but the mock backend cannot execute them, so
 # execution stops at them with pending_confirmation (never guessed).
+# "revolve" was added by the feature-tree completion batch (after #36):
+# a revolved solid from a closed profile sketch around an axis. Its
+# validation rules (closed profile, no axis crossing, explicit angle)
+# are enforced by the mock backend, not guessed.
 SUPPORTED_TYPES = frozenset(
-    ["sketch", "extrude", "hole", "bend", "sheetmetal", "check", "fillet", "chamfer"]
+    ["sketch", "extrude", "hole", "bend", "sheetmetal", "check", "fillet", "chamfer",
+     "revolve"]
 )
 
 # Types the mock backend can actually execute (sheetmetal is a group
 # completion step, check is a verification-record step).
-EXECUTABLE_TYPES = frozenset(["sketch", "extrude", "hole", "bend", "sheetmetal", "check"])
+EXECUTABLE_TYPES = frozenset(
+    ["sketch", "extrude", "hole", "bend", "sheetmetal", "check", "revolve"]
+)
 
 
 class TreeError(ValueError):
@@ -258,6 +265,53 @@ def polygon_bounds_and_area(points) -> dict:
         "max_y": max(ys),
         "area_mm2": abs(area2) / 2.0,
     }
+
+
+def polygon_centroid(points) -> dict:
+    """Signed-area centroid of a 2D point list (shoelace formula).
+
+    The polygon is treated as closed, same convention as
+    polygon_bounds_and_area. Returns the signed area and the centroid;
+    a zero-area (degenerate) polygon has no meaningful centroid, so its
+    centroid is reported as None and callers must refuse it.
+    """
+    area2 = 0.0
+    cx2 = 0.0
+    cy2 = 0.0
+    for i in range(len(points)):
+        x1, y1 = float(points[i][0]), float(points[i][1])
+        x2, y2 = float(points[(i + 1) % len(points)][0]), float(
+            points[(i + 1) % len(points)][1]
+        )
+        cross = x1 * y2 - x2 * y1
+        area2 += cross
+        cx2 += (x1 + x2) * cross
+        cy2 += (y1 + y2) * cross
+    if abs(area2) < 1e-12:
+        return {"area_mm2": 0.0, "centroid": None}
+    area = area2 / 2.0
+    return {
+        "area_mm2": abs(area),
+        "centroid": [cx2 / (6.0 * area), cy2 / (6.0 * area)],
+    }
+
+
+def axis_side_distances(points, origin, direction) -> list:
+    """Signed distances of points from an axis line (sketch plane).
+
+    Positive = one side, negative = the other, zero = on the axis.
+    A revolve profile must lie on one side only: points strictly on
+    both sides mean the profile crosses the axis. Points exactly on
+    the axis are allowed (a profile edge on the axis is normal).
+    """
+    dx, dy = float(direction[0]), float(direction[1])
+    norm = math.hypot(dx, dy)
+    ox, oy = float(origin[0]), float(origin[1])
+    out = []
+    for p in points:
+        x, y = float(p[0]), float(p[1])
+        out.append(((x - ox) * dy - (y - oy) * dx) / norm)
+    return out
 
 
 def bend_allowance_mm(angle_degrees: float, radius_mm: float, k_factor: float,

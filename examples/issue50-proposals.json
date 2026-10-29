@@ -1,0 +1,134 @@
+{
+  "metrics": [
+    {
+      "id": "load",
+      "unit": "kg",
+      "weight": 1,
+      "preference": "max",
+      "source": "synthetic design comparison"
+    },
+    {
+      "id": "speed",
+      "unit": "m/s",
+      "weight": 1,
+      "preference": "max",
+      "source": "synthetic design comparison"
+    },
+    {
+      "id": "cost",
+      "unit": "CNY",
+      "weight": 1,
+      "preference": "min",
+      "source": "synthetic design comparison"
+    },
+    {
+      "id": "space",
+      "unit": "mm",
+      "weight": 1,
+      "preference": "min",
+      "source": "synthetic design comparison"
+    },
+    {
+      "id": "maintenance",
+      "unit": "h/year",
+      "weight": 1,
+      "preference": "min",
+      "source": "synthetic design comparison"
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "gravity",
+      "kind": "gravity",
+      "metrics": {
+        "load": {
+          "value": 100,
+          "unit": "kg",
+          "source": "synthetic engineering example"
+        },
+        "speed": {
+          "value": 0.1,
+          "unit": "m/s",
+          "source": "synthetic engineering example"
+        },
+        "cost": {
+          "value": 1000,
+          "unit": "CNY",
+          "source": "synthetic engineering example"
+        },
+        "space": {
+          "value": 2000,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        "maintenance": {
+          "value": 2,
+          "unit": "h/year",
+          "source": "synthetic engineering example"
+        }
+      }
+    },
+    {
+      "id": "chain",
+      "kind": "chain",
+      "metrics": {
+        "load": {
+          "value": 100,
+          "unit": "kg",
+          "source": "synthetic engineering example"
+        },
+        "speed": {
+          "value": 0.3,
+          "unit": "m/s",
+          "source": "synthetic engineering example"
+        },
+        "cost": {
+          "value": 3000,
+          "unit": "CNY",
+          "source": "synthetic engineering example"
+        },
+        "space": {
+          "value": 2000,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        "maintenance": {
+          "value": 10,
+          "unit": "h/year",
+          "source": "synthetic engineering example"
+        }
+      }
+    },
+    {
+      "id": "belt",
+      "kind": "belt",
+      "metrics": {
+        "load": {
+          "value": 100,
+          "unit": "kg",
+          "source": "synthetic engineering example"
+        },
+        "speed": {
+          "value": 0.4,
+          "unit": "m/s",
+          "source": "synthetic engineering example"
+        },
+        "cost": {
+          "value": 3500,
+          "unit": "CNY",
+          "source": "synthetic engineering example"
+        },
+        "space": {
+          "value": 2000,
+          "unit": "mm",
+          "source": "synthetic engineering example"
+        },
+        "maintenance": {
+          "value": 5,
+          "unit": "h/year",
+          "source": "synthetic engineering example"
+        }
+      }
+    }
+  ]
+}

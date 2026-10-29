@@ -1,0 +1,21 @@
+{
+  "case": "p248-step0",
+  "source_commit": "e81438bbaf1fdbab09db125df115745f43a50b6c",
+  "source_equivalence": "local patches not uploaded",
+  "profile_one_based": 299,
+  "bends_zero_based": [
+    106,
+    107,
+    108,
+    109
+  ],
+  "thickness_mm": 2.5,
+  "radius_mm": 1,
+  "angle_deg": 90,
+  "deepening": false,
+  "reported_completed": 4,
+  "first_reopen_unfold": "reported_pass_r3",
+  "retest_reopen_dxf": "not_run",
+  "process_exit": "crashed",
+  "new_patch_validation": "pending_windows_validation"
+}

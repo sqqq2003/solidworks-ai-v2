@@ -1,0 +1,1190 @@
+[
+  {
+    "pr": 52,
+    "path": "delivery/design-platform/windows-matrix.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "delivery/issue50/offline-checks.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "delivery/issue50/source-manifest.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "delivery/issue50/windows-matrix.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "docs/design-platform-batch.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "docs/issue50-gap-analysis.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "docs/issue50-handoff.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "docs/plan-conformance-review.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "docs/platform-development-order.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/design-platform-batch.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-assembly.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-batch.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-change_report.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-changes.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-costs.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-dimensions.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-instruction.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-native-review.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-proposals.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-review.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-similarity.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-tolerance-axial-gap.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-tolerance-roller-installation.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-tolerances.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-transmission.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/issue50-weldments.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/make_issue50_examples.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/roller-design-intent.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "examples/roller-impact-plan.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/assistant.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/calculations.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/catalogue.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/desktop.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/knowledge.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/manufacturing.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/mapping.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/native.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/projects.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/rules.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/templates.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_platform/workflow.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_review/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_review/acceptance.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_review/impact.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/design_review/repair.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/assembly.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/changes.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/common.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/costs.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/dimensions.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/native_review.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/proposals.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/review.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/similarity.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/transmission.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/weldments.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "src/engineering_intelligence/workflow.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "tests/test_design_review.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "tests/test_engineering_intelligence.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "tests/test_manufacturing_release_audit.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "work/design_platform.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "work/design_review.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 52,
+    "path": "work/engineering_intelligence.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "app.py",
+    "resolution": "apply_branch_delta;three_way_clean"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/capabilities.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/compiled-jobs.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/golden-gate-checks.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/issue19-unified-source-and-gork.zip",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/offline-checks.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/offline-report.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/p248-golden.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/source-manifest.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/supervisor-checks.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/two-bend-mock-summary.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/issue19-unified/windows-matrix.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/pr21/manifest.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "delivery/pr21/sw2022-interface-patch.zip",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/issue19-batch-delivery.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/issue19-capability-checklist.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/issue19-completion-boundaries.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/issue19-review.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/issue19-unified-runbook.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/native-acceptance-recovery.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/native-preflight-audit.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/pr21-validation-review.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/pr22-export-recheck.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/pr22-r2-review.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/pr22-validation-review.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/production-file-review.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "docs/production-flow-handoff.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "examples/modeling_batch.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "examples/offline-result.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "examples/p248_golden.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "examples/production_recipes.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "examples/ql5050px_production.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/project_workbench.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/acceptance_report.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/cad_features.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/cad_topology.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/com_selection.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/editable_features.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/feature_operations.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/golden_gate.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/modeling_delivery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/modeling_gui.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/modeling_recovery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/modeling_supervisor.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/modeling_validation.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/modeling_worker.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/native_drawings.py",
+    "resolution": "manually_resolved",
+    "detail": "use modified-model receipt configuration; reject task mismatch; retain native readback"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/native_environment.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/native_machine.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/native_part_host.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/part_recipes.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/production.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/production_acceptance.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/production_review.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/recipe_worker.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/sheet_feature_data.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/staged_modeling.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/ql5050px/workflow.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/sw_math_arrays.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "src/sw_owned_launch.py",
+    "resolution": "apply_branch_delta;three_way_clean"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_acceptance_recovery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_modeling_validation.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_owned_launch_preflight.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_production_delivery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_production_flow.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_r2_feature_diagnostics.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "tests/test_sw2022_feature_interfaces.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "work/prepare_modeling_delivery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 20,
+    "path": "work/project.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "docs/issue24-roller800-handoff.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "examples/roller800-pending.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "examples/roller800-synthetic.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "src/roller_variant/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "src/roller_variant/delivery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "src/roller_variant/execution.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "src/roller_variant/native.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "src/roller_variant/planning.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "tests/test_roller_variant.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 28,
+    "path": "work/roller_variant.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "delivery/issue39-unified/offline-checks.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "delivery/issue39-unified/source-manifest.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "docs/issue39-unified-patch.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "examples/production_recipes.json",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/minimal_session_batch.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/owned_document_lifetime.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/part_verification.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/acceptance_report.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/cad_features.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/cad_topology.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/com_selection.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/editable_features.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/feature_operations.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/golden_gate.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/modeling_delivery.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/modeling_gui.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/modeling_recovery.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/modeling_supervisor.py",
+    "resolution": "PR47_port_uses_PR20_source_ancestor;three_way_clean"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/modeling_validation.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/modeling_worker.py",
+    "resolution": "PR47_port_uses_PR20_source_ancestor;three_way_clean"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/native_environment.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/native_machine.py",
+    "resolution": "manually_resolved",
+    "detail": "single typed app binding with existing ownership guard"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/native_part_host.py",
+    "resolution": "PR47_port_uses_PR20_source_ancestor;three_way_clean"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/part_recipes.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/recipe_worker.py",
+    "resolution": "PR47_port_uses_PR20_source_ancestor;three_way_clean"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/sheet_feature_data.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "src/ql5050px/staged_modeling.py",
+    "resolution": "PR47_port_uses_PR20_source_ancestor;three_way_clean"
+  },
+  {
+    "pr": 47,
+    "path": "src/run_recovery.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/sheet_metal_pipeline.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/sheet_metal_windows.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/solidworks_generator.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/sw_owned_launch.py",
+    "resolution": "manually_resolved",
+    "detail": "retain detailed registered-instance preflight plus PR47 lifetime cleanup"
+  },
+  {
+    "pr": 47,
+    "path": "src/sw_session.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "src/turned_part.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_acceptance_recovery.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_minimal_session_batch.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_modeling_validation.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_modeling_worker_lifecycle.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_owned_document_lifetime.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_owned_launch_preflight.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_r2_feature_diagnostics.py",
+    "resolution": "equivalent_except_terminal_newlines"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_sheet_metal_pipeline.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "tests/test_sw2022_feature_interfaces.py",
+    "resolution": "PR47_port_uses_PR20_source_ancestor;three_way_clean"
+  },
+  {
+    "pr": 47,
+    "path": "work/prepare_issue39_retest.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "work/run_reviewed_parts.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 47,
+    "path": "work/run_sheet_metal.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 48,
+    "path": "docs/test-handoff-audit.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 48,
+    "path": "examples/gork46-audit-matrix.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 48,
+    "path": "examples/gork46-empty-submission.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 48,
+    "path": "src/test_handoff_audit.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 48,
+    "path": "tests/test_test_handoff_audit.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 48,
+    "path": "work/audit_test_handoff.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "CODEX_REVIEW.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "docs/bend-relief-research.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "results/cloud/latest.json",
+    "resolution": "historical_generated_report_not_used_as_current_result"
+  },
+  {
+    "pr": 43,
+    "path": "results/windows/p248_wb_20261025_attempt1.log",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "results/windows/p248_wb_20261025_attempt2.log",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "results/windows/p248_wb_retest_20261025.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "src/cad_analyzer.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "src/dwg_converter.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "src/solidworks_generator.py",
+    "resolution": "three_way_clean"
+  },
+  {
+    "pr": 43,
+    "path": "src/sw_compat/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "src/sw_compat/dispatch.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "src/sw_compat/typelib.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "src/sw_owned_launch.py",
+    "resolution": "three_way_clean"
+  },
+  {
+    "pr": 43,
+    "path": "src/turned_part.py",
+    "resolution": "three_way_clean"
+  },
+  {
+    "pr": 43,
+    "path": "tests/pending_features/README.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "tests/pending_features/test_border_relief_notch.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "tests/pending_features/test_spur_segments.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "tests/pending_features/test_turned_part.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 43,
+    "path": "tests/test_bend_geometry.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/README.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/examples/l_bracket_tree.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/examples/sheetmetal_unfold_tree.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/mock_backend.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/plan_convert.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/tests/test_feature_tree.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/tests/test_feature_tree_completion.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/tree.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "feature_tree/unfold.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/README.md",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/build.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/cli.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/examples/revolve_tree.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/examples/sheetmetal_ir_example.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/examples/sheetmetal_tree.json",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/ir.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/mock.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/tests/__init__.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/tests/test_geometry_ir.py",
+    "resolution": "apply_branch_delta"
+  },
+  {
+    "pr": 44,
+    "path": "geometry_ir/validate.py",
+    "resolution": "apply_branch_delta"
+  }
+]

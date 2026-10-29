@@ -1,0 +1,32 @@
+{
+  "currency": "CNY",
+  "as_of": "2026-10-25",
+  "exclusions": [
+    "tax",
+    "shipping"
+  ],
+  "items": [
+    {
+      "id": "steel",
+      "kind": "material",
+      "quantity": {
+        "value": 10,
+        "unit": "kg",
+        "source": "synthetic engineering example"
+      },
+      "quantity_unit": "kg",
+      "loss": {
+        "value": 0.1,
+        "unit": "ratio",
+        "source": "synthetic engineering example"
+      },
+      "quote": {
+        "value": 5,
+        "currency": "CNY",
+        "per_unit": "kg",
+        "source": "synthetic quote, not vendor pricing",
+        "date": "2026-10-25"
+      }
+    }
+  ]
+}

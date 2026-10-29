@@ -1,0 +1,8 @@
+{
+  "scope": "Linux virtual desktop and presentation tests; no Windows/COM or provider traffic",
+  "tests_run": 29,
+  "passed": 29,
+  "failures": 0,
+  "errors": 0,
+  "solidworks_live_verified": false
+}

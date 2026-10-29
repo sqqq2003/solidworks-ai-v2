@@ -8,6 +8,7 @@ import zipfile
 
 from .intelligence import run_intelligence
 from .machine_package import plan_machine, MATRIX
+from .decision_bridge import bridge_decisions
 
 
 def run_integrated(request, output_dir=None):
@@ -17,8 +18,10 @@ def run_integrated(request, output_dir=None):
     if 'envelope' in config and config['envelope'] != target:
         raise ValueError('manufacturing envelope conflicts with intelligence target')
     config['envelope'] = target
+    config, bridge = bridge_decisions(intelligence, config, request.get('execution_bindings'))
     machine = plan_machine(config)
     pending = list(machine['oem_mapping_required'])
+    pending.extend(bridge['pending_mapping'])
     pending.extend({'module':'parameters','parameter':name}
                    for name in machine['parameters']['pending_mapping'])
     pending.extend({'module':'intelligence','parameter':row['parameter'],
@@ -33,6 +36,7 @@ def run_integrated(request, output_dir=None):
              'assembly':machine['assembly_plan'], 'drive':machine['drive_plan'],
              'drawings':machine['drawing_plan'],
              'decision_plan':intelligence['decision_plan']}
+    tasks['decision_bridge'] = bridge
     result = {'schema_version':1,'machine':'QL-5050PX','action':'integrated',
               'status':'conflict' if machine['status']=='conflict' else 'pending_mapping' if pending else 'review_required',
               'plan':machine['parameters'],'intelligence':intelligence,'machine_plan':machine,
@@ -43,6 +47,7 @@ def run_integrated(request, output_dir=None):
         root.mkdir(parents=True, exist_ok=False)
         documents = {'request':request,'integrated-result':result,
                      'oem-mapping-required':pending,'windows-tasks':tasks,
+                     'decision-bridge':bridge,
                      'test-matrix':[{**row,'status':'not_run'} for row in MATRIX] +
                          [{'id':'INT-01','case':'scan/classify/map/decision/calculation integration','status':'not_run'}]}
         for name, payload in documents.items():

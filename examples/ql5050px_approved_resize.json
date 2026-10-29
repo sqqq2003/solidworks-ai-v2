@@ -1,0 +1,48 @@
+{
+  "snapshot": {
+    "machine": "QL-5050PX",
+    "documents": [
+      {
+        "path": "SIM/frame.SLDPRT",
+        "configuration": "SIM",
+        "exists": true,
+        "component_kind": "editable",
+        "dimensions": [
+          {
+            "name": "Length@Sketch1",
+            "value": 1,
+            "unit": "m",
+            "source": "fixture"
+          }
+        ]
+      }
+    ]
+  },
+  "pending_parameters": [
+    "length"
+  ],
+  "approvals": [
+    {
+      "parameter": "length",
+      "document_id": "a4c5d82168d8dedee0d576e1",
+      "dimension": "Length@Sketch1",
+      "reviewed": true,
+      "source": "fixture engineer"
+    }
+  ],
+  "rules": {
+    "a4c5d82168d8dedee0d576e1": {
+      "action": "resize",
+      "targets": {
+        "length": 1.8
+      }
+    }
+  },
+  "manufacturing": {
+    "drive": {
+      "source_assembly": "SIM/machine.SLDASM",
+      "assembly_configuration": "SIM"
+    }
+  },
+  "source_kind": "synthetic_only_not_OEM"
+}

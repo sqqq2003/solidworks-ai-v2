@@ -28,3 +28,5 @@ python work/project.py batch runtime/whole-project-smoke/jobs.json
 ## AI 客户端调用
 
 新增本机 MCP stdio 与带令牌的本地 HTTP 工具接口，可供支持工具调用的不同 AI 客户端接入。参见 [Windows 接入配置与示例](docs/ai-client-integration.md)。默认仅分析/规划，原生生成需要主机显式启用。
+
+统一源码候选、方案审核工作区和 Gork 证据收件入口：[交付说明](docs/unified-candidate.md)。

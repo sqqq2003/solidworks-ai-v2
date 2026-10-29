@@ -1,0 +1,12 @@
+{
+  "base_commit": "58a2e34bb5fd2637c6866d3f703fb914ccb8a42f",
+  "evidence_pr": 21,
+  "evidence_pin": "e1a14a74210471a09e1c82a8f77a9e8c7904f8aa",
+  "mock_regressions_passed": 4,
+  "native_validation": "pending_windows_validation",
+  "files": {
+    "src/ql5050px/editable_features.py": "4b2a27ee24905f99fe02d76fb5394047b7ba1217f491829e7ca861c8fff84a2b",
+    "tests/test_sw2022_feature_interfaces.py": "d22988caccc4008aa388f7fc7d923c1f2e0212901ca52ef853fe63d8feefb94f",
+    "docs/pr21-validation-review.md": "584415564cf54c71a97b738fcc41eaf2f3ed6a527e959826dcc3a2dab2c739c9"
+  }
+}

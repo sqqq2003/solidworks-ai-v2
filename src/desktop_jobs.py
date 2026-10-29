@@ -3,6 +3,7 @@ from pathlib import Path
 from project_workbench import build_command, confirm_job
 
 MODES = {
+    'unified': ('统一项目', '尺寸链、影响分析与制造资料统一交付。'),
     'sheet': ('钣金零件', '从二维图纸识别轮廓，审核折弯参数并生成零件。'),
     'roller': ('滚筒零件', '识别滚筒规格，规划尺寸并生成独立工作副本。'),
     'turned': ('车削零件', '识别回转轮廓与尺寸，审核后生成可编辑零件。'),

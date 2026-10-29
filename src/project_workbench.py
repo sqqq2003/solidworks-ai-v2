@@ -89,6 +89,12 @@ def bounded_run(command, *, cwd, timeout, **kwargs):
 def capabilities():
     return {'project':'SolidWorks AI V2', 'scope':'whole_project',
         'modules':[
+            {'id':'unified_release','state':'offline_integrated_pending_native','entry':'work/project.py release'},
+            {'id':'engineering_intelligence','state':'offline_implemented_pending_engineering_review','entry':'work/engineering_intelligence.py'},
+            {'id':'design_platform','state':'offline_implemented_pending_native','entry':'work/design_platform.py'},
+            {'id':'existing_roller_variant','state':'native_adapter_pending_live','entry':'work/roller_variant.py'},
+            {'id':'native_part_batch','state':'native_adapter_pending_live','entry':'work/run_reviewed_parts.py'},
+            {'id':'geometry_ir','state':'offline_prototype_pending_native','entry':'geometry_ir.cli'},
             {'id':'cad','state':'implemented','entry':'src/cad_analyzer.py'},
             {'id':'sheet','state':'native_implemented_partial_live','entry':'src/sw_tool_cli.py --mode sheet'},
             {'id':'roller','state':'native_implemented_pending_live','entry':'src/sw_tool_cli.py --mode roller'},
@@ -99,7 +105,7 @@ def capabilities():
             {'id':'assembly_mates_motion','state':'scaffold_pending_native','entry':'src/a01_next/mate_check.py'},
             {'id':'native_engineering_drawings','state':'scaffold_pending_native','entry':'src/a01_next/drawing_export.py'},
             {'id':'desktop','state':'implemented_pending_desktop_test','entry':'app.py'},
-        ], 'mechanical_acceptance':'unverified','pending_original_feature_contracts':36}
+        ], 'mechanical_acceptance':'unverified','pending_original_feature_contracts':0,'separately_tested_original_feature_contracts':36}
 
 
 def doctor():
@@ -124,6 +130,12 @@ def number(value, name):
 
 def build_command(job: dict, *, root=ROOT):
     kind = job.get('kind')
+    if kind == 'unified':
+        config=Path(job['config']).expanduser().resolve()
+        if not config.is_file() or config.suffix.lower()!='.json':raise ValueError('unified configuration requires JSON file')
+        output=Path(job['output_dir']).expanduser().resolve()
+        if output.exists():raise ValueError('unified output directory must be new')
+        return [sys.executable,'-X','utf8',str(Path(root)/'work/project.py'),'release',str(config),'--out',str(output)]
     if kind == 'ql5050px' or (kind == 'parametric' and job.get('machine') == 'QL-5050PX'):
         from ql5050px.workflow import ACTIONS
         action = job.get('action','plan')
@@ -149,8 +161,8 @@ def build_command(job: dict, *, root=ROOT):
             if output.exists() and not (action=='pipeline' and job.get('resume') is True):
                 raise ValueError('QL output directory already exists')
             cmd.extend(['--output-dir',str(output)])
-        elif action in {'pipeline','machine_package'}:
-            raise ValueError('QL pipeline/machine_package requires output_dir')
+        elif action in {'pipeline','machine_package','production_package'}:
+            raise ValueError('QL pipeline/machine_package/production_package requires output_dir')
         if job.get('resume'):
             if action!='pipeline':
                 raise ValueError('QL resume requires pipeline action')
@@ -284,10 +296,18 @@ def execute_job(job, *, root=ROOT, runner=bounded_run):
                     events.append({'event':'plan','kind':'parametric','plan':payload['plan'],'cad_executed':False})
             except ValueError:
                 pass
+        if job.get('kind') == 'unified':
+            try:
+                payload=json.loads(completed.stdout)
+                if isinstance(payload,dict) and payload.get('schema_version')==1 and 'stages' in payload:
+                    events=[dict(payload,event='plan',kind='unified')];raw=[]
+            except ValueError:pass
         errors = [e for e in events if e.get('event') == 'error']
         done = next((e for e in reversed(events) if e.get('event') in {'done','plan','analysis'}),None)
         if completed.returncode not in (0,3) or errors:
             status = 'failed'
+        elif done is not None and done.get('kind')=='unified':
+            status = 'failed' if done.get('status')=='failed' else 'review_required'
         elif done is not None and done.get('kind')=='ql5050px':
             status = 'pending_mapping' if done.get('status')=='pending_mapping' else 'review_required'
         elif job.get('kind') == 'parametric' and done is not None:
@@ -389,4 +409,5 @@ def write_report(report, folder):
                         metadata.get('unit',''),metadata.get('confirmation_status',metadata.get('status','')),metadata.get('source','')]
                     writer.writerow(["'"+v if isinstance(v,str) and v.startswith(('=','+','-','@')) else v for v in cells])
     return path
+
 

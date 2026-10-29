@@ -1,0 +1,153 @@
+{
+  "scope": "four protocol adapters and UI; all provider calls mocked",
+  "status": "passed",
+  "run": 833,
+  "passed": 821,
+  "skipped": 12,
+  "suites": [
+    {
+      "id": "repository",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "work/run_cloud_tests.py"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 750,
+      "passed": 738,
+      "skipped": 12,
+      "skip_reasons": [
+        {
+          "test": "test_api_reply_uses_worker_and_remains_advisory (test_desktop_ui.DesktopUITests.test_api_reply_uses_worker_and_remains_advisory)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_export_cannot_overwrite_existing_request (test_desktop_ui.DesktopUITests.test_export_cannot_overwrite_existing_request)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_input_changes_clear_confirmation (test_desktop_ui.DesktopUITests.test_input_changes_clear_confirmation)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_instruction_creates_review_only (test_desktop_ui.DesktopUITests.test_instruction_creates_review_only)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_native_result_does_not_discard_pending_queue (test_desktop_ui.DesktopUITests.test_native_result_does_not_discard_pending_queue)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_new_task_discards_late_api_reply (test_desktop_ui.DesktopUITests.test_new_task_discards_late_api_reply)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_provider_change_does_not_reuse_previous_key (test_desktop_ui.DesktopUITests.test_provider_change_does_not_reuse_previous_key)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_settings_drawer_and_relevant_parameters (test_desktop_ui.DesktopUITests.test_settings_drawer_and_relevant_parameters)",
+          "reason": "desktop display unavailable; run with a virtual display or Windows"
+        },
+        {
+          "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+          "reason": "测试用滚筒 DWG 不在 uploads"
+        },
+        {
+          "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+          "reason": "本机未安装 LibreDWG dwg2dxf"
+        },
+        {
+          "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+          "reason": "Drawing1_e7b7.dwg 未上传"
+        },
+        {
+          "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+          "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+        }
+      ],
+      "failures": 0,
+      "errors": 0,
+      "cross_process_lock_passed": true,
+      "logs_sha256": {
+        "repository.stdout.log": "32b4b1658d2c7f436d60b44fb4a8362855dff02231a671cc2355276009ba5e47",
+        "repository.stderr.log": "72913b600e9aeb8c8076539442728947df826cb5d8d25ff6e6f9e3a014ea3993"
+      }
+    },
+    {
+      "id": "original-feature-contracts",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/pending_features",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 36,
+      "skipped": 0,
+      "passed": 36,
+      "logs_sha256": {
+        "original-feature-contracts.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original-feature-contracts.stderr.log": "4cf8258d54fc1ea2cfb172f12831223194cb9a0969d0fc2fe5f2f6c71dbc7dbc"
+      }
+    },
+    {
+      "id": "feature-tree",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "feature_tree/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 31,
+      "skipped": 0,
+      "passed": 31,
+      "logs_sha256": {
+        "feature-tree.stdout.log": "a558f7be00746979ff61aec56faee4ee99b6a4ddd683602a7ccb559102022268",
+        "feature-tree.stderr.log": "749479479cac7953b97adcb0132b2e2b420828f1c777cd099b916c34bdc04b5e"
+      }
+    },
+    {
+      "id": "geometry-ir",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "geometry_ir/tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "status": "passed",
+      "run": 16,
+      "skipped": 0,
+      "passed": 16,
+      "logs_sha256": {
+        "geometry-ir.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "geometry-ir.stderr.log": "7c7b02f14d50f424d729eb9065c95120137bc6fd6885c1e2205ceff2e8d0d782"
+      }
+    }
+  ],
+  "solidworks_live_verified": false,
+  "native_acceptance": "pending_windows_validation",
+  "provider_protocol_checks": {
+    "run": 17,
+    "passed": 17,
+    "real_connections_verified": false
+  },
+  "virtual_display_checks": {
+    "run": 8,
+    "passed": 8,
+    "platform": "Linux system Tk8.6 virtual display"
+  }
+}

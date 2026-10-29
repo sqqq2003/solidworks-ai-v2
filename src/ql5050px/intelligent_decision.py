@@ -24,7 +24,7 @@ def decide(database, mappings, target, rules):
         for parameter,new_value in rule.get('targets',{}).items():
             report=mapped.get(parameter,{})
             candidate=report.get('candidates',[])
-            matching=[c for c in candidate if c['document_id']==key]
+            matching=[c for c in candidate if c['document_id']==key and c.get('review_status')=='confirmed']
             if len(matching)!=1 or matching[0].get('review_status')!='confirmed':
                 pending.append({'document':key,'parameter':parameter,'reason':'explicit confirmed mapping required'})
                 continue

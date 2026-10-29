@@ -272,3 +272,7 @@
 - Fixed repair CLI test fixture isolation; added pinned pypdf dependency. Simulation runner and marker-only lock probe use isolated test locks, leaving production writer exclusion unchanged.
 - Validation: Windows Python 3.14, 739 tests, 733 passed, 0 failures, 0 errors, 6 skipped; cross-process marker lock passed. Skips cover unavailable customer fixtures/LibreDWG, symlink support and platform-specific cases.
 - Linux 3.11/3.12 regression is triggered by push through cloud-tests.yml. This local result is not Linux or SolidWorks live acceptance. Quantity annotation binding and mechanical/drawing production acceptance remain open.
+
+## 2026-10-29 云端统一交付候选
+
+新增 work/delivery.py：固定源码候选、持久化改型方案/审核/副本执行、证据审核及修复待办；桌面保留最新钣金/DXF/工程图/日志并接回多服务模型。旧测试 pin 和用户程序未改。Windows 原生与工程放行仍 pending_windows_validation，详细来源和交测步骤见 docs/unified-candidate.md。

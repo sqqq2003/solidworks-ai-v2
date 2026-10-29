@@ -46,7 +46,8 @@ def code_hash():
         'sheet_metal_pipeline.py', 'sheet_metal_windows.py', 'cad_analyzer.py',
         'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py', 'profile_edit.py',
         'bend_allowance.py', 'sw_session.py', 'sw_owned_launch.py',
-        'bridge_wiring.py')})
+        'bridge_wiring.py', 'owned_document_lifetime.py',
+        'sw_compat/__init__.py', 'sw_compat/dispatch.py', 'sw_compat/typelib.py')})
 
 
 def build_plan(analysis, *, profile_index=0, thickness_mm=None, radius_mm=None,
@@ -186,6 +187,8 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
         # A completed destination always wins; any staging left behind is
         # stale by definition, so quarantine everything in that case.
         def _resumable(candidate):
+            if (candidate/'RECOVERY_REQUIRED.json').is_file():
+                raise RuntimeError('native failed staging requires operator review; use a new output root after session review')
             found, _ckpts = validate_checkpoint_chain(
                 candidate / 'ckpt', plan_id=plan_id,
                 code_sha256=plan['code_sha256'], base_dir=candidate)
@@ -442,10 +445,18 @@ def run_plan(analysis, plan, output_dir, port: SheetMetalPort, bridge=None):
         if stage is not None:
             try:
                 port.abort(stage)
-                shutil.rmtree(stage)
-                recovery = 'staging_removed'
+                if port.simulated:
+                    shutil.rmtree(stage)
+                    recovery = 'staging_removed'
+                else:
+                    from run_recovery import atomic_write_json
+                    atomic_write_json(Path(stage)/'RECOVERY_REQUIRED.json',{'plan_id':plan_id,'reason':str(exc),'native_acceptance':'pending_windows_validation'})
+                    recovery = 'native_staging_preserved_review_required'
             except Exception as rollback:
                 recovery = 'recovery_required: ' + str(rollback)
+                if not port.simulated and Path(stage).is_dir():
+                    from run_recovery import atomic_write_json
+                    atomic_write_json(Path(stage)/'RECOVERY_REQUIRED.json',{'plan_id':plan_id,'reason':str(exc),'cleanup_error':str(rollback)})
         failure = {'status': 'failed', 'error': str(exc), 'error_kind': type(exc).__name__,
                    'bend_group_attempts': list(getattr(exc, 'bend_group_attempts', ())),
                    'failed_bend_indices': list(getattr(exc, 'bend_indices', ())),
@@ -498,4 +509,5 @@ def diagnose_k_change(*, thickness_mm, radius_mm, angle_degrees, old_k, new_k,
             'status': 'pending_measurement' if observed is None else (
                 'consistent_with_formula' if math.isclose(observed, expected, abs_tol=1e-5) else 'mismatch'),
             'sw_live_verified': False}
+
 
