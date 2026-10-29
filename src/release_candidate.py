@@ -8,8 +8,8 @@ import sys
 from project_delivery import file_hash, read_json, write_new
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT/'work'))
-from prepare_test_handoff import build_package
+if str(ROOT) not in sys.path:sys.path.append(str(ROOT))
+from work.prepare_test_handoff import build_package
 
 CHECKS = [
     ('cloud_regression','offline'), ('desktop_and_api','offline'),

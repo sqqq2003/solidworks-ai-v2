@@ -31,7 +31,7 @@ def audit_submission(matrix, submission, evidence_root):
     for row in report['results']:
         if row['status']=='degraded' and not row['issues']:row['issues']=['runner_reported_degradation']
     report['repair_tasks'] = [
-        {'id': hashlib.sha256((r['lane']+'\0'+r['id']).encode()).hexdigest()[:16],
+        {'id': hashlib.sha256((r['sha']+'\0'+r['lane']+'\0'+r['id']).encode()).hexdigest()[:16],
          'lane':r['lane'], 'check':r['id'], 'source_revision':r['sha'],
          'priority':'P0' if r['status']=='failed' else 'P1',
          'action':'repair_and_repeat_same_check' if r['status']=='failed' else 'supply_or_review_evidence',
@@ -78,3 +78,51 @@ def inspect_diagnostics(archive):
                                  'event':event,'message':message[:1000],'error_type':detail,'stage':stage})
     return {'schema_version':1,'status':'review_required','scope':'diagnostic_triage_only',
             'events':dict(counts),'findings':findings,'cad_executed':False,'manufacturing_approved':False}
+
+
+def compare_audits(before, after):
+    """Compare declared evidence coverage, never close an engineering defect."""
+    states={'passed','degraded','failed','review_required'}
+    def indexed(report):
+        if report.get('scope')!='declared_coverage_and_file_integrity_only':
+            raise ValueError('expected an evidence integrity audit report')
+        rows={}
+        for row in report.get('results',[]):
+            key=(row.get('sha'),row.get('lane'),row.get('id'))
+            if (not isinstance(key[0],str) or not re.fullmatch('[0-9a-f]{40}',key[0]) or
+                not all(isinstance(k,str) and k for k in key[1:]) or
+                row.get('status') not in states or key in rows):
+                raise ValueError('invalid or duplicate audit result identity')
+            rows[key]=row
+        return rows
+    old,new=indexed(before),indexed(after);changes=[]
+    for key in sorted(set(old)|set(new)):
+        left,right=old.get(key),new.get(key)
+        if left is None:kind='new_check_or_candidate'
+        elif right is None:kind='no_longer_reported'
+        elif left['status']=='passed' and right['status']!='passed':kind='regression'
+        elif left['status']!='passed' and right['status']=='passed':kind='evidence_improved_requires_engineering_review'
+        elif (left['status'],sorted(left.get('issues',[])))!=(right['status'],sorted(right.get('issues',[]))):kind='changed'
+        else:continue
+        changes.append({'source_revision':key[0],'lane':key[1],'check':key[2],'kind':kind,
+            'before':left['status'] if left else None,'after':right['status'] if right else None,
+            'new_issues':sorted(set(right.get('issues',[]) if right else [])-set(left.get('issues',[]) if left else [])),
+            'resolved_evidence_issues':sorted(set(left.get('issues',[]) if left else [])-set(right.get('issues',[]) if right else [])) if left and right else []})
+    return {'schema_version':1,'status':'review_required','scope':'evidence_comparison_only','changes':changes,
+            'counts':dict(Counter(row['kind'] for row in changes)),
+            'engineering_defects_auto_closed':False,'manufacturing_approved':False}
+
+
+def save_audit(report, destination, *, previous=None):
+    from design_review.impact import review_digest
+    from project_delivery import write_new
+    delta=compare_audits(previous,report) if previous is not None else None
+    root=Path(destination).resolve();root.mkdir(parents=True,exist_ok=False)
+    write_new(root/'audit.json',report)
+    write_new(root/'repair-tasks.json',{'schema_version':1,'tasks':report['repair_tasks']})
+    if delta is not None:write_new(root/'comparison.json',delta)
+    receipt={'schema_version':1,'audit_sha256':review_digest(report),'previous_audit_sha256':review_digest(previous) if previous else None,
+             'files':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in root.iterdir() if p.is_file()},
+             'native_acceptance':'requires_independent_review','manufacturing_approved':False}
+    write_new(root/'receipt.json',receipt)
+    return {**report,'report_directory':str(root),'comparison':delta}
