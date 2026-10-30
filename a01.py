@@ -165,7 +165,7 @@ def verify_baseline() -> dict:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="A01 ������������̨��״̬������������Ԥ�죻������ CAD")
+    parser = argparse.ArgumentParser(description="A01 本机开发工作台：状态、环境、参数预检；不连接 CAD")
     parser.add_argument("command", choices=("status", "doctor", "plan", "verify-baseline"))
     parser.add_argument("--spec", type=Path, default=ROOT / "data" / "machine_spec.json")
     parser.add_argument("--out", type=Path)
