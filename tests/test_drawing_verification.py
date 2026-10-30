@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import MagicMock,patch
 from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject,NameObject
-from ql5050px.drawing_verification import validate_pdf,verify_view_layout,lock_view_layout,export_pdf
+from ql5050px.drawing_verification import validate_pdf,verify_view_layout,lock_view_layout,export_pdf,view_exceeds_frame
 from ql5050px.manufacturing_drawings import apply_sheet_case,drawing_sheet_cases,plan_drawings
 from ql5050px.native_machine import read_member
 from sw_compat.annotation import read_annotation_position,set_annotation_position
@@ -293,5 +293,165 @@ class DrawingVerificationTests(unittest.TestCase):
         self.assertEqual(task['width_mm'],594)
         self.assertEqual(task['height_mm'],420)
         self.assertEqual(task['template'],'sheets/a2.drwdot')
+
+
+class _AnchoredView:
+    """GetOutline center = Position - anchor. Anchor is constant in sheet mm."""
+    def __init__(self, size_mm, anchor_mm, scale):
+        self.size_mm=[float(v) for v in size_mm]
+        self.anchor_mm=[float(v) for v in anchor_mm]
+        self.position_mm=[100.0,100.0]
+        self.ScaleDecimal=scale
+        self.UseSheetScale=0
+        self.writes=0
+    @property
+    def Position(self):
+        return (self.position_mm[0]/1000, self.position_mm[1]/1000)
+    @Position.setter
+    def Position(self, value):
+        coords=list(value)
+        self.position_mm=[float(coords[0])*1000, float(coords[1])*1000]
+        self.writes+=1
+    def GetOutline(self):
+        cx=self.position_mm[0]-self.anchor_mm[0]
+        cy=self.position_mm[1]-self.anchor_mm[1]
+        w,h=self.size_mm
+        return [(cx-w/2)/1000,(cy-h/2)/1000,(cx+w/2)/1000,(cy+h/2)/1000]
+
+
+class _BiasedView(_AnchoredView):
+    """First outline read is shifted; the shift clears once Position is written."""
+    def __init__(self, size_mm, scale, bias_mm):
+        super().__init__(size_mm, [0,0], scale)
+        self.bias_mm=list(bias_mm)
+    def GetOutline(self):
+        cx=self.position_mm[0]-self.anchor_mm[0]+self.bias_mm[0]
+        cy=self.position_mm[1]-self.anchor_mm[1]+self.bias_mm[1]
+        w,h=self.size_mm
+        return [(cx-w/2)/1000,(cy-h/2)/1000,(cx+w/2)/1000,(cy+h/2)/1000]
+    @property
+    def Position(self):
+        return (self.position_mm[0]/1000, self.position_mm[1]/1000)
+    @Position.setter
+    def Position(self, value):
+        _AnchoredView.Position.fset(self, value)
+        self.bias_mm=[0,0]
+
+
+class _GrowingView(_AnchoredView):
+    def __init__(self, stale_mm, real_mm, scale):
+        super().__init__(stale_mm, [0,0], scale)
+        self.real_mm=[float(v) for v in real_mm]
+    @property
+    def Position(self):
+        return (self.position_mm[0]/1000, self.position_mm[1]/1000)
+    @Position.setter
+    def Position(self, value):
+        _AnchoredView.Position.fset(self, value)
+        self.size_mm=self.real_mm
+
+
+class FrameFitLayoutTests(unittest.TestCase):
+    def _sheet(self, numerator, denominator, width_mm, height_mm):
+        drawing,sheet,_,_=DrawingVerificationTests().fixture()
+        sheet.GetProperties2.return_value=[12,0,numerator,denominator,True,width_mm/1000,height_mm/1000]
+        return drawing,sheet
+
+    def _task(self, scale, width_mm, height_mm):
+        return {'scale':list(scale),'width_mm':width_mm,'height_mm':height_mm,'auto_layout':True,
+                'drawing_model':{'views':[{'id':name,'position_mm':[100,100]} for name in ('front','top','right')]}}
+
+    def _assert_scale_locked(self, sheet, scale):
+        sheet.SetScale.assert_called_once_with(scale[0], scale[1], True, True)
+
+    def test_a2_tenth_envelope_still_fits_without_changing_scale(self):
+        # Known-good cell. Zero anchor: Position and the outline center match.
+        drawing,sheet=self._sheet(1,10,594,420)
+        sizes={'front':[110.5,143.0],'top':[110.5,180.32],'right':[180.32,143.0]}
+        views={name:_AnchoredView(size,[0,0],0.1) for name,size in sizes.items()}
+        task=self._task([1,10],594,420)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertEqual(proof['sheet_scale'],[1,10])
+        self.assertEqual(task['scale'],[1,10])
+        self.assertEqual({item['name'] for item in proof['views']},{'front','top','right'})
+        self.assertTrue(all(view.writes==1 for view in views.values()))
+
+    def test_a3_top_anchor_fits_at_one_to_ten(self):
+        # Live cell A3_1-10: top outline exceeded the frame. Scale stays 1:10.
+        drawing,sheet=self._sheet(1,10,420,297)
+        sizes={'front':[90,70],'top':[90,80],'right':[70,70]}
+        anchors={'front':[0,0],'top':[0,40],'right':[0,0]}
+        views={name:_AnchoredView(sizes[name],anchors[name],0.1) for name in sizes}
+        task=self._task([1,10],420,297)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertEqual(task['scale'],[1,10])
+        self.assertEqual(proof['sheet_size_mm'][0],420)
+        top=next(item for item in proof['views'] if item['name']=='top')
+        self.assertFalse(view_exceeds_frame(top['bounds_mm'], proof['frame_bounds_mm']))
+        self.assertEqual({item['name'] for item in proof['views']},{'front','top','right'})
+        self.assertTrue(all(view.writes==1 for view in views.values()))
+
+    def test_a2_front_anchor_fits_at_one_to_five(self):
+        # Live cell A2_1-5: front outline exceeded the frame. Scale stays 1:5.
+        drawing,sheet=self._sheet(1,5,594,420)
+        sizes={'front':[100,180],'top':[100,180],'right':[120,180]}
+        anchors={'front':[0,-40],'top':[0,0],'right':[0,0]}
+        views={name:_AnchoredView(sizes[name],anchors[name],1/5) for name in sizes}
+        task=self._task([1,5],594,420)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,5])
+        self.assertEqual(proof['sheet_scale'],[1,5])
+        self.assertEqual(task['scale'],[1,5])
+        front=next(item for item in proof['views'] if item['name']=='front')
+        self.assertFalse(view_exceeds_frame(front['bounds_mm'], proof['frame_bounds_mm']))
+        self.assertEqual({item['name'] for item in proof['views']},{'front','top','right'})
+
+    def test_outline_that_misses_the_slot_is_nudged_without_rescaling(self):
+        drawing,sheet=self._sheet(1,10,420,297)
+        sizes={'front':[90,70],'top':[90,80],'right':[70,70]}
+        views={name:_BiasedView(size,0.1,[0,8] if name=='top' else [0,0]) for name,size in sizes.items()}
+        task=self._task([1,10],420,297)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertGreaterEqual(views['top'].writes,2)
+        top=next(item for item in proof['views'] if item['name']=='top')
+        self.assertFalse(view_exceeds_frame(top['bounds_mm'], proof['frame_bounds_mm']))
+        self.assertEqual(task['scale'],[1,10])
+
+    def test_stale_outline_is_replaced_at_the_same_scale(self):
+        drawing,sheet=self._sheet(1,10,420,297)
+        real={'front':[90,70],'top':[90,80],'right':[70,70]}
+        views={name:_GrowingView([20,20],size,0.1) for name,size in real.items()}
+        task=self._task([1,10],420,297)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertTrue(all(view.writes==2 for view in views.values()))
+        self.assertEqual({item['name'] for item in proof['views']},{'front','top','right'})
+        self.assertTrue(all(not view_exceeds_frame(item['bounds_mm'], proof['frame_bounds_mm']) for item in proof['views']))
+
+    def test_oversize_envelope_is_not_autoscaled(self):
+        # The 1:10 measurement does not fit A3. Refusal keeps 1:10; no second scale.
+        drawing,sheet=self._sheet(1,10,420,297)
+        measured={'front':[110.5,143.0],'top':[110.5,180.32],'right':[180.32,143.0]}
+        views={name:_AnchoredView(size,[0,0],0.1) for name,size in measured.items()}
+        task=self._task([1,10],420,297)
+        with self.assertRaisesRegex(ValueError,'does_not_fit'):
+            lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertEqual(task['scale'],[1,10])
+        self.assertTrue(all(view.writes==0 for view in views.values()))
+
+    def test_grown_outline_that_cannot_fit_is_not_autoscaled(self):
+        drawing,sheet=self._sheet(1,5,594,420)
+        real={'front':[221,286],'top':[221,360.64],'right':[360.64,286]}
+        views={name:_GrowingView([20,20],size,0.2) for name,size in real.items()}
+        task=self._task([1,5],594,420)
+        with self.assertRaisesRegex(ValueError,'does_not_fit'):
+            lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,5])
+        self.assertEqual(task['scale'],[1,5])
+        self.assertTrue(all(view.writes==1 for view in views.values()))
 
 if __name__=='__main__':unittest.main()

@@ -1,5 +1,18 @@
-"""Place three first-angle views at the requested scale; never shrink geometry."""
+"""Place three first-angle views at the requested scale; never shrink geometry.
+
+Returned coordinates are GetOutline centers on the sheet. SolidWorks
+``View.Position`` is the model geometric center and can sit away from that
+outline; ``position_for_outline_center`` turns a center into the Position
+to write. This module does not change scale.
+"""
 import math
+
+
+def position_for_outline_center(center_mm, anchor_mm):
+    """``anchor`` is ``Position - outline center``, both in mm. Translation keeps it."""
+    if len(center_mm)!=2 or len(anchor_mm)!=2 or any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) for v in (*center_mm,*anchor_mm)):
+        raise ValueError('drawing anchor must be two finite coordinates')
+    return [center_mm[0]+anchor_mm[0], center_mm[1]+anchor_mm[1]]
 
 
 def first_angle_layout(width,height,sizes,gap=10):

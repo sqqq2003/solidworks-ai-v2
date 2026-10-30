@@ -4,6 +4,19 @@ from pathlib import Path
 from .native_machine import read_member
 
 
+def default_frame_mm(width, height):
+    # GB/T 14689 binding margin on the left, 10 mm on the other edges. A2/A3.
+    return [25, 10, float(width)-10, float(height)-10]
+
+
+def default_title_block_mm(width):
+    return [float(width)-180, 0, float(width), 60]
+
+
+def view_exceeds_frame(box, frame):
+    return box[0]<frame[0]-.1 or box[1]<frame[1]-.1 or box[2]>frame[2]+.1 or box[3]>frame[3]+.1
+
+
 def verify_view_layout(drawing, task, views):
     sheet=drawing.GetCurrentSheet()
     properties=read_member(sheet,'GetProperties2')
@@ -15,7 +28,7 @@ def verify_view_layout(drawing, task, views):
     if not math.isclose(width,task['width_mm'],abs_tol=.1) or not math.isclose(height,task['height_mm'],abs_tol=.1):
         raise RuntimeError('drawing sheet size differs from task')
     # GB/T frame defaults; callers may supply a different verified frame.
-    frame=task.get('frame_bounds_mm',[25,10,width-10,height-10])
+    frame=task.get('frame_bounds_mm',default_frame_mm(width,height))
     boxes=[]
     for name,view in views.items():
         if not math.isclose(float(read_member(view,'ScaleDecimal')),expected,rel_tol=1e-8):
@@ -27,10 +40,10 @@ def verify_view_layout(drawing, task, views):
         box=[float(v)*1000 for v in read_member(view,'GetOutline')]
         if len(box)!=4 or not all(map(math.isfinite,box)) or box[2]<=box[0] or box[3]<=box[1]:
             raise RuntimeError('invalid drawing view bounds: '+name)
-        if box[0]<frame[0]-.1 or box[1]<frame[1]-.1 or box[2]>frame[2]+.1 or box[3]>frame[3]+.1:
+        if view_exceeds_frame(box, frame):
             raise RuntimeError('drawing view exceeds frame: '+name)
         boxes.append((name,box))
-    reserved=task.get('reserved_rectangles_mm',[[width-180,0,width,60]])
+    reserved=task.get('reserved_rectangles_mm',[default_title_block_mm(width)])
     for index,(name,a) in enumerate(boxes):
         for other,b in boxes[index+1:]+[('reserved area',r) for r in reserved]:
             if min(a[2],b[2])-max(a[0],b[0])>.1 and min(a[3],b[3])-max(a[1],b[1])>.1:
@@ -39,30 +52,78 @@ def verify_view_layout(drawing, task, views):
             'views':[{'name':name,'bounds_mm':box} for name,box in boxes], 'frame_bounds_mm':frame}
 
 
+def _write_position(view, position_mm):
+    view.UseSheetScale=1
+    position=tuple(float(v)/1000 for v in position_mm)
+    if '_oleobj_' in getattr(view,'__dict__',{}):
+        import pythoncom
+        from win32com.client import VARIANT
+        position=VARIANT(pythoncom.VT_ARRAY|pythoncom.VT_R8,position)
+    view.Position=position
+
+
+def _measure_views(views):
+    """Outline size plus the offset from Position to the GetOutline center."""
+    measured={}
+    for name,view in views.items():
+        position=[float(v)*1000 for v in read_member(view,'Position')]
+        if len(position)!=2 or not all(map(math.isfinite,position)):
+            raise RuntimeError('invalid drawing view position: '+name)
+        box=[float(v)*1000 for v in read_member(view,'GetOutline')]
+        if len(box)!=4 or not all(map(math.isfinite,box)) or box[2]<=box[0] or box[3]<=box[1]:
+            raise RuntimeError('invalid drawing view bounds: '+name)
+        center=[(box[0]+box[2])/2,(box[1]+box[3])/2]
+        measured[name]={'anchor':[position[0]-center[0],position[1]-center[1]],
+                        'size':[box[2]-box[0],box[3]-box[1]],'center':center,'position':position}
+    return measured
+
+
+def _apply_outline_centers(task, views, centers, measured):
+    from .auto_layout import position_for_outline_center
+    for item in task['drawing_model']['views']:
+        item['position_mm']=position_for_outline_center(centers[item['id']], measured[item['id']]['anchor'])
+        _write_position(views[item['id']], item['position_mm'])
+
+
+def _nudge_outline_centers(task, views, centers):
+    """One translation if the outline did not land on the slot. Scale stays put."""
+    moved=False
+    for item in task['drawing_model']['views']:
+        geometry=_measure_views({item['id']:views[item['id']]})[item['id']]
+        delta=[centers[item['id']][0]-geometry['center'][0], centers[item['id']][1]-geometry['center'][1]]
+        if any(abs(v)>0.05 for v in delta):
+            item['position_mm']=[geometry['position'][0]+delta[0], geometry['position'][1]+delta[1]]
+            _write_position(views[item['id']], item['position_mm'])
+            moved=True
+    return moved
+
+
 def lock_view_layout(drawing,task,views):
-    # SW can change sheet scale when inserting the first view. Enforce it last.
+    # SW can change sheet scale when inserting the first view. Enforce the
+    # requested ratio here and do not replace it when a view misses the frame.
     if not drawing.GetCurrentSheet().SetScale(*task['scale'],True,True):
         raise RuntimeError('drawing sheet scale update failed')
     if task.get('auto_layout'):
         from .auto_layout import first_angle_layout
         for view in views.values():view.UseSheetScale=1
         if not read_member(drawing,'EditRebuild3'):raise RuntimeError('view size rebuild failed')
-        sizes={}
-        for name,view in views.items():
-            a=[float(v)*1000 for v in read_member(view,'GetOutline')]
-            sizes[name]=[a[2]-a[0],a[3]-a[1]]
-        positions=first_angle_layout(task['width_mm'],task['height_mm'],sizes)
-        for item in task['drawing_model']['views']:item['position_mm']=positions[item['id']]
-    for item in task['drawing_model']['views']:
-        view=views[item['id']]
-        view.UseSheetScale=1
-        position=tuple(float(v)/1000 for v in item['position_mm'])
-        if '_oleobj_' in getattr(view,'__dict__',{}):
-            import pythoncom
-            from win32com.client import VARIANT
-            position=VARIANT(pythoncom.VT_ARRAY|pythoncom.VT_R8,position)
-        view.Position=position
-    if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
+        measured=_measure_views(views)
+        centers=first_angle_layout(task['width_mm'],task['height_mm'],{name:item['size'] for name,item in measured.items()})
+        _apply_outline_centers(task,views,centers,measured)
+        if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
+        updated=_measure_views(views)
+        # A stale outline (common before the view is actually moved) must be
+        # placed again at the same scale. Refusal stays refusal.
+        if any(abs(a-b)>0.5 for name in measured for a,b in zip(measured[name]['size'], updated[name]['size'])):
+            centers=first_angle_layout(task['width_mm'],task['height_mm'],{name:item['size'] for name,item in updated.items()})
+            _apply_outline_centers(task,views,centers,updated)
+            if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
+        if _nudge_outline_centers(task,views,centers):
+            if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
+    else:
+        for item in task['drawing_model']['views']:
+            _write_position(views[item['id']], item['position_mm'])
+        if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
     return verify_view_layout(drawing,task,views)
 
 
