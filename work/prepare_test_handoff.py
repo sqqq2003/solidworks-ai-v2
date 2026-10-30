@@ -11,11 +11,13 @@ ALLOWED_SUFFIXES = {'.py','.md','.json','.txt','.yml','.yaml'}
 SOURCE_ROOTS = {'src':{'.py','.md'},'tests':{'.py','.json','.md'},
     'examples':{'.py','.json','.md'},'docs':{'.md'},'work':{'.py'},
     '.github':{'.yml','.yaml'},
-    'dxf_extract':{'.py','.md','.json','.dxf'},
+    'dxf_extract':{'.py','.md','.json'},
     'csharp-bridge':{'.py','.md','.json','.txt','.cs','.csproj'},
     **{name:{'.py','.md','.json'} for name in ('geometry_ir','feature_tree','dependency_engine','offline_verify')}}
 CONFIG_FILES = {'data/machine_spec.json','data/tasks.json','docs/ql5050px-handoff-index.json',
-    'delivery/design-platform/windows-matrix.json'}
+    'delivery/design-platform/windows-matrix.json',
+    'dxf_extract/examples/arcs_holes.dxf','dxf_extract/examples/flat_pattern.dxf',
+    'dxf_extract/examples/rect_holes.dxf'}
 
 
 def allowed_source(path):

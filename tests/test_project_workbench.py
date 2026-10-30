@@ -57,7 +57,7 @@ class ProjectTests(unittest.TestCase):
         self.assertIn('--sw-exe',cmd)
 
     def test_batch_export_command_requires_confirmation_and_new_dir(self):
-        # ����������ȷ�������Ŀ¼����Ϊ��Ŀ¼���� --batch --batch-out-dir��
+        # 批量导出须确认且输出目录必须为新目录，走 --batch --batch-out-dir。
         out_dir = self.root/'batch-out'
         job = confirm_job(self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
             output_dir=str(out_dir),sw_exe=str(self.exe)))
@@ -67,13 +67,13 @@ class ProjectTests(unittest.TestCase):
         self.assertIn('--sw-exe',cmd)
         self.assertIn(str(self.source),cmd)
 
-        # δȷ����ܾ���
+        # 未确认则拒绝。
         unconfirmed = self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
             output_dir=str(out_dir),sw_exe=str(self.exe))
         with self.assertRaises(ValueError):
             build_command(unconfirmed)
 
-        # ���Ŀ¼�Ѵ����ҷǿ���ܾ���
+        # 输出目录已存在且非空则拒绝。
         out_dir.mkdir(parents=True)
         (out_dir/'x.SLDPRT').write_text('occupied')
         occupied = confirm_job(self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
@@ -147,7 +147,7 @@ class ProjectTests(unittest.TestCase):
 
     def test_roller_missing_dimensions_cannot_silently_generate(self):
         from roller_drawing import RollerDrawingVariant
-        variant = RollerDrawingVariant('�޶�����Ͳ',1,300,50,None,None,None,None,None,None,'synthetic')
+        variant = RollerDrawingVariant('无动力滚筒',1,300,50,None,None,None,None,None,None,'synthetic')
         args = sw_tool_cli.build_parser().parse_args(['--mode','roller','--input',str(self.source),'--out',str(self.root/'r.SLDPRT')])
         with patch('sw_tool_cli.analyze_cad_file',return_value=SimpleNamespace(roller_variants=(variant,))),patch('sw_tool_cli.generate_roller_part') as native,patch('sw_tool_cli.emit') as emit:
             self.assertEqual(sw_tool_cli.run_roller(args),3)
@@ -185,6 +185,17 @@ class ProjectTests(unittest.TestCase):
             build_package(source,package,'synthetic-test-revision',source_index=source_index)
             with zipfile.ZipFile(package) as bundle:
                 self.assertIn(matrix.as_posix(),bundle.namelist())
+
+    def test_only_registered_synthetic_dxf_fixtures_are_collected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source=Path(folder);files={}
+            for name in ('dxf_extract/examples/flat_pattern.dxf','dxf_extract/customer.dxf'):
+                path=source/name;path.parent.mkdir(parents=True,exist_ok=True)
+                data=b'synthetic fixture';path.write_bytes(data)
+                files[name]=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+            included=collect(source,{'files':files})
+            self.assertIn(Path('dxf_extract/examples/flat_pattern.dxf'),included)
+            self.assertNotIn(Path('dxf_extract/customer.dxf'),included)
 
     def test_app_import_has_no_desktop_or_cad_side_effect(self):
         spec = importlib.util.spec_from_file_location('project_desktop_import_test',ROOT/'app.py')
