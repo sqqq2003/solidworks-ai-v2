@@ -255,6 +255,95 @@
   - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
   - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。
 
+## P0-NATIVE-COM-20261025：SAFEARRAY、板/支架类型、轴保存后断连
+
+- 基线 `aca899b`（`dev/cloud-ai`）。本轮只做 Windows r2（证据 pin `36729775`，干净主机）对应的 P0。云端只跑离线/模拟。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
+- 板/支架：文档创建后约 75ms 失败，`com_error -2147352571`（DISP_E_TYPEMISMATCH），`argErr=8`。这与 `SelectByID2` 的 Callout 传了裸 `None` 的已知签名一致，发生在切除之前。Callout 改为 `VARIANT(VT_DISPATCH, None)`，坐标为 `0.0`。固体切除/拉伸的深度、拔模角、起始偏移改为 double；`NormalCut` 在固体路径显式为 False，钣金通孔仍为 True，不把钣金孔参数抄到固体。空零件第一刀拉伸先试 `Merge=False`。
+- 轴：保存已写出 `part.SLDPRT`，下一次 COM 是 `CO_E_OBJNOTCONNECTED`（-2147220995，中文「对象没有连接到服务器」）。该 HRESULT 原先不在断连表里，收尾会把它当成普通失败并可能继续 ExitApp；保存后的 `IModelDoc2` 也继续被用。现已列入断连，保存后先重新取 `ActiveDoc`，再只 `CloseDoc` 当前文档。断连记为 `post_save_com_disconnected`，不标通过，不 ExitApp，不杀进程。任务 STA 已初始化时，生成函数不再套一层 `CoUninitialize`。
+- 数学数组：沿用 PR #17 的 `src/sw_math_arrays.py`（`double_array` / `CreatePoint` / `CreateTransform`），草图点与装配 `CreateTransform` 走这一处。不另写一套编组。
+- 独占启动：仍要 `--sw-exe`、PID/句柄、空文档清单后才 claim。拒绝第二实例和 PID 不符的会话。没有 `P0_RETEST_ATTACH`，没有温复用验收路径。
+- 未做（P1，本 PR 不做）：Codex 风格 UI（PR #54）不合并；装配配合/干涉/运动和原生工程图仍是骨架；36 个 `pending_features` 不计通过；A01 几何跟随 / Pack and Go 不在本 PR；p248 钣金加深和释放槽另 PR，说明仍在 `docs/p0-sheet-metal.md`。
+- 建议 Gork 在干净单实例 Windows 上复测：plate、bracket、shaft，以及 owned-launch。看 SelectByID2 / 固体切除是否还报类型不匹配，shaft 保存后是否还能重开；断连必须是失败证据，不是通过。`two_bend` 上次是 `not_run`，等前一件收尾明确后再跑。
+- 离线：`python work/run_cloud_tests.py` → 524 ran / 520 passed / 0 failures / 0 errors / 4 skipped（原有 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。
+
+## P0-DDD-20261025：ExitApp 短轮询误失败、启动空白零件挡住写入
+
+- 实机证据来自用户机器 DDD（2026-10-25，Asia/Shanghai）。当时被测的是 `feat/codex-style-workbench` @ `48d5fb2`，SolidWorks 为 `D:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe`。修复加在本 P0 PR，不新开 PR，不合并。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
+- Bug A：`owned_keepopen` 探针里 spawn 和 claim 已经成功（`ownership=spawned_pid_and_live_handle`，pid 47828）。`finish_owned_session` 在 ExitApp 之后只等约 2 秒，就把状态写成 `left_open_for_recovery`，错误原文是 `owned process exit remains unobserved after exit request; preserve session`。之后 SLDWORKS.exe 已经退出，探针仍失败。这是观察窗口短于进程退出，不是 spawn 失败。
+- Bug A 的策略：保活优先，成功只要求 CloseDoc，不要求 ExitApp。上下文结束时不再把 `keep_application_open` 清掉后强制 ExitApp。若调用方明确要退出，ExitApp 之后的观察窗口改为 20 秒；退出码 0 记为 `process_exited_cleanly`，包括 wait 超时瞬间才写上的退出码。清单已空，或仍保持 `keep_application_open` 时，进程还活着也不让一次已经证明的 spawn 失败。退出码 139 及其他非 0 仍是 `process_exit_failed`。不调用 taskkill，不按进程名结束。
+- Bug B：钣金 `synthetic-s2-100x80.dxf`（厚度 2.5、半径 1、K 0.36，方向和折弯都是操作者给定的）owned spawn 成功（pid 69456），生成之前失败，原文 `document inventory unavailable; refusing writes`，写入被挡住。同一会话日志有 `skipped close of unowned document '零件2'`，这是 SolidWorks 启动时自己打开的默认空白零件。崩溃包只到 S0 `plan_locked`，`generation=null`，`bend_group_attempts=[]`。claim 当时清单是空的；空白零件出现后，枚举会因 count 和标题不一致而抛错，闸门把这一次抛错记成 `writes_blocked`。`零件2` 不在 owned 集合里，关闭被跳过。
+- Bug B 的修复：瞬态枚举（空标题、count 与链表不一致）先重试，仍失败才挡写入。只把本进程里未保存的默认名 `零件N` / `PartN`（可带未保存星号，不带扩展名）收进 owned，并在 CloseDoc 前把 UserControl 设为 True。用户文件（带扩展名、装配体、非默认名）仍然拒绝。第二实例和 PID 不符的会话仍然拒绝。COM 断连仍然是 `ComSessionDisconnected`，不 ExitApp。
+- 未把 Codex 风格 UI（PR #54）并进来。离线：`python3 work/run_cloud_tests.py` → 533 ran / 529 passed / 0 failures / 0 errors / 4 skipped（仍是原来的 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。Gork 复测时在干净单实例上再跑 owned-launch 探针和这张钣金；本次云端结果不能当作实机通过。
+
+## P0-DDD-RETEST-20261025：保存后的 COM 断连不再抹掉已生成零件
+
+- 复测机器仍是 DDD，干净单实例，分支 PR #57 head `1265353`，同一张 `synthetic-s2-100x80.dxf`（厚度 2.5、半径 1、K 0.36，方向已给定）。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
+- 已在实机上过去的两项：owned 探针 `session_verified`，`cleanup_status=left_open_keepalive`（pid 23136）。空白零件闸门已放过，原生生成真正跑起来了。
+- 仍失败的是生成之后：`part.SLDPRT` 已写出（约 79334 字节，S1 检查点里有 sha256），`SM3dBend` 已创建，`k_factor_readback=0.36`，`auto_bent=true`，折弯尝试 `completed`。总状态仍是 `failed`，错误是 `ComSessionDisconnected: owned COM server disconnected; writes refused; ExitApp was not called`。清理再报同一条断连。`sw_live_verified=false`。崩溃包只有 S0 和 S1，S2 重开没有开始。
+- 原因：保存之后的 CloseDoc / 保活再去 `require_model_write`，COM 代理已经断了。任务 STA 上再套一层 `CoUninitialize` 会把已经初始化的套间计数减掉。保存后的 `IModelDoc2` 也没有先换成 `ActiveDoc`。会话收尾把这次断连当成清理失败抛出，把已经成功的生成盖掉。
+- 本轮：钣金 `SaveAs3` 之后先 `rebind_model_after_save`。任务 STA 已初始化时，生成、重开、展开导出不再套 `CoUninitialize`。零件文件已经在磁盘上时，随后的 CloseDoc / 保活断连记为 `saved_com_disconnected_after_generation`（`modeling=saved_pending_reopen`，`passed=false`，`sw_live_verified=false`），不删零件，不调用 `abort`，不要求 ExitApp。保活清理遇到同一条断连时 `cleanup_error` 留空，证据放在 `cleanup_disconnect`，进程保持打开。没有零件文件的断连仍然是 `failed` 并清掉暂存。轴路径原来的「断连不是通过」不变。
+- 离线：`python3 work/run_cloud_tests.py` → 536 ran / 532 passed / 0 failures / 0 errors / 4 skipped（仍是原来的 DWG、LibreDWG、基线哈希跳过），跨进程锁通过。36 个 `pending_features` 不计通过。`sw_live=not_applicable_on_linux`。
+
+## P0-DDD-1265353：生成已成功时，收尾断连不得整单 failed
+
+- 证据仍是 DDD 在 `1265353` 上的那次实机。owned spawn 通过。钣金 `synthetic-s2-100x80.dxf` 已写出 `part.SLDPRT`，折弯 `completed`，`k_factor_readback=0.36`。执行末尾仍是 `failed` / `ComSessionDisconnected: owned COM server disconnected; writes refused; ExitApp was not called`。`sw_live_verified=false`。`native_acceptance` 仍是 `pending_windows_validation`。这次云端修改不是实机通过。
+- 断连发生在生成返回之后。S2 重开和 `abort` 都再调 `require_model_write`，对已经死去的 IDispatch 调 `GetProcessID`。清理再把同一条异常抛成总失败。
+- 本轮：`OwnedBinding.validate` 在 `CO_E_OBJNOTCONNECTED` 时按本任务 PID 重绑一次；重绑到的进程必须是同一个 PID。重绑失败且零件已保存时，流水线状态是 `partial_com_disconnect`（带 `warning`，`generation` 里仍有路径和 K），不是 `failed`，不删 SLDPRT，不调用 ExitApp。`finish_owned_session` 只 CloseDoc，源码里不再调用 `exit_owned_application`。断连后记 `cleanup_disconnect` 警告并离开上下文。没有零件文件的断连仍然失败并清暂存。
+- 板/支架切除仍走 `solid_blind_cut`（`NormalCut=False`，深度是 double）。钣金孔仍走 `sheet_metal_through_cut`（`NormalCut=True`）。轴保存后同样先重绑；文件已在磁盘时，收尾断连只记警告，不把返回值盖成异常。
+- 离线：`python3 work/run_cloud_tests.py` → 537 ran / 533 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。实机判据：同一张 DXF 再跑时，若零件和 K 已写出，随后断连的 `status` 应为 `partial_com_disconnect`，`generation.k_factor_readback` 仍是 0.36，清理不抛 `owned session cleanup failed`，且不调用 ExitApp。这仍不是实机通过。
+
+## P0-DDD-24e79dd：GetProcessID 裸 com_error 不得整单 failed
+
+- 证据是 DDD 在 `24e79dd` 上清场单实例复测。`part.SLDPRT` 78892 bytes，`SM3dBend` created，`k_factor_readback=0.36`，bend completed。随后 `binding.validate` / cleanup 的 `GetProcessID` 抛裸 `pywintypes.com_error (-2147220995, '对象没有连接到服务器', None, None)`。`execution.status=failed`，`error_kind=com_error`，`cleanup_status=left_open_for_recovery`，进程 exit 1。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 本轮：`GetProcessID` 与 `validate` 把 `CO_E_OBJNOTCONNECTED`（含 excepinfo 里的 HRESULT）收成 `ComSessionDisconnected`，不再把裸元组写进 `error` / `error_kind`。零件已在磁盘（或 SaveAs 之后 `stat` 被锁、但 `generation_saved` 已置位）时，流水线状态是 `saved_com_disconnected_after_generation`，`exit_code=0`，`generation` 仍带 K。不调用 `abort`，不删 staging。`finish_owned_session` 把这次清理记为同一状态和 `cleanup_disconnect`，`cleanup_error` 留空，上下文不抛。CLI `execution_exit_code` 对这个状态返回 0，不是 1。没有零件文件的断连仍然是 `failed`。
+- 离线：`python3 work/run_cloud_tests.py` → 541 ran / 537 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：同一张 `synthetic-s2-100x80.dxf`（t=2.5，r=1，k=0.36）。若零件和 K 已写出，随后 `GetProcessID` 断连的 `status` 应为 `saved_com_disconnected_after_generation`，`error_kind` 不是 `com_error`，`generation.k_factor_readback` 仍是 0.36，清理不抛 `owned session cleanup failed`，进程 exit 0。`passed` 与 `sw_live_verified` 仍为 false。这仍不是实机通过。
+
+## P0-DDD-96a228f：SaveAs 后 ActiveDoc MEMBERNOTFOUND 不得删零件
+
+- 证据是 DDD 在 `96a228f` 上清场单实例复测。owned cleanup 已是 `left_open_keepalive`，`keepalive_verified=true`，`cleanup_disconnect=null`。整单仍 `failed`。断点在 `generate_sheet_metal` → `rebind_model_after_save` → `_com_read(app, "ActiveDoc")`：`pywintypes.com_error (-2147352573, DISP_E_MEMBERNOTFOUND, 找不到成员)`。异常被包成 `SolidWorksGenerationError`，`generation=null`，`recovery=staging_removed`，磁盘上的 SLDPRT 被清掉。崩溃包里当时零件还有 78672 bytes。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：已包装的 `ISldWorks.ActiveDoc` 是属性。`_com_read` 把它当成方法调用，Invoke 种类不对，得到 `DISP_E_MEMBERNOTFOUND`。这不是 COM 断连，所以上一轮「断连才保留零件」的分支没有接住，暂存被删。
+- 本轮：`ActiveDoc` 只读属性，不走会触发 MEMBERNOTFOUND 的 callable 路径。读不到时按保存路径用 `GetOpenDocumentByName`，再 `OpenDoc6`，`ActiveDoc()` 只作最后兜底。SaveAs3 已写出非空 SLDPRT 时，重绑失败记 `partial_rebind_failed`（`generation` 不是 null，`exit_code=0`），不调用 `abort`，不做 `staging_removed`。真正的断连仍是 `saved_com_disconnected_after_generation`。轴路径同一套重绑，失败也不把已保存文件盖成异常。
+- 离线：`python3 work/run_cloud_tests.py` → 544 ran / 540 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：同一张 DXF。若 SaveAs3 已写出零件，随后 ActiveDoc `DISP_E_MEMBERNOTFOUND` 不得把 `generation` 记成 null，不得 `staging_removed`，`status` 应为 `partial_rebind_failed`（或重绑按路径成功后继续重开）。零件文件留在磁盘。这仍不是实机通过。
+
+## P0-DDD-3a927e8：轴保存后 cleanup/inventory 断连不得整单 exit 1
+
+- 证据是 DDD 在 `3a927e8` 上的抽测（`D:\工程\钣金导入\ddd_plate_shaft_20261026_001909\`）。钣金 live 已通过。板/支架 offline TYPEMISMATCH 契约通过，live `DISP_E_TYPEMISMATCH` 已被 helper 拦住（未见 -2147352571）。板 live `FeatureCut3` 仍可能返回 `None`，本轮不修。轴 offline 重绑/断连契约通过，但 live 保存后仍 `fail_repro`：零件已落盘约 61KB，清理/inventory COM 失败，CLI exit 1。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：轴 `generate_turned_part` 的收尾仍用 `_com_read` 读标题，且 `finally` 里的异常会盖掉已返回的路径。owned cleanup 只把已识别的 `CO_E_OBJNOTCONNECTED` 收成 `saved_com_disconnected_after_generation`。`document inventory unavailable; refusing writes` 不在该名单里，上下文抛 `owned session cleanup failed`，CLI `except Exception` 变成 exit 1。文件留在磁盘，但整单被记成失败。
+- 本轮：轴与钣金对齐。SaveAs 之后仍走 `rebind_model_after_save`（属性 ActiveDoc，再按路径 `GetOpenDocumentByName` / `OpenDoc6`）。CloseDoc 保活，不调用 ExitApp。文件已在磁盘时，重绑失败记 `partial_rebind_failed`，cleanup/inventory COM 失败记 `partial_com_disconnect`，`cleanup_error` 留空，不删 SLDPRT，不做 `staging_removed`。别人的未拥有文档仍然让清理失败。已分类的断连清理状态仍是 `saved_com_disconnected_after_generation`。轴 CLI 在「已保存且只是这类收尾失败」时 exit 0，事件里带路径和 `partial_com_disconnect`。`passed` 与 `sw_live_verified` 仍为 false。`post_save_status` 对断连仍不是建模通过。
+- 离线：`python3 work/run_cloud_tests.py` → 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：轴 live，SaveAs 已写出非空 SLDPRT 后，若只剩 cleanup/inventory COM 失败，进程 exit 0，`status` 为 `partial_com_disconnect`（或重绑失败时 `partial_rebind_failed`），路径保留，不调用 ExitApp。没有零件文件的断连仍然失败。这仍不是实机通过。
+
+## P0-DDD-9544d3c：轴 partial 验收已达到，本 PR 不再改保活
+
+- WorkBuddy 在 `9544d3c` 上确认 DDD live。轴：进程 exit 0，`status=partial_com_disconnect`，非空 SLDPRT 保留，未调用 ExitApp。这条验收达到。轴仍不是 `sw_live_verified`：partial 只表示保存后的清理断连不再整单失败，重开读特征之前不算建模通过。
+- 钣金 live 回归：pass，且 `sw_live_verified`。板 `FeatureCut3` 仍返回 `None`，留在本 PR 之外。f09/f15/f19 的旋转轮廓未闭合也不属于本 PR，不并入这条分支。
+- 本 PR 不再为这条轴保活验收改代码。合并前只补这份记录。离线计数仍是 `9544d3c` 上的 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped。
+
+## P0-DDD-D2：大装配文档遍历断连不得记成 inventory unavailable
+
+- 证据是 D2 工程图 live。只读打开约 86 个文档的装配后，`export_manufacturing` 里第二次 `open_document` 的 `GetFirstDocument` 遍历在 `model_document.GetType` 上报 `(-2147417848, '被调用的对象已与其客户端断开连接')`。这是 `RPC_E_DISCONNECTED`，不是 `CO_E_OBJNOTCONNECTED`（-2147220995）。随后 `save_reopen` → `close_document` → `require_model_write` → `validate` 变成 `document inventory unavailable; refusing writes`。没有出图。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：遍历中途断连被立刻抛出，或者断链被记成「枚举比 count 短」。`validate` 只在已识别的断连上重绑一次；认不出来就包成 `document inventory unavailable` 并挡住写入。大装配的文档代理可以在 `GetProcessID` 仍活着时单独死去。
+- 本轮：`_list_open_document_titles` 在 `GetTitle` / `GetType` / `GetNext` 断连或链条提前结束时抛 `InventoryWalkDisconnected`（`status=partial_inventory_disconnect`）。清单按本任务 PID 重绑并从头 `GetFirstDocument` 再走，最多三次。仍不安全则拒绝写入，错误保持这条状态，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 断连仍是 `saved_com_disconnected_after_generation` / `partial_com_disconnect`，路径保留。
+- 离线：`python3 work/run_cloud_tests.py` → 552 ran / 548 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：D2 只读大装配后，若只是遍历中的瞬时断连，重绑后清单能走完且文档都属于本任务，则 `require_model_write` 不再报 `document inventory unavailable`。重绑后仍断连则是 `partial_inventory_disconnect`，写入仍拒绝，不调用 ExitApp。别人的文档仍然失败。这仍不是实机通过。
+
+## P0-DDD-1806f74：GetNext 的 MEMBERNOTFOUND 也要重列
+
+- DDD 在 `1806f74` 上复测 D2/D3 仍失败。装配能打开（约 303 个组件），断在 `export_manufacturing` → `guard` → inventory `validate`。错误仍是 `document inventory unavailable; refusing writes`。根 HRESULT 是 `ModelDoc.GetNext` 的 `DISP_E_MEMBERNOTFOUND`（-2147352573），不在 `_DISCONNECT_HRESULTS` 里，所以 `InventoryWalkDisconnected` / 重绑没有发生。D4–D6 没有出图。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 本轮：清单先用 `GetDocuments`（数量对得上就不再走 `GetNext`）。`GetNext` / `GetFirstDocument` 先按属性读，调用失败再试 `IGetNext` / `IGetFirstDocument2`。中途 `DISP_E_MEMBERNOTFOUND` 与断连一样抛 `InventoryWalkDisconnected`，按本任务 PID 重绑并从头重列。仍失败则是 `partial_inventory_disconnect`，写入拒绝，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 语义不变。
+- 离线：`python3 work/run_cloud_tests.py` → 557 ran / 553 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：D2/D3 打开大装配后，`GetNext` 的 `DISP_E_MEMBERNOTFOUND` 应走 `GetDocuments` 或 `IGetNext`，否则重绑重列。成功且文档属于本任务时不再报 `document inventory unavailable`。仍不安全则 `partial_inventory_disconnect`，不调用 ExitApp。这仍不是实机通过。
+
+## P0-DDD-A2：租赁图纸带进来的引用文档不是别人的会话
+
+- DDD 在 COM `4344f22` + 出图 `6506153` 上复测 A2 1:10 / 1:20。标注路径已过（没有 `AttributeError GetAnnotation`，没有 `DISP_E_MEMBERNOTFOUND`）。SLDDRW 约 13.3MB 已写入。新失败是 `save_reopen` → `close_document` → `guard` → `validate`：`SessionOwnershipError: unowned documents appeared in task process`。没有 PDF / sheet_readback。`manufacturing_approved=false`。这不是生产图通过。证据在 `work/evidence/drawing-a2-6506153-owned/`。
+- 原因：工程图视图打开大装配时，SolidWorks 把引用的装配和零件加载进本任务进程。清单里只有 `NewDocument` 记下的图纸标题，引用文档被当成未拥有。
+- 本轮：已打开且仍在租约里的模型，若 `GetDependencies2` / `GetComponents` / 工程图 `GetViews` 点名了这些文档的路径，就把它们记入 `owned_docs`。未保存标题（如 `工程图1`）在 SaveAs 后改成文件名、且新文件的引用能解释其余打开文档时，标题跟着改。别人的文件、同名不同路径、以及已经保存的自有标题消失后被换成另一个模型，仍然 `unowned documents appeared`。启动时进程里已有的用户文档仍然拒绝。不在这里 CloseDoc 这些引用（图纸还要用）；会话结束时只对已拥有标题 CloseDoc。不调用 ExitApp。不碰 Embedding 孤儿。
+- 离线：`python3 work/run_cloud_tests.py` → 562 ran / 558 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：A2 `save_reopen` 能走完 close 和 readback，不再因引用文档报 `unowned documents appeared`。引用之外的文档仍然拒绝写入。这不是生产图通过。
+
 ## AI-GATEWAY-001：本机 AI 通用调用入口（2026-10-27）
 
 用户明确优先同一台 Windows 电脑上的 AI 客户端。新增 MCP stdio 与带令牌的回环 HTTP API，模型无关工具 Schema，共享现有 workbench 执行、确认摘要、原生会话所有权与恢复锁。默认关闭原生写入，主机配置 SLDWORKS.exe 才可启用；路径限制在指定工作目录；参数规划必须显式选择 GT-ZX / QL-5050PX。当前暴露能力发现、环境检查、钣金/滚筒/车件分析规划与生成、整机包围尺寸规划；装配制造专用接口尚未全部暴露。
@@ -272,3 +361,9 @@
 - Fixed repair CLI test fixture isolation; added pinned pypdf dependency. Simulation runner and marker-only lock probe use isolated test locks, leaving production writer exclusion unchanged.
 - Validation: Windows Python 3.14, 739 tests, 733 passed, 0 failures, 0 errors, 6 skipped; cross-process marker lock passed. Skips cover unavailable customer fixtures/LibreDWG, symlink support and platform-specific cases.
 - Linux 3.11/3.12 regression is triggered by push through cloud-tests.yml. This local result is not Linux or SolidWorks live acceptance. Quantity annotation binding and mechanical/drawing production acceptance remain open.
+
+## P0-COM-MERGE-62a9c91：接到最新 dev/cloud-ai
+
+- 原基线 `aca899b`，原 head `5e07963`。`dev/cloud-ai` 已到 `62a9c91`（Integrate desktop and sheet metal updates with isolated cloud regression）。逐提交 rebase 不安全：主干整合提交已经带上同一套会话、文档清单和引用文档所有权文件，重放 13 个旧补丁会碰到更新过的 COM 代码。本分支改为合并 `origin/dev/cloud-ai`。
+- 内容冲突只在 `TASK_STATUS.md`。两处 add/add 只是文件尾空白，已按主干收掉。`native_machine.math_transform` 自动合并出了重复定义，已删成与主干相同的一份。引用文档所有权、文档清单重列、CloseDoc-only 保活（不调用 ExitApp）与 `5e07963` 相同，且这些源文件与 `62a9c91` 一致。`GetNextView` / 比例锁定不在本 PR 另改，仍留给 PR #59。
+- Linux `python3 work/run_cloud_tests.py`（Python 3.12.3）：739 ran / 735 passed / 0 failures / 0 errors / 4 skipped。跨进程锁通过。`solidworks_live_verified=false`，`sw_live=not_run_simulation_only`。`manufacturing_approved` 未改为 true。这不是 Windows 实机通过，也不是生产图通过。
