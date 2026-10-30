@@ -150,10 +150,10 @@ def doctor() -> dict:
 
 
 def verify_baseline() -> dict:
-    baseline = read_json(ROOT / "baseline.json")
     if not (ROOT / "legacy").is_dir():
         return {"status": "unavailable", "scope": "copied_baseline_integrity",
                 "files_checked": 0, "reason": "Original CAD/source archive is intentionally absent from cloud"}
+    baseline = read_json(ROOT / "baseline.json")
     changes = []
     for row in baseline["files"]:
         path = ROOT / "legacy" / row["path"]
@@ -165,7 +165,7 @@ def verify_baseline() -> dict:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="A01 本机开发工作台：状态、环境、参数预检；不连接 CAD")
+    parser = argparse.ArgumentParser(description="A01 ������������̨��״̬������������Ԥ�죻������ CAD")
     parser.add_argument("command", choices=("status", "doctor", "plan", "verify-baseline"))
     parser.add_argument("--spec", type=Path, default=ROOT / "data" / "machine_spec.json")
     parser.add_argument("--out", type=Path)
