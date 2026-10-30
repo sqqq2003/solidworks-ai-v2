@@ -79,6 +79,10 @@ CHAIN_ROLLER_DIAMETER_RATIO = 0.67
 def _com_read(instance: Any, name: str) -> Any:
     """pywin32 may expose parameterless COM members as properties or methods."""
     value = getattr(instance, name)
+    # A returned pywin32 dispatch object can itself be callable; invoking it
+    # calls its default COM member instead of reading the requested property.
+    if '_oleobj_' in getattr(value, '__dict__', {}):
+        return value
     return value() if callable(value) else value
 
 
@@ -5455,13 +5459,14 @@ def generate_sheet_metal_with_relief_retries(
         try:
             result = generate_sheet_metal(*args, auto_bend=True,
                 relief_bend_indices=relief, relief_step=step, **common)
+            completed = not selected or result.auto_bent
             trace.append(dict(attempt=attempts, relief_step=step,
-                relief_extra_mm=rect_relief_extra_mm(step), status="completed" if result.auto_bent else "degraded",
+                relief_extra_mm=rect_relief_extra_mm(step), status="completed" if completed else "degraded",
                 completed_bend_count=result.bend_count, relief_slot_count=result.relief_slot_count,
                 bend_group_attempts=list(result.bend_group_attempts)))
             return replace(result, auto_bend_attempts=attempts, bend_attempts=tuple(trace),
                            auto_bend_failed_count=max(0, len(selected) - result.bend_count),
-                           auto_bend_abandoned=not result.auto_bent)
+                           auto_bend_abandoned=not completed)
         except (ComDisconnectedBendError, BendRejectedError) as error:
             failures += 1
             trace.append(dict(attempt=attempts, relief_step=step,

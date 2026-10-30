@@ -20,6 +20,21 @@ from solidworks_generator import (
 
 
 class ReliefRetryHangTests(unittest.TestCase):
+    def test_flat_part_with_no_bends_is_not_a_failed_bend(self):
+        flat=GenerationResult(Path('flat.SLDPRT'),0,0,0,(0,)*6,(0,)*6,auto_bent=False)
+        with patch('solidworks_generator.generate_sheet_metal',return_value=flat):
+            result=generate_sheet_metal_with_relief_retries(MagicMock(),0,(),2,1,90,'flat.SLDPRT')
+        self.assertFalse(result.auto_bend_abandoned)
+        self.assertEqual(result.auto_bend_failed_count,0)
+        self.assertEqual(result.bend_attempts[0]['status'],'completed')
+
+    def test_selected_bend_not_completed_is_still_degraded(self):
+        flat=GenerationResult(Path('flat.SLDPRT'),0,0,0,(0,)*6,(0,)*6,auto_bent=False)
+        with patch('solidworks_generator.generate_sheet_metal',return_value=flat):
+            result=generate_sheet_metal_with_relief_retries(MagicMock(),0,(0,),2,1,90,'flat.SLDPRT')
+        self.assertTrue(result.auto_bend_abandoned)
+        self.assertEqual(result.auto_bend_failed_count,1)
+
     def test_timed_out_falls_back_to_flat(self) -> None:
         analysis = MagicMock()
         flat = GenerationResult(

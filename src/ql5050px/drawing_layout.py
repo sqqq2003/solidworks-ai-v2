@@ -97,6 +97,7 @@ class DrawingAnnotationsMixin:
     """
     def annotate_drawing(self, drawing_path, notes, bom):
         from sw_api.win32com_backend import _import_sw_session
+        from sw_compat.annotation import set_annotation_position
         _import_sw_session().require_model_write()
         self.require_isolated_model(drawing_path)
         drawing = self.resolve_owned_model(drawing_path)
@@ -107,9 +108,7 @@ class DrawingAnnotationsMixin:
             obj = drawing.InsertNote(str(note))
             if obj is None:
                 raise RuntimeError("InsertNote failed")
-            annotation = obj.GetAnnotation()
-            if annotation is None or not annotation.SetPosition2(0.02,0.25-i*0.008,0):
-                raise RuntimeError("note positioning failed")
+            set_annotation_position(obj, 0.02, 0.25-i*0.008, 0)
             count+=1
         if bom:
             import pythoncom

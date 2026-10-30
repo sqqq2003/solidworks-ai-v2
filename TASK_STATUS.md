@@ -255,7 +255,6 @@
   - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
   - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。
 
-
 ## P0-NATIVE-COM-20261025：SAFEARRAY、板/支架类型、轴保存后断连
 
 - 基线 `aca899b`（`dev/cloud-ai`）。本轮只做 Windows r2（证据 pin `36729775`，干净主机）对应的 P0。云端只跑离线/模拟。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
@@ -344,3 +343,27 @@
 - 本轮：已打开且仍在租约里的模型，若 `GetDependencies2` / `GetComponents` / 工程图 `GetViews` 点名了这些文档的路径，就把它们记入 `owned_docs`。未保存标题（如 `工程图1`）在 SaveAs 后改成文件名、且新文件的引用能解释其余打开文档时，标题跟着改。别人的文件、同名不同路径、以及已经保存的自有标题消失后被换成另一个模型，仍然 `unowned documents appeared`。启动时进程里已有的用户文档仍然拒绝。不在这里 CloseDoc 这些引用（图纸还要用）；会话结束时只对已拥有标题 CloseDoc。不调用 ExitApp。不碰 Embedding 孤儿。
 - 离线：`python3 work/run_cloud_tests.py` → 562 ran / 558 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
 - 实机判据：A2 `save_reopen` 能走完 close 和 readback，不再因引用文档报 `unowned documents appeared`。引用之外的文档仍然拒绝写入。这不是生产图通过。
+
+## AI-GATEWAY-001：本机 AI 通用调用入口（2026-10-27）
+
+用户明确优先同一台 Windows 电脑上的 AI 客户端。新增 MCP stdio 与带令牌的回环 HTTP API，模型无关工具 Schema，共享现有 workbench 执行、确认摘要、原生会话所有权与恢复锁。默认关闭原生写入，主机配置 SLDWORKS.exe 才可启用；路径限制在指定工作目录；参数规划必须显式选择 GT-ZX / QL-5050PX。当前暴露能力发现、环境检查、钣金/滚筒/车件分析规划与生成、整机包围尺寸规划；装配制造专用接口尚未全部暴露。
+
+基于远端 aca899b，同步其他开发者新增模块后回归 525 项，521 通过、4 跳过、无错误失败，跨进程锁通过。接口新增测试 10 项；HTTP 回环真实请求和 MCP 子进程握手通过。Windows AI 客户端和 SolidWorks 原生操作仍待本机实测。配置见 docs/ai-client-integration.md。
+
+## AI 会话共存保护补充（2026-10-27）
+
+用户要求保留自己正在使用的 SW。核对现有独立实例所有权保护，不改变或放宽启动器。AI 能力查询新增 session_policy，明确拒绝接管用户会话、关闭用户文档和退出用户应用；隔离失败拒绝执行。新增双实例模拟清理及错误返回用户实例的回归，用户实例未被枚举或修改。完整回归 527 项，523 通过、4 跳过，跨进程锁通过。仅模拟证据；Windows 双实例和未保存文档实测待完成。独立进程不保证桌面焦点或资源完全隔离。
+
+
+## 2026-10-28 private cloud integration
+
+- Integrated desktop UI/logging, batch sheet conversion/resize, drawing and owned-session improvements from the local development snapshot. Customer CAD and local run logs are excluded.
+- Fixed repair CLI test fixture isolation; added pinned pypdf dependency. Simulation runner and marker-only lock probe use isolated test locks, leaving production writer exclusion unchanged.
+- Validation: Windows Python 3.14, 739 tests, 733 passed, 0 failures, 0 errors, 6 skipped; cross-process marker lock passed. Skips cover unavailable customer fixtures/LibreDWG, symlink support and platform-specific cases.
+- Linux 3.11/3.12 regression is triggered by push through cloud-tests.yml. This local result is not Linux or SolidWorks live acceptance. Quantity annotation binding and mechanical/drawing production acceptance remain open.
+
+## P0-COM-MERGE-62a9c91：接到最新 dev/cloud-ai
+
+- 原基线 `aca899b`，原 head `5e07963`。`dev/cloud-ai` 已到 `62a9c91`（Integrate desktop and sheet metal updates with isolated cloud regression）。逐提交 rebase 不安全：主干整合提交已经带上同一套会话、文档清单和引用文档所有权文件，重放 13 个旧补丁会碰到更新过的 COM 代码。本分支改为合并 `origin/dev/cloud-ai`。
+- 内容冲突只在 `TASK_STATUS.md`。两处 add/add 只是文件尾空白，已按主干收掉。`native_machine.math_transform` 自动合并出了重复定义，已删成与主干相同的一份。引用文档所有权、文档清单重列、CloseDoc-only 保活（不调用 ExitApp）与 `5e07963` 相同，且这些源文件与 `62a9c91` 一致。`GetNextView` / 比例锁定不在本 PR 另改，仍留给 PR #59。
+- Linux `python3 work/run_cloud_tests.py`（Python 3.12.3）：739 ran / 735 passed / 0 failures / 0 errors / 4 skipped。跨进程锁通过。`solidworks_live_verified=false`，`sw_live=not_run_simulation_only`。`manufacturing_approved` 未改为 true。这不是 Windows 实机通过，也不是生产图通过。

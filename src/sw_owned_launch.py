@@ -63,7 +63,11 @@ def _native_candidate(pid):
             name = moniker.GetDisplayName(pythoncom.CreateBindCtx(0), None).casefold()
             if 'solidworks' not in name and 'sldworks' not in name:
                 continue
-            app = win32com.client.Dispatch(rot.GetObject(moniker))
+            # ROT returns IUnknown. Query IDispatch before wrapping; otherwise
+            # pywin32 calls GetTypeInfo on PyIUnknown and silently misses every
+            # secondary instance whenever GetActiveObject points at another PID.
+            dispatch = rot.GetObject(moniker).QueryInterface(pythoncom.IID_IDispatch)
+            app = win32com.client.Dispatch(dispatch)
             if _read_pid(app) == pid:
                 return app
         except Exception:

@@ -433,6 +433,108 @@ class AnalyzeCadTests(unittest.TestCase):
 
             self.assertEqual(len(result.bend_lines), 1)
 
+    def test_detects_red_bend_on_annotation_layer(self) -> None:
+        # SolidWorks 转 DXF 会把折弯线丢进「标注」这类兜底图层，颜色保留为红。
+        # 这些红色孤立开放线仍是折弯线，不能因为图层名含「标注」被误杀。
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "annotation-layer-bend.dxf"
+            doc = ezdxf.new("R2010")
+            doc.units = units.MM
+            doc.layers.new("标注", dxfattribs={"color": 7})
+            modelspace = doc.modelspace()
+            # 一块平板，两端各一条红色折弯线（落在「标注」图层）。
+            modelspace.add_lwpolyline(
+                [(0, 0), (500, 0), (500, 100), (0, 100)],
+                close=True,
+                dxfattribs={"layer": "标注", "color": 256},
+            )
+            modelspace.add_line(
+                (20, 50),
+                (45, 50),
+                dxfattribs={"layer": "标注", "color": 1},
+            )
+            modelspace.add_line(
+                (455, 50),
+                (480, 50),
+                dxfattribs={"layer": "标注", "color": 1},
+            )
+            doc.saveas(path)
+
+            result = analyze_dxf(path)
+
+            self.assertEqual(len(result.bend_lines), 2)
+            lengths = sorted(
+                round(math.dist(bend.points[0], bend.points[-1]), 6)
+                for bend in result.bend_lines
+            )
+            self.assertEqual(lengths, [25.0, 25.0])
+
+    def test_ignores_red_closed_text_frame_on_annotation_layer(self) -> None:
+        # 文字框（图例框）是四段红色直线首尾相接的闭合矩形，虽在「标注」图层
+        # 且为红色，也不能当折弯线；孤立折弯线才应被识别。
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "annotation-text-frame.dxf"
+            doc = ezdxf.new("R2010")
+            doc.units = units.MM
+            doc.layers.new("标注", dxfattribs={"color": 7})
+            modelspace = doc.modelspace()
+            # 一个零件
+            modelspace.add_lwpolyline(
+                [(0, 0), (500, 0), (500, 100), (0, 100)],
+                close=True,
+                dxfattribs={"layer": "标注", "color": 256},
+            )
+            # 红色闭合文字框（图例框），四段红线首尾相接。
+            frame = [
+                (600, 0),
+                (700, 0),
+                (700, 40),
+                (600, 40),
+            ]
+            for index, point in enumerate(frame):
+                modelspace.add_line(
+                    point,
+                    frame[(index + 1) % len(frame)],
+                    dxfattribs={"layer": "标注", "color": 1},
+                )
+            # 真正的折弯线：横穿零件的孤立红线。
+            modelspace.add_line(
+                (20, 50),
+                (45, 50),
+                dxfattribs={"layer": "标注", "color": 1},
+            )
+            doc.saveas(path)
+
+            result = analyze_dxf(path)
+
+            self.assertEqual(len(result.bend_lines), 1)
+            self.assertAlmostEqual(
+                math.dist(result.bend_lines[0].points[0], result.bend_lines[0].points[-1]),
+                25.0,
+            )
+
+    def test_ignores_collinear_duplicate_red_lines_as_frame(self) -> None:
+        # 共线重复画出的折弯线不是闭合环，不能被当成文字框排除。
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "collinear-duplicate-red.dxf"
+            doc = ezdxf.new("R2010")
+            doc.units = units.MM
+            doc.layers.new("标注", dxfattribs={"color": 7})
+            modelspace = doc.modelspace()
+            modelspace.add_lwpolyline(
+                [(0, 0), (500, 0), (500, 100), (0, 100)],
+                close=True,
+                dxfattribs={"layer": "标注", "color": 256},
+            )
+            # 同一条折弯线画了两遍（共线重复）。
+            modelspace.add_line((20, 50), (45, 50), dxfattribs={"layer": "标注", "color": 1})
+            modelspace.add_line((20, 50), (45, 50), dxfattribs={"layer": "标注", "color": 1})
+            doc.saveas(path)
+
+            result = analyze_dxf(path)
+
+            self.assertEqual(len(result.bend_lines), 1)
+
     def test_ignores_dash_dot_center_lines(self) -> None:
         # 红色点划线是中心线，不能因为线型名含有 DASH 就被当成折弯线。
         with TemporaryDirectory() as directory:
