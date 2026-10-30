@@ -139,6 +139,9 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 if table is None: raise RuntimeError('native linked BOM table failed')
                 from solidworks_generator import _as_interface,ensure_solidworks_typelib
                 native_table=_as_interface(ensure_solidworks_typelib(),table,'ITableAnnotation')
+                if task.get('auto_layout'):
+                    width=sum(float(native_table.GetColumnWidth(c))*1000 for c in range(int(read_member(native_table,'ColumnCount'))))
+                    task['bom_position_mm']=[task['width_mm']-10-width,task['height_mm']-30]
                 if task.get('bom_position_mm'):
                     x,y=[finite(v)/1000 for v in task['bom_position_mm']]
                     set_annotation_position(native_table,x,y,0)

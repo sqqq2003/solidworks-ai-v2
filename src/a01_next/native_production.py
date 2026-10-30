@@ -2,6 +2,7 @@
 from pathlib import Path
 import base64
 import math
+import uuid
 from ..ql5050px.native_drawings import ManufacturingDriver
 from ..ql5050px.native_machine import read_member
 
@@ -12,6 +13,34 @@ def feature_error(feature):
     warning=VARIANT(pythoncom.VT_BYREF|pythoncom.VT_BOOL,False)
     result=feature.GetErrorCode2(warning)
     return int(result[0] if isinstance(result,tuple) else result)
+
+
+def activate_configuration(model, expected):
+    """Avoid switching when already active; require native readback either way."""
+    from solidworks_generator import _com_read
+    if not isinstance(expected,str) or not expected:
+        raise ValueError('explicit configuration required')
+    def current():
+        manager=_com_read(model,'ConfigurationManager')
+        configuration=_com_read(manager,'ActiveConfiguration')
+        return str(_com_read(configuration,'Name'))
+    if current()==expected:
+        return
+    if not model.ShowConfiguration2(expected):
+        raise RuntimeError('configuration switch failed: '+expected)
+    if current()!=expected:
+        raise RuntimeError('active configuration readback mismatch: '+expected)
+
+
+def find_named_feature(model, name):
+    """FeatureByName belongs to IPartDoc/IAssemblyDoc, not IModelDoc2."""
+    from solidworks_generator import _as_interface,_com_read,ensure_solidworks_typelib
+    kind=int(_com_read(model,'GetType'))
+    interface={1:'IPartDoc',2:'IAssemblyDoc'}.get(kind)
+    if interface is None:
+        raise RuntimeError('feature lookup requires a part or assembly')
+    typed=_as_interface(ensure_solidworks_typelib(),model,interface)
+    return typed.FeatureByName(name)
 
 
 class A01ProductionDriver(ManufacturingDriver):
@@ -28,9 +57,12 @@ class A01ProductionDriver(ManufacturingDriver):
             raise RuntimeError('work-copy save unverified')
 
     def apply_mapped_dimensions(self,edits,copies):
+        from app_logging import get_journal
+        journal=get_journal()
         self.guard()
         # Resolve every physical target before the first dimension write.
         targets=[]
+        observations=[]
         opened={}
         try:
             for edit in edits:
@@ -39,32 +71,63 @@ class A01ProductionDriver(ManufacturingDriver):
                 self.owned_path(path)
                 if path not in opened: opened[path]=self.open_document(path)
                 model=opened[path]
-                if not model.ShowConfiguration2(edit['configuration']): raise RuntimeError('mapped configuration missing')
-                if model.FeatureByName(edit['feature']) is None: raise RuntimeError('mapped feature missing')
+                activate_configuration(model,edit['configuration'])
+                if find_named_feature(model,edit['feature']) is None: raise RuntimeError('mapped feature missing')
                 dimension=model.Parameter(edit['dimension'])
                 if dimension is None: raise RuntimeError('mapped dimension missing')
-                targets.append((model,dimension,edit,path))
-            for model,dimension,edit,path in targets:
-                if not model.ShowConfiguration2(edit['configuration']): raise RuntimeError('configuration switch failed')
+                before=float(dimension.SystemValue)
+                if not math.isfinite(before):raise RuntimeError('mapped dimension before value is not finite')
+                targets.append((model,dimension,edit,path,uuid.uuid4().hex,before))
+            for model,dimension,edit,path,step_id,before in targets:
+                activate_configuration(model,edit['configuration'])
                 value=edit['value']/1000 if edit['unit']=='mm' else math.radians(edit['value']) if edit['unit']=='deg' else edit['value']
-                if int(dimension.SetSystemValue3(value,3,[edit['configuration']]))!=0:
-                    raise RuntimeError('native dimension write refused')
-                if not math.isclose(float(dimension.SystemValue),value,rel_tol=1e-9,abs_tol=1e-9):
-                    raise RuntimeError('mapped dimension readback mismatch')
+                unit_si='m' if edit['unit']=='mm' else 'rad' if edit['unit']=='deg' else edit['unit']
+                journal.record('dimension_change_started',step_id=step_id,parameter=edit['parameter'],
+                    work_copy=str(path),configuration=edit['configuration'],unit_si=unit_si,
+                    before_value_si=before,target_value_si=value)
+                try:
+                    if int(dimension.SetSystemValue3(value,3,[edit['configuration']]))!=0:
+                        raise RuntimeError('native dimension write refused')
+                    after=float(dimension.SystemValue)
+                    if not math.isfinite(after) or not math.isclose(after,value,rel_tol=1e-9,abs_tol=1e-9):
+                        raise RuntimeError('mapped dimension readback mismatch')
+                except Exception as error:
+                    journal.exception('dimension_change_failed',error,step_id=step_id,parameter=edit['parameter'])
+                    raise
+                journal.record('dimension_change_readback',step_id=step_id,after_value_si=after,
+                               geometry_verified=False,production_approved=False)
+                observations.append({'step_id':step_id,'before_value_si':before,'after_value_si':after,
+                                     'target_value_si':value,'unit_si':unit_si})
             for model in opened.values(): self._save(model)
+        except Exception as error:
+            journal.exception('dimension_change_batch_failed',error,
+                              completed_steps=[item['step_id'] for item in observations])
+            raise
         finally:
             for model in opened.values(): self.close_document(model)
         evidence=[]
-        for edit in edits:
-            model=self.open_document(copies[edit['document']],edit['configuration'])
+        for edit,observation in zip(edits,observations):
+            model=None
             try:
-                if not model.ShowConfiguration2(edit['configuration']): raise RuntimeError('reopen configuration failed')
+                model=self.open_document(copies[edit['document']],edit['configuration'])
+                activate_configuration(model,edit['configuration'])
                 dimension=model.Parameter(edit['dimension'])
                 value=edit['value']/1000 if edit['unit']=='mm' else math.radians(edit['value']) if edit['unit']=='deg' else edit['value']
-                if dimension is None or not math.isclose(float(dimension.SystemValue),value,rel_tol=1e-9,abs_tol=1e-9):
+                readback=float(dimension.SystemValue) if dimension is not None else float('nan')
+                if not math.isfinite(readback) or not math.isclose(readback,value,rel_tol=1e-9,abs_tol=1e-9):
                     raise RuntimeError('saved mapped dimension readback mismatch')
-                evidence.append(dict(parameter=edit['parameter'],value_si=value,reopened=True))
-            finally:self.close_document(model)
+                journal.record('dimension_change_reopened',step_id=observation['step_id'],
+                               parameter=edit['parameter'],reopened_value_si=readback,
+                               geometry_verified=False,production_approved=False)
+                evidence.append(dict(parameter=edit['parameter'],value_si=value,reopened=True,
+                                     reopened_value_si=readback,**observation,
+                                     geometry_verified=False,production_approved=False))
+            except Exception as error:
+                journal.exception('dimension_change_reopen_failed',error,step_id=observation['step_id'],
+                                  parameter=edit['parameter'])
+                raise
+            finally:
+                if model is not None:self.close_document(model)
         return evidence
 
     def apply_persistent_mates(self,path,configuration,mates,registry):
@@ -81,7 +144,7 @@ class A01ProductionDriver(ManufacturingDriver):
             assembly=_as_interface(ensure_solidworks_typelib(),model,'IAssemblyDoc')
             refs={r['id']:r for r in registry['references']}
             # Creating new mates only; never delete or replace an existing feature.
-            if any(model.FeatureByName(m['id']) is not None for m in mates):
+            if any(find_named_feature(model,m['id']) is not None for m in mates):
                 raise RuntimeError('mate id already exists; explicit edit workflow required')
             objects={}
             for name in {x for m in mates for x in m['references']}:

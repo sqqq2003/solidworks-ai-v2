@@ -28,6 +28,7 @@ from profile_selection import (
 )
 from sw_session import (
     SW_SESSION_CALL_TIMEOUT_SEC,
+    InventoryWalkDisconnected,
     SessionOwnershipError,
     SwCallTimeoutError,
     call_with_watchdog,
@@ -78,6 +79,10 @@ CHAIN_ROLLER_DIAMETER_RATIO = 0.67
 def _com_read(instance: Any, name: str) -> Any:
     """pywin32 may expose parameterless COM members as properties or methods."""
     value = getattr(instance, name)
+    # A returned pywin32 dispatch object can itself be callable; invoking it
+    # calls its default COM member instead of reading the requested property.
+    if '_oleobj_' in getattr(value, '__dict__', {}):
+        return value
     return value() if callable(value) else value
 
 
@@ -333,25 +338,297 @@ def _set_sw_automation_mode(solidworks: Any, enabled: bool) -> None:
 _auto_bend_deadline: float | None = None
 
 
-def _list_open_document_titles(application: Any) -> list[str]:
-    """Best-effort open-document titles. Raises if the session cannot be listed."""
+_INVENTORY_METHOD_FALLBACK = {
+    "GetNext": ("IGetNext",),
+    "GetFirstDocument": ("IGetFirstDocument2",),
+}
 
+
+def _inventory_walk_error(name: str, cause: BaseException | None = None) -> InventoryWalkDisconnected:
+    error = InventoryWalkDisconnected(
+        "document inventory walk disconnected during "
+        + name
+        + "; writes refused; ExitApp was not called"
+    )
+    if cause is not None:
+        raise error from cause
+    return error
+
+
+def _invoke_inventory_member(target: Any, attr: str) -> Any:
+    """Read one inventory member. Propget first; do not call a property result."""
+    descriptor = getattr(type(target), attr, None)
+    if isinstance(descriptor, property):
+        got = descriptor.fget(target)
+        if callable(got):
+            raise _inventory_walk_error(attr)
+        return got
+    if not hasattr(target, attr):
+        raise AttributeError(attr)
+    value = getattr(target, attr)
+    if not callable(value):
+        return value
+    return value()
+
+
+def _read_inventory_member(target: Any, name: str, *, required: bool) -> Any:
+    """Read ``name``, then the method form (``IGetNext``) when the propget is missing.
+
+    ``DISP_E_MEMBERNOTFOUND`` on ``ModelDoc.GetNext`` is the wrong invoke kind
+    or a dead document pointer. It is not a foreign document. The caller rebinds
+    this PID and walks again. ``GetType`` may be absent.
+    """
+    from part_verification import is_member_not_found
+
+    last: BaseException | None = None
+    for attr in (name,) + _INVENTORY_METHOD_FALLBACK.get(name, ()):
+        try:
+            return _invoke_inventory_member(target, attr)
+        except AttributeError:
+            continue
+        except InventoryWalkDisconnected:
+            raise
+        except Exception as exc:
+            last = exc
+            if is_member_not_found(exc) or is_com_server_disconnect(exc):
+                continue
+            raise
+    if last is not None and (is_member_not_found(last) or is_com_server_disconnect(last)):
+        if not required and is_member_not_found(last) and not is_com_server_disconnect(last):
+            return None
+        raise _inventory_walk_error(name, last)
+    if last is not None:
+        raise last
+    if not required:
+        return None
+    raise _inventory_walk_error(name)
+
+
+def _titles_from_document_array(application: Any, count: int) -> list[str] | None:
+    """Use ``GetDocuments`` when it returns the full open set. Skip the GetNext chain."""
+    has_array = isinstance(getattr(type(application), "GetDocuments", None), property) or hasattr(
+        application, "GetDocuments"
+    )
+    if not has_array:
+        return None
+    raw = _read_inventory_member(application, "GetDocuments", required=False)
+    if not isinstance(raw, (list, tuple)):
+        return None
+    if len(raw) != count:
+        return None
     titles: list[str] = []
-    count = int(_com_read(application, "GetDocumentCount"))
-    if count < 0 or count > 10000:
-        raise SessionOwnershipError("invalid document count")
-    current = _com_read(application, "GetFirstDocument")
-    for _ in range(count):
-        if current is None:
-            raise SessionOwnershipError("document enumeration shorter than count")
-        title = _com_read(current, "GetTitle")
+    for document in raw:
+        title = _read_inventory_member(document, "GetTitle", required=True)
         if not title or str(title) in titles:
             raise SessionOwnershipError("document inventory has empty/ambiguous titles")
         titles.append(str(title))
-        current = _com_read(current, "GetNext")
+    return titles
+
+
+def _list_open_document_titles(application: Any) -> list[str]:
+    """Open-document titles. A mid-walk drop is re-raised for a full rewalk.
+
+    A large readonly assembly can fail ``GetNext`` with ``DISP_E_MEMBERNOTFOUND``
+    or drop a document proxy. That is not a shorter count and is not a foreign
+    document. ``GetDocuments`` or ``IGetNext`` is tried before the caller rebinds
+    this task's PID and starts again at ``GetFirstDocument``.
+    """
+
+    count = int(_read_inventory_member(application, "GetDocumentCount", required=True))
+    if count < 0 or count > 10000:
+        raise SessionOwnershipError("invalid document count")
+    via_array = _titles_from_document_array(application, count)
+    if via_array is not None:
+        return via_array
+    current = _read_inventory_member(application, "GetFirstDocument", required=True)
+    titles: list[str] = []
+    for _ in range(count):
+        if current is None:
+            raise _inventory_walk_error("GetNext")
+        title = _read_inventory_member(current, "GetTitle", required=True)
+        _read_inventory_member(current, "GetType", required=False)
+        if not title or str(title) in titles:
+            raise SessionOwnershipError("document inventory has empty/ambiguous titles")
+        titles.append(str(title))
+        current = _read_inventory_member(current, "GetNext", required=True)
     if current is not None:
         raise SessionOwnershipError("document enumeration longer than count")
     return titles
+
+
+def _ordered_open_documents(application: Any) -> list[Any]:
+    """Document objects in the same order as ``_list_open_document_titles``."""
+    count = int(_read_inventory_member(application, "GetDocumentCount", required=True))
+    if count < 0 or count > 10000:
+        raise SessionOwnershipError("invalid document count")
+    has_array = isinstance(getattr(type(application), "GetDocuments", None), property) or hasattr(
+        application, "GetDocuments"
+    )
+    if has_array:
+        raw = _read_inventory_member(application, "GetDocuments", required=False)
+        if isinstance(raw, (list, tuple)) and len(raw) == count:
+            return list(raw)
+    current = _read_inventory_member(application, "GetFirstDocument", required=True)
+    documents: list[Any] = []
+    for _ in range(count):
+        if current is None:
+            raise _inventory_walk_error("GetNext")
+        documents.append(current)
+        current = _read_inventory_member(current, "GetNext", required=True)
+    if current is not None:
+        raise SessionOwnershipError("document enumeration longer than count")
+    return documents
+
+
+def _dependency_strings(raw: Any) -> list[str]:
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        return [raw] if raw.strip() else []
+    try:
+        values = list(raw)
+    except TypeError:
+        text = str(raw).strip()
+        return [text] if text else []
+    found: list[str] = []
+    for item in values:
+        if item is None:
+            continue
+        text = str(item).strip()
+        if text:
+            found.append(text)
+    return found
+
+
+def _fatal_dependency_error(exc: BaseException) -> bool:
+    return isinstance(exc, InventoryWalkDisconnected) or is_com_server_disconnect(exc)
+
+
+def _call_dependency_method(document: Any, name: str, args: tuple[Any, ...]) -> list[str] | None:
+    """Call one dependency API. ``None`` means try the next one."""
+    from part_verification import is_member_not_found
+
+    member = getattr(document, name, None)
+    descriptor = getattr(type(document), name, None)
+    if isinstance(descriptor, property):
+        try:
+            member = descriptor.fget(document)
+        except Exception as exc:
+            if _fatal_dependency_error(exc):
+                raise
+            return None
+    if not callable(member):
+        return None
+    try:
+        raw = member(*args) if args else member()
+    except TypeError:
+        try:
+            raw = member()
+        except Exception as exc:
+            if _fatal_dependency_error(exc):
+                raise
+            return None
+    except Exception as exc:
+        if _fatal_dependency_error(exc):
+            raise
+        if is_member_not_found(exc):
+            return None
+        return None
+    return _dependency_strings(raw)
+
+
+def _component_dependency_strings(document: Any) -> list[str]:
+    member = getattr(document, "GetComponents", None)
+    if not callable(member):
+        return []
+    try:
+        raw = member(False)
+    except TypeError:
+        try:
+            raw = member()
+        except Exception as exc:
+            if _fatal_dependency_error(exc):
+                raise
+            return []
+    except Exception as exc:
+        if _fatal_dependency_error(exc):
+            raise
+        return []
+    found: list[str] = []
+    for component in list(raw or []):
+        path = _read_inventory_member(component, "GetPathName", required=False)
+        name = _read_inventory_member(component, "Name2", required=False)
+        if not name:
+            name = _read_inventory_member(component, "GetTitle", required=False)
+        if path:
+            found.append(str(path))
+        if name:
+            found.append(str(name))
+    return found
+
+
+def _drawing_view_dependency_strings(document: Any) -> list[str]:
+    member = getattr(document, "GetViews", None)
+    if not callable(member):
+        return []
+    try:
+        sheets = member()
+    except Exception as exc:
+        if _fatal_dependency_error(exc):
+            raise
+        return []
+    found: list[str] = []
+    for sheet in list(sheets or []):
+        views = sheet if isinstance(sheet, (list, tuple)) else (sheet,)
+        for view in views:
+            if view is None:
+                continue
+            path = _read_inventory_member(view, "GetReferencedModelName", required=False)
+            if path:
+                found.append(str(path))
+    return found
+
+
+def _document_dependency_strings(document: Any) -> list[str]:
+    for name, args in (
+        ("GetDependencies2", (True, True, True)),
+        ("GetDependencies", ()),
+    ):
+        found = _call_dependency_method(document, name, args)
+        if found:
+            return found
+    found = _component_dependency_strings(document)
+    found.extend(_drawing_view_dependency_strings(document))
+    return found
+
+
+def open_document_facts(application: Any) -> list[tuple[str, str, tuple[str, ...]]]:
+    """Open documents plus the reference tokens each one reports.
+
+    Titles match ``_list_open_document_titles``. Paths and dependencies are
+    optional. A disconnect while reading them is the same inventory failure.
+    ``DISP_E_MEMBERNOTFOUND`` on a dependency method tries the next method.
+    Tokens are the raw ``GetDependencies2`` name/path pairs, component paths,
+    or drawing-view model paths. The caller decides which of those belong to
+    the leased document.
+    """
+    documents = _ordered_open_documents(application)
+    facts: list[tuple[str, str, tuple[str, ...]]] = []
+    seen: list[str] = []
+    for document in documents:
+        title = _read_inventory_member(document, "GetTitle", required=True)
+        if not title or str(title) in seen:
+            raise SessionOwnershipError("document inventory has empty/ambiguous titles")
+        seen.append(str(title))
+        path = _read_inventory_member(document, "GetPathName", required=False)
+        facts.append(
+            (
+                str(title),
+                "" if path is None else str(path),
+                tuple(_document_dependency_strings(document)),
+            )
+        )
+    return facts
 
 
 def _connect_task_solidworks(lease, win32com: Any, pythoncom: Any):
@@ -5182,13 +5459,14 @@ def generate_sheet_metal_with_relief_retries(
         try:
             result = generate_sheet_metal(*args, auto_bend=True,
                 relief_bend_indices=relief, relief_step=step, **common)
+            completed = not selected or result.auto_bent
             trace.append(dict(attempt=attempts, relief_step=step,
-                relief_extra_mm=rect_relief_extra_mm(step), status="completed" if result.auto_bent else "degraded",
+                relief_extra_mm=rect_relief_extra_mm(step), status="completed" if completed else "degraded",
                 completed_bend_count=result.bend_count, relief_slot_count=result.relief_slot_count,
                 bend_group_attempts=list(result.bend_group_attempts)))
             return replace(result, auto_bend_attempts=attempts, bend_attempts=tuple(trace),
                            auto_bend_failed_count=max(0, len(selected) - result.bend_count),
-                           auto_bend_abandoned=not result.auto_bent)
+                           auto_bend_abandoned=not completed)
         except (ComDisconnectedBendError, BendRejectedError) as error:
             failures += 1
             trace.append(dict(attempt=attempts, relief_step=step,

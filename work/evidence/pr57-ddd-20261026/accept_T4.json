@@ -1,0 +1,29 @@
+{
+  "task": "T4 板·支架 TYPEMISMATCH 抽测 @ 9544d3c",
+  "owner": "WorkBuddy",
+  "sha": "9544d3ca27b5f4b255b60a3eab3061af8a930fc2",
+  "probe": "probe_plate_bracket_typemismatch.py",
+  "out": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308",
+  "python": "C:/Users/yue/AppData/Local/Python/pythoncore-3.14-64/python.exe (3.14.8)",
+  "exit_code_probe": 1,
+  "verdict": "partial",
+  "verdict_reason": "TYPEMISMATCH 未再现（硬化目标达成）：helper 在 Python 层用 TypeError('depth_m must be a finite float') 拒绝字符串深度，不再把 str 传入 COM。但 solid_blind_cut(fm, 0.01) 返回 None（FeatureCut3 静默未创建实体切割特征，未抛 TYPEMISMATCH）。零件正常保存（59121 字节）。",
+  "acceptance": {
+    "extrude_ok": true,
+    "extrude_merge": false,
+    "cut_sketch": "草图2",
+    "cut_sketch_type": "ProfileFeature",
+    "helper_rejects_str": "TypeError:depth_m must be a finite float",
+    "helper_python_level_rejects_str": true,
+    "solid_blind_cut_with_float": {"ok": false, "name": null},
+    "featurecut3_created": false,
+    "featurecut3_none": true,
+    "TYPEMISMATCH_repros": false,
+    "part_saved": true,
+    "part_bytes": 59121,
+    "sw_live_verified": false,
+    "probe_status": "partial"
+  },
+  "analysis": "PR#57 硬化（double 参数 r2 不匹配 / TYPEMISMATCH 防御）在 T4 抽测中确认有效：字符串深度被 Python 层 TypeError 拦截，未再触发 COM TYPEMISMATCH。FeatureCut3 用 float 深度调用返回 None（未抛异常），实体切割特征未创建，属独立于 TYPEMISMATCH 的 FeatureCut3 选中/返回语义问题，本轮未深究。",
+  "cleanup": "只 CloseDoc，未 ExitApp / 未 taskkill"
+}

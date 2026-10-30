@@ -255,7 +255,6 @@
   - #38 基线漂移：recovery-guards 在 dev 上实测 8 项、基线期望 7 项；来源已查清——def70f3（`def70f318`）新增 `test_windows_probe_never_sends_a_signal` 一项；修正以 Draft PR 另行送审，不手改数字凑通过。
   - Issue #25 仍 open，关闭与否待用户/Gork 定；Gork 42 项统一验收总表（`offline_verify/examples/WINDOWS_ACCEPTANCE_PACK.md`）仍待 Windows 实机执行；合并 ≠ 实机验证。
 
-
 ## P0-NATIVE-COM-20261025：SAFEARRAY、板/支架类型、轴保存后断连
 
 - 基线 `aca899b`（`dev/cloud-ai`）。本轮只做 Windows r2（证据 pin `36729775`，干净主机）对应的 P0。云端只跑离线/模拟。`native_acceptance` 仍是 `pending_windows_validation`。没有 SolidWorks 实机通过。
@@ -321,3 +320,50 @@
 - WorkBuddy 在 `9544d3c` 上确认 DDD live。轴：进程 exit 0，`status=partial_com_disconnect`，非空 SLDPRT 保留，未调用 ExitApp。这条验收达到。轴仍不是 `sw_live_verified`：partial 只表示保存后的清理断连不再整单失败，重开读特征之前不算建模通过。
 - 钣金 live 回归：pass，且 `sw_live_verified`。板 `FeatureCut3` 仍返回 `None`，留在本 PR 之外。f09/f15/f19 的旋转轮廓未闭合也不属于本 PR，不并入这条分支。
 - 本 PR 不再为这条轴保活验收改代码。合并前只补这份记录。离线计数仍是 `9544d3c` 上的 548 ran / 544 passed / 0 failures / 0 errors / 4 skipped。
+
+## P0-DDD-D2：大装配文档遍历断连不得记成 inventory unavailable
+
+- 证据是 D2 工程图 live。只读打开约 86 个文档的装配后，`export_manufacturing` 里第二次 `open_document` 的 `GetFirstDocument` 遍历在 `model_document.GetType` 上报 `(-2147417848, '被调用的对象已与其客户端断开连接')`。这是 `RPC_E_DISCONNECTED`，不是 `CO_E_OBJNOTCONNECTED`（-2147220995）。随后 `save_reopen` → `close_document` → `require_model_write` → `validate` 变成 `document inventory unavailable; refusing writes`。没有出图。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 原因：遍历中途断连被立刻抛出，或者断链被记成「枚举比 count 短」。`validate` 只在已识别的断连上重绑一次；认不出来就包成 `document inventory unavailable` 并挡住写入。大装配的文档代理可以在 `GetProcessID` 仍活着时单独死去。
+- 本轮：`_list_open_document_titles` 在 `GetTitle` / `GetType` / `GetNext` 断连或链条提前结束时抛 `InventoryWalkDisconnected`（`status=partial_inventory_disconnect`）。清单按本任务 PID 重绑并从头 `GetFirstDocument` 再走，最多三次。仍不安全则拒绝写入，错误保持这条状态，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 断连仍是 `saved_com_disconnected_after_generation` / `partial_com_disconnect`，路径保留。
+- 离线：`python3 work/run_cloud_tests.py` → 552 ran / 548 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：D2 只读大装配后，若只是遍历中的瞬时断连，重绑后清单能走完且文档都属于本任务，则 `require_model_write` 不再报 `document inventory unavailable`。重绑后仍断连则是 `partial_inventory_disconnect`，写入仍拒绝，不调用 ExitApp。别人的文档仍然失败。这仍不是实机通过。
+
+## P0-DDD-1806f74：GetNext 的 MEMBERNOTFOUND 也要重列
+
+- DDD 在 `1806f74` 上复测 D2/D3 仍失败。装配能打开（约 303 个组件），断在 `export_manufacturing` → `guard` → inventory `validate`。错误仍是 `document inventory unavailable; refusing writes`。根 HRESULT 是 `ModelDoc.GetNext` 的 `DISP_E_MEMBERNOTFOUND`（-2147352573），不在 `_DISCONNECT_HRESULTS` 里，所以 `InventoryWalkDisconnected` / 重绑没有发生。D4–D6 没有出图。`sw_live_verified=false`。这次云端修改不是实机通过。
+- 本轮：清单先用 `GetDocuments`（数量对得上就不再走 `GetNext`）。`GetNext` / `GetFirstDocument` 先按属性读，调用失败再试 `IGetNext` / `IGetFirstDocument2`。中途 `DISP_E_MEMBERNOTFOUND` 与断连一样抛 `InventoryWalkDisconnected`，按本任务 PID 重绑并从头重列。仍失败则是 `partial_inventory_disconnect`，写入拒绝，不再写成 `document inventory unavailable`。未拥有文档仍然挡住写入。不调用 ExitApp。已保存轴的 cleanup 语义不变。
+- 离线：`python3 work/run_cloud_tests.py` → 557 ran / 553 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：D2/D3 打开大装配后，`GetNext` 的 `DISP_E_MEMBERNOTFOUND` 应走 `GetDocuments` 或 `IGetNext`，否则重绑重列。成功且文档属于本任务时不再报 `document inventory unavailable`。仍不安全则 `partial_inventory_disconnect`，不调用 ExitApp。这仍不是实机通过。
+
+## P0-DDD-A2：租赁图纸带进来的引用文档不是别人的会话
+
+- DDD 在 COM `4344f22` + 出图 `6506153` 上复测 A2 1:10 / 1:20。标注路径已过（没有 `AttributeError GetAnnotation`，没有 `DISP_E_MEMBERNOTFOUND`）。SLDDRW 约 13.3MB 已写入。新失败是 `save_reopen` → `close_document` → `guard` → `validate`：`SessionOwnershipError: unowned documents appeared in task process`。没有 PDF / sheet_readback。`manufacturing_approved=false`。这不是生产图通过。证据在 `work/evidence/drawing-a2-6506153-owned/`。
+- 原因：工程图视图打开大装配时，SolidWorks 把引用的装配和零件加载进本任务进程。清单里只有 `NewDocument` 记下的图纸标题，引用文档被当成未拥有。
+- 本轮：已打开且仍在租约里的模型，若 `GetDependencies2` / `GetComponents` / 工程图 `GetViews` 点名了这些文档的路径，就把它们记入 `owned_docs`。未保存标题（如 `工程图1`）在 SaveAs 后改成文件名、且新文件的引用能解释其余打开文档时，标题跟着改。别人的文件、同名不同路径、以及已经保存的自有标题消失后被换成另一个模型，仍然 `unowned documents appeared`。启动时进程里已有的用户文档仍然拒绝。不在这里 CloseDoc 这些引用（图纸还要用）；会话结束时只对已拥有标题 CloseDoc。不调用 ExitApp。不碰 Embedding 孤儿。
+- 离线：`python3 work/run_cloud_tests.py` → 562 ran / 558 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。`sw_live=not_applicable_on_linux`。
+- 实机判据：A2 `save_reopen` 能走完 close 和 readback，不再因引用文档报 `unowned documents appeared`。引用之外的文档仍然拒绝写入。这不是生产图通过。
+
+## AI-GATEWAY-001：本机 AI 通用调用入口（2026-10-27）
+
+用户明确优先同一台 Windows 电脑上的 AI 客户端。新增 MCP stdio 与带令牌的回环 HTTP API，模型无关工具 Schema，共享现有 workbench 执行、确认摘要、原生会话所有权与恢复锁。默认关闭原生写入，主机配置 SLDWORKS.exe 才可启用；路径限制在指定工作目录；参数规划必须显式选择 GT-ZX / QL-5050PX。当前暴露能力发现、环境检查、钣金/滚筒/车件分析规划与生成、整机包围尺寸规划；装配制造专用接口尚未全部暴露。
+
+基于远端 aca899b，同步其他开发者新增模块后回归 525 项，521 通过、4 跳过、无错误失败，跨进程锁通过。接口新增测试 10 项；HTTP 回环真实请求和 MCP 子进程握手通过。Windows AI 客户端和 SolidWorks 原生操作仍待本机实测。配置见 docs/ai-client-integration.md。
+
+## AI 会话共存保护补充（2026-10-27）
+
+用户要求保留自己正在使用的 SW。核对现有独立实例所有权保护，不改变或放宽启动器。AI 能力查询新增 session_policy，明确拒绝接管用户会话、关闭用户文档和退出用户应用；隔离失败拒绝执行。新增双实例模拟清理及错误返回用户实例的回归，用户实例未被枚举或修改。完整回归 527 项，523 通过、4 跳过，跨进程锁通过。仅模拟证据；Windows 双实例和未保存文档实测待完成。独立进程不保证桌面焦点或资源完全隔离。
+
+
+## 2026-10-28 private cloud integration
+
+- Integrated desktop UI/logging, batch sheet conversion/resize, drawing and owned-session improvements from the local development snapshot. Customer CAD and local run logs are excluded.
+- Fixed repair CLI test fixture isolation; added pinned pypdf dependency. Simulation runner and marker-only lock probe use isolated test locks, leaving production writer exclusion unchanged.
+- Validation: Windows Python 3.14, 739 tests, 733 passed, 0 failures, 0 errors, 6 skipped; cross-process marker lock passed. Skips cover unavailable customer fixtures/LibreDWG, symlink support and platform-specific cases.
+- Linux 3.11/3.12 regression is triggered by push through cloud-tests.yml. This local result is not Linux or SolidWorks live acceptance. Quantity annotation binding and mechanical/drawing production acceptance remain open.
+
+## P0-COM-MERGE-62a9c91：接到最新 dev/cloud-ai
+
+- 原基线 `aca899b`，原 head `5e07963`。`dev/cloud-ai` 已到 `62a9c91`（Integrate desktop and sheet metal updates with isolated cloud regression）。逐提交 rebase 不安全：主干整合提交已经带上同一套会话、文档清单和引用文档所有权文件，重放 13 个旧补丁会碰到更新过的 COM 代码。本分支改为合并 `origin/dev/cloud-ai`。
+- 内容冲突只在 `TASK_STATUS.md`。两处 add/add 只是文件尾空白，已按主干收掉。`native_machine.math_transform` 自动合并出了重复定义，已删成与主干相同的一份。引用文档所有权、文档清单重列、CloseDoc-only 保活（不调用 ExitApp）与 `5e07963` 相同，且这些源文件与 `62a9c91` 一致。`GetNextView` / 比例锁定不在本 PR 另改，仍留给 PR #59。
+- Linux `python3 work/run_cloud_tests.py`（Python 3.12.3）：739 ran / 735 passed / 0 failures / 0 errors / 4 skipped。跨进程锁通过。`solidworks_live_verified=false`，`sw_live=not_run_simulation_only`。`manufacturing_approved` 未改为 true。这不是 Windows 实机通过，也不是生产图通过。

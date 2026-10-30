@@ -83,4 +83,3 @@ class FeatureOperationsMixin:
                 if not math.isclose(float(dimension.SystemValue),value,rel_tol=1e-8,abs_tol=1e-9):raise RuntimeError('dimension readback mismatch')
             else:self.model.SketchAddConstraints(RELATIONS[row['kind']])
         self.model.ClearSelection2(True)
-

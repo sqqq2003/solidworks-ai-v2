@@ -55,6 +55,38 @@ class ProjectTests(unittest.TestCase):
         self.assertIn('--verify-reopen',cmd)
         self.assertIn('--sw-exe',cmd)
 
+    def test_batch_export_command_requires_confirmation_and_new_dir(self):
+        # 批量导出须确认且输出目录必须为新目录，走 --batch --batch-out-dir。
+        out_dir = self.root/'batch-out'
+        job = confirm_job(self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
+            output_dir=str(out_dir),sw_exe=str(self.exe)))
+        cmd = build_command(job)
+        self.assertIn('--batch',cmd)
+        self.assertIn('--batch-out-dir',cmd)
+        self.assertIn('--sw-exe',cmd)
+        self.assertIn(str(self.source),cmd)
+
+        # 未确认则拒绝。
+        unconfirmed = self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
+            output_dir=str(out_dir),sw_exe=str(self.exe))
+        with self.assertRaises(ValueError):
+            build_command(unconfirmed)
+
+        # 输出目录已存在且非空则拒绝。
+        out_dir.mkdir(parents=True)
+        (out_dir/'x.SLDPRT').write_text('occupied')
+        occupied = confirm_job(self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
+            output_dir=str(out_dir),sw_exe=str(self.exe)))
+        with self.assertRaises(ValueError):
+            build_command(occupied)
+
+    def test_batch_export_only_supports_sheet_kind(self):
+        job = confirm_job({'kind':'roller','action':'batch','source':str(self.source),
+            'sw_exe':str(self.exe),'output_dir':str(self.root/'r'),'thickness':4.0,
+            'radius':1.2,'angle':90.0,'variant':0})
+        with self.assertRaises(ValueError):
+            build_command(job)
+
     def test_no_shell_and_exit_zero_alone_is_not_success(self):
         runner = MagicMock(return_value=SimpleNamespace(returncode=0,stdout='unstructured output',stderr=''))
         result = execute_job(self.job(),runner=runner)

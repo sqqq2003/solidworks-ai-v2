@@ -44,7 +44,7 @@ def code_hash():
     root = Path(__file__).parent
     return digest({name: file_hash(root/name) for name in (
         'sheet_metal_pipeline.py', 'sheet_metal_windows.py', 'cad_analyzer.py',
-        'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py',
+        'solidworks_generator.py', 'profile_sanitize.py', 'profile_selection.py', 'profile_edit.py',
         'bend_allowance.py', 'sw_session.py', 'sw_owned_launch.py',
         'bridge_wiring.py')})
 

@@ -39,9 +39,12 @@ from solidworks_generator import (
 
 
 LOGGER = logging.getLogger("sw_tool_cli")
+from sheet_safety import bend_note_warning
 
 
 def emit(event: str, **payload: object) -> None:
+    from app_logging import get_journal
+    get_journal().record('cli_'+event,level='ERROR' if event=='error' else 'INFO',**payload)
     payload["event"] = event
     sys.stdout.write(json.dumps(payload, ensure_ascii=False, default=lambda value: sorted(value) if isinstance(value,(set,frozenset)) else str(value)) + "\n")
     sys.stdout.flush()
@@ -52,11 +55,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", choices=("sheet", "roller", "turned"), required=True)
     parser.add_argument("--input", required=True, help="DWG / DXF 图纸路径")
     parser.add_argument("--out", help="输出 .SLDPRT 路径；--analyze-only 时可省略")
-    parser.add_argument("--plan-only", action="store_true", help="只输出特征计划，不连接 SolidWorks")
+    parser.add_argument("--plan-only", action="store_true", help="只输出特征计划；DWG 在显式指定 --sw-exe 时允许转换，不生成零件")
     parser.add_argument("--allow-inferred", action="store_true", help="明确允许滚筒通用默认值；这些不是 OEM 实测数据")
     parser.add_argument("--verify-reopen", action="store_true", help="生成后关闭重开并核对实体尺寸")
     parser.add_argument("--analyze-only", action="store_true", help="只识别图纸并汇报，不建模")
     parser.add_argument("--profile", type=int, default=None, help="钣金：轮廓序号（从 1 开始）")
+    parser.add_argument("--uniform-scale", type=float, default=None, help="钣金轮廓与孔按比例缩放；板厚不跟随")
+    parser.add_argument("--preserve-circle-holes",action='store_true',help="缩放时圆孔大小保持不变，孔心位置随外形缩放")
     parser.add_argument("--thickness", type=float, default=1.2, help="钣金：板厚 mm")
     parser.add_argument("--radius", type=float, default=1.2, help="钣金：折弯半径 mm")
     parser.add_argument("--angle", type=float, default=90.0, help="钣金：折弯角度")
@@ -72,6 +77,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="钣金：只出平板 + 折弯线草图（默认直接折弯）",
     )
     parser.add_argument("--variant", type=int, default=0, help="滚筒：规格序号（从 0 开始）")
+    parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="钣金：一键批量导出整张图的全部外轮廓零件（串行，单件失败继续）",
+    )
+    parser.add_argument(
+        "--batch-out-dir",
+        type=Path,
+        default=None,
+        help="钣金批量：输出目录（--batch 时必填，新目录）",
+    )
     parser.add_argument(
         "--verbose",
         action="store_true",
@@ -116,6 +132,7 @@ def describe_drawing(analysis) -> dict[str, object]:
             "overall_length_mm": variant.overall_length_mm,
             "outer_diameter_mm": variant.outer_diameter_mm,
             "shaft_diameter_mm": variant.shaft_diameter_mm,
+            "geometry_inferred": getattr(variant,"geometry_inferred",False),
         }
         for position, variant in enumerate(analysis.roller_variants)
     ]
@@ -125,6 +142,7 @@ def describe_drawing(analysis) -> dict[str, object]:
         "bend_line_count": len(analysis.bend_lines),
         "profiles": profiles,
         "roller_variants": variants,
+        "warnings": [warning] if (warning := bend_note_warning(analysis)) else [],
     }
 
 
@@ -135,6 +153,27 @@ def run_sheet(args: argparse.Namespace) -> int:
     if args.analyze_only:
         emit("analysis", **describe_drawing(analysis))
         return 0
+
+    warning=bend_note_warning(analysis)
+    if warning:
+        emit('error',message=warning)
+        return 1
+
+    scale=getattr(args,'uniform_scale',None)
+    preserve_holes=getattr(args,'preserve_circle_holes',False)
+    if preserve_holes and scale is None:raise ValueError('保持孔径需要填写缩放倍数')
+    if scale is not None:
+        if not math.isfinite(scale) or scale<=0:raise ValueError('缩放比例必须是正的有限数值')
+        from cad_analyzer import primitive_bounds
+        from profile_edit import resize_profile_dimensions
+        index=args.profile-1 if args.profile is not None else _largest_closed_profile_index(analysis)
+        if not 0<=index<len(analysis.profiles):raise ValueError('轮廓序号超出范围')
+        if outermost_containing_profile_index(analysis.profiles,index)!=index:
+            raise ValueError('请选择零件外轮廓，而不是内部孔')
+        bounds=primitive_bounds(analysis.profiles[index])
+        analysis=resize_profile_dimensions(analysis,index,width_mm=(bounds[2]-bounds[0])*scale,height_mm=(bounds[3]-bounds[1])*scale,preserve_circle_holes=preserve_holes)
+        hole_rule='圆孔孔径不变、孔心随外形缩放' if preserve_holes else '孔槽同步缩放'
+        emit('progress',message=f'已按 {scale:g} 倍缩放所选轮廓；{hole_rule}；板厚不变，结果待复核。')
 
     if args.plan_only:
         from sheet_metal_pipeline import build_plan
@@ -182,6 +221,7 @@ def run_sheet(args: argparse.Namespace) -> int:
         flip_direction=args.flip,
         auto_bend=args.auto_bend,
         bend_allowance=allowance,
+        cad_import=False if scale is not None else None,
     )
     if allowance is not None and (
         not result.bend_allowance_verified
@@ -213,6 +253,82 @@ def run_sheet(args: argparse.Namespace) -> int:
     return 3 if result.auto_bend_abandoned else 0
 
 
+def run_sheet_batch(args: argparse.Namespace) -> int:
+    """一键批量导出整张钣金图的全部外轮廓零件（串行，单件失败继续）。
+
+    复用 batch_export.export_all_sheet_parts 的识别与串行安全逻辑，输出一行
+    一个 JSON 事件。单件失败只标记该件失败并继续下一件，不中断整批；但未知
+    原生失败（会话断连等）仍按现有安全策略停止后续 CAD 写入。
+    """
+    emit("progress", message="正在识别图纸全部钣金轮廓…")
+    analysis = analyze_cad_file(args.input)
+
+    # 折弯线矛盾拦截：图纸说红线是折弯线但识别不到时，禁止批量生成。
+    warning = bend_note_warning(analysis)
+    if warning:
+        emit("error", message=warning)
+        return 1
+
+    if not args.batch_out_dir:
+        emit("error", message="批量导出需要 --batch-out-dir 指定新输出目录。")
+        return 2
+    out_root = Path(args.batch_out_dir).expanduser().resolve()
+    if out_root.exists() and any(out_root.iterdir()):
+        emit("error", message=f"输出目录 {out_root} 已存在且非空，请指定新目录。")
+        return 2
+    out_root.mkdir(parents=True, exist_ok=True)
+
+    from batch_export import export_all_sheet_parts, discover_sheet_parts
+
+    jobs = discover_sheet_parts(analysis)
+    emit(
+        "progress",
+        message=f"识别到 {len(jobs)} 块候选轮廓，开始串行导出到 {out_root}…",
+    )
+
+    results = export_all_sheet_parts(
+        analysis,
+        thickness_mm=args.thickness,
+        radius_mm=args.radius,
+        angle_degrees=args.angle,
+        flip_direction=args.flip,
+        auto_bend=args.auto_bend,
+        output_dir=out_root,
+        progress=lambda text: emit("progress", message=text),
+    )
+
+    ok = sum(1 for item in results if item.ok)
+    failed = [item for item in results if not item.ok]
+    # 单件失败不 emit error（否则 execute_job 会把整批判为 failed）；
+    # 通过 done 事件的 failed 计数与 status=degraded 表达局部失败。
+    emit(
+        "done",
+        kind="sheet_batch",
+        total=len(results),
+        ok=ok,
+        failed=len(failed),
+        output_dir=str(out_root),
+        mechanical_acceptance="unverified",
+        status="degraded" if failed else "passed",
+        parts=[
+            {
+                "label": item.job.label,
+                "path": str(item.path) if item.path else None,
+                "status": item.status,
+                "bend_count": item.bend_count,
+                "error": item.error if not item.ok else "",
+            }
+            for item in results
+        ],
+        message=(
+            f"批量导出完成：成功 {ok}/{len(results)}，目录 {out_root}"
+            if not failed
+            else f"批量导出完成：成功 {ok}/{len(results)}（{len(failed)} 件失败），目录 {out_root}"
+        ),
+    )
+    return 3 if failed else 0
+
+
 def run_roller(args: argparse.Namespace) -> int:
     emit("progress", message="正在识别滚筒规格…")
     analysis = analyze_cad_file(args.input)
@@ -232,6 +348,9 @@ def run_roller(args: argparse.Namespace) -> int:
         return 2
 
     variant = analysis.roller_variants[args.variant]
+    if getattr(variant,'geometry_inferred',False) and not args.plan_only:
+        emit('error',message='滚筒规格仅由几何推测，可能是其他零件；请先核对并使用明确标注的滚筒规格，不能直接生成。')
+        return 1
     missing = [name for name in ('overall_length_mm','outer_diameter_mm','wall_thickness_mm',
         'shaft_diameter_mm','shaft_projection_mm','shaft_thread_designation') if getattr(variant,name) is None]
     if variant.is_powered:
@@ -340,8 +459,12 @@ def main(argv: list[str] | None = None) -> int:
     # 详细日志落到文件，插件出错时能回看；事件流仍只走标准输出。
     LOGGER.debug("详细日志：%s", configured or log_file_path())
     try:
-        runner = {"sheet":run_sheet,"roller":run_roller,"turned":run_turned}[args.mode]
-        if args.sw_exe is not None and not args.analyze_only and not args.plan_only:
+        if args.mode == "sheet" and args.batch:
+            runner = run_sheet_batch
+        else:
+            runner = {"sheet": run_sheet, "roller": run_roller, "turned": run_turned}[args.mode]
+        needs_conversion = Path(args.input).suffix.casefold() == '.dwg'
+        if args.sw_exe is not None and (needs_conversion or (not args.analyze_only and not args.plan_only)):
             from sw_owned_launch import owned_solidworks
             from sw_session import run_on_task_sta
             def owned_job():
@@ -381,7 +504,7 @@ def main(argv: list[str] | None = None) -> int:
                         ),
                     )
                 return rc
-            return run_on_task_sta(owned_job, timeout=300, task_name="owned-sheet-metal-cli")
+            return run_on_task_sta(owned_job, timeout=300, task_name="owned-cad-cli")
         return runner(args)
     except Exception as error:  # 插件按 error 事件提示用户
         LOGGER.exception("生成失败")
@@ -390,6 +513,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    from app_logging import bootstrap
+    bootstrap(Path(__file__).resolve().parents[1],'model-cli')
     sys.exit(main())
 
 

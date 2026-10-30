@@ -1,0 +1,44 @@
+{
+  "task": "PR#57 全量挂测 @ 9544d3c",
+  "owner": "WorkBuddy",
+  "timestamp": "20261026_134308",
+  "sha": "9544d3ca27b5f4b255b60a3eab3061af8a930fc2",
+  "machine": "DDD",
+  "repo": "C:\\Users\\yue\\Desktop\\solidworks-ai-v2",
+  "out_dir": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308",
+  "toolchain": {
+    "python": "3.14.8",
+    "python_path": "C:/Users/yue/AppData/Local/Python/pythoncore-3.14-64/python.exe",
+    "pywin32": "present",
+    "ezdxf": "present",
+    "solidworks_typelib_major": 33
+  },
+  "results": {
+    "T1_offline_unittest": {"status": "pass", "detail": "8/8 OK"},
+    "T2_shaft_live": {"status": "partial_pass_target_confirmed", "detail": "partial_com_disconnect, exit 0, path kept, no ExitApp"},
+    "T3_sheet_metal_live": {"status": "pass", "detail": "native_features_verified, sw_live_verified=true"},
+    "T4_plate_bracket_typemismatch": {"status": "partial", "detail": "TYPEMISMATCH not reproduced; solid_blind_cut(float) returned None"},
+    "T5_turned_accept": {"status": "partial", "detail": "f11 PASS; f09/f15/f19 revolve contour not closed"}
+  },
+  "constraints_met": {
+    "only_wrote_out": true,
+    "no_desktop_writes": true,
+    "only_closedoc_no_exitapp": true,
+    "no_taskkill": true,
+    "honest_status": true,
+    "shaft_not_sw_live_verified": true
+  },
+  "artifacts": [
+    "offline_unittest.txt",
+    "accept_T2.json",
+    "shaft_9544d3c.SLDPRT",
+    "shaft_live_stdout.txt",
+    "accept_T3.json",
+    "sheet_s2/",
+    "accept_T4.json",
+    "plate_bracket_live.json",
+    "accept_chejian.json",
+    "gap_table_T5.md",
+    "RESULT.md"
+  ]
+}

@@ -43,6 +43,16 @@ def lock_view_layout(drawing,task,views):
     # SW can change sheet scale when inserting the first view. Enforce it last.
     if not drawing.GetCurrentSheet().SetScale(*task['scale'],True,True):
         raise RuntimeError('drawing sheet scale update failed')
+    if task.get('auto_layout'):
+        from .auto_layout import first_angle_layout
+        for view in views.values():view.UseSheetScale=1
+        if not read_member(drawing,'EditRebuild3'):raise RuntimeError('view size rebuild failed')
+        sizes={}
+        for name,view in views.items():
+            a=[float(v)*1000 for v in read_member(view,'GetOutline')]
+            sizes[name]=[a[2]-a[0],a[3]-a[1]]
+        positions=first_angle_layout(task['width_mm'],task['height_mm'],sizes)
+        for item in task['drawing_model']['views']:item['position_mm']=positions[item['id']]
     for item in task['drawing_model']['views']:
         view=views[item['id']]
         view.UseSheetScale=1

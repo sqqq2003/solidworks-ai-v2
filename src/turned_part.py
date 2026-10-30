@@ -658,7 +658,12 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
         )
     lease = session.current_lease()
     session.require_model_write(lease)
-    from turned_generate import REVOLVE_AXIS_MARK, build_turned, mm_point_to_m
+    from turned_generate import (
+        REVOLVE_AXIS_MARK,
+        build_turned,
+        mm_point_to_m,
+        revolve_arc_meters,
+    )
 
     build = build_turned(plan)
 
@@ -744,15 +749,16 @@ def generate_turned_part(plan: TurnedPartPlan, output_path: str) -> str:
                         raise sw.SolidWorksGenerationError(f"{name}的旋转轴没有写进草图。")
                 if segments:
                     for piece in segments:
-                        start = mm_point_to_m(piece.start)
-                        end = mm_point_to_m(piece.end)
-                        if piece.kind == "arc" and piece.via is not None:
-                            via = mm_point_to_m(piece.via)
-                            if sketch_manager.Create3PointArc(*start, *via, *end) is None:
+                        if piece.kind == "arc":
+                            # 圆心、起点、终点、方向。三点弧把 via 当成终点，圆角和
+                            # 下一条线对不上，f09/f15/f19 这类带圆角的旋转轮廓就不闭合。
+                            if sketch_manager.CreateArc(*revolve_arc_meters(piece)) is None:
                                 raise sw.SolidWorksGenerationError(
                                     f"{name}有一段圆弧没有写进草图，已中止。"
                                 )
                             continue
+                        start = mm_point_to_m(piece.start)
+                        end = mm_point_to_m(piece.end)
                         if sketch_manager.CreateLine(*start, *end) is None:
                             raise sw.SolidWorksGenerationError(
                                 f"{name}有一段直线没有写进草图，已中止。"
