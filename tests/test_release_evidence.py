@@ -37,6 +37,39 @@ class EvidenceTests(unittest.TestCase):
     def test_declared_failure_stays_failure_without_native_proof(self):
         self.row.update(status='failed',simulated_only=True)
         self.assertEqual(self.audit()['status'],'failed')
+
+    def drawing_case(self):
+        self.row['id']='drawings_bom_manufacturing'
+        self.matrix['lanes'][0]['checks'][0]['id']=self.row['id']
+
+    def visual_proof(self,**updates):
+        from drawing_review import CHECKLIST
+        proof={'schema_version':1,'scope':'human_visual_layout_review_export','source_revision':'a'*40,
+               'state':'accepted','visual_accepted':True,'delivery_accepted':True,'issues':[],
+               'pages':[{'state':'accepted','visual_accepted':True,'delivery_accepted':True,
+                         'evidence_sha256':'c'*64,'reviewer':'Human fixture reviewer',
+                         'checklist':{k:True for k in CHECKLIST},'artifact_sha256':{'slddrw':'d'*64,'pdf':'e'*64}}]}
+        proof.update(updates);path=self.root/'visual.json';path.write_text(json.dumps(proof))
+        reference={'path':'visual.json','sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+        self.row['artifacts']=[a for a in self.row['artifacts'] if a['path']!='visual.json']+[reference]
+        self.row['visual_acceptance']=reference
+        return proof
+
+    def test_saved_drawing_report_without_human_review_is_held(self):
+        self.drawing_case();result=self.audit()
+        self.assertEqual(result['status'],'review_required')
+        self.assertIn('drawing_visual_acceptance_missing_stale_or_incomplete',result['repair_tasks'][0]['reasons'])
+
+    def test_matching_named_visual_export_can_complete_record_audit_only(self):
+        self.drawing_case();self.visual_proof();result=self.audit()
+        self.assertEqual(result['status'],'passed');self.assertFalse(result['manufacturing_approved'])
+
+    def test_stale_pin_trial_only_and_half_checklist_never_clear_visual_hold(self):
+        self.drawing_case()
+        for changes in ({'source_revision':'b'*40},{'delivery_accepted':False},{'state':'reviewing'}):
+            self.visual_proof(**changes);self.assertEqual(self.audit()['status'],'review_required')
+        proof=self.visual_proof();proof['pages'][0]['checklist']['scale']=False
+        self.visual_proof(pages=proof['pages']);self.assertEqual(self.audit()['status'],'review_required')
     def test_diagnostic_journal_details_schema_and_deduplication(self):
         row={'event':'job_finished','details':{'status':'failed','errors':[{'message':'exclusive ownership missing'}]}}
         archive=self.root/'logs.zip'

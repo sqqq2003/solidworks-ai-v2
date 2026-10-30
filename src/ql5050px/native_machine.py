@@ -40,6 +40,8 @@ def read_member(obj,name):
     try:
         return value()
     except Exception as exc:
+        from sw_compat.com_access import record_member_error
+        record_member_error(name, exc)
         if not is_member_not_found(exc):
             raise
         try:

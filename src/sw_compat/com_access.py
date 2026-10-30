@@ -9,6 +9,22 @@ a method. This module does not rebind a session, CloseDoc, or call ExitApp.
 """
 
 from part_verification import is_member_not_found
+from contextlib import contextmanager
+from contextvars import ContextVar
+
+_MEMBER_OBSERVER = ContextVar('sw_drawing_member_observer', default=None)
+
+
+@contextmanager
+def observe_member_errors(callback):
+    token = _MEMBER_OBSERVER.set(callback)
+    try: yield
+    finally: _MEMBER_OBSERVER.reset(token)
+
+
+def record_member_error(name, error):
+    callback = _MEMBER_OBSERVER.get()
+    if callback is not None and is_member_not_found(error): callback(name, error)
 
 try:
     import pythoncom
@@ -96,6 +112,7 @@ def _disp_invoke(ole, name, args):
     try:
         dispid = ole.GetIDsOfNames(name)
     except Exception as exc:
+        record_member_error(name, exc)
         if _missing_name(exc):
             raise AttributeError(name) from exc
         raise
@@ -109,6 +126,7 @@ def _disp_invoke(ole, name, args):
         try:
             result = ole.Invoke(dispid, 0, flag, True, *args)
         except Exception as exc:
+            record_member_error(name, exc)
             last = exc
             if is_member_not_found(exc) or _missing_name(exc):
                 continue
@@ -157,6 +175,7 @@ def read_propget(target, name):
         try:
             dispid = ole.GetIDsOfNames(name)
         except Exception as exc:
+            record_member_error(name, exc)
             if _missing_name(exc):
                 raise AttributeError(name) from exc
             raise
@@ -167,6 +186,7 @@ def read_propget(target, name):
         try:
             result = ole.Invoke(dispid, 0, DISPATCH_PROPERTYGET, True)
         except Exception as exc:
+            record_member_error(name, exc)
             if is_member_not_found(exc) or _missing_name(exc):
                 raise AttributeError(name) from exc
             raise
@@ -196,6 +216,7 @@ def read_view_iterator(target, name):
             last = exc
             continue
         except Exception as exc:
+            record_member_error(name, exc)
             last = exc
             if is_member_not_found(exc) or _missing_name(exc):
                 continue
@@ -211,6 +232,7 @@ def read_view_iterator(target, name):
         try:
             return value()
         except Exception as exc:
+            record_member_error(name, exc)
             last = exc
             if is_member_not_found(exc) or _missing_name(exc):
                 continue
@@ -237,6 +259,7 @@ def read_com_member(target, name, *args):
             last = exc
             continue
         except Exception as exc:
+            record_member_error(name, exc)
             last = exc
             if is_member_not_found(exc) or _missing_name(exc):
                 continue

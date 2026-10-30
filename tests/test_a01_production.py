@@ -1,5 +1,6 @@
 """Synthetic records and fake drivers only; no native CAD opened."""
 import copy
+from contextlib import nullcontext
 from pathlib import Path
 import sys
 import tempfile
@@ -18,6 +19,10 @@ class ProductionTests(unittest.TestCase):
         self.feature_patch=patch('src.a01_next.native_production.find_named_feature',
                                  side_effect=lambda model,name:model.FeatureByName(name))
         self.feature_patch.start();self.addCleanup(self.feature_patch.stop)
+        # These existing tests isolate dimension COM semantics. The new real
+        # file checkpoint wrapper is exercised separately with byte fixtures.
+        self.checkpoint_patch=patch.object(A01ProductionDriver,'edit_transaction',side_effect=lambda *a,**kw:nullcontext())
+        self.checkpoint_patch.start();self.addCleanup(self.checkpoint_patch.stop)
         self.root=Path(self.temp.name);self.source=self.root/'source.SLDASM';self.part=self.root/'part.SLDPRT'
         self.source.write_bytes(b'synthetic assembly');self.part.write_bytes(b'synthetic part')
         row=dict(parameter='frame.length',document=str(self.part),configuration='Default',feature='Sketch1',
@@ -53,7 +58,7 @@ class ProductionTests(unittest.TestCase):
         r=execute_request(self.request,driver,self.root/'out')
         self.assertFalse(r['cad_release_approved']);self.assertEqual(r['engineering_acceptance'],'unverified')
         driver.export_manufacturing.assert_not_called()
-        self.assertEqual([c[0] for c in driver.method_calls],['pack_and_go','apply_mapped_dimensions','apply_persistent_mates','inspect_native'])
+        self.assertEqual([c[0] for c in driver.method_calls],['pack_and_go','edit_transaction','apply_mapped_dimensions','apply_persistent_mates','inspect_native'])
 
     def test_interference_blocks_drawing(self):
         driver=MagicMock();driver.receipt={'events':[{'copies':{}}]}
@@ -210,7 +215,7 @@ class ProductionTests(unittest.TestCase):
 
     def test_drawing_template_projection_is_checked_before_views(self):
         from src.ql5050px.native_drawings import ManufacturingDriver
-        driver=ManufacturingDriver(MagicMock(),self.root)
+        driver=ManufacturingDriver(MagicMock(durable_attempt=None),self.root)
         app=MagicMock();drawing=MagicMock()
         drawing.GetCurrentSheet.return_value.GetProperties2.return_value=[12,0,1,1,False,.42,.297,False]
         app.NewDocument.return_value=drawing

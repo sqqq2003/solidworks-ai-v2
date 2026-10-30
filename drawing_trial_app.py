@@ -32,10 +32,24 @@ def inspect_trial_result(code,target,worker_error=None):
     message=('生成完成（缺件测试），请目视审核。' if generated else
              '固定比例装不下，请选择更大图幅或明确修改比例。' if blocked else
              '本次未产生完整图纸，请查看结果中的失败原因。')
+    reviews=[]
+    for cell in cells:
+        for item in cell.get('drawing',{}).get('results',[]):
+            if item.get('drawing_evidence'):
+                try:
+                    from drawing_review import inspect_drawing
+                    reviews.append(inspect_drawing(item['drawing_evidence']))
+                except (OSError,ValueError,KeyError,TypeError):reviews.append({'state':'reviewing','visual_accepted':False,'issues':['evidence_unreadable']})
+    visual_accepted=generated and bool(reviews) and all(r.get('visual_accepted') for r in reviews)
+    if visual_accepted:message='目视已接受（缺件测试）；仍不可作为生产交付。'
+    rejected=any(r.get('state')=='rejected' for r in reviews)
+    if rejected:message='目视已退回，请根据审核意见修改后生成新证据。'
     if generated:
         message+=(' 检测到 '+str(missing)+' 个缺失组件引用。' if missing is not None else ' 缺失组件数量未核实。')
         message+=' 图纸及 BOM 未通过生产验收。'
     return {'drawing_generated':generated,'result':str(path),'error':report.get('error'),
+            'acceptance_state':'rejected' if rejected else 'accepted' if visual_accepted else 'reviewing',
+            'visual_accepted':visual_accepted,'delivery_accepted':False,'drawing_reviews':reviews,
             'traceback':report.get('traceback'),
             'missing_component_references':missing,'message':message}
 
@@ -53,7 +67,7 @@ def main():
     if not args.smoke_test:
         from datetime import datetime
         request['output']=str(Path(request['output']).parent/('interactive-'+datetime.now().strftime('%Y%m%d-%H%M%S-%f')))
-    root=tk.Tk();root.title('SolidWorks AI · 一键三视图/BOM（缺件测试）');root.geometry('900x460')
+    root=tk.Tk();root.title('SolidWorks AI · 一键三视图/BOM（缺件测试）');root.geometry('900x700')
     install_tk_hook(root)
     body=ttk.Frame(root,padding=20);body.pack(fill='both',expand=True)
     ttk.Label(body,text='一键生成三视图、关联 BOM 与 PDF',font=('Microsoft YaHei UI',16)).pack(anchor='w')
@@ -79,7 +93,8 @@ def main():
         if not confirm.get():status.set('请先勾选缺件测试确认。');return
         target=Path(output.get()).resolve()
         if target.exists():status.set('输出目录已存在，请选择新目录；不会覆盖旧成果。');return
-        updated=dict(request,assembly=source.get(),output=str(target),explicit_partial_model_test=True,cases=[{'sheet':sheet.get(),'denominator':int(scale.get().split(':')[1])}])
+        updated=dict(request,assembly=source.get(),output=str(target),idempotency_key='drawing-ui-'+target.name,
+                     explicit_partial_model_test=True,cases=[{'sheet':sheet.get(),'denominator':int(scale.get().split(':')[1])}])
         journal.record('drawing_started',assembly=source.get(),output=str(target),sheet=sheet.get(),scale=scale.get())
         request_path=args.request.parent/(target.name+'-request.json')
         request_path.write_text(json.dumps(updated,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -96,6 +111,29 @@ def main():
             try:os.startfile(str(state['result_dir']))
             except OSError as error:status.set('无法打开结果文件夹：'+str(error))
     result_button=ttk.Button(body,text='打开结果文件夹',command=open_results,state='disabled');result_button.pack(anchor='w')
+    review_frame=ttk.LabelFrame(body,text='目视审核',padding=10);review_frame.pack(fill='x',pady=10)
+    reviewer=tk.StringVar();review_notes=tk.StringVar()
+    ttk.Label(review_frame,text='审核人').grid(row=0,column=0,sticky='w')
+    ttk.Entry(review_frame,textvariable=reviewer,width=22).grid(row=0,column=1,sticky='w')
+    checks={}
+    for i,(key,label) in enumerate([('views','视图完整'),('dimensions_annotations','尺寸与注解'),('scale','比例正确'),('frame_title_bom','图框、标题栏与 BOM')]):
+        checks[key]=tk.BooleanVar(value=False)
+        ttk.Checkbutton(review_frame,text=label,variable=checks[key]).grid(row=1+i//2,column=i%2,sticky='w',padx=4)
+    ttk.Label(review_frame,text='意见 / 退回原因').grid(row=3,column=0,sticky='w')
+    ttk.Entry(review_frame,textvariable=review_notes,width=50).grid(row=3,column=1,sticky='ew')
+    def decide(decision):
+        if state['busy'] or state['result_dir'] is None:return
+        try:
+            from drawing_review import review_drawing
+            outcome=inspect_trial_result(0,state['result_dir'])
+            rows=outcome.get('drawing_reviews',[])
+            if len(rows)!=1 or not rows[0].get('evidence_sha256'):raise ValueError('需要完整的单张图纸证据；请先打开结果检查')
+            review_drawing(rows[0]['evidence'],reviewer=reviewer.get(),expected_sha256=rows[0]['evidence_sha256'],
+                decision=decision,checklist={k:v.get() for k,v in checks.items()},notes=review_notes.get())
+            status.set(inspect_trial_result(0,state['result_dir'])['message'])
+        except (OSError,ValueError,KeyError,TypeError) as error:status.set('未记录接受：'+str(error))
+    ttk.Button(review_frame,text='接受目视结果',command=lambda:decide('accepted')).grid(row=4,column=0,sticky='w',pady=5)
+    ttk.Button(review_frame,text='退回修改',command=lambda:decide('rejected')).grid(row=4,column=1,sticky='w')
     def poll():
         try:
             code,target,worker_error=messages.get_nowait();state['busy']=False;button.configure(state='normal')
@@ -104,7 +142,9 @@ def main():
             outcome=inspect_trial_result(code,target,worker_error);generated=outcome['drawing_generated']
             journal.record('drawing_finished',level='INFO' if generated else 'ERROR',exit_code=code,output=str(target),**outcome)
             status.set(outcome['message']+(' '+outcome['error'] if outcome.get('error') else '')+' 结果：'+str(report_path))
-            evidence={'exit_code':code,'result':str(report_path),'button_executed':True,'drawing_generated':generated,'test_method':'tk_button_invoke' if args.smoke_test else 'interactive','production_approved':False}
+            evidence={'exit_code':code,'result':str(report_path),'button_executed':True,'drawing_generated':generated,
+                      'acceptance_state':outcome.get('acceptance_state','reviewing'),'delivery_accepted':False,
+                      'test_method':'tk_button_invoke' if args.smoke_test else 'interactive','production_approved':False}
             evidence['error']=outcome.get('error')
             (args.request.parent/(target.name+'-ui-result.json')).write_text(json.dumps(evidence,ensure_ascii=False,indent=2),encoding='utf-8')
             (args.request.parent/'ui-result.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2),encoding='utf-8')

@@ -1,0 +1,68 @@
+{
+  "scope": "source_kit_integrity_and_new_directory_install_only",
+  "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+  "file_count": 536,
+  "kit_bytes": 1269994,
+  "kit_sha256": "4f1ec1916e4647ee568e80014b822c98cbd2ff177d9f35d6b5e3c42d357ce76b",
+  "git_blob_sha": "2d41f3613a175e2c4c450477a4f34aab4caa7f2a",
+  "candidate": {
+    "schema_version": 1,
+    "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+    "package_sha256": "db22627914299d36d5916f4b4fcdb083e3f599a80753b8f49fba1bdcf45cf1e8",
+    "file_count": 536,
+    "source_manifest_sha256": "afebe43b52925cca25ce86e4de00ade09cea4559b7c56291d07adc0399f364d7",
+    "matrix_sha256": "3715f0aecca2d0990fb54219fbee618ee712efa826ee2d70db0f61eefffe7e4d",
+    "native_acceptance": "not_run",
+    "manufacturing_approved": false,
+    "runtime_bundled": false,
+    "source_only": true,
+    "candidate_id": "e4f874b3690f547c2254ccf95b0369d33450566752ff991105fad5fa8d6b4f73"
+  },
+  "inspection": {
+    "schema_version": 1,
+    "status": "passed",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "4f1ec1916e4647ee568e80014b822c98cbd2ff177d9f35d6b5e3c42d357ce76b",
+    "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+    "candidate_id": "e4f874b3690f547c2254ccf95b0369d33450566752ff991105fad5fa8d6b4f73",
+    "source_files": 536,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false
+  },
+  "installation": {
+    "schema_version": 1,
+    "status": "review_required",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "4f1ec1916e4647ee568e80014b822c98cbd2ff177d9f35d6b5e3c42d357ce76b",
+    "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+    "candidate_id": "e4f874b3690f547c2254ccf95b0369d33450566752ff991105fad5fa8d6b4f73",
+    "source_files": 536,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false,
+    "phase": "source_installed_runtime_required",
+    "directory": "/workspace/drawing-v6-installed",
+    "app_directory": "/workspace/drawing-v6-installed/app",
+    "files_written": 538,
+    "next_steps": [
+      "Create a new Python environment and install app/requirements-cloud.txt.",
+      "Run python work/verify_test_handoff.py . inside app.",
+      "Run python app.py; native work still requires explicit Windows review."
+    ],
+    "original_installation_modified": false,
+    "code_executed": false
+  },
+  "candidate_verification": {
+    "status": "passed",
+    "issues": [],
+    "source_revision": "ec606df36a65108d4ff0ec957b8bde18a0884049",
+    "scope": "candidate_file_integrity_only",
+    "manufacturing_approved": false
+  },
+  "code_executed": false,
+  "native_acceptance": "not_run",
+  "manufacturing_approved": false
+}

@@ -34,3 +34,5 @@ python work/project.py batch runtime/whole-project-smoke/jobs.json
 候选包导入、工作区修订与验收比较：[本轮完善说明](docs/delivery-v4.md)。
 
 改型失败恢复、SHA256 checkpoint、幂等回执及未决会话隔离：[接口与 Gork 验收说明](docs/cad-recovery-v5.md)。
+
+出图逐张证据、目视验收和 A01 出图恢复：[出图交付接口及实机清单](docs/drawing-delivery-v6.md)。

@@ -57,7 +57,10 @@ class HandoffTests(unittest.TestCase):
         for name in ('../evidence.json', '/tmp/x', 'C:\\x', '..\\x'):
             self.row['artifacts'][0]['path'] = name
             self.assertEqual(self.audit()['status'], 'review_required')
-        (self.root / 'link').symlink_to('/etc/hosts')
+        try:
+            (self.root / 'link').symlink_to('/etc/hosts')
+        except (OSError, NotImplementedError):
+            self.skipTest('symlink creation is unavailable on this Windows account')
         self.row['artifacts'][0]['path'] = 'link'
         self.assertEqual(self.audit()['status'], 'review_required')
 

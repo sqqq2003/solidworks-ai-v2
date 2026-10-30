@@ -144,11 +144,18 @@ class CheckpointTests(unittest.TestCase):
         self.assertFalse(cp.directory.exists()); self.assertTrue(self.target.exists()); self.assertTrue(self.source.exists())
 
     def test_symlink_and_hardlink_restore_aliases_refused(self):
-        alias = self.scope / 'alias.SLDPRT'; alias.symlink_to(self.source)
-        with self.assertRaises(ValueError):
-            create_checkpoint([alias], self.root / 'checkpoint', scope=self.scope,
-                              snapshot={'features': [], 'bodies': []})
-        alias.unlink(); alias.hardlink_to(self.target)
+        alias = self.scope / 'alias.SLDPRT'
+        try:
+            alias.symlink_to(self.source)
+        except (OSError, NotImplementedError):
+            # Windows may deny symlink creation when Developer Mode/privilege is absent.
+            pass
+        else:
+            with self.assertRaises(ValueError):
+                create_checkpoint([alias], self.root / 'checkpoint', scope=self.scope,
+                                  snapshot={'features': [], 'bodies': []})
+            alias.unlink()
+        alias.hardlink_to(self.target)
         with self.assertRaisesRegex(ValueError, 'alias'):
             create_checkpoint([self.target], self.root / 'checkpoint', scope=self.scope,
                               snapshot={'features': [], 'bodies': []})

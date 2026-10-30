@@ -5,7 +5,8 @@ from .native_machine import NativeMachineDriver, read_member
 from .native_exports import NativeExportsMixin
 from .drawing_layout import DrawingAnnotationsMixin
 from .assembly_builder import finite
-from .drawing_verification import lock_view_layout,verify_view_layout
+from .drawing_verification import (lock_view_layout,verify_view_layout,
+                                  annotation_evidence,verify_annotation_evidence)
 from sw_compat.annotation import read_annotation_position,set_annotation_position
 
 
@@ -43,6 +44,18 @@ def configure_top_level_bom(table,configuration):
 
 
 class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotationsMixin):
+    def _remember_drawing_document(self,model):
+        if getattr(self,'_drawing_transaction_active',False):
+            self.__dict__.setdefault('_drawing_open_documents',{})[id(model)]=model
+        return model
+
+    def open_document(self,*args,**kwargs):
+        return self._remember_drawing_document(super().open_document(*args,**kwargs))
+
+    def close_document(self,model):
+        result=super().close_document(model)
+        self.__dict__.get('_drawing_open_documents',{}).pop(id(model),None)
+        return result
     def require_isolated_model(self,path):
         self.owned_path(path)
         if not Path(path).is_file(): raise FileNotFoundError(path)
@@ -58,10 +71,46 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
             raise RuntimeError('drawing selection failed: '+reference['name'])
 
     def export_manufacturing(self,plan,assembly_receipt,destination):
+        from drawing_review import DrawingEvidence,atomic_json
+        self.guard()
+        if plan['status']!='ready_for_native':raise ValueError('drawing plan has pending engineering data')
+        folder=self.owned_path(destination);folder.mkdir(parents=True,exist_ok=False)
+        atomic_json(folder/'drawing-index.json',{'schema_version':1,'pages':[
+            {'task':task.get('id'),'evidence':f'evidence/drawing-{i+1:04d}.json'}
+            for i,task in enumerate(plan['tasks'])]},exclusive=True)
+        results=[]
+        for index,task in enumerate(plan['tasks']):
+            required=['slddrw']
+            if getattr(self,'requires_pdf_evidence',False):required.append('pdf')
+            if 'flat_DXF' in task.get('exports',[]):required.append('flat_dxf')
+            evidence=DrawingEvidence(folder/'evidence'/f'drawing-{index+1:04d}.json',task,
+                simulated_only=getattr(self,'simulated',False),
+                partial_model_test=getattr(self,'partial_model_test',False),required_artifacts=required,
+                model_path=assembly_receipt['documents'][task['node']]['path'])
+            attempt=getattr(self.lease,'durable_attempt',None)
+            if attempt:
+                store,key,_=attempt
+                evidence.data['request_receipt']={'database':str(store.path),'key':key}
+            try:
+                with evidence.observe_com():
+                    result=self._export_manufacturing_unreviewed({**plan,'tasks':[task]},assembly_receipt,
+                                                                 folder,_evidence=evidence)
+                item=result['results'][0]
+                evidence.artifact('slddrw',item['path'])
+                if item.get('flat_dxf'):evidence.artifact('flat_dxf',item['flat_dxf'])
+                evidence.finish()
+                item.update(drawing_evidence=str(evidence.path),acceptance_state='reviewing',delivery_accepted=False)
+                results.append(item)
+            except Exception as error:
+                evidence.fail(error)
+                raise
+        return {'results':results,'native_status':'files_created_reopened',
+                'acceptance_state':'reviewing','delivery_accepted':False,'manufacturing_approved':False}
+
+    def _export_manufacturing_unreviewed(self,plan,assembly_receipt,destination,*,_evidence):
         self.guard()
         if plan['status']!='ready_for_native': raise ValueError('drawing plan has pending engineering data')
         folder = self.owned_path(destination)
-        folder.mkdir(parents=True,exist_ok=False)
         results = []
         for task in plan['tasks']:
             model_path = assembly_receipt['documents'][task['node']]['path']
@@ -75,6 +124,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
             from sw_compat.model_document import model_document
             drawing=model_document(drawing)
             self.lease.note_owned_document(str(read_member(drawing,'GetTitle')),handle_id=id(drawing))
+            self._remember_drawing_document(drawing)
             if task.get('projection')=='first_angle':
                 properties=read_member(drawing.GetCurrentSheet(),'GetProperties2')
                 if len(properties)<5 or properties[4] not in (True,1):
@@ -121,6 +171,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                           'general':'AddDimension2'}[dimension.get('kind','general')]
                 display = getattr(drawing,method)(x,y,0)
                 if display is None: raise RuntimeError('native drawing dimension failed')
+                _evidence.data['annotations'].append(annotation_evidence(display,'dimension',dimension))
                 # No cosmetic numeric override; dimension must come from selected model entities.
             for annotation in task['annotations']:
                 drawing.ClearSelection2(True)
@@ -129,6 +180,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 if note is None: raise RuntimeError('drawing note failed')
                 x,y = [finite(v)/1000 for v in annotation['position_mm']]
                 set_annotation_position(note,x,y,0)
+                _evidence.data['annotations'].append(annotation_evidence(note,'note',annotation))
             bom = task['drawing_model']['bom']
             bom_evidence=None
             if bom:
@@ -161,6 +213,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                         raise RuntimeError('BOM exceeds drawing frame')
                     verify_view_layout(drawing,{**task,'reserved_rectangles_mm':task.get('reserved_rectangles_mm',[])+[bounds]},views)
                     bom_evidence['bounds_mm']=bounds
+                _evidence.data['annotations'].append(annotation_evidence(native_table,'bom',{'linked':True}))
             for balloon in task['balloons']:
                 drawing.ClearSelection2(True)
                 self.select_drawing_entity(drawing,balloon['reference'])
@@ -172,6 +225,7 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 if note is None: raise RuntimeError('BOM balloon insertion failed')
                 x,y = [finite(v)/1000 for v in balloon['position_mm']]
                 set_annotation_position(note,x,y,0)
+                _evidence.data['annotations'].append(annotation_evidence(note,'balloon',balloon))
             output = folder/task['filename']
             view_names={name:str(read_member(view,'GetName2')) for name,view in views.items()}
             receipt = self.save_reopen(drawing,output,'')
@@ -188,8 +242,18 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                     if native_name not in by_name:raise RuntimeError('saved drawing view missing: '+native_name)
                     actual_views[name]=by_name[native_name]
                 receipt['layout_readback']=verify_view_layout(reopened,task,actual_views)
+                _evidence.data['layout_readback']=receipt['layout_readback']
+                _evidence.data['views']=[{'id':name,'native_name':view_names[name],
+                    'scale':float(read_member(view,'ScaleDecimal')),
+                    'position_mm':[float(v)*1000 for v in read_member(view,'Position')],
+                    'bounds_mm':[float(v)*1000 for v in read_member(view,'GetOutline')]}
+                    for name,view in actual_views.items()]
+                _evidence.data['annotations']=verify_annotation_evidence(reopened,_evidence.data['annotations'])
+                _evidence.data['annotation_reopen_verified']=True
             finally:self.close_document(reopened)
-            if bom_evidence:receipt['bom_readback']=bom_evidence
+            if bom_evidence:
+                receipt['bom_readback']=bom_evidence
+                _evidence.data['bom_readback']=bom_evidence
             if 'flat_DXF' in task['exports']:
                 part = self.open_document(model_path,assembly_receipt['documents'][task['node']]['configuration'])
                 dxf = folder/(Path(task['filename']).stem+'-flat.dxf')

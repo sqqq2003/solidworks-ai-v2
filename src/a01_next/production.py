@@ -91,6 +91,11 @@ def execute_request(request,driver,destination):
     root=Path(destination)
     copied=driver.pack_and_go(plan['source_assembly'],root/'refs',plan['configuration'])
     copies=driver.receipt['events'][-1]['copies']
+    with driver.edit_transaction(plan['edits'],copies,copied,plan['configuration']):
+        return _execute_isolated(plan,driver,root,copied,copies)
+
+
+def _execute_isolated(plan,driver,root,copied,copies):
     edits=driver.apply_mapped_dimensions(plan['edits'],copies)
     mate_evidence=driver.apply_persistent_mates(copied,plan['configuration'],plan['mates'],plan['references'])
     checks=driver.inspect_native(copied)
@@ -103,4 +108,5 @@ def execute_request(request,driver,destination):
     return dict(status='native_workflow_executed_pending_review',cad_executed=True,
                 document=copied,dimension_readback=edits,mates=mate_evidence,checks=checks,
                 drawings=drawings,engineering_acceptance='unverified',
-                cad_release_approved=False,pdf_layout_review='not_implemented_in_this_entry')
+                cad_release_approved=False,pdf_layout_review='pending' if drawings else 'not_requested',
+                acceptance_state='reviewing',delivery_accepted=False,manufacturing_approved=False)

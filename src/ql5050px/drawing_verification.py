@@ -4,6 +4,52 @@ from pathlib import Path
 from .native_machine import read_member
 
 
+def annotation_evidence(owner, kind, requested):
+    from sw_compat.annotation import resolve_annotation,read_annotation_position
+    from sw_compat.com_access import read_com_member
+    annotation=resolve_annotation(owner)
+    name=str(read_com_member(annotation,'GetName'))
+    position=[float(v)*1000 for v in read_annotation_position(owner)]
+    if not name or len(position)!=3 or not all(math.isfinite(v) for v in position):
+        raise RuntimeError('drawing annotation identity/position unavailable')
+    result={'kind':kind,'name':name,'type':int(read_com_member(annotation,'GetType')),
+            'position_mm':position,'requested':requested}
+    if kind=='note':
+        result['text']=str(read_com_member(owner,'GetText'))
+        if result['text']!=requested['text']:raise RuntimeError('drawing annotation text mismatch')
+    return result
+
+
+def verify_annotation_evidence(drawing,expected):
+    """Bind inserted annotations by native name after save/reopen, not counts."""
+    if not expected:return []
+    from sw_compat.com_access import read_com_member
+    annotations={};view=read_member(drawing,'GetFirstView');seen=set()
+    while view is not None:
+        view_name=str(read_member(view,'GetName2'))
+        if view_name in seen or len(seen)>=4096:raise RuntimeError('drawing view chain cyclic or oversized')
+        seen.add(view_name)
+        for annotation in read_member(view,'GetAnnotations') or []:
+            name=str(read_com_member(annotation,'GetName'))
+            if name in annotations:raise RuntimeError('duplicate native annotation name')
+            annotations[name]=annotation
+        view=read_member(view,'GetNextView')
+    results=[]
+    for item in expected:
+        annotation=annotations.get(item['name'])
+        if annotation is None:raise RuntimeError('saved drawing annotation missing: '+item['name'])
+        position=[float(v)*1000 for v in read_com_member(annotation,'GetPosition')]
+        if (len(position)!=3 or not all(math.isfinite(v) for v in position) or
+                int(read_com_member(annotation,'GetType'))!=item['type'] or
+                any(not math.isclose(a,b,abs_tol=.1) for a,b in zip(position,item['position_mm']))):
+            raise RuntimeError('saved annotation type/position differs: '+item['name'])
+        if item['kind']=='note':
+            note=read_com_member(annotation,'GetSpecificAnnotation')
+            if str(read_com_member(note,'GetText'))!=item['text']:raise RuntimeError('saved annotation text differs')
+        results.append({**item,'reopened':True,'position_mm':position})
+    return results
+
+
 def verify_view_layout(drawing, task, views):
     sheet=drawing.GetCurrentSheet()
     properties=read_member(sheet,'GetProperties2')

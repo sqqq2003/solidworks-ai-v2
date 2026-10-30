@@ -1,5 +1,6 @@
 """Actual isolated Git/source ZIP checks; no Windows packaging or CAD."""
 from pathlib import Path
+import os,stat
 import json,subprocess,sys,tempfile,unittest,zipfile
 ROOT=Path(__file__).resolve().parents[1];sys.path[:0]=[str(ROOT),str(ROOT/'src')]
 from release_candidate import build_candidate,verify_candidate
@@ -39,7 +40,11 @@ class CandidateTests(unittest.TestCase):
         files={}
         for name in self.git('ls-files').splitlines():
             b=(self.repo/name).read_bytes();files[name]=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
-        revision=self.git('rev-parse','HEAD');shutil.rmtree(self.repo/'.git')
+        revision=self.git('rev-parse','HEAD')
+        def make_writable_and_retry(function,path,error):
+            os.chmod(path,stat.S_IWRITE | stat.S_IREAD)
+            function(path)
+        shutil.rmtree(self.repo/'.git',onerror=make_writable_and_retry)
         result=build_candidate(self.repo,self.root/'snapshot',source_index={'schema_version':1,'source_revision':revision,'files':files})
         self.assertEqual(result['source_revision'],revision)
         self.assertEqual(verify_candidate(self.root/'snapshot')['status'],'passed')

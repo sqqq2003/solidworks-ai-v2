@@ -1,5 +1,6 @@
 """Whole-project job/UI/bundle contracts; no real CAD process or desktop opened."""
 from dataclasses import replace
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -13,7 +14,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT),str(ROOT/'src'),str(ROOT/'work')]
 from project_workbench import build_command, confirm_job, execute_job, run_batch, write_report, capabilities
-from prepare_test_handoff import build_package
+from prepare_test_handoff import build_package, collect
 from verify_test_handoff import verify
 import sw_tool_cli
 from turned_part import TurnedPartPlan
@@ -56,7 +57,7 @@ class ProjectTests(unittest.TestCase):
         self.assertIn('--sw-exe',cmd)
 
     def test_batch_export_command_requires_confirmation_and_new_dir(self):
-        # 批量导出须确认且输出目录必须为新目录，走 --batch --batch-out-dir。
+        # ����������ȷ�������Ŀ¼����Ϊ��Ŀ¼���� --batch --batch-out-dir��
         out_dir = self.root/'batch-out'
         job = confirm_job(self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
             output_dir=str(out_dir),sw_exe=str(self.exe)))
@@ -66,13 +67,13 @@ class ProjectTests(unittest.TestCase):
         self.assertIn('--sw-exe',cmd)
         self.assertIn(str(self.source),cmd)
 
-        # 未确认则拒绝。
+        # δȷ����ܾ���
         unconfirmed = self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
             output_dir=str(out_dir),sw_exe=str(self.exe))
         with self.assertRaises(ValueError):
             build_command(unconfirmed)
 
-        # 输出目录已存在且非空则拒绝。
+        # ���Ŀ¼�Ѵ����ҷǿ���ܾ���
         out_dir.mkdir(parents=True)
         (out_dir/'x.SLDPRT').write_text('occupied')
         occupied = confirm_job(self.job(action='batch',thickness=4.0,radius=1.2,angle=90.0,
@@ -146,7 +147,7 @@ class ProjectTests(unittest.TestCase):
 
     def test_roller_missing_dimensions_cannot_silently_generate(self):
         from roller_drawing import RollerDrawingVariant
-        variant = RollerDrawingVariant('无动力滚筒',1,300,50,None,None,None,None,None,None,'synthetic')
+        variant = RollerDrawingVariant('�޶�����Ͳ',1,300,50,None,None,None,None,None,None,'synthetic')
         args = sw_tool_cli.build_parser().parse_args(['--mode','roller','--input',str(self.source),'--out',str(self.root/'r.SLDPRT')])
         with patch('sw_tool_cli.analyze_cad_file',return_value=SimpleNamespace(roller_variants=(variant,))),patch('sw_tool_cli.generate_roller_part') as native,patch('sw_tool_cli.emit') as emit:
             self.assertEqual(sw_tool_cli.run_roller(args),3)
@@ -168,6 +169,22 @@ class ProjectTests(unittest.TestCase):
         self.assertEqual(verify(extract)['status'],'verified')
         (extract/'app.py').write_text('changed')
         self.assertEqual(verify(extract)['status'],'failed')
+
+    def test_bundle_includes_runtime_design_platform_matrix(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder)/'source'; source.mkdir()
+            matrix = Path('delivery/design-platform/windows-matrix.json')
+            matrix_path = source/matrix
+            matrix_path.parent.mkdir(parents=True)
+            content = b'{"schema_version":1}\n'
+            matrix_path.write_bytes(content)
+            blob_sha = hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()
+            source_index = {'files':{matrix.as_posix():blob_sha}}
+            self.assertIn(matrix, collect(source,source_index))
+            package = Path(folder)/'source.zip'
+            build_package(source,package,'synthetic-test-revision',source_index=source_index)
+            with zipfile.ZipFile(package) as bundle:
+                self.assertIn(matrix.as_posix(),bundle.namelist())
 
     def test_app_import_has_no_desktop_or_cad_side_effect(self):
         spec = importlib.util.spec_from_file_location('project_desktop_import_test',ROOT/'app.py')

@@ -18,7 +18,9 @@ CHECKS = [
     ('assembly_motion_interference','native'), ('drawings_bom_manufacturing','native'),
     ('save_reopen_references','native'), ('process_exit_and_source_unchanged','native'),
     ('checkpoint_half_edit_restore','native'), ('request_idempotency_and_conflict','native'),
-    ('unresolved_session_reconciliation','native')]
+    ('unresolved_session_reconciliation','native'),
+    ('drawing_visual_acceptance','native'),('drawing_atomic_evidence','native'),
+    ('drawing_dimension_rollback','native')]
 
 
 def git(root, *args):

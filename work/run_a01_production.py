@@ -14,13 +14,14 @@ def main():
     p.add_argument('--live',action='store_true')
     p.add_argument('--sw-exe',type=Path)
     p.add_argument('--out',type=Path)
+    p.add_argument('--idempotency-key')
     a=p.parse_args()
     try:
         request=json.loads(a.request.read_text(encoding='utf-8-sig'))
         if a.live:
             if not a.sw_exe or not a.out:raise ValueError('--live requires --sw-exe and fresh --out')
             from src.a01_next.native_production import run_production
-            result=run_production(request,a.sw_exe,a.out)
+            result=run_production(request,a.sw_exe,a.out,idempotency_key=a.idempotency_key)
         else:result=prepare_request(request)
         print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
         return 0
