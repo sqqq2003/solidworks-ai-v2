@@ -395,6 +395,38 @@ class FrameFitLayoutTests(unittest.TestCase):
     def _assert_scale_locked(self, sheet, scale):
         sheet.SetScale.assert_called_once_with(scale[0], scale[1], True, True)
 
+    def test_inside_outline_is_not_nudged_off_the_frame(self):
+        # A placement already inside the frame must stay there. 18a718db kept
+        # nudging toward a theoretical center and could walk the outline out.
+        from ql5050px.auto_layout import first_angle_layout
+        drawing,sheet=self._sheet(1,10,594,420)
+        sizes={'front':[110.5,143.0],'top':[110.5,180.32],'right':[180.32,143.0]}
+        centers=first_angle_layout(594,420,sizes)
+        views={}
+        for name,size in sizes.items():
+            view=_AnchoredView(size,[0,0],0.1)
+            view.position_mm=[centers[name][0]+0.3, centers[name][1]]
+            view.writes=0
+            views[name]=view
+        task=self._task([1,10],594,420)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertTrue(all(view.writes==0 for view in views.values()))
+        self.assertTrue(all(not view_exceeds_frame(item['bounds_mm'], proof['frame_bounds_mm']) for item in proof['views']))
+
+    def test_frame_miss_after_settle_is_does_not_fit(self):
+        drawing,sheet=self._sheet(1,10,420,297)
+        sizes={'front':[90,70],'top':[90,80],'right':[70,70]}
+        views={name:_AnchoredView(size,[0,0],0.1) for name,size in sizes.items()}
+        task=self._task([1,10],420,297)
+        with patch('ql5050px.drawing_verification.verify_view_layout', side_effect=RuntimeError('drawing view exceeds frame: top')):
+            with self.assertRaisesRegex(ValueError,'does_not_fit') as caught:
+                lock_view_layout(drawing,task,views)
+        self.assertIn('outlines_mm=',str(caught.exception))
+        self.assertIn('sheet_mm=',str(caught.exception))
+        self.assertIn('scale=1:10',str(caught.exception))
+        self._assert_scale_locked(sheet,[1,10])
+
     def test_a2_tenth_envelope_still_fits_without_changing_scale(self):
         # Known-good cell. Zero anchor: Position and the outline center match.
         drawing,sheet=self._sheet(1,10,594,420)

@@ -99,8 +99,10 @@ def _format_outlines(measured):
     return 'outlines_mm={'+','.join(parts)+'}'
 
 
-def _refuse_measured(measured, error=None):
+def _refuse_measured(measured, error=None, task=None):
     suffix='; '+_format_outlines(measured)
+    if task is not None:
+        suffix+=f"; sheet_mm=[{float(task['width_mm']):.2f},{float(task['height_mm']):.2f}]; scale={task['scale'][0]}:{task['scale'][1]}"
     if error is not None and 'layout_does_not_fit' in str(error):
         message=str(error)
         if 'outlines_mm=' not in message:message+=suffix
@@ -112,21 +114,24 @@ def _centers_moved(before, after):
     return any(abs(before[name]['center'][i]-after[name]['center'][i])>0.05 for name in before for i in (0,1))
 
 
-def _acceptable(measured, centers, frame, reserved):
-    boxes={}
-    for name,item in measured.items():
-        if name not in centers or any(abs(item['center'][i]-centers[name][i])>0.05 for i in (0,1)):
-            return False
-        box=_outline_bounds(item)
-        if view_exceeds_frame(box, frame):return False
-        boxes[name]=box
+def _aligned(measured):
+    """First-angle: top below front, right on the left, sharing the front axes."""
+    if set(measured)!={'front','top','right'}:return False
+    front,top,right=(measured[name]['center'] for name in ('front','top','right'))
+    return right[0]<front[0]-5 and top[1]<front[1]-5 and abs(top[0]-front[0])<2 and abs(right[1]-front[1])<2
+
+
+def _boxes_pass(measured, frame, reserved):
+    """Same frame and overlap predicates as verify_view_layout. Center match is not required."""
+    boxes={name:_outline_bounds(item) for name,item in measured.items()}
+    if any(view_exceeds_frame(box, frame) for box in boxes.values()):return False
     names=list(boxes)
     for index,name in enumerate(names):
         for other in names[index+1:]:
             if rectangles_overlap(boxes[name], boxes[other]):return False
         for rect in reserved:
             if rectangles_overlap(boxes[name], rect):return False
-    return True
+    return _aligned(measured)
 
 
 def _remember_positions(task, measured):
@@ -134,23 +139,32 @@ def _remember_positions(task, measured):
         item['position_mm']=list(measured[item['id']]['position'])
 
 
-def _settle_auto_layout(drawing, task, views):
-    """Move until a post-rebuild GetOutline passes the verifier predicates.
+def _sheet_frame(drawing, task):
+    """Frame and title block from the sheet readback verify_view_layout uses."""
+    properties=read_member(drawing.GetCurrentSheet(),'GetProperties2')
+    width,height=float(properties[5])*1000,float(properties[6])*1000
+    if not math.isfinite(width) or not math.isfinite(height) or width<=0 or height<=0:
+        width,height=float(task['width_mm']),float(task['height_mm'])
+    frame=task.get('frame_bounds_mm', default_frame_mm(width, height))
+    reserved=task.get('reserved_rectangles_mm', [default_title_block_mm(width)])
+    return frame, reserved
 
-    18a718db wrote Position from one anchor reading and nudged once. On
-    SolidWorks the outline verify reads can still be the pre-move box, so the
-    top or front view was outside the frame. A stale reading is not used to
-    take another step. The requested scale is never replaced.
+
+def _settle_auto_layout(drawing, task, views):
+    """Move until post-rebuild GetOutline boxes pass the verifier predicates.
+
+    18a718db trusted one anchor and one nudge. The outline verify measured
+    could still be the pre-move box, so top/front landed outside the frame
+    while A2 at 1:10 still fit in the slack. Stop when the boxes are inside
+    the sheet frame and clear of the title block. Do not keep nudging a
+    placement that already passes. The requested scale is never replaced.
     """
     from .auto_layout import first_angle_layout
-    frame=task.get('frame_bounds_mm', default_frame_mm(task['width_mm'], task['height_mm']))
-    reserved=task.get('reserved_rectangles_mm', [default_title_block_mm(task['width_mm'])])
+    frame,reserved=_sheet_frame(drawing, task)
     previous=None
     for _ in range(12):
         measured=_measure_views(views)
         if previous is not None and not _centers_moved(previous, measured):
-            # GetOutline can lag Position by more than one rebuild. Do not take
-            # another placement step from that stale center.
             caught=measured
             for _catch in range(3):
                 if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
@@ -158,18 +172,22 @@ def _settle_auto_layout(drawing, task, views):
                 if _centers_moved(previous, caught):
                     measured=caught
                     break
-            else:_refuse_measured(caught)
+            else:_refuse_measured(caught, task=task)
+        if _boxes_pass(measured, frame, reserved):
+            if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
+            confirmed=_measure_views(views)
+            if _boxes_pass(confirmed, frame, reserved):
+                _remember_positions(task, confirmed)
+                return
+            measured=confirmed
         try:
             centers=first_angle_layout(task['width_mm'], task['height_mm'], {name:item['size'] for name,item in measured.items()})
         except ValueError as error:
-            _refuse_measured(measured, error)
-        if _acceptable(measured, centers, frame, reserved):
-            _remember_positions(task, measured)
-            return
+            _refuse_measured(measured, error, task)
         previous=measured
         _apply_outline_centers(task, views, centers, measured)
         if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
-    _refuse_measured(_measure_views(views))
+    _refuse_measured(_measure_views(views), task=task)
 
 
 def lock_view_layout(drawing,task,views):
@@ -185,7 +203,14 @@ def lock_view_layout(drawing,task,views):
         for item in task['drawing_model']['views']:
             _write_position(views[item['id']], item['position_mm'])
         if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
-    return verify_view_layout(drawing,task,views)
+    try:
+        return verify_view_layout(drawing,task,views)
+    except RuntimeError as error:
+        # Placement could not keep the outline inside. Say so with the boxes,
+        # instead of reporting a bad place as blocked_view_exceeds_frame.
+        if task.get('auto_layout') and ('exceeds frame' in str(error) or 'layout overlap' in str(error)):
+            _refuse_measured(_measure_views(views), task=task)
+        raise
 
 
 def validate_pdf(path,expected_pages):
