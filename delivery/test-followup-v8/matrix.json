@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "unified",
+      "sha": "d029305b3aa19aa0b41b72a1505c6579d3828921",
+      "checks": [
+        {
+          "id": "cloud_regression",
+          "scope": "offline"
+        },
+        {
+          "id": "desktop_and_api",
+          "scope": "offline"
+        },
+        {
+          "id": "coexisting_instances",
+          "scope": "native"
+        },
+        {
+          "id": "dwg_analyze",
+          "scope": "native"
+        },
+        {
+          "id": "sheet_rebuild_flat_pattern",
+          "scope": "native"
+        },
+        {
+          "id": "roller_800_interfaces",
+          "scope": "native"
+        },
+        {
+          "id": "assembly_motion_interference",
+          "scope": "native"
+        },
+        {
+          "id": "drawings_bom_manufacturing",
+          "scope": "native"
+        },
+        {
+          "id": "save_reopen_references",
+          "scope": "native"
+        },
+        {
+          "id": "process_exit_and_source_unchanged",
+          "scope": "native"
+        },
+        {
+          "id": "checkpoint_half_edit_restore",
+          "scope": "native"
+        },
+        {
+          "id": "request_idempotency_and_conflict",
+          "scope": "native"
+        },
+        {
+          "id": "unresolved_session_reconciliation",
+          "scope": "native"
+        },
+        {
+          "id": "drawing_visual_acceptance",
+          "scope": "native"
+        },
+        {
+          "id": "drawing_atomic_evidence",
+          "scope": "native"
+        },
+        {
+          "id": "drawing_dimension_rollback",
+          "scope": "native"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "source_revision": "d029305b3aa19aa0b41b72a1505c6579d3828921",
+  "file_count": 551,
+  "kit_bytes": 1324799,
+  "kit_sha256": "63459f52ffa73b388022e909e77a47fa4fef96b584aadcc0cd4ac9c2fa21bcd1",
+  "git_blob_sha": "0fb61b0a4f61ed9cdddf5faf86c58a4f47f97506",
+  "source_zip_sha256": "ffd07b162b8080d6a478c7f9273aaa2fac0cea54ede5401b55476d46580f8ff2",
+  "inspection": {
+    "schema_version": 1,
+    "status": "passed",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "63459f52ffa73b388022e909e77a47fa4fef96b584aadcc0cd4ac9c2fa21bcd1",
+    "source_revision": "d029305b3aa19aa0b41b72a1505c6579d3828921",
+    "candidate_id": "77424bdfa31d7e00186877e6520905f429b4ea6e835025a6de95ee7259497bbb",
+    "source_files": 551,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false
+  },
+  "installation": {
+    "schema_version": 1,
+    "status": "review_required",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "63459f52ffa73b388022e909e77a47fa4fef96b584aadcc0cd4ac9c2fa21bcd1",
+    "source_revision": "d029305b3aa19aa0b41b72a1505c6579d3828921",
+    "candidate_id": "77424bdfa31d7e00186877e6520905f429b4ea6e835025a6de95ee7259497bbb",
+    "source_files": 551,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false,
+    "phase": "source_installed_runtime_required",
+    "directory": "/workspace/test-followup-v8-installed",
+    "app_directory": "/workspace/test-followup-v8-installed/app",
+    "files_written": 553,
+    "next_steps": [
+      "Create a new Python environment and install app/requirements-cloud.txt.",
+      "Run python work/verify_test_handoff.py . inside app.",
+      "Run python app.py; native work still requires explicit Windows review."
+    ],
+    "original_installation_modified": false,
+    "code_executed": false
+  },
+  "candidate_verification": {
+    "status": "passed",
+    "issues": [],
+    "source_revision": "d029305b3aa19aa0b41b72a1505c6579d3828921",
+    "scope": "candidate_file_integrity_only",
+    "manufacturing_approved": false
+  },
+  "code_executed": false,
+  "native_acceptance": "not_run",
+  "scope": "source_package_file_integrity_only",
+  "manufacturing_approved": false
+}

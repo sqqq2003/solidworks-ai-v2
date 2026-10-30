@@ -123,6 +123,9 @@ class DrawingEvidence:
         self.com_error('drawing_pipeline', error)
         self.data.update(state='failed', complete=False, technical_status='failed',
                          error_type=type(error).__name__, error=str(error), delivery_accepted=False)
+        if hasattr(error,'diagnostic'):
+            self.data['layout_diagnostic']=error.diagnostic
+            self.data['explicit_fit_alternatives']=error.alternatives
         self.flush()
 
 

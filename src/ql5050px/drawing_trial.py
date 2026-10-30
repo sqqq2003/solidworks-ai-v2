@@ -103,6 +103,9 @@ def run_trial(request):
                         cell.update(acceptance_state='reviewing',delivery_accepted=False)
                     except (ValueError,RuntimeError) as error:
                         message=str(error);cell['error']=message
+                        if hasattr(error,'diagnostic'):
+                            cell['layout_diagnostic']=error.diagnostic
+                            cell['explicit_fit_alternatives']=error.alternatives
                         if 'layout_does_not_fit' not in message and 'layout_title_block_conflict' not in message:raise
                         cell['status']='expected_layout_block'
                         from sw_compat.model_document import model_document

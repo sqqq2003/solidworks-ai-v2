@@ -27,11 +27,23 @@ def inspect_trial_result(code,target,worker_error=None):
     except (OSError,ValueError) as error:return dict(failure,error=str(error))
     generated=code==0 and bool(cells) and all(c.get('status')=='pass_pending_visual' for c in cells)
     blocked=code==0 and bool(cells) and all(c.get('status')=='expected_layout_block' for c in cells)
+    generated_count=sum(c.get('status')=='pass_pending_visual' for c in cells)
+    blocked_count=sum(c.get('status')=='expected_layout_block' for c in cells)
+    alternatives=[];seen=set()
+    for cell in cells:
+        for choice in cell.get('explicit_fit_alternatives',[]):
+            key=(choice.get('sheet'),tuple(choice.get('scale',[])))
+            if key not in seen:alternatives.append(choice);seen.add(key)
     components=report.get('components')
     missing=sum(1 for item in components if isinstance(item,dict) and item.get('exists') is False) if isinstance(components,list) else None
     message=('生成完成（缺件测试），请目视审核。' if generated else
              '固定比例装不下，请选择更大图幅或明确修改比例。' if blocked else
              '本次未产生完整图纸，请查看结果中的失败原因。')
+    if not generated and generated_count:
+        message=f'已生成 {generated_count}/{len(cells)} 张；{blocked_count} 张在当前比例放不下，仍待审核。'
+    if alternatives:
+        labels=[str(c['sheet'])+' '+str(c['scale'][0])+':'+str(c['scale'][1]) for c in alternatives[:3]]
+        message+=' 可试方案：'+'、'.join(labels)+'；需你明确选择后重新生成。'
     reviews=[]
     for cell in cells:
         for item in cell.get('drawing',{}).get('results',[]):
@@ -50,6 +62,7 @@ def inspect_trial_result(code,target,worker_error=None):
     return {'drawing_generated':generated,'result':str(path),'error':report.get('error'),
             'acceptance_state':'rejected' if rejected else 'accepted' if visual_accepted else 'reviewing',
             'visual_accepted':visual_accepted,'delivery_accepted':False,'drawing_reviews':reviews,
+            'generated_count':generated_count,'blocked_count':blocked_count,'fit_alternatives':alternatives,
             'traceback':report.get('traceback'),
             'missing_component_references':missing,'message':message}
 
