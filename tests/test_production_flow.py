@@ -29,11 +29,11 @@ class FakeDriver:
             target=dest/Path(item['path']).name;target.write_bytes(b'offline variant');copies[item['path']]=str(target)
         return {'isolated_documents':copies,'document':{'path':copies[self.documents['machine']['path']],'configuration':'Default'}}
     def inspect_native(self,path,samples):
-        self.events.append('checks');assert '/drive/' in path
+        self.events.append('checks');assert Path(path).parent.name == 'drive'
         return {'simulated_only':False,'acceptance':'unverified','fixture_only':True}
     def export_manufacturing(self,plan,receipt,dest):
         self.events.append('drawings')
-        assert all('/drive/' in d['path'] for d in receipt['documents'].values())
+        assert all(Path(d['path']).parent.name == 'drive' for d in receipt['documents'].values())
         dest.mkdir();(dest/'fixture.SLDDRW').write_bytes(b'not a real drawing')
         return {'fixture_only':True}
 

@@ -89,7 +89,7 @@ def build_release(request, destination):
     repository=Path(__file__).resolve().parents[1]
     revision=subprocess.run(['git','rev-parse','HEAD'],cwd=repository,capture_output=True,text=True)
     actual_revision=revision.stdout.strip() if revision.returncode==0 else 'unrecorded_source_archive'
-    code={str(p.relative_to(repository)):hashlib.sha256(p.read_bytes()).hexdigest()
+    code={p.relative_to(repository).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()
           for folder in ('src','work','feature_tree','geometry_ir') for p in sorted((repository/folder).rglob('*.py'))}
     code['app.py']=hashlib.sha256((repository/'app.py').read_bytes()).hexdigest()
     report={'schema_version':1,'status':'failed' if errors else 'review_required',

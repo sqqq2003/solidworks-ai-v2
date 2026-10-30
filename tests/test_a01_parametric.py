@@ -149,6 +149,8 @@ class CliTests(unittest.TestCase):
             check=False,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         report = json.loads(out.read_text(encoding="utf-8"))
