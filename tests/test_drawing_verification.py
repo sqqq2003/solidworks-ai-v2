@@ -338,6 +338,37 @@ class _BiasedView(_AnchoredView):
         self.bias_mm=[0,0]
 
 
+class _LaggingView(_AnchoredView):
+    """GetOutline follows Position one EditRebuild3 behind."""
+    def __init__(self, size_mm, anchor_mm, scale):
+        super().__init__(size_mm, anchor_mm, scale)
+        self._shown=list(self.position_mm)
+        self._pending=None
+        self.publishes=0
+    def publish(self):
+        self.publishes+=1
+        if self._pending is not None:self._shown=list(self._pending)
+        self._pending=list(self.position_mm)
+    def GetOutline(self):
+        cx=self._shown[0]-self.anchor_mm[0]
+        cy=self._shown[1]-self.anchor_mm[1]
+        w,h=self.size_mm
+        return [(cx-w/2)/1000,(cy-h/2)/1000,(cx+w/2)/1000,(cy+h/2)/1000]
+
+
+class _PublishingDrawing:
+    def __init__(self, sheet, views):
+        self._sheet=sheet
+        self._views=list(views)
+    def GetCurrentSheet(self):
+        return self._sheet
+    def EditRebuild3(self):
+        for view in self._views:
+            publish=getattr(view,'publish',None)
+            if publish:publish()
+        return True
+
+
 class _GrowingView(_AnchoredView):
     def __init__(self, stale_mm, real_mm, scale):
         super().__init__(stale_mm, [0,0], scale)
@@ -437,8 +468,10 @@ class FrameFitLayoutTests(unittest.TestCase):
         measured={'front':[110.5,143.0],'top':[110.5,180.32],'right':[180.32,143.0]}
         views={name:_AnchoredView(size,[0,0],0.1) for name,size in measured.items()}
         task=self._task([1,10],420,297)
-        with self.assertRaisesRegex(ValueError,'does_not_fit'):
+        with self.assertRaisesRegex(ValueError,'does_not_fit') as caught:
             lock_view_layout(drawing,task,views)
+        self.assertIn('outlines_mm=',str(caught.exception))
+        self.assertIn('sizes_mm=',str(caught.exception))
         self._assert_scale_locked(sheet,[1,10])
         self.assertEqual(task['scale'],[1,10])
         self.assertTrue(all(view.writes==0 for view in views.values()))
@@ -453,5 +486,40 @@ class FrameFitLayoutTests(unittest.TestCase):
         self._assert_scale_locked(sheet,[1,5])
         self.assertEqual(task['scale'],[1,5])
         self.assertTrue(all(view.writes==1 for view in views.values()))
+
+    def test_lagged_outline_settles_before_the_frame_check(self):
+        # 18a718db nudged once against a stale GetOutline. A later rebuild then
+        # left the real outline outside the frame. Wait until the outline follows.
+        _,sheet=self._sheet(1,10,420,297)
+        sizes={'front':[90,70],'top':[90,80],'right':[70,70]}
+        anchors={'front':[0,0],'top':[0,40],'right':[0,0]}
+        views={name:_LaggingView(sizes[name],anchors[name],0.1) for name in sizes}
+        drawing=_PublishingDrawing(sheet,views.values())
+        task=self._task([1,10],420,297)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,10])
+        self.assertEqual(task['scale'],[1,10])
+        self.assertTrue(all(view.writes==1 for view in views.values()))
+        self.assertGreaterEqual(views['top'].publishes,3)
+        for view in views.values():view.publish()
+        for view in views.values():
+            box=[float(v)*1000 for v in view.GetOutline()]
+            self.assertFalse(view_exceeds_frame(box, proof['frame_bounds_mm']))
+
+    def test_wide_a3_top_view_clears_title_block_without_rescaling(self):
+        # Live A3_1-20: top overlapped the reserved title block.
+        drawing,sheet=self._sheet(1,20,420,297)
+        sizes={'front':[80,40],'top':[200,40],'right':[40,40]}
+        views={name:_AnchoredView(size,[0,30] if name=='top' else [0,0],0.05) for name,size in sizes.items()}
+        task=self._task([1,20],420,297)
+        proof=lock_view_layout(drawing,task,views)
+        self._assert_scale_locked(sheet,[1,20])
+        self.assertEqual(proof['sheet_scale'],[1,20])
+        self.assertEqual({item['name'] for item in proof['views']},{'front','top','right'})
+        title=[420-180,0,420,60]
+        for item in proof['views']:
+            box=item['bounds_mm']
+            self.assertFalse(view_exceeds_frame(box, proof['frame_bounds_mm']))
+            self.assertFalse(min(box[2],title[2])-max(box[0],title[0])>0.1 and min(box[3],title[3])-max(box[1],title[1])>0.1)
 
 if __name__=='__main__':unittest.main()

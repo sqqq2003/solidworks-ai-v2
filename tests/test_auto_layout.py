@@ -58,6 +58,30 @@ class AutoLayoutTests(unittest.TestCase):
     def test_anchor_is_added_to_the_outline_center(self):
         self.assertEqual(position_for_outline_center([10,20],[3,-4]),[13,16])
         with self.assertRaises(ValueError):position_for_outline_center([1,2],[float('nan'),0])
+    def test_a2_tenth_slot_stays_at_the_historical_origin(self):
+        sizes={'front':[110.5,143.0],'top':[110.5,180.32],'right':[180.32,143.0]}
+        positions=first_angle_layout(594,420,sizes)
+        self.assertAlmostEqual(positions['front'][0],275.57,places=2)
+        self.assertAlmostEqual(positions['front'][1],276.82,places=2)
+        self.assertAlmostEqual(positions['right'][0],120.16,places=2)
+        self.assertAlmostEqual(positions['top'][1],105.16,places=2)
+    def test_wide_bottom_view_clears_the_title_block(self):
+        # A3 title block starts at x=240. A 200 mm top view packed at y=15 overlaps it.
+        sizes={'front':[80,40],'top':[200,40],'right':[40,40]}
+        positions=first_angle_layout(420,297,sizes)
+        boxes={name:_box(positions[name], sizes[name]) for name in positions}
+        frame=default_frame_mm(420,297)
+        title=default_title_block_mm(420)
+        for name,box in boxes.items():
+            self.assertFalse(view_exceeds_frame(box, frame), name)
+            self.assertFalse(_overlaps(box, title), name)
+        self.assertGreaterEqual(min(box[1] for box in boxes.values()),60)
+    def test_refusal_records_measured_sizes(self):
+        sizes={'front':[110.5,143.0],'top':[110.5,180.32],'right':[180.32,143.0]}
+        with self.assertRaisesRegex(ValueError,'does_not_fit') as caught:
+            first_angle_layout(420,297,sizes)
+        self.assertIn('sizes_mm=',str(caught.exception))
+        self.assertIn('110.50',str(caught.exception))
     def test_invalid_dimensions_rejected(self):
         with self.assertRaises(ValueError):first_angle_layout(594,420,{'front':[0,2],'top':[2,2],'right':[2,2]})
 
