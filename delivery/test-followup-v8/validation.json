@@ -1,0 +1,32 @@
+{
+  "source_revision": "d029305b3aa19aa0b41b72a1505c6579d3828921",
+  "scope": "targeted_simulation_and_file_package_contracts",
+  "python": "3.12.14",
+  "tests_run": 145,
+  "passed": 145,
+  "skipped": 0,
+  "failures": 0,
+  "errors": 0,
+  "modules": [
+    "test_drawing_followup",
+    "test_auto_layout",
+    "test_drawing_verification",
+    "test_drawing_pipeline_contract",
+    "test_drawing_review",
+    "test_drawing_trial_ui",
+    "test_drawing_trial_process_guard",
+    "test_project_workbench",
+    "test_a01_parametric",
+    "test_cad_checkpoint",
+    "test_production_flow",
+    "test_release_candidate",
+    "test_test_handoff_audit",
+    "test_release_evidence"
+  ],
+  "command": "XDG_CACHE_HOME=/workspace/cache PYTHONPATH=src:tests:. python -m unittest test_drawing_followup test_auto_layout test_drawing_verification test_drawing_pipeline_contract test_drawing_review test_drawing_trial_ui test_drawing_trial_process_guard test_project_workbench test_a01_parametric test_cad_checkpoint test_production_flow test_release_candidate test_test_handoff_audit test_release_evidence -v",
+  "windows_solidworks_run": false,
+  "human_visual_acceptance_run": false,
+  "full_regression_run": false,
+  "desktop_run": false,
+  "manufacturing_approved": false
+}
