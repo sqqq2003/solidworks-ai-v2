@@ -23,8 +23,47 @@ def verify_dimension_value(actual, expected, unit):
 
 
 def read_member(obj,name):
-    value = getattr(obj,name)
-    return value() if callable(value) else value
+    """Read a COM member. View iterators are property-first.
+
+    ``GetNextView`` on SW2025 is a propget. Calling the generated method raises
+    ``DISP_E_MEMBERNOTFOUND``. A property result, including None at the end of
+    the chain, is returned without that call. Any other member still calls a
+    method, and only a member-not-found error retries as a property get.
+    """
+    from part_verification import is_member_not_found
+    from sw_compat.com_access import read_propget, read_view_iterator, view_iterator
+    if view_iterator(name):
+        return read_view_iterator(obj, name)
+    value = getattr(obj, name)
+    if not callable(value):
+        return value
+    try:
+        return value()
+    except Exception as exc:
+        if not is_member_not_found(exc):
+            raise
+        try:
+            return read_propget(obj, name)
+        except AttributeError:
+            raise exc
+
+
+def retarget_saved_title(lease, title_before, model):
+    """Point the existing lease entry at the title SaveAs left open.
+
+    Does not adopt any other open document. A title already marked foreign
+    still fails in ``rename_owned``.
+    """
+    title_after = str(read_member(model, 'GetTitle'))
+    if title_after != str(title_before):
+        lease.rename_owned(str(title_before), title_after)
+    return title_after
+
+
+def math_transform(utility, array):
+    """CreateTransform argument must be SAFEARRAY(double), not a raw list."""
+    from sw_math_arrays import double_array
+    return utility.CreateTransform(double_array(array, 16))
 
 
 class NativeMachineDriver:
@@ -43,7 +82,10 @@ class NativeMachineDriver:
             import win32com.client
             import solidworks_generator as sw
             raw,_ = sw._connect_task_solidworks(self.lease,win32com,pythoncom)
+            self.lease.note_bound_application(raw)
             self.app = sw._as_interface(sw.ensure_solidworks_typelib(),raw,'ISldWorks')
+            # Typed wrappers are a different Python identity. Bind this one and reuse it.
+            self.lease.note_bound_application(self.app)
         return self.app
 
     def owned_path(self,path):
@@ -123,7 +165,12 @@ class NativeMachineDriver:
         if not read_member(model,'EditRebuild3'): raise RuntimeError('native rebuild failed')
         self.verify_references(model)
         if path.exists(): raise FileExistsError(path)
+        title_before = str(read_member(model,'GetTitle'))
         if int(model.SaveAs3(str(path),0,1))!=0 or not path.is_file(): raise RuntimeError('native SaveAs3 failed')
+        # SaveAs renames the open document. guard() inventories titles before
+        # CloseDoc; the pre-save title would look unowned. Referenced models
+        # SolidWorks loads for drawing views are not registered here.
+        retarget_saved_title(self.lease, title_before, model)
         self.close_document(model)
         reopened = self.open_document(path,configuration)
         if not read_member(reopened,'EditRebuild3'): raise RuntimeError('reopen rebuild failed')
@@ -209,7 +256,7 @@ class NativeMachineDriver:
                 component.ReferencedConfiguration = child['configuration']
                 array = transform[:]
                 array[9:12] = [v/1000 for v in array[9:12]]
-                component.Transform2 = self.app.GetMathUtility().CreateTransform(array)
+                component.Transform2 = math_transform(self.app.GetMathUtility(), array)
                 if catalog[item['ref']].get('component_kind')=='fixed':
                     if not component.Select4(False,None,False): raise RuntimeError('fixed component selection failed')
                     model.FixComponent()
@@ -246,7 +293,7 @@ class NativeMachineDriver:
                     axis = target['axis']
                     if type(axis) is not int or axis not in (0,1,2): raise ValueError('translation axis must be 0/1/2')
                     array[9+axis] = edit['after']/1000
-                    part.Transform2 = self.app.GetMathUtility().CreateTransform(array)
+                    part.Transform2 = math_transform(self.app.GetMathUtility(), array)
                     if abs(list(part.Transform2.ArrayData)[9+axis]-array[9+axis])>1e-8:
                         raise RuntimeError('component transform readback mismatch')
                 else:

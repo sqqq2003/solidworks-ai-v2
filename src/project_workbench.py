@@ -18,6 +18,12 @@ ROOT = Path(__file__).resolve().parents[1]
 MODES = {'sheet','roller','turned'}
 
 
+def uses_native_session(job):
+    """DWG analysis may import/export in SW even without generating a part."""
+    return job.get('kind') in MODES and (job.get('action') in ('generate', 'batch') or (
+        Path(job.get('source', '')).suffix.casefold() == '.dwg' and bool(job.get('sw_exe'))))
+
+
 def confirm_job(job):
     """Bind review to input bytes and every generation option; return a copy."""
     job = dict(job)
@@ -54,6 +60,8 @@ def bounded_run(command, *, cwd, timeout, **kwargs):
     with stdout_path.open('x',encoding='utf-8') as out, stderr_path.open('x',encoding='utf-8') as err:
         try:
             process = subprocess.Popen(command,cwd=cwd,stdout=out,stderr=err,shell=False)
+            from app_logging import get_journal
+            get_journal().record('worker_started',worker_pid=process.pid,native=native,stdout_file=str(stdout_path),stderr_file=str(stderr_path))
         except Exception:
             if native:
                 marker.unlink()
@@ -158,13 +166,39 @@ def build_command(job: dict, *, root=ROOT):
     if kind not in MODES:
         raise ValueError('unknown job kind')
     action = job.get('action','analyze')
-    if action not in {'analyze','plan','generate'}:
+    if action not in {'analyze','plan','generate','batch'}:
         raise ValueError('unknown action')
     source = Path(job['source']).expanduser().resolve()
     if not source.is_file() or source.suffix.casefold() not in {'.dwg','.dxf'}:
         raise ValueError('source must be an existing DWG/DXF file')
     cmd = [sys.executable,'-X','utf8',str(Path(root)/'src/sw_tool_cli.py'),
            '--mode',kind,'--input',str(source)]
+    if action == 'batch':
+        # 一键批量导出：串行导出整张图的全部钣金外轮廓到新目录。
+        if kind != 'sheet':
+            raise ValueError('batch action only supports sheet kind')
+        if job.get('confirmed') is not True:
+            raise ValueError('review identified geometry and parameters before native batch export')
+        if (not job.get('source_sha256') or
+                hashlib.sha256(source.read_bytes()).hexdigest() != job['source_sha256'] or
+                job.get('confirmation_digest') != confirmation_digest(job)):
+            raise ValueError('source or options changed since review; confirm the current job again')
+        executable = Path(job.get('sw_exe','')).expanduser().resolve()
+        if not executable.is_file() or executable.name.casefold() != 'sldworks.exe':
+            raise ValueError('native batch export requires installed SLDWORKS.exe')
+        out_dir = job.get('output_dir')
+        if not out_dir:
+            raise ValueError('batch export requires output_dir')
+        out_path = Path(out_dir).expanduser().resolve()
+        if out_path.exists() and any(out_path.iterdir()):
+            raise ValueError('batch output directory already exists and is not empty')
+        cmd.extend(['--batch','--batch-out-dir',str(out_path),
+                    '--sw-exe',str(executable)])
+        for key in ('thickness','radius','angle'):
+            cmd.extend(['--'+key,number(job.get(key),key)])
+        if job.get('flip') is True:
+            cmd.append('--flip')
+        return cmd
     if action == 'analyze':
         cmd.append('--analyze-only')
     elif action == 'plan':
@@ -183,6 +217,11 @@ def build_command(job: dict, *, root=ROOT):
         if output == source or output.exists() or output.suffix.casefold() != '.sldprt':
             raise ValueError('output must be a new .SLDPRT path, distinct from source')
         cmd.extend(['--out',str(output),'--sw-exe',str(executable),'--verify-reopen'])
+    if action in {'analyze','plan'} and source.suffix.casefold() == '.dwg' and job.get('sw_exe'):
+        executable = Path(job['sw_exe']).expanduser().resolve()
+        if not executable.is_file() or executable.name.casefold() != 'sldworks.exe':
+            raise ValueError('DWG conversion requires an installed SLDWORKS.exe, or clear the path to use LibreDWG/DXF')
+        cmd.extend(['--sw-exe',str(executable)])
     if kind == 'sheet' and action != 'analyze':
         for key in ('thickness','radius','angle'):
             cmd.extend(['--'+key,number(job.get(key),key)])
@@ -193,6 +232,14 @@ def build_command(job: dict, *, root=ROOT):
         if type(job.get('profile')) is not int or job['profile'] < 1:
             raise ValueError('sheet profile is one-based, positive integer')
         cmd.extend(['--profile',str(job['profile'])])
+        if 'uniform_scale' in job:
+            factor=job['uniform_scale']
+            if type(factor) not in (int,float) or not math.isfinite(factor) or factor<=0:
+                raise ValueError('等比例缩放倍数必须大于零')
+            cmd.extend(['--uniform-scale',str(factor)])
+        if job.get('preserve_circle_holes') is True:
+            if 'uniform_scale' not in job:raise ValueError('保持孔径需要填写缩放倍数')
+            cmd.append('--preserve-circle-holes')
         if job.get('flip') is True:
             cmd.append('--flip')
     if kind == 'roller' and job.get('allow_inferred') is True:
@@ -206,14 +253,16 @@ def build_command(job: dict, *, root=ROOT):
 
 
 def execute_job(job, *, root=ROOT, runner=bounded_run):
+    from app_logging import get_journal
+    journal=get_journal();job_id=uuid.uuid4().hex[:16];journal.record('job_started',job_id=job_id,job=job)
     started = time.monotonic()
     base = {'name':job.get('name',job.get('kind','job')),'kind':job.get('kind'),
             'mechanical_acceptance':'unverified','cad_verified':False}
     try:
         command = build_command(job,root=root)
-        native = job.get('action') == 'generate' and job.get('kind') in MODES
+        native = uses_native_session(job)
         if native and sys.platform != 'win32':
-            raise RuntimeError('native generation requires Windows; use analyze/plan on cloud')
+            raise RuntimeError('native SolidWorks conversion/generation requires Windows; use DXF or LibreDWG on cloud')
         # No shell interpolation, environment dump or automatic native-process kill.
         timeout = job.get('timeout_seconds',600)
         number(timeout,'timeout_seconds')
@@ -258,20 +307,24 @@ def execute_job(job, *, root=ROOT, runner=bounded_run):
         result = {**base,'status':status,'returncode':completed.returncode,'events':events,
                   'stderr':completed.stderr,'non_json_output':raw,'command':command,
                   'elapsed_seconds':round(time.monotonic()-started,3)}
-        if native and status != 'failed':
+        if job.get('action') == 'generate' and job.get('kind') in MODES and status != 'failed':
             output = Path(job['output']).resolve()
             if not output.is_file() or output.stat().st_size == 0:
                 raise RuntimeError('generation reported success without a nonempty product')
             result['artifact'] = {'path':str(output),'sha256':hashlib.sha256(output.read_bytes()).hexdigest()}
             result['cad_verified'] = status == 'reopen_geometry_verified'
+        journal.record('job_finished',job_id=job_id,level='ERROR' if status=='failed' else 'INFO',status=status,returncode=completed.returncode,
+                       elapsed_seconds=result['elapsed_seconds'],artifact=result.get('artifact'),stderr=completed.stderr,errors=errors)
         return result
     except subprocess.TimeoutExpired as exc:
+        journal.exception('job_timed_out',exc,job_id=job_id,worker_pid=getattr(exc,'worker_pid',None))
         return {**base,'status':'timed_out','error':'worker wait limit reached; worker was NOT terminated',
                 'worker_pid':getattr(exc,'worker_pid',None),
                 'stdout_file':getattr(exc,'stdout_path',None),'stderr_file':getattr(exc,'stderr_path',None),
                 'recovery_marker':getattr(exc,'recovery_marker',None),'worker_may_be_running':True,
                 'elapsed_seconds':round(time.monotonic()-started,3)}
     except Exception as exc:
+        journal.exception('job_failed',exc,job_id=job_id)
         return {**base,'status':'failed','error':str(exc),'elapsed_seconds':round(time.monotonic()-started,3)}
 
 
@@ -302,7 +355,7 @@ def run_batch(jobs, *, execute=execute_job, stop_requested=lambda:False):
         result = execute(job)
         results.append(result)
         # Never continue CAD writes after an unknown native failure.
-        if result['status'] == 'timed_out' or (job.get('action') == 'generate' and result['status'] == 'failed'):
+        if result['status'] == 'timed_out' or (uses_native_session(job) and result['status'] == 'failed'):
             blocked = True
     counts = {state:sum(r['status']==state for r in results) for state in sorted({r['status'] for r in results})}
     return {'schema_version':1,'status':'failed' if counts.get('failed') or counts.get('timed_out') else (

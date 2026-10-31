@@ -12,6 +12,48 @@ def safe_name(value):
     return value
 
 
+# Landscape ISO sizes. test_ql_partial sweeps these as data; the COM driver
+# already reads width_mm, height_mm, scale, and the template path.
+DRAWING_SHEETS_MM = (('A2',594,420),('A3',420,297))
+DRAWING_SCALES = (('1:5',1,5),('1:10',1,10),('1:20',1,20))
+
+
+def drawing_sheet_cases(templates):
+    """D4 matrix: 1:5 / 1:10 / 1:20 crossed with A2 / A3.
+
+    ``templates`` maps ``'A2'`` and ``'A3'`` to existing ``.drwdot`` paths.
+    Six cases. No SolidWorks call.
+    """
+    missing = [name for name,_,_ in DRAWING_SHEETS_MM if name not in templates]
+    if missing:
+        raise ValueError('drawing sheet templates required: '+', '.join(missing))
+    cases = []
+    for sheet,width,height in DRAWING_SHEETS_MM:
+        for label,numerator,denominator in DRAWING_SCALES:
+            cases.append({'sheet':sheet,'scale_label':label,'width_mm':width,
+                'height_mm':height,'scale':[numerator,denominator],'template':templates[sheet]})
+    return cases
+
+
+def apply_sheet_case(settings, case, *, kind='part'):
+    """Copy one D4 case into the settings ``plan_drawings`` already accepts.
+
+    ``part_template`` or ``assembly_template`` receives ``case['template']``.
+    ``scale`` / ``width_mm`` / ``height_mm`` come from the case. A part-level
+    ``scale`` in ``part_parameters`` overrides settings, so a partial run that
+    sweeps the matrix must set that scale to ``case['scale']`` or leave it
+    unset. View creation and CloseDoc stay in the existing driver.
+    """
+    if kind not in ('part','assembly'):
+        raise ValueError('sheet case kind must be part or assembly')
+    updated = dict(settings)
+    updated['width_mm'] = case['width_mm']
+    updated['height_mm'] = case['height_mm']
+    updated['scale'] = list(case['scale'])
+    updated['assembly_template' if kind=='assembly' else 'part_template'] = case['template']
+    return updated
+
+
 def plan_drawings(assembly_plan, *, part_parameters=None, settings=None):
     part_parameters,settings = part_parameters or {},settings or {}
     tree = assembly_plan['tree']

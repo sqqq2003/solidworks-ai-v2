@@ -1,0 +1,35 @@
+{
+  "task": "T2 轴 live @ 9544d3c（fix: keep a saved shaft when cleanup inventory drops COM）",
+  "owner": "WorkBuddy",
+  "sha": "9544d3ca27b5f4b255b60a3eab3061af8a930fc2",
+  "mode": "turned",
+  "input_dxf": "runtime/whole-project-smoke/synthetic-shaft.dxf",
+  "out_path": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\shaft_9544d3c.SLDPRT",
+  "python": "C:/Users/yue/AppData/Local/Python/pythoncore-3.14-64/python.exe (3.14.8, pywin32+ezdxf)",
+  "exit_code": 0,
+  "status": "partial_com_disconnect",
+  "verdict": "partial_pass_target_behavior_confirmed",
+  "verdict_reason": "SaveAs 写出非空 SLDPRT（62030 字节）后，cleanup/inventory COM 断开被正确处理：进程 exit 0、status=partial_com_disconnect、文件保留在磁盘、ExitApp 未调用。精确命中 PR#57 目标行为。",
+  "acceptance": {
+    "saveas_produced_nonempty_sldprt": true,
+    "part_size_bytes": 62030,
+    "file_on_disk": true,
+    "exit_code_is_zero": true,
+    "status_is_partial_com_disconnect": true,
+    "cleanup_inventory_com_disconnect_present": true,
+    "exit_app_called": false,
+    "sw_live_verified": false,
+    "passed": false,
+    "native_acceptance": "pending_windows_validation"
+  },
+  "cleanup_disconnect": "SessionOwnershipError: document inventory unavailable; refusing writes",
+  "cleanup_status": "partial_com_disconnect",
+  "keepalive": {
+    "policy": "close_doc_only_keep_alive_exit_not_required",
+    "keepalive_verified": true,
+    "pid": 35420
+  },
+  "sw_process_alive_after_run": true,
+  "notes": "本轮 SHA 9544d3c 修复点（keep saved shaft on cleanup inventory COM drop）目标行为已复现；仅 cleanup/inventory 阶段 COM 断开，非硬失败。按约束未 ExitApp / 未 taskkill，SW 保持运行。",
+  "toolchain": {"python": "3.14.8", "pywin32": "present", "ezdxf": "present", "solidworks_typelib_major": 33}
+}

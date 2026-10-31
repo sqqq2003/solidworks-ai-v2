@@ -24,3 +24,7 @@ python work/project.py batch runtime/whole-project-smoke/jobs.json
 装配配合/干涉/运动、原生工程图目前仍有骨架或未实现部分，工作台如实显示。36项原始pending特征合约不计通过；重开尺寸验证也不等于机械验收。
 
 源码测试包可用 work/prepare_test_handoff.py 创建，校验入口为 work/verify_test_handoff.py。不包含客户CAD、凭据、原生产程序和原生实机通过承诺。请在独立目录测试，不自动覆盖用户D盘程序。
+
+## AI 客户端调用
+
+新增本机 MCP stdio 与带令牌的本地 HTTP 工具接口，可供支持工具调用的不同 AI 客户端接入。参见 [Windows 接入配置与示例](docs/ai-client-integration.md)。默认仅分析/规划，原生生成需要主机显式启用。

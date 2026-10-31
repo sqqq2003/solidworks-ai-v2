@@ -6,19 +6,20 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from sw_session import SessionOwnershipError
+
 
 class DwgConversionError(RuntimeError):
     """Raised when a DWG drawing cannot be converted to DXF."""
 
 
+class DwgSessionOwnershipError(DwgConversionError, SessionOwnershipError):
+    """An unavailable owned converter, while preserving the ownership contract."""
+
+
 def _open_document_titles(solidworks: Any) -> set[str]:
-    titles: set[str] = set()
-    document = solidworks.GetFirstDocument
-    while document is not None:
-        title = document.GetTitle
-        titles.add(title)
-        document = document.GetNext
-    return titles
+    from solidworks_generator import _list_open_document_titles
+    return set(_list_open_document_titles(solidworks))
 
 
 def _dwg2dxf_candidates() -> list[Path]:
@@ -89,12 +90,20 @@ def convert_dwg_with_libredwg(source: str | Path, target: str | Path) -> None:
 
 
 def convert_dwg_with_solidworks(source: str | Path, target: str | Path) -> None:
+    """Convert only inside an already proved task-owned SW session.
+
+    The CLI owns launch/STA/lifetime. Never Dispatch a second application or
+    downgrade the proved lease to a shared connection during DWG conversion.
+    """
     import sw_session
+    from solidworks_generator import _com_read
 
     source_path = Path(source).resolve()
     target_path = Path(target).resolve()
     if not source_path.is_file():
         raise FileNotFoundError(f"找不到 DWG 文件：{source_path}")
+    if source_path == target_path or target_path.exists():
+        raise DwgConversionError("DWG 转换输出必须是新文件，不能覆盖源文件或已有文件。")
     if not sw_session.on_task_sta():
         sw_session.run_on_task_sta(
             lambda: convert_dwg_with_solidworks(source, target),
@@ -103,92 +112,68 @@ def convert_dwg_with_solidworks(source: str | Path, target: str | Path) -> None:
         )
         return
     lease = sw_session.current_lease()
+    if lease is None or lease.native_launch is None:
+        raise DwgSessionOwnershipError(
+            "DWG 转换尚未建立任务独占 SolidWorks 会话。请在任务设置中指定 "
+            "SLDWORKS.exe（命令行 --sw-exe），或安装 LibreDWG，或先另存为 DXF。"
+        )
     sw_session.require_model_write(lease)
-
-    try:
-        import pythoncom
-        import win32com.client
-    except ImportError as error:
-        raise DwgConversionError(
-            "DWG 导入需要 pywin32；请运行 python -m pip install -r requirements.txt。"
-        ) from error
-
-    class _DispatchOnly(Exception):
-        """Sentinel so connect always takes Dispatch and never treats that as proof."""
-
-    initialized = False
-    solidworks: Any = None
+    solidworks, _ = lease.native_launch.reconnect(lease)
     imported_document: Any = None
     imported_title: str | None = None
+    stage = "枚举已有文档"
     try:
-        pythoncom.CoInitialize()
-        initialized = True
-
-        def _dispatch() -> Any:
-            return win32com.client.Dispatch("SldWorks.Application")
-
-        solidworks, _created_here = sw_session.connect_application(
-            lease,
-            get_active=lambda: (_ for _ in ()).throw(_DispatchOnly()),
-            dispatch=_dispatch,
-            list_titles=lambda app: list(_open_document_titles(app)),
-            is_absent=lambda error: isinstance(error, _DispatchOnly),
-        )
-        if lease is not None:
-            lease.note_bound_application(solidworks)
-        sw_session.require_model_write(lease)
         existing_titles = _open_document_titles(solidworks)
-
+        stage = "创建 DWG 导入设置"
         import_data = solidworks.GetImportFileData(str(source_path))
         if import_data is None:
             raise DwgConversionError("SolidWorks 未能为此 DWG 创建导入设置。")
-
         sw_session.require_model_write(lease)
+        stage = "导入 DWG"
         loaded = solidworks.LoadFile3(str(source_path), "", import_data)
-        document = solidworks.ActiveDoc
-        if document is not None and document.GetTitle not in existing_titles:
-            imported_document = document
+        stage = "读取导入的活动文档"
+        document = _com_read(solidworks, "ActiveDoc")
+        if document is not None:
+            title = str(_com_read(document, "GetTitle"))
+            if title and title not in existing_titles:
+                imported_document = document
+                imported_title = title
+                # Register immediately, before the next inventory/write guard,
+                # including failed imports and failed saves that need cleanup.
+                lease.note_owned_document(title, handle_id=id(document))
         if not loaded:
             raise DwgConversionError("SolidWorks 未能导入此 DWG 文件。")
         if document is None:
             raise DwgConversionError("DWG 已导入，但 SolidWorks 没有返回活动文档。")
         if imported_document is None:
-            raise DwgConversionError(
-                "此 DWG 已在 SolidWorks 中打开。请先关闭该图纸，再重新导入，"
-                "以避免修改当前打开的文档。"
-            )
-        if document.GetType != 3:
+            raise DwgConversionError("DWG 没有返回本任务新建的文档；拒绝修改已有文档。")
+        stage = "核对导入文档类型"
+        if _com_read(document, "GetType") != 3:
             raise DwgConversionError("SolidWorks 没有将此 DWG 作为工程图导入。")
-
         target_path.parent.mkdir(parents=True, exist_ok=True)
         sw_session.require_model_write(lease)
+        stage = "保存 DXF"
         save_errors = document.SaveAs3(str(target_path), 0, 1)
+        # SaveAs may rename the same document even if it reports an error.
+        stage = "读取保存后的文档标题"
+        saved_title = str(_com_read(document, "GetTitle"))
+        if saved_title and saved_title != imported_title:
+            lease.rename_owned(imported_title, saved_title)
+            imported_title = saved_title
         if save_errors != 0:
-            raise DwgConversionError(
-                f"SolidWorks 导出 DXF 失败，错误代码：{save_errors}。"
-            )
+            raise DwgConversionError(f"SolidWorks 导出 DXF 失败，错误代码：{save_errors}。")
         if not target_path.is_file() or target_path.stat().st_size == 0:
             raise DwgConversionError("SolidWorks 未生成有效的 DXF 导出文件。")
-        title = imported_document.GetTitle
-        imported_title = str(title() if callable(title) else title)
-        if lease is not None and imported_title:
-            lease.note_owned_document(imported_title, handle_id=id(imported_document))
     except (DwgConversionError, sw_session.SessionOwnershipError):
         raise
     except Exception as error:
-        raise DwgConversionError(f"SolidWorks 处理 DWG 时出错：{error}") from error
+        raise DwgConversionError(f"SolidWorks 处理 DWG 在“{stage}”阶段出错：{error}") from error
     finally:
-        try:
-            if solidworks is not None:
-                sw_session.release_task_documents(
-                    lease,
-                    solidworks,
-                    title=imported_title,
-                    close=bool(imported_title),
-                )
-        finally:
-            if initialized:
-                pythoncom.CoUninitialize()
+        sw_session.release_task_documents(
+            lease, solidworks, title=imported_title, close=bool(imported_title),
+            resolve_title=(lambda: _com_read(imported_document, "GetTitle"))
+                if imported_document is not None else None,
+        )
 
 
 def _filename_prefers_libredwg(source: str | Path) -> bool:

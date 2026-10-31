@@ -1,0 +1,144 @@
+{
+  "phase": "drawing_phase1_retest_4344f22",
+  "mode": "explicit_partial_model_test",
+  "manufacturing_approved": false,
+  "owner": "lxy",
+  "machine": "DDD",
+  "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+  "timestamp": "2026-10-26 14:57:12",
+  "zone": "Asia/Shanghai",
+  "tip_sha": "4344f222a2070d0f79082d219377e840f06ca30f",
+  "tip_subject": "fix: rewalk inventory when GetNext is MEMBERNOTFOUND",
+  "desktop_repo": "C:\\Users\\yue\\Desktop\\solidworks-ai-v2",
+  "desktop_checkout": "detached HEAD at 4344f22 (dev/cloud-ai branch pointer preserved)",
+  "pr53_overlay": {
+    "backup": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\pr53\\pr53_session_backup_20261026_144821",
+    "files": [
+      "sw_session.py",
+      "sw_owned_launch.py",
+      "owned_document_lifetime.py",
+      "solidworks_generator.py",
+      "part_verification.py"
+    ],
+    "wrapper": "D:\\工程\\钣金导入\\lxy_drawing_retest_4344f22\\run_partial_4344f22.py"
+  },
+  "out": "D:\\工程\\钣金导入\\lxy_drawing_retest_4344f22",
+  "docs_copy": "C:\\Users\\yue\\Documents\\lxy_drawing_retest_4344f22",
+  "preflight": {
+    "timestamp": "2026-10-26 14:49:11",
+    "zone": "Asia/Shanghai",
+    "processes": [
+      {
+        "pid": 52620,
+        "commandline": "\"D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe\" -Embedding",
+        "creation": "2026/10/26 14:22:15"
+      }
+    ],
+    "get_active_object": {
+      "ok": false,
+      "error": "com_error: Operation unavailable"
+    },
+    "rot_solidworks": [],
+    "wmi_fallback_raw": "",
+    "wmi_error": "No module named 'wmi'",
+    "orphan_embedding": true,
+    "embedding_pids": [
+      52620
+    ],
+    "note": "no Dispatch ProgID; no taskkill; ExitApp not called",
+    "classification": "orphan_embedding_no_ROT"
+  },
+  "inventory_rebind": {
+    "tip_feature": "mid-walk DISP_E_MEMBERNOTFOUND treated like disconnect -> InventoryWalkDisconnected -> same-PID rebind -> re-enumerate max 3; prefer GetDocuments; GetNext as property/IGetNext",
+    "triggered_on_D2": "not_explicitly_logged",
+    "triggered_on_D3": "not_explicitly_logged",
+    "actual_root_hresult": null,
+    "actual_root_name": null,
+    "note": "Unlike 1806f74 (fail MEMBERNOTFOUND, rebind not engaged), this tip completed D2/D3 inventory validate and exported drawings. Job JSON has no rebind counter; success implies GetDocuments and/or MEMBERNOTFOUND rewalk path worked. No inventory-unavailable error."
+  },
+  "items": {
+    "D1": {
+      "status": "not_rerun",
+      "note": "offline already pass in prior phase1; this retest focused D2-D6"
+    },
+    "D2": {
+      "status": "pass_pending_visual_review",
+      "job_status": "partial_drawing_test_completed_pending_visual_review",
+      "sw_pid": 43368,
+      "drawing": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+      "pdf": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.pdf",
+      "views": 3,
+      "bom_rows": 8,
+      "sheet_scale": [
+        1.0,
+        10.0
+      ],
+      "error": null
+    },
+    "D3": {
+      "status": "pass_pending_visual_review",
+      "job_status": "partial_drawing_test_completed_pending_visual_review",
+      "sw_pid": 24852,
+      "drawing": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-6\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+      "pdf": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-6\\drawings\\QL-5050PX-PARTIAL-TEST.pdf",
+      "views": 3,
+      "bom_rows": 8,
+      "error": null
+    },
+    "D4": {
+      "status": "blocked",
+      "blocked_reason": "need_lxy_hook"
+    },
+    "D5": {
+      "status": "pass_readback_pending_visual_review"
+    },
+    "D6": {
+      "status": "blocked",
+      "blocked_reason": "skip_optional"
+    }
+  },
+  "cleanup": {
+    "policy": "CloseDoc/CloseAllDocuments then ExitApp only on proven 0-doc idle owned PID; no taskkill; Embedding orphan left",
+    "last_close_all": {
+      "timestamp": "2026-10-26 14:55:55",
+      "zone": "Asia/Shanghai",
+      "action": "CloseAllDocuments_unsaved_ok",
+      "exitapp": false,
+      "taskkill": false,
+      "bound_pid": 24852,
+      "docs_before": 0,
+      "CloseAllDocuments": true,
+      "CloseAllDocuments_raw": "True",
+      "docs_after": 0
+    },
+    "last_exit_idle": {
+      "timestamp": "2026-10-26 14:55:55",
+      "zone": "Asia/Shanghai",
+      "action": "ExitApp_idle_0docs_only",
+      "taskkill": false,
+      "pids_before": [
+        52620,
+        24852
+      ],
+      "target_pid": 24852,
+      "doc_count": 0,
+      "ExitApp_called": true,
+      "exited": true,
+      "wait_s": 2.0,
+      "pids_after": [
+        52620
+      ]
+    },
+    "orphan_embedding_pid": 52620
+  },
+  "constraints_met": {
+    "close_doc_only_primary": true,
+    "exitapp_only_idle_0doc_owned": true,
+    "no_taskkill": true,
+    "no_desktop_writes": true,
+    "no_git_push": true,
+    "honest_status": true,
+    "explicit_partial_model_test": true,
+    "no_production_drawing_claim": true
+  }
+}

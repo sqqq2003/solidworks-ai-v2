@@ -39,6 +39,8 @@ class SheetPartJob:
     quantity_source: str = ""
     # 清单里显示的尺寸文字，例如 420×180。只用于界面展示。
     size_hint: str = ""
+    # 轮廓内是否含图纸文字：图例框/焊接打码说明框等，不是可生产零件。
+    text_frame: bool = False
 
 
 def format_sheet_part_name(sequence: int, quantity: int, thickness_mm: float) -> str:
@@ -176,9 +178,90 @@ def _recycle_solidworks_if_heavy(progress: ProgressCallback | None = None) -> bo
     )
 
 
-def part_bend_indices(analysis: DrawingAnalysis, profile_index: int) -> tuple[int, ...]:
-    """该件的折弯线（并集规则；剔除内孔中心十字线）。单件生成与批量共用。"""
+def _stamping_note_keywords(text: str) -> bool:
+    """图纸文字是否为「打码焊接线，不用折弯」这类打码标记说明。
 
+    必须同时表达「打码/焊接」和「不折弯」两层意思，避免把「焊接打码说明」
+    这类图例框自身的标题误当成打码线标记。
+    """
+    stripped = text.replace(" ", "").replace("\u3000", "")
+    has_mark = "打码" in stripped or "焊接" in stripped
+    no_bend = "不用折" in stripped or "不折弯" in stripped or "不折" in stripped
+    return has_mark and no_bend
+
+
+def stamping_target_indices(
+    analysis: DrawingAnalysis,
+    located: list[tuple[int, tuple[float, float, float, float]]],
+) -> frozenset[int]:
+    """找出被「打码焊接线，不用折弯」文字标注的零件索引。
+
+    图纸里这类说明文字通常写在一个文字框（图例框/说明框）内部，紧挨着
+    它要说明的那块板。规则：打码文字所在的封闭轮廓是说明框，其「紧邻的
+    实体零件」（水平相邻且垂直有重叠、或垂直相邻且水平有重叠、距离最近的
+    非文字框候选）就是被标记为打码线、不折弯的零件。
+
+    返回该零件在 profiles 里的下标集合；这些零件的折弯线应视为打码线，
+    不参与折弯。
+    """
+    stamping_texts = [
+        t for t in analysis.text_entities if _stamping_note_keywords(t.text)
+    ]
+    if not stamping_texts:
+        return frozenset()
+
+    # 轮廓分类：内含打码文字的是「说明框」，其余闭合外轮廓是「零件候选」。
+    frame_indices: set[int] = set()
+    for idx, bounds in located:
+        for t in stamping_texts:
+            if bounds[0] <= t.x <= bounds[2] and bounds[1] <= t.y <= bounds[3]:
+                frame_indices.add(idx)
+                break
+    part_indices = {idx for idx, _ in located if idx not in frame_indices}
+    if not frame_indices or not part_indices:
+        return frozenset()
+
+    bounds_of = dict(located)
+    targets: set[int] = set()
+    for frame_idx in frame_indices:
+        fb = bounds_of[frame_idx]
+        best_idx: int | None = None
+        best_rank: tuple[float, float] | None = None  # (间隙, -重叠) 越小越紧邻
+        for part_idx in part_indices:
+            pb = bounds_of[part_idx]
+            h_overlap = min(fb[3], pb[3]) - max(fb[1], pb[1])
+            v_overlap = min(fb[2], pb[2]) - max(fb[0], pb[0])
+            if h_overlap > 0:
+                gap = max(pb[0] - fb[2], fb[0] - pb[2])
+                gap = max(gap, 0.0)
+                rank = (gap, -h_overlap)
+            elif v_overlap > 0:
+                gap = max(pb[1] - fb[3], fb[1] - pb[3])
+                gap = max(gap, 0.0)
+                rank = (gap, -v_overlap)
+            else:
+                continue
+            if best_rank is None or rank < best_rank:
+                best_rank = rank
+                best_idx = part_idx
+        if best_idx is not None:
+            targets.add(best_idx)
+    return frozenset(targets)
+
+
+def part_bend_indices(
+    analysis: DrawingAnalysis,
+    profile_index: int,
+    *,
+    stamping_targets: frozenset[int] | None = None,
+) -> tuple[int, ...]:
+    """该件的折弯线（并集规则；剔除内孔中心十字线）。单件生成与批量共用。
+
+    若该件被「打码焊接线，不用折弯」文字标注（见 ``stamping_target_indices``），
+    其上的红线是打码线而非折弯线，返回空折弯。
+    """
+    if stamping_targets and profile_index in stamping_targets:
+        return ()
     profile = analysis.profiles[profile_index]
     holes = [
         analysis.profiles[i]
@@ -198,8 +281,12 @@ def discover_sheet_parts(analysis: DrawingAnalysis) -> tuple[SheetPartJob, ...]:
         profile = analysis.profiles[profile_index]
         bounds = primitive_bounds(profile)
         located.append((profile_index, bounds))
+    # 被「打码焊接线，不用折弯」文字标注的零件：其红线是打码线，不算折弯。
+    stamping_targets = stamping_target_indices(analysis, located)
+    for profile_index, _bounds in located:
+        profile = analysis.profiles[profile_index]
         pending[profile_index] = (
-            part_bend_indices(analysis, profile_index),
+            part_bend_indices(analysis, profile_index, stamping_targets=stamping_targets),
             profile_area(profile),
         )
     annotations = annotate_sheet_parts(located, list(analysis.text_entities))
@@ -209,6 +296,11 @@ def discover_sheet_parts(analysis: DrawingAnalysis) -> tuple[SheetPartJob, ...]:
         note = annotations.get(profile_index)
         bounds = next(b for i, b in located if i == profile_index)
         size_hint = f"{bounds[2] - bounds[0]:.0f}×{bounds[3] - bounds[1]:.0f}"
+        text_inside = [
+            t.text
+            for t in analysis.text_entities
+            if bounds[0] <= t.x <= bounds[2] and bounds[1] <= t.y <= bounds[3]
+        ]
         jobs.append(
             SheetPartJob(
                 profile_index=profile_index,
@@ -220,6 +312,7 @@ def discover_sheet_parts(analysis: DrawingAnalysis) -> tuple[SheetPartJob, ...]:
                 thickness_source="" if note is None else note.thickness_source,
                 quantity_source="" if note is None else note.quantity_source,
                 size_hint=size_hint,
+                text_frame=bool(text_inside),
             )
         )
     return tuple(jobs)
@@ -249,10 +342,22 @@ def export_all_sheet_parts(
     jobs：复用调用方已经识别好的清单，省一次重复识别。
     """
 
+    from sheet_safety import bend_note_warning
+    warning=bend_note_warning(analysis)
+    if warning:raise ValueError(warning)
     ensure_dirs()
     out_root = output_dir or export_dir_for(analysis.path.stem)
     out_root.mkdir(parents=True, exist_ok=True)
     all_jobs = tuple(jobs) if jobs is not None else discover_sheet_parts(analysis)
+    # 疑似文字框（图例框、焊接打码说明框）不是可生产零件，默认排除。
+    # 调用方若已显式确认这些候选是可生产零件，可传 jobs 时把 text_frame 置 False。
+    frames = [job for job in all_jobs if job.text_frame]
+    all_jobs = tuple(job for job in all_jobs if not job.text_frame)
+    if frames:
+        names = "、".join(job.label for job in frames)
+        logger.info("一键全部导出：排除 %d 个疑似文字框：%s", len(frames), names)
+        if progress:
+            progress(f"已排除 {len(frames)} 个疑似文字框（{names}），不进入生成清单")
     # 编号按整张图排好序的序号算，勾掉一件不影响其余件的文件名，
     # 否则中途重开一次、勾选变了，已导出的文件就对不上号了。
     numbered = list(enumerate(all_jobs, start=1))

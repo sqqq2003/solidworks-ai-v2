@@ -58,8 +58,9 @@ def main():
             report['execution'] = run_on_task_sta(live_job,
                 timeout=300, task_name='p0-sheet-metal')
         print(json.dumps(report, indent=2, ensure_ascii=False, default=str, allow_nan=False))
+        from part_verification import execution_exit_code
         status = report.get('execution', plan)['status']
-        return 1 if status == 'failed' else (3 if status == 'pending' else 0)
+        return execution_exit_code(status)
     except (OSError, ValueError, RuntimeError, IndexError) as exc:
         print(json.dumps({'status':'failed', 'error':str(exc), 'sw_live_verified':False}, ensure_ascii=False))
         return 1

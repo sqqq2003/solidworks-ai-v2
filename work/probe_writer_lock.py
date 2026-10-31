@@ -20,6 +20,9 @@ if args.child:
     sys.modules['pythoncom'] = fake
     sys.path.insert(0, str(ROOT / 'src'))
     import sw_session
+    # Both marker-only children share a probe-specific lock, isolated from live CAD.
+    sw_session._WRITER_MUTEX_NAME = "Local\\A01LockProbe-" + args.folder.name
+    sw_session._WRITER_LOCK_FILE = args.folder / "probe.lock"
 
     def harmless_job():
         (args.folder / (args.child + '.entered')).write_text('pure marker, no CAD', encoding='utf-8')

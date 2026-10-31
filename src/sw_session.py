@@ -42,12 +42,31 @@ _DISCONNECT_HRESULTS = frozenset(
         -2147023174,  # RPC_S_SERVER_UNAVAILABLE
         -2147418111,  # RPC_E_CALL_REJECTED
         -2147467261,  # E_POINTER
+        -2147220995,  # CO_E_OBJNOTCONNECTED (0x800401FD)
     }
 )
 
 
 class SessionOwnershipError(RuntimeError):
     """Dangerous SolidWorks operation refused because ownership is not proven."""
+
+
+class ComSessionDisconnected(SessionOwnershipError):
+    """Owned COM server dropped. This is not a modeling pass and does not call ExitApp."""
+
+    status = "com_disconnected"
+    native_acceptance = "pending_windows_validation"
+
+
+class InventoryWalkDisconnected(ComSessionDisconnected):
+    """GetFirstDocument / GetNext / GetType dropped while listing documents.
+
+    Writes stay refused. This is not a modeling pass and does not call ExitApp.
+    Inventory may rebind the same PID and walk again. If the walk is still
+    unsafe, callers keep this status instead of "document inventory unavailable".
+    """
+
+    status = "partial_inventory_disconnect"
 
 
 class SwCallTimeoutError(TimeoutError):
@@ -104,6 +123,11 @@ class SessionLease:
     native_launch: Any = None
     native_launch_attempt: Any = None
     keep_application_open: bool = False
+    generation_saved: bool = False
+    generation_path: str | None = None
+    # partial_com_disconnect / partial_rebind_failed after a file is on disk.
+    # This is not a modeling pass and does not call ExitApp.
+    post_save_outcome: str | None = None
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)
@@ -912,28 +936,84 @@ def exit_owned_application(lease: SessionLease, app: Any) -> None:
     app.ExitApp()
 
 
+def _hresult_is_disconnect(value: Any) -> bool:
+    if isinstance(value, bool) or not isinstance(value, int):
+        return False
+    unsigned = {code & 0xFFFFFFFF for code in _DISCONNECT_HRESULTS}
+    return value in _DISCONNECT_HRESULTS or (value & 0xFFFFFFFF) in unsigned
+
+
+def _text_is_disconnect(text: str) -> bool:
+    folded = text.casefold()
+    return (
+        "断开连接" in text
+        or "没有连接到服务器" in text
+        or "not connected to server" in folded
+        or "disconnected" in folded
+        or "objnotconnected" in folded
+        or "-2147220995" in text
+        or "2147746301" in text
+        or "800401fd" in folded
+    )
+
+
+def _value_is_disconnect(value: Any, seen: set[int]) -> bool:
+    """Walk HRESULT, excepinfo tuples, and pywintypes.com_error args."""
+    if value is None or isinstance(value, (bool, int, float)):
+        return _hresult_is_disconnect(value)
+    if isinstance(value, str):
+        return _text_is_disconnect(value)
+    if isinstance(value, bytes):
+        return _text_is_disconnect(value.decode("utf-8", "replace"))
+    ident = id(value)
+    if ident in seen:
+        return False
+    seen.add(ident)
+    if isinstance(value, BaseException):
+        if _hresult_is_disconnect(getattr(value, "hresult", None)):
+            return True
+        if _value_is_disconnect(getattr(value, "args", ()), seen):
+            return True
+        if _value_is_disconnect(getattr(value, "excepinfo", None), seen):
+            return True
+        if _text_is_disconnect(str(value)):
+            return True
+        return _value_is_disconnect(value.__cause__, seen) or _value_is_disconnect(
+            value.__context__, seen
+        )
+    if isinstance(value, (tuple, list)):
+        return any(_value_is_disconnect(item, seen) for item in value)
+    return False
+
+
 def _exception_is_disconnect(error: BaseException | None) -> bool:
     if error is None:
         return False
-    unsigned = {code & 0xFFFFFFFF for code in _DISCONNECT_HRESULTS}
-    current: BaseException | None = error
-    seen: set[int] = set()
-    while current is not None and id(current) not in seen:
-        seen.add(id(current))
-        args = getattr(current, "args", ())
-        if args and isinstance(args[0], int):
-            hr = args[0]
-            if hr in _DISCONNECT_HRESULTS or (hr & 0xFFFFFFFF) in unsigned:
-                return True
-        text = str(current)
-        if "断开连接" in text or "disconnected" in text.casefold():
-            return True
-        nested = args[0] if args and isinstance(args[0], BaseException) else None
-        if nested is not None and id(nested) not in seen:
-            current = nested
-            continue
-        current = current.__cause__ or current.__context__
-    return False
+    return _value_is_disconnect(error, set())
+
+
+def is_com_server_disconnect(error: BaseException | None) -> bool:
+    """True for RPC disconnects and CO_E_OBJNOTCONNECTED after a dead proxy."""
+    return _exception_is_disconnect(error)
+
+
+def normalize_com_disconnect(error: BaseException | None) -> ComSessionDisconnected | None:
+    """Turn a raw pywintypes.com_error(-2147220995) into ComSessionDisconnected.
+
+    failure.json must not keep error_kind=com_error and the bare HRESULT tuple
+    once generation has already saved a part.
+    """
+    if error is None:
+        return None
+    if isinstance(error, ComSessionDisconnected):
+        return error
+    if not is_com_server_disconnect(error):
+        return None
+    normalized = ComSessionDisconnected(
+        "owned COM server disconnected; writes refused; ExitApp was not called"
+    )
+    normalized.hresult = -2147220995  # type: ignore[attr-defined]
+    return normalized
 
 
 def release_task_documents(
@@ -987,9 +1067,19 @@ def release_task_documents(
                     active_title = None
     if close and active_title:
         try:
+            from owned_document_lifetime import is_startup_blank_title
+            if (
+                is_startup_blank_title(active_title)
+                and active_title not in lease.owned_docs
+                and active_title not in lease.foreign_titles
+                and lease.verified_exclusive
+                and lease.spawned_pid is not None
+            ):
+                lease.note_owned_document(str(active_title).strip())
+                active_title = str(active_title).strip()
             close_owned_document(lease, app, active_title)
-        except SessionOwnershipError:
-            logger.error("skipped close of unowned document %r", active_title)
+        except SessionOwnershipError as error:
+            logger.error("skipped close of unowned document %r: %s", active_title, error)
         except Exception as error:
             if _exception_is_disconnect(error):
                 lease.disconnected = True
@@ -1002,7 +1092,11 @@ def release_task_documents(
             logger.exception("failed to close owned document %r", active_title)
     if lease.disconnected:
         return
-    if lease.verified_exclusive and not lease.keep_application_open:
+    if (
+        lease.verified_exclusive
+        and not lease.keep_application_open
+        and not lease.generation_saved
+    ):
         try:
             exit_owned_application(lease, app)
         except SessionOwnershipError:
