@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "6c126987063e07264b86addc29d65f1b0d66d743",
+  "source_snapshot": {
+    "app.py": "759716920d1981f4798398882451192e9db66166b94c162ac566eaada1132c4c",
+    "src/project_workbench.py": "3be6a260f3ce2dd346fcdb5205f5aecf8ec3746a7cf6d1445048e6702102c36f",
+    "examples/ql5050px_issue9_jobs.json": "d61cc8b7407e639dcb703193213b3dab1d2415670ac01678d96f016a57830a4f",
+    "examples/ql5050px_issue9.json": "186d0c2d5ba70c7f3342fca565bdc10b55d3355b061bb82a35ad15060f57778a",
+    "docs/issue9-handoff.md": "40177b8873e78c7b593568e0ee75a84f788ddc84c2b0c2f288dc263e1281e01a",
+    "work/project.py": "109ac7f4f7162b955e78e08cc04632c95b2e3b24afa6b6c2b67761fa1b803f36",
+    "work/build_issue9_delivery.py": "cfd7fba696249ff3234d15396ff14e54539ee9d761aca41ac5132492da389664",
+    "work/ql5050px.py": "017faa6beb3d1403796b1c6fd83cd52f9eb27f8301b8a5cdc85a62d310633126",
+    "src/ql5050px/machine_package.py": "9d418ed4fe94b5672635f4ef0ad65fd993308adca43b2329554c31dad692c972",
+    "src/ql5050px/manufacturing.py": "2a175011adaf5278185493f5fbeec56194dd1a2bdcf0dffdff285f65450e5b74",
+    "src/ql5050px/native_machine.py": "6c64babff71ba56d27affc34b78b4e4e1c6406e9af68d91be4b98f94308ecbde",
+    "src/ql5050px/assembly_builder.py": "fde5adc2fa2dfa7b219bf83e1783a7708b93966536e0cec69af926814b50333d",
+    "src/ql5050px/native_drawings.py": "75f530861c34f2ed659fbe320018ca91532438efacce2e26a20570c07ed82d59",
+    "src/ql5050px/workflow.py": "90136bcd2842ae103de7374b919924430dae51b77e9f22f4520cd2e7410a2951",
+    "src/ql5050px/manufacturing_drawings.py": "64f75d3b1284637719594a4dd48a49b1850b7ff2bbb37ee103e437b5d3629dfc",
+    "src/ql5050px/drive_variant.py": "e276a45ef0a4557c9106edb6aa17c86bff3434100174642cb722f0ef4054a13f"
+  },
+  "test_status": "not_run",
+  "native_acceptance": "unverified",
+  "syntax_status": "AST/JSON parsed",
+  "package_type": "source overlay plus execution plans, no CAD",
+  "pending_mapping_count": 117,
+  "instructions": "Checkout baseline in a separate working copy, review and apply source/ overlay. Test matrix and OEM mapping list are under execution/. Git delivery comment records final source commit.",
+  "archive_sha256": "8bbba2cad9c0e72b25b7e5290bec380d320da6911bdad366cd1521b42579f07b",
+  "excluded": "Historical TASK_STATUS.md omitted: unrelated customer/internal paths; only Issue #9 source and synthetic plans included."
+}

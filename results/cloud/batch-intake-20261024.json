@@ -1,0 +1,15 @@
+{
+  "scope": "portable_simulation_only",
+  "parent_commit": "7c787deb66de592a74bf1be26cab870d5141ec25",
+  "command": "python -X utf8 work/run_cloud_tests.py",
+  "tests_run": 489,
+  "passed": 484,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 5,
+  "cross_process_lock_passed": true,
+  "solidworks_live_verified": false,
+  "mechanical_acceptance": "unverified",
+  "new_tests": 11,
+  "note": "Synthetic evidence/bytes and mocks only. The 36 pending original feature contracts remain separate. No native CAD or C# build was run in this batch. Skip reasons remain in the existing full runner result."
+}

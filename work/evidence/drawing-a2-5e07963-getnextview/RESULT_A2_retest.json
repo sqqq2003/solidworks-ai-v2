@@ -1,0 +1,44 @@
+{
+    "task":  "A2 1:10 and A2 1:20 retest after 5e07963 owned-refs + c9d1b6b SaveAs title retarget",
+    "tip_com_sha":  "5e07963b793d7cab9a743a9a014555c5ec60067e",
+    "tip_drawing_sha":  "c9d1b6b87b7ccfcd952b43c580bf4aa27f1b34de",
+    "owner":  "lxy",
+    "machine":  "DDD",
+    "machineId":  "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+    "timestamp":  "2026-10-26 16:48:10",
+    "zone":  "Asia/Shanghai",
+    "mode":  "explicit_partial_model_test",
+    "manufacturing_approved":  false,
+    "out":  "D:\\工程\\钣金导入\\lxy_drawing_a2_5e07963",
+    "docs":  "C:\\Users\\yue\\Documents\\lxy_drawing_a2_5e07963",
+    "cells":  [
+                  {
+                      "tag":  "A2_1-10",
+                      "status":  "failed",
+                      "blocked_reason":  null,
+                      "failed_reason":  "failed",
+                      "error":  "(-2147352573, \u0027找不到成员。\u0027, None, None)",
+                      "sheet_readback":  null,
+                      "sw_owned_pid":  54684
+                  },
+                  {
+                      "tag":  "A2_1-20",
+                      "status":  "failed",
+                      "blocked_reason":  null,
+                      "failed_reason":  "failed",
+                      "error":  "(-2147352573, \u0027找不到成员。\u0027, None, None)",
+                      "sheet_readback":  null,
+                      "sw_owned_pid":  41388
+                  }
+              ],
+    "all_pass_pending_visual":  false,
+    "honest_block_policy":  "verify_view_layout raises on exceeds-frame/overlap/scale-mismatch; no silent autoscale",
+    "constraint_respected":  "no production claim; no desktop writes; no git push; Embedding left alone",
+    "finished_at":  "2026-10-26 16:48:40",
+    "tip_com_sha_full":  "5e07963b793d7cab9a743a9a014555c5ec60067e",
+    "tip_drawing_sha_full":  "c9d1b6b87b7ccfcd952b43c580bf4aa27f1b34de",
+    "session_ownership_error":  false,
+    "getannotation_attributeerror":  false,
+    "membernotfound_getnextview":  true,
+    "desk_head":  "4344f222a2070d0f79082d219377e840f06ca30f"
+}

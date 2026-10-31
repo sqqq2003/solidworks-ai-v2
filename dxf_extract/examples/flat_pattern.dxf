@@ -1,0 +1,98 @@
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1009
+  9
+$INSUNITS
+ 70
+     4
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+LWPOLYLINE
+  8
+OUTLINE
+ 90
+     4
+ 70
+     1
+ 10
+0.0
+ 20
+0.0
+ 42
+0.0
+ 10
+200.0
+ 20
+0.0
+ 42
+0.0
+ 10
+200.0
+ 20
+100.0
+ 42
+0.0
+ 10
+0.0
+ 20
+100.0
+ 42
+0.0
+  0
+LINE
+  8
+BEND
+ 10
+70.0
+ 20
+0.0
+ 11
+70.0
+ 21
+100.0
+  0
+LINE
+  8
+BEND
+ 10
+140.0
+ 20
+0.0
+ 11
+140.0
+ 21
+100.0
+  0
+CIRCLE
+  8
+HOLES
+ 10
+100.0
+ 20
+50.0
+ 40
+6.0
+  0
+TEXT
+  8
+NOTE
+ 10
+10.0
+ 20
+110.0
+  1
+Flat pattern note (informational only, never a parameter source)
+  0
+ENDSEC
+  0
+EOF

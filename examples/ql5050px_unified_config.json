@@ -1,0 +1,291 @@
+{
+  "machine": "QL-5050PX",
+  "units": "mm",
+  "source_kind": "simulation_fixture_not_OEM",
+  "envelope": {
+    "length": 1800,
+    "width": 900,
+    "height": 1500
+  },
+  "measurements": {},
+  "components": [
+    {
+      "id": "fixture_base",
+      "module": "frame",
+      "component_kind": "fixed",
+      "part_number": "SIM-BASE",
+      "material": "simulation",
+      "quantity": 1,
+      "bbox_mm": [
+        0,
+        0,
+        0,
+        100,
+        100,
+        10
+      ]
+    },
+    {
+      "id": "fixture_slide",
+      "module": "conveyor",
+      "component_kind": "editable",
+      "part_number": "SIM-SLIDE",
+      "material": "simulation",
+      "quantity": 1,
+      "expected_dof": 1,
+      "bbox_mm": [
+        10,
+        10,
+        20,
+        30,
+        30,
+        30
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "sim-guide",
+      "component_a": "fixture_base",
+      "component_b": "fixture_slide",
+      "kind": "linear_guide",
+      "parameter_names": [
+        "mount_pitch"
+      ],
+      "status": "pending_mapping"
+    }
+  ],
+  "mates": [
+    {
+      "a": "fixture_base",
+      "b": "fixture_slide",
+      "type": "concentric"
+    },
+    {
+      "a": "fixture_base",
+      "b": "fixture_slide",
+      "type": "distance"
+    }
+  ],
+  "transmissions": [],
+  "drawing": {
+    "part_number": "QL-SIM-DEVELOPMENT",
+    "notes": [
+      "Simulation fixture only; OEM data pending."
+    ]
+  },
+  "sheet": {
+    "title": "QL DEVELOPMENT FIXTURE",
+    "part_number": "SIM-BASE",
+    "notes": [
+      "Not an OEM drawing."
+    ]
+  },
+  "jobs": [
+    {
+      "id": "parameters",
+      "kind": "parameters",
+      "payload": {}
+    },
+    {
+      "id": "panel",
+      "kind": "panel",
+      "payload": {
+        "base_xy_mm": [
+          [
+            0,
+            0
+          ],
+          [
+            160,
+            0
+          ],
+          [
+            160,
+            100
+          ],
+          [
+            0,
+            100
+          ]
+        ],
+        "thickness_mm": 2,
+        "holes_xy_mm": [
+          [
+            [
+              30,
+              30
+            ],
+            [
+              40,
+              30
+            ],
+            [
+              40,
+              40
+            ],
+            [
+              30,
+              40
+            ]
+          ]
+        ],
+        "flanges": [
+          {
+            "edge": 0,
+            "straight_mm": 20,
+            "radius_mm": 2,
+            "angle_deg": 90,
+            "k_factor": 0.44
+          },
+          {
+            "edge": 2,
+            "straight_mm": 20,
+            "radius_mm": 2,
+            "angle_deg": 90,
+            "k_factor": 0.44
+          }
+        ]
+      }
+    },
+    {
+      "id": "material",
+      "kind": "takeoff",
+      "depends_on": [
+        "panel"
+      ],
+      "payload": {
+        "panel": {
+          "$ref": "panel"
+        },
+        "quantity": 2,
+        "density_kg_m3": 7850,
+        "scrap_fraction": 0.1
+      }
+    },
+    {
+      "id": "bom",
+      "kind": "bom_tree",
+      "payload": {
+        "root": "fixture",
+        "catalog": {
+          "fixture": {
+            "part_number": "SIM-ASSEMBLY",
+            "children": [
+              {
+                "ref": "panel",
+                "quantity": 2
+              },
+              {
+                "ref": "drive",
+                "quantity": 1
+              }
+            ]
+          },
+          "panel": {
+            "part_number": "SIM-PANEL",
+            "material": "simulation steel"
+          },
+          "drive": {
+            "part_number": "SIM-DRIVE",
+            "material": "purchased fixture",
+            "purchased": true,
+            "children": [
+              {
+                "ref": "motor",
+                "quantity": 1
+              }
+            ]
+          },
+          "motor": {
+            "part_number": "SIM-MOTOR",
+            "material": "simulation"
+          }
+        }
+      }
+    },
+    {
+      "id": "sheet",
+      "kind": "drawing_svg",
+      "depends_on": [
+        "bom"
+      ],
+      "payload": {
+        "title": "DEVELOPMENT FIXTURE",
+        "part_number": "SIM-PANEL",
+        "revision": "batch2",
+        "notes": [
+          "Simulation dimensions only. OEM mapping pending.",
+          "Native model and manufacturing acceptance unverified."
+        ],
+        "bom": {
+          "$ref": "bom.bom"
+        },
+        "views": [
+          {
+            "origin_mm": [
+              40,
+              170
+            ],
+            "scale": 1,
+            "label": "Tangent base reference",
+            "contours_xy_mm": [
+              [
+                [
+                  0,
+                  0
+                ],
+                [
+                  160,
+                  0
+                ],
+                [
+                  160,
+                  100
+                ],
+                [
+                  0,
+                  100
+                ],
+                [
+                  0,
+                  0
+                ]
+              ]
+            ]
+          }
+        ],
+        "dimensions": [
+          {
+            "a": [
+              40,
+              170
+            ],
+            "b": [
+              200,
+              170
+            ],
+            "offset_mm": 12,
+            "label": "160 (simulation)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native_variant",
+      "kind": "native_variant",
+      "depends_on": [
+        "parameters"
+      ],
+      "payload": {
+        "plan": {
+          "$ref": "parameters"
+        },
+        "mapping_payload": {
+          "schema_version": 1,
+          "parameters": []
+        }
+      }
+    }
+  ]
+}

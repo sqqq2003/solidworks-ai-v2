@@ -1,0 +1,106 @@
+{
+  "issue": 5,
+  "title": "P0 multi-bend / relief-slot tier acceptance",
+  "generated_at": "2026-10-23T14:37:40+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": {
+    "label": "DDD",
+    "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e"
+  },
+  "tier": "multi_bend_or_relief",
+  "params": {
+    "thickness_mm": 2.5,
+    "radius_mm": 1,
+    "angle_deg": 90
+  },
+  "source_dwg_work": "D:\\工程\\钣金导入\\临时\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+  "source_mother_untouched": true,
+  "out_dir": "D:\\工程\\钣金导入\\导出\\p0_accept_complex",
+  "prior_single_bend_pass": [
+    209,
+    243,
+    190
+  ],
+  "drawing_relief_slots_found_on_candidates": false,
+  "relief_invented": false,
+  "relief_expansion_triggered": false,
+  "results": [
+    {
+      "profile": 185,
+      "status": "pass",
+      "expected_bend_count": 2,
+      "bend_feature_count": 1,
+      "bend_indices_in_log": "9, 10",
+      "rebuild_ok": true,
+      "editable_sheet_metal": true,
+      "has_flat_pattern": true,
+      "dxf_ok": true,
+      "dxf_bytes": 22548,
+      "part_bytes": 116372,
+      "cut_feature_count": 1,
+      "relief_retry_hint": false,
+      "mentions_bend_rejected": false,
+      "why_chosen": "multi-bend: bend_count=2, area~90739mm2, 4 inner holes (not classified as relief slots), step up from single-bend",
+      "reasons": [
+        "single_sketched_bend_feature_for_expected_2_bends_ok_if_internal"
+      ],
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p185.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p185_unfold.DXF",
+      "accept_json": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\accept_p185.json"
+    },
+    {
+      "profile": 222,
+      "status": "pass",
+      "expected_bend_count": 4,
+      "bend_feature_count": 1,
+      "bend_indices_in_log": "50, 51, 53, 54",
+      "rebuild_ok": true,
+      "editable_sheet_metal": true,
+      "has_flat_pattern": true,
+      "dxf_ok": true,
+      "dxf_bytes": 20939,
+      "part_bytes": 96811,
+      "cut_feature_count": 0,
+      "relief_retry_hint": false,
+      "mentions_bend_rejected": false,
+      "why_chosen": "multi-bend: bend_count=4, area~8078mm2, no inner closed profiles — pure 4-bend compact candidate",
+      "reasons": [
+        "single_sketched_bend_feature_for_expected_4_bends_ok_if_internal"
+      ],
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p222.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p222_unfold.DXF",
+      "accept_json": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\accept_p222.json"
+    },
+    {
+      "profile": 203,
+      "status": "pass",
+      "expected_bend_count": 6,
+      "bend_feature_count": 1,
+      "bend_indices_in_log": "13, 14, 15, 16, 27, 28",
+      "rebuild_ok": true,
+      "editable_sheet_metal": true,
+      "has_flat_pattern": true,
+      "dxf_ok": true,
+      "dxf_bytes": 25558,
+      "part_bytes": 168159,
+      "cut_feature_count": 1,
+      "relief_retry_hint": false,
+      "mentions_bend_rejected": false,
+      "why_chosen": "multi-bend: bend_count=6, area~46753mm2, 10 inner holes (bolt/cutouts; not relief-slot classified)",
+      "reasons": [
+        "single_sketched_bend_feature_for_expected_6_bends_ok_if_internal"
+      ],
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p203.SLDPRT",
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p203_unfold.DXF",
+      "accept_json": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\accept_p203.json"
+    }
+  ],
+  "overall": "pass",
+  "blockers": [],
+  "notes": [
+    "All three multi-bend profiles generated editable SLDPRT (BaseFlange + one SM3dBend feature containing N bend lines) + ForceRebuild3 OK + ExportFlatPatternView DXF.",
+    "Feature tree shows one 绘制的折弯1 (SM3dBend) even when bend_count>1; generator log confirms bend index tuples (2/4/6).",
+    "No classified drawing relief slots on these candidates; no BendRejected / relief retry observed.",
+    "Mother under 滚筒工程 / 封箱机 not Saved."
+  ]
+}

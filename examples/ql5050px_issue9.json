@@ -1,0 +1,244 @@
+{
+  "machine": "QL-5050PX",
+  "units": "mm",
+  "source_kind": "synthetic_planning_example_not_OEM",
+  "envelope": {
+    "length": 1800,
+    "width": 900,
+    "height": 1500
+  },
+  "measurements": {},
+  "drive": {
+    "nodes": {
+      "target_length": {
+        "unit": "mm"
+      },
+      "target_width": {
+        "unit": "mm"
+      },
+      "target_height": {
+        "unit": "mm"
+      },
+      "end_allowance": {
+        "unit": "mm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "side_allowance": {
+        "unit": "mm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "pulley_driver_d": {
+        "unit": "mm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "pulley_driven_d": {
+        "unit": "mm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "motor_rpm": {
+        "unit": "rpm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "driver_teeth": {
+        "unit": "count",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "driven_teeth": {
+        "unit": "count",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "bearing_span": {
+        "unit": "mm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "sealing_stroke": {
+        "unit": "mm",
+        "status": "pending_mapping",
+        "source": null,
+        "value": null
+      },
+      "end_pair": {
+        "unit": "mm",
+        "depends_on": [
+          "end_allowance"
+        ],
+        "rule": {
+          "op": "scale",
+          "factor": 2
+        }
+      },
+      "frame_length": {
+        "unit": "mm",
+        "depends_on": [
+          "target_length",
+          "end_pair"
+        ],
+        "rule": {
+          "op": "difference"
+        }
+      },
+      "side_pair": {
+        "unit": "mm",
+        "depends_on": [
+          "side_allowance"
+        ],
+        "rule": {
+          "op": "scale",
+          "factor": 2
+        }
+      },
+      "conveyor_width": {
+        "unit": "mm",
+        "depends_on": [
+          "target_width",
+          "side_pair"
+        ],
+        "rule": {
+          "op": "difference"
+        }
+      },
+      "left_drive_x": {
+        "unit": "mm",
+        "depends_on": [
+          "conveyor_width"
+        ],
+        "rule": {
+          "op": "scale",
+          "factor": -0.5
+        }
+      },
+      "right_drive_x": {
+        "unit": "mm",
+        "depends_on": [
+          "conveyor_width"
+        ],
+        "rule": {
+          "op": "scale",
+          "factor": 0.5
+        }
+      },
+      "drive_ratio": {
+        "unit": "ratio",
+        "depends_on": [
+          "driver_teeth",
+          "driven_teeth"
+        ],
+        "rule": {
+          "op": "ratio"
+        }
+      },
+      "roller_rpm": {
+        "unit": "rpm",
+        "depends_on": [
+          "motor_rpm",
+          "drive_ratio"
+        ],
+        "rule": {
+          "op": "product"
+        }
+      },
+      "center_distance": {
+        "unit": "mm",
+        "depends_on": [
+          "frame_length"
+        ],
+        "rule": {
+          "op": "scale",
+          "factor": 0.5
+        }
+      },
+      "belt_length": {
+        "unit": "mm",
+        "depends_on": [
+          "pulley_driver_d",
+          "pulley_driven_d",
+          "center_distance"
+        ],
+        "rule": {
+          "op": "open_belt_length"
+        }
+      },
+      "belt_speed": {
+        "unit": "mm/s",
+        "depends_on": [
+          "pulley_driven_d",
+          "roller_rpm"
+        ],
+        "rule": {
+          "op": "belt_speed"
+        }
+      }
+    },
+    "baseline": {},
+    "components": [
+      {
+        "id": "frame",
+        "component_kind": "editable",
+        "document": null,
+        "configuration": null,
+        "bindings": [
+          {
+            "parameter": "frame_length",
+            "role": "dimension",
+            "target": null
+          }
+        ]
+      },
+      {
+        "id": "left_drive",
+        "component_kind": "purchased",
+        "allow_reposition": true,
+        "bindings": [
+          {
+            "parameter": "left_drive_x",
+            "role": "position",
+            "target": null
+          }
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "id": "bearing-fit",
+        "a": "bearing_span",
+        "b": "conveyor_width",
+        "op": "le"
+      }
+    ],
+    "mate_dependencies": [
+      {
+        "id": "drive-spacing",
+        "depends_on": [
+          "left_drive_x",
+          "right_drive_x"
+        ],
+        "native_mate": null
+      }
+    ]
+  },
+  "part_parameters": {},
+  "drawing_settings": {
+    "revision": "DEV",
+    "units": "mm",
+    "assembly_template": null,
+    "part_template": null,
+    "bom_template": null,
+    "sheet_format": null
+  }
+}

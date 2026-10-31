@@ -1,0 +1,285 @@
+{
+  "task": "GORK-A01-005",
+  "step": "packgo_geometry_finish",
+  "method": "manual copy + ReplaceReferencedDocument; D1 eq=Length + rebuild; D2 via part SystemValue (asm D2 eq was missing)",
+  "packgo_api": "GetPackAndGo broken on pywin32; isolation done via copy+ReplaceReferencedDocument",
+  "status": "geometry_synced",
+  "timestamps_local": {
+    "start": "2026-10-23T13:45:05",
+    "end": "2026-10-23T13:45:19"
+  },
+  "mother": {
+    "path": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\斜滚筒线-1300x000x750-方向A\\装配图\\GT-ZX-1300x000x750-001x1.SLDASM",
+    "mtime_local": "2026-10-23 13:05:09",
+    "size": 1522439,
+    "untouched_vs_start_of_task": true
+  },
+  "prior_isolation": {
+    "mother_path_refs_after_pack": 0,
+    "rewrites_already": {
+      "Length": {
+        "action": "put",
+        "idx": 12,
+        "eq": "\"Length\"= 1800mm"
+      },
+      "Width": {
+        "action": "put",
+        "idx": 0,
+        "eq": "\"Width\"= 900mm"
+      },
+      "Height": {
+        "action": "put",
+        "idx": 1,
+        "eq": "\"Height\"= 1500mm"
+      }
+    },
+    "packed_asm": "C:\\Users\\yue\\A01-live-work\\packgo\\A01-1800x900x1500-v2.SLDASM",
+    "copied_count": 33
+  },
+  "before_dims_from_work_pre_pack": {
+    "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1000.9999999999999,
+    "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 996.9999999999999
+  },
+  "after": {
+    "path": "C:\\Users\\yue\\A01-live-work\\packgo\\A01-1800x900x1500-v2.SLDASM",
+    "globals_before": {
+      "Length": {
+        "idx": 12,
+        "eq": "\"Length\"= 1800mm",
+        "value": 1800.0
+      },
+      "Width": {
+        "idx": 0,
+        "eq": "\"Width\"= 900mm",
+        "value": 900.0
+      },
+      "Height": {
+        "idx": 1,
+        "eq": "\"Height\"= 1500mm",
+        "value": 1500.0
+      },
+      "FootHeight": {
+        "idx": 3,
+        "eq": "\"FootHeight\"= 50mm",
+        "value": 50.0
+      },
+      "SheetTrim": {
+        "idx": 7,
+        "eq": "\"SheetTrim\"= 4mm",
+        "value": 4.0
+      },
+      "DeckHeight": {
+        "idx": 4,
+        "eq": "\"DeckHeight\"= \"Height\" - \"FootHeight\"",
+        "value": -50.0
+      }
+    },
+    "dims_before_mm": {
+      "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1000.9999999999999,
+      "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 996.9999999999999
+    },
+    "deps": {
+      "deps_paths": 33,
+      "mother_path_refs": 0,
+      "packgo_path_refs": 32,
+      "sample_mother": [],
+      "sample_paths": [
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-01x1-001x1-主框架.SLDASM",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T3.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-02T3.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T4.0-0000-001x4.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T2.0-0000-001x4.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-02T4.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T4.0-0000-001x2.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T3.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-04x1-001x1-链条挡板.SLDASM",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T2.0-0000-001x1.SLDPRT"
+      ]
+    },
+    "rewrites": {
+      "Length": {
+        "action": "put",
+        "idx": 12,
+        "eq": "\"Length\"= 1800mm"
+      },
+      "Width": {
+        "action": "put",
+        "idx": 0,
+        "eq": "\"Width\"= 900mm"
+      },
+      "Height": {
+        "action": "put",
+        "idx": 1,
+        "eq": "\"Height\"= 1500mm"
+      }
+    },
+    "d2": {
+      "existed": true,
+      "idx": 8,
+      "eq": "\"D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part\" = \"Length\" - \"SheetTrim\""
+    },
+    "related_equations": [
+      {
+        "idx": 6,
+        "eq": "\"D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part\" = \"Length\""
+      },
+      {
+        "idx": 8,
+        "eq": "\"D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part\" = \"Length\" - \"SheetTrim\""
+      },
+      {
+        "idx": 12,
+        "eq": "\"Length\"= 1800mm"
+      }
+    ],
+    "rebuild": {
+      "ForceRebuild3_True": true,
+      "ForceRebuild3_False": true,
+      "EditRebuild3": "ERR:'bool' object is not callable"
+    },
+    "ForceRebuild3_again": true,
+    "globals": {
+      "Length": {
+        "idx": 12,
+        "eq": "\"Length\"= 1800mm",
+        "value": 1800.0
+      },
+      "Width": {
+        "idx": 0,
+        "eq": "\"Width\"= 900mm",
+        "value": 900.0
+      },
+      "Height": {
+        "idx": 1,
+        "eq": "\"Height\"= 1500mm",
+        "value": 1500.0
+      },
+      "FootHeight": {
+        "idx": 3,
+        "eq": "\"FootHeight\"= 50mm",
+        "value": 50.0
+      },
+      "SheetTrim": {
+        "idx": 7,
+        "eq": "\"SheetTrim\"= 4mm",
+        "value": 4.0
+      },
+      "DeckHeight": {
+        "idx": 4,
+        "eq": "\"DeckHeight\"= \"Height\" - \"FootHeight\"",
+        "value": -50.0
+      }
+    },
+    "dims_mm": {
+      "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1000.9999999999999,
+      "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 996.9999999999999
+    },
+    "deps_final": {
+      "deps_paths": 33,
+      "mother_path_refs": 0,
+      "packgo_path_refs": 32,
+      "sample_mother": [],
+      "sample_paths": [
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-01x1-001x1-主框架.SLDASM",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T3.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-02T3.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T4.0-0000-001x4.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T2.0-0000-001x4.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-02T4.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T4.0-0000-001x2.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T3.0-0000-001x1.SLDPRT",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-04x1-001x1-链条挡板.SLDASM",
+        "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T2.0-0000-001x1.SLDPRT"
+      ]
+    },
+    "part_direct_D1@草图1": 1000.9999999999999,
+    "saved": true
+  },
+  "blockers": [],
+  "checks": {
+    "D1_approx_1800": true,
+    "D2_approx_1796": true,
+    "isolated_no_mother_refs": true,
+    "mother_untouched": true
+  },
+  "dialog_clicks": [
+    [
+      "cancel-save",
+      "SOLIDWORKS",
+      "取消"
+    ]
+  ],
+  "packgo": {
+    "path": "C:\\Users\\yue\\A01-live-work\\packgo\\A01-1800x900x1500-v2.SLDASM",
+    "folder": "C:\\Users\\yue\\A01-live-work\\packgo",
+    "copied_count": 33,
+    "replace_ok": 35,
+    "replace_fail": 163,
+    "isolation_mother_refs": 0,
+    "chosen_asm": "C:\\Users\\yue\\A01-live-work\\packgo\\A01-1800x900x1500-v2.SLDASM"
+  },
+  "force_d1": {
+    "status": "geometry_synced",
+    "dims_final": {
+      "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1800.0,
+      "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 996.9999999999999
+    },
+    "part_direct_final": {
+      "D1@草图1": 1800.0
+    },
+    "cause": null,
+    "mother_untouched": true
+  },
+  "packgo_api_note": "GetPackAndGo PARAMNOTOPTIONAL via pywin32 on SW2025",
+  "packed_asm": "C:\\Users\\yue\\A01-live-work\\packgo\\A01-1800x900x1500-v2.SLDASM",
+  "packgo_folder": "C:\\Users\\yue\\A01-live-work\\packgo",
+  "dims_mm_final": {
+    "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1800.0,
+    "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 1796.0
+  },
+  "deps": {
+    "paths": 33,
+    "mother_refs": 0,
+    "sample": [
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-01x1-001x1-主框架.SLDASM",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T3.0-0000-001x1.SLDPRT",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-02T3.0-0000-001x1.SLDPRT",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-01T4.0-0000-001x4.SLDPRT",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T2.0-0000-001x4.SLDPRT",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-ZW-02T4.0-0000-001x1.SLDPRT",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T4.0-0000-001x2.SLDPRT",
+      "C:\\Users\\yue\\A01-live-work\\packgo\\GT-ZX-BW-02T3.0-0000-001x1.SLDPRT"
+    ]
+  },
+  "globals_eq": {
+    "Length": "\"Length\"= 1800mm",
+    "Width": "\"Width\"= 900mm",
+    "Height": "\"Height\"= 1500mm",
+    "SheetTrim": "\"SheetTrim\"= 4mm"
+  },
+  "d1_eqs": [
+    "\"D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part\" = \"Length\""
+  ],
+  "d2_eqs": [],
+  "d2_note": {
+    "before": 996.9999999999999,
+    "after": 1796.0
+  },
+  "timestamp_local": "2026-10-23T13:52:10",
+  "d2_eq_restored": {
+    "had_d2_eq": false,
+    "before": {
+      "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1800.0,
+      "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 1796.0
+    },
+    "added": true,
+    "d2_eqs": [],
+    "after": {
+      "D1@草图1@GT-ZX-ZW-01T2.0-0000-001x1.Part": 1800.0,
+      "D2@草图1@GT-ZX-ZW-02T3.0-0000-001x1.Part": 1796.0
+    },
+    "mother_untouched": true,
+    "D1_ok": true,
+    "D2_ok": true
+  }
+}

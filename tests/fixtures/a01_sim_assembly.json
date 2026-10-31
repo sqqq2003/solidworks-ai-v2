@@ -1,0 +1,14 @@
+{
+  "label": "simulated_assembly_fixture",
+  "not_measured_from_real_a01": true,
+  "note": "Synthetic allowances for solver tests only. These numbers were not measured on the real A01 assembly.",
+  "measured_overrides_mm": {
+    "front_allowance": 10,
+    "rear_allowance": 10,
+    "left_allowance": 10,
+    "right_allowance": 10,
+    "top_allowance": 10,
+    "bottom_allowance": 10
+  },
+  "ignored_numbers_mm": [12.7, 50, 280, 33.25, 8]
+}

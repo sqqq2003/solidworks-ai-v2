@@ -1,0 +1,1632 @@
+{
+  "generated_at": "2026-10-23T14:39:54+08:00",
+  "timezone": "Asia/Shanghai",
+  "issue": 5,
+  "tier": "relief_slot_scan",
+  "scans": [
+    {
+      "source_label": "QL-5050_cached_dxf",
+      "source_path": "C:\\Users\\yue\\AppData\\Local\\Temp\\cad2sw_dwg_dxf\\QL-5050_sheetmetal_work_solidworks_18e1153116eb87a4.dxf",
+      "profile_count": 288,
+      "bend_line_count": 143,
+      "profiles_with_bends": 27,
+      "profiles_with_drawing_relief_slots": 0,
+      "profiles_with_notches_near_bend": 4,
+      "top_relief_hits": [
+        {
+          "profile_1based": 248,
+          "bend_count": 4,
+          "area_mm2": 5182.92,
+          "inner_hole_count": 1,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 12,
+          "concave_notches_near_bend_end": 12,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 0,
+              "len_in": 1.42,
+              "len_out": 2.05,
+              "x": 236.31,
+              "y": 5574.58,
+              "bend_local": 2,
+              "d_end": 5.22
+            },
+            {
+              "i": 1,
+              "len_in": 2.05,
+              "len_out": 3.04,
+              "x": 234.26,
+              "y": 5574.58,
+              "bend_local": 2,
+              "d_end": 5.04
+            },
+            {
+              "i": 9,
+              "len_in": 3.04,
+              "len_out": 2.05,
+              "x": 234.26,
+              "y": 5604.1,
+              "bend_local": 2,
+              "d_end": 5.04
+            },
+            {
+              "i": 10,
+              "len_in": 2.05,
+              "len_out": 1.42,
+              "x": 236.31,
+              "y": 5604.1,
+              "bend_local": 2,
+              "d_end": 5.22
+            },
+            {
+              "i": 11,
+              "len_in": 1.42,
+              "len_out": 1.05,
+              "x": 236.31,
+              "y": 5605.52,
+              "bend_local": 2,
+              "d_end": 6.59
+            },
+            {
+              "i": 16,
+              "len_in": 1.05,
+              "len_out": 1.42,
+              "x": 285.71,
+              "y": 5605.52,
+              "bend_local": 3,
+              "d_end": 6.59
+            },
+            {
+              "i": 17,
+              "len_in": 1.42,
+              "len_out": 2.05,
+              "x": 285.71,
+              "y": 5604.1,
+              "bend_local": 3,
+              "d_end": 5.22
+            },
+            {
+              "i": 18,
+              "len_in": 2.05,
+              "len_out": 3.04,
+              "x": 287.76,
+              "y": 5604.1,
+              "bend_local": 3,
+              "d_end": 5.04
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 183,
+          "bend_count": 12,
+          "area_mm2": 515435.45,
+          "inner_hole_count": 17,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 8,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 15,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5603.07,
+              "bend_local": 0,
+              "d_end": 6.09
+            },
+            {
+              "i": 15,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5603.07,
+              "bend_local": 4,
+              "d_end": 10.03
+            },
+            {
+              "i": 48,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5603.07,
+              "bend_local": 6,
+              "d_end": 6.09
+            },
+            {
+              "i": 48,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5603.07,
+              "bend_local": 10,
+              "d_end": 10.03
+            },
+            {
+              "i": 77,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5096.07,
+              "bend_local": 8,
+              "d_end": 6.08
+            },
+            {
+              "i": 77,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5096.07,
+              "bend_local": 11,
+              "d_end": 10.03
+            },
+            {
+              "i": 110,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5096.07,
+              "bend_local": 2,
+              "d_end": 6.08
+            },
+            {
+              "i": 110,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5096.07,
+              "bend_local": 5,
+              "d_end": 10.03
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 206,
+          "bend_count": 8,
+          "area_mm2": 65805.91,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 6,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 32,
+              "len_in": 2.0,
+              "len_out": 1.5,
+              "x": 3374.79,
+              "y": 342.23,
+              "bend_local": 4,
+              "d_end": 5.0
+            },
+            {
+              "i": 33,
+              "len_in": 1.5,
+              "len_out": 2.0,
+              "x": 3373.29,
+              "y": 342.23,
+              "bend_local": 3,
+              "d_end": 11.67
+            },
+            {
+              "i": 33,
+              "len_in": 1.5,
+              "len_out": 2.0,
+              "x": 3373.29,
+              "y": 342.23,
+              "bend_local": 4,
+              "d_end": 6.5
+            },
+            {
+              "i": 62,
+              "len_in": 2.0,
+              "len_out": 1.5,
+              "x": 3373.29,
+              "y": 200.23,
+              "bend_local": 1,
+              "d_end": 11.68
+            },
+            {
+              "i": 62,
+              "len_in": 2.0,
+              "len_out": 1.5,
+              "x": 3373.29,
+              "y": 200.23,
+              "bend_local": 6,
+              "d_end": 6.5
+            },
+            {
+              "i": 63,
+              "len_in": 1.5,
+              "len_out": 2.0,
+              "x": 3374.79,
+              "y": 200.23,
+              "bend_local": 6,
+              "d_end": 5.0
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 271,
+          "bend_count": 4,
+          "area_mm2": 170952.63,
+          "inner_hole_count": 8,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 4,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 2,
+              "len_in": 4.0,
+              "len_out": 1.0,
+              "x": 2834.97,
+              "y": 3078.72,
+              "bend_local": 0,
+              "d_end": 11.18
+            },
+            {
+              "i": 5,
+              "len_in": 1.0,
+              "len_out": 4.0,
+              "x": 2834.97,
+              "y": 3244.72,
+              "bend_local": 1,
+              "d_end": 11.18
+            },
+            {
+              "i": 60,
+              "len_in": 4.0,
+              "len_out": 1.0,
+              "x": 3530.97,
+              "y": 3244.72,
+              "bend_local": 3,
+              "d_end": 11.18
+            },
+            {
+              "i": 63,
+              "len_in": 1.0,
+              "len_out": 4.0,
+              "x": 3530.97,
+              "y": 3078.72,
+              "bend_local": 2,
+              "d_end": 11.18
+            }
+          ],
+          "other_small_rect_sample": []
+        }
+      ],
+      "top_any": [
+        {
+          "profile_1based": 248,
+          "bend_count": 4,
+          "area_mm2": 5182.92,
+          "inner_hole_count": 1,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 12,
+          "concave_notches_near_bend_end": 12,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 0,
+              "len_in": 1.42,
+              "len_out": 2.05,
+              "x": 236.31,
+              "y": 5574.58,
+              "bend_local": 2,
+              "d_end": 5.22
+            },
+            {
+              "i": 1,
+              "len_in": 2.05,
+              "len_out": 3.04,
+              "x": 234.26,
+              "y": 5574.58,
+              "bend_local": 2,
+              "d_end": 5.04
+            },
+            {
+              "i": 9,
+              "len_in": 3.04,
+              "len_out": 2.05,
+              "x": 234.26,
+              "y": 5604.1,
+              "bend_local": 2,
+              "d_end": 5.04
+            },
+            {
+              "i": 10,
+              "len_in": 2.05,
+              "len_out": 1.42,
+              "x": 236.31,
+              "y": 5604.1,
+              "bend_local": 2,
+              "d_end": 5.22
+            },
+            {
+              "i": 11,
+              "len_in": 1.42,
+              "len_out": 1.05,
+              "x": 236.31,
+              "y": 5605.52,
+              "bend_local": 2,
+              "d_end": 6.59
+            },
+            {
+              "i": 16,
+              "len_in": 1.05,
+              "len_out": 1.42,
+              "x": 285.71,
+              "y": 5605.52,
+              "bend_local": 3,
+              "d_end": 6.59
+            },
+            {
+              "i": 17,
+              "len_in": 1.42,
+              "len_out": 2.05,
+              "x": 285.71,
+              "y": 5604.1,
+              "bend_local": 3,
+              "d_end": 5.22
+            },
+            {
+              "i": 18,
+              "len_in": 2.05,
+              "len_out": 3.04,
+              "x": 287.76,
+              "y": 5604.1,
+              "bend_local": 3,
+              "d_end": 5.04
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 183,
+          "bend_count": 12,
+          "area_mm2": 515435.45,
+          "inner_hole_count": 17,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 8,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 15,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5603.07,
+              "bend_local": 0,
+              "d_end": 6.09
+            },
+            {
+              "i": 15,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5603.07,
+              "bend_local": 4,
+              "d_end": 10.03
+            },
+            {
+              "i": 48,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5603.07,
+              "bend_local": 6,
+              "d_end": 6.09
+            },
+            {
+              "i": 48,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5603.07,
+              "bend_local": 10,
+              "d_end": 10.03
+            },
+            {
+              "i": 77,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5096.07,
+              "bend_local": 8,
+              "d_end": 6.08
+            },
+            {
+              "i": 77,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 2853.88,
+              "y": 5096.07,
+              "bend_local": 11,
+              "d_end": 10.03
+            },
+            {
+              "i": 110,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5096.07,
+              "bend_local": 2,
+              "d_end": 6.08
+            },
+            {
+              "i": 110,
+              "len_in": 1.0,
+              "len_out": 1.0,
+              "x": 3547.88,
+              "y": 5096.07,
+              "bend_local": 5,
+              "d_end": 10.03
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 206,
+          "bend_count": 8,
+          "area_mm2": 65805.91,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 6,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 32,
+              "len_in": 2.0,
+              "len_out": 1.5,
+              "x": 3374.79,
+              "y": 342.23,
+              "bend_local": 4,
+              "d_end": 5.0
+            },
+            {
+              "i": 33,
+              "len_in": 1.5,
+              "len_out": 2.0,
+              "x": 3373.29,
+              "y": 342.23,
+              "bend_local": 3,
+              "d_end": 11.67
+            },
+            {
+              "i": 33,
+              "len_in": 1.5,
+              "len_out": 2.0,
+              "x": 3373.29,
+              "y": 342.23,
+              "bend_local": 4,
+              "d_end": 6.5
+            },
+            {
+              "i": 62,
+              "len_in": 2.0,
+              "len_out": 1.5,
+              "x": 3373.29,
+              "y": 200.23,
+              "bend_local": 1,
+              "d_end": 11.68
+            },
+            {
+              "i": 62,
+              "len_in": 2.0,
+              "len_out": 1.5,
+              "x": 3373.29,
+              "y": 200.23,
+              "bend_local": 6,
+              "d_end": 6.5
+            },
+            {
+              "i": 63,
+              "len_in": 1.5,
+              "len_out": 2.0,
+              "x": 3374.79,
+              "y": 200.23,
+              "bend_local": 6,
+              "d_end": 5.0
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 271,
+          "bend_count": 4,
+          "area_mm2": 170952.63,
+          "inner_hole_count": 8,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 4,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 2,
+              "len_in": 4.0,
+              "len_out": 1.0,
+              "x": 2834.97,
+              "y": 3078.72,
+              "bend_local": 0,
+              "d_end": 11.18
+            },
+            {
+              "i": 5,
+              "len_in": 1.0,
+              "len_out": 4.0,
+              "x": 2834.97,
+              "y": 3244.72,
+              "bend_local": 1,
+              "d_end": 11.18
+            },
+            {
+              "i": 60,
+              "len_in": 4.0,
+              "len_out": 1.0,
+              "x": 3530.97,
+              "y": 3244.72,
+              "bend_local": 3,
+              "d_end": 11.18
+            },
+            {
+              "i": 63,
+              "len_in": 1.0,
+              "len_out": 4.0,
+              "x": 3530.97,
+              "y": 3078.72,
+              "bend_local": 2,
+              "d_end": 11.18
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 249,
+          "bend_count": 12,
+          "area_mm2": 278779.6,
+          "inner_hole_count": 10,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 232,
+          "bend_count": 8,
+          "area_mm2": 173589.41,
+          "inner_hole_count": 34,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 266,
+          "bend_count": 8,
+          "area_mm2": 173589.41,
+          "inner_hole_count": 30,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 224,
+          "bend_count": 8,
+          "area_mm2": 122416.76,
+          "inner_hole_count": 9,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 247,
+          "bend_count": 8,
+          "area_mm2": 70165.43,
+          "inner_hole_count": 11,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 220,
+          "bend_count": 6,
+          "area_mm2": 139451.78,
+          "inner_hole_count": 3,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 283,
+          "bend_count": 6,
+          "area_mm2": 139451.78,
+          "inner_hole_count": 3,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 203,
+          "bend_count": 6,
+          "area_mm2": 46753.11,
+          "inner_hole_count": 10,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 240,
+          "bend_count": 6,
+          "area_mm2": 46753.11,
+          "inner_hole_count": 11,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 237,
+          "bend_count": 6,
+          "area_mm2": 41640.0,
+          "inner_hole_count": 0,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 222,
+          "bend_count": 4,
+          "area_mm2": 8078.32,
+          "inner_hole_count": 0,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        }
+      ]
+    },
+    {
+      "source_label": "QL-斜滚筒线钣金下料图",
+      "source_path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\QL-斜滚筒线钣金下料图.DWG",
+      "profile_count": 184,
+      "bend_line_count": 82,
+      "profiles_with_bends": 18,
+      "profiles_with_drawing_relief_slots": 0,
+      "profiles_with_notches_near_bend": 1,
+      "top_relief_hits": [
+        {
+          "profile_1based": 109,
+          "bend_count": 4,
+          "area_mm2": 21843.33,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 2,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 0,
+              "len_in": 8.0,
+              "len_out": 1.0,
+              "x": 6048.22,
+              "y": 2929.18,
+              "bend_local": 3,
+              "d_end": 11.71
+            },
+            {
+              "i": 59,
+              "len_in": 1.0,
+              "len_out": 8.0,
+              "x": 6048.22,
+              "y": 2963.18,
+              "bend_local": 1,
+              "d_end": 11.7
+            }
+          ],
+          "other_small_rect_sample": []
+        }
+      ],
+      "top_any": [
+        {
+          "profile_1based": 109,
+          "bend_count": 4,
+          "area_mm2": 21843.33,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 2,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 0,
+              "len_in": 8.0,
+              "len_out": 1.0,
+              "x": 6048.22,
+              "y": 2929.18,
+              "bend_local": 3,
+              "d_end": 11.71
+            },
+            {
+              "i": 59,
+              "len_in": 1.0,
+              "len_out": 8.0,
+              "x": 6048.22,
+              "y": 2963.18,
+              "bend_local": 1,
+              "d_end": 11.7
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 88,
+          "bend_count": 8,
+          "area_mm2": 251424.0,
+          "inner_hole_count": 18,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 95,
+          "bend_count": 8,
+          "area_mm2": 251424.0,
+          "inner_hole_count": 24,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 146,
+          "bend_count": 8,
+          "area_mm2": 251424.0,
+          "inner_hole_count": 18,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 153,
+          "bend_count": 8,
+          "area_mm2": 251424.0,
+          "inner_hole_count": 24,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 83,
+          "bend_count": 6,
+          "area_mm2": 202145.87,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 125,
+          "bend_count": 6,
+          "area_mm2": 202145.87,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 165,
+          "bend_count": 4,
+          "area_mm2": 106979.23,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 175,
+          "bend_count": 4,
+          "area_mm2": 106979.23,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 102,
+          "bend_count": 4,
+          "area_mm2": 103178.2,
+          "inner_hole_count": 0,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 170,
+          "bend_count": 4,
+          "area_mm2": 86396.54,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 180,
+          "bend_count": 4,
+          "area_mm2": 86396.54,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 126,
+          "bend_count": 4,
+          "area_mm2": 54550.0,
+          "inner_hole_count": 5,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 136,
+          "bend_count": 4,
+          "area_mm2": 54550.0,
+          "inner_hole_count": 5,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 101,
+          "bend_count": 2,
+          "area_mm2": 50593.81,
+          "inner_hole_count": 8,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        }
+      ],
+      "mother": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\QL-斜滚筒线钣金下料图.DWG",
+      "work_copy": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\QL-斜滚筒线钣金下料图.DWG"
+    },
+    {
+      "source_label": "钣金-总",
+      "source_path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\钣金-总.DWG",
+      "profile_count": 96,
+      "bend_line_count": 39,
+      "profiles_with_bends": 9,
+      "profiles_with_drawing_relief_slots": 0,
+      "profiles_with_notches_near_bend": 1,
+      "top_relief_hits": [
+        {
+          "profile_1based": 84,
+          "bend_count": 4,
+          "area_mm2": 21843.33,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 2,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 0,
+              "len_in": 8.0,
+              "len_out": 1.0,
+              "x": 5949.32,
+              "y": 1868.06,
+              "bend_local": 3,
+              "d_end": 11.7
+            },
+            {
+              "i": 59,
+              "len_in": 1.0,
+              "len_out": 8.0,
+              "x": 5949.32,
+              "y": 1902.06,
+              "bend_local": 1,
+              "d_end": 11.7
+            }
+          ],
+          "other_small_rect_sample": []
+        }
+      ],
+      "top_any": [
+        {
+          "profile_1based": 84,
+          "bend_count": 4,
+          "area_mm2": 21843.33,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 2,
+          "relief_holes": [],
+          "notches_near": [
+            {
+              "i": 0,
+              "len_in": 8.0,
+              "len_out": 1.0,
+              "x": 5949.32,
+              "y": 1868.06,
+              "bend_local": 3,
+              "d_end": 11.7
+            },
+            {
+              "i": 59,
+              "len_in": 1.0,
+              "len_out": 8.0,
+              "x": 5949.32,
+              "y": 1902.06,
+              "bend_local": 1,
+              "d_end": 11.7
+            }
+          ],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 53,
+          "bend_count": 8,
+          "area_mm2": 246240.0,
+          "inner_hole_count": 18,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 60,
+          "bend_count": 8,
+          "area_mm2": 246240.0,
+          "inner_hole_count": 24,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 48,
+          "bend_count": 6,
+          "area_mm2": 202145.87,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 67,
+          "bend_count": 4,
+          "area_mm2": 103178.2,
+          "inner_hole_count": 0,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 68,
+          "bend_count": 4,
+          "area_mm2": 54550.0,
+          "inner_hole_count": 5,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 2,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 92,
+          "bend_count": 2,
+          "area_mm2": 13362.81,
+          "inner_hole_count": 2,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 86,
+          "bend_count": 2,
+          "area_mm2": 8500.0,
+          "inner_hole_count": 0,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 4,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 80,
+          "bend_count": 1,
+          "area_mm2": 10931.64,
+          "inner_hole_count": 3,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        }
+      ],
+      "mother": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\钣金-总.DWG",
+      "work_copy": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\钣金-总.DWG"
+    },
+    {
+      "source_label": "QL-斜滚筒线201不锈钢钣金补料",
+      "source_path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\QL-斜滚筒线201不锈钢钣金补料.dwg",
+      "profile_count": 20,
+      "bend_line_count": 16,
+      "profiles_with_bends": 4,
+      "profiles_with_drawing_relief_slots": 0,
+      "profiles_with_notches_near_bend": 0,
+      "top_relief_hits": [],
+      "top_any": [
+        {
+          "profile_1based": 1,
+          "bend_count": 4,
+          "area_mm2": 106979.23,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 11,
+          "bend_count": 4,
+          "area_mm2": 106979.23,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 6,
+          "bend_count": 4,
+          "area_mm2": 86396.54,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        },
+        {
+          "profile_1based": 16,
+          "bend_count": 4,
+          "area_mm2": 86396.54,
+          "inner_hole_count": 4,
+          "drawing_relief_slots_classified": 0,
+          "small_rect_not_near_bend": 0,
+          "concave_aa_notches": 0,
+          "concave_notches_near_bend_end": 0,
+          "relief_holes": [],
+          "notches_near": [],
+          "other_small_rect_sample": []
+        }
+      ],
+      "mother": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\QL-斜滚筒线201不锈钢钣金补料.dwg",
+      "work_copy": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\QL-斜滚筒线201不锈钢钣金补料.dwg"
+    },
+    {
+      "source_label": "钣金图_latest",
+      "source_path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\钣金图_latest.dwg",
+      "profile_count": 25,
+      "bend_line_count": 0,
+      "profiles_with_bends": 0,
+      "profiles_with_drawing_relief_slots": 0,
+      "profiles_with_notches_near_bend": 0,
+      "top_relief_hits": [],
+      "top_any": [],
+      "mother": "D:\\工程\\下料图\\1.0米无动力滚筒线材料表_3\\钣金图_latest.dwg",
+      "work_copy": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\钣金图_latest.dwg"
+    }
+  ],
+  "ql_dxf_used": "C:\\Users\\yue\\AppData\\Local\\Temp\\cad2sw_dwg_dxf\\QL-5050_sheetmetal_work_solidworks_18e1153116eb87a4.dxf",
+  "aggregate_drawing_relief_slot_hits": [
+    {
+      "source": "QL-5050_cached_dxf",
+      "profile_1based": 248,
+      "bend_count": 4,
+      "area_mm2": 5182.92,
+      "inner_hole_count": 1,
+      "drawing_relief_slots_classified": 0,
+      "small_rect_not_near_bend": 0,
+      "concave_aa_notches": 12,
+      "concave_notches_near_bend_end": 12,
+      "relief_holes": [],
+      "notches_near": [
+        {
+          "i": 0,
+          "len_in": 1.42,
+          "len_out": 2.05,
+          "x": 236.31,
+          "y": 5574.58,
+          "bend_local": 2,
+          "d_end": 5.22
+        },
+        {
+          "i": 1,
+          "len_in": 2.05,
+          "len_out": 3.04,
+          "x": 234.26,
+          "y": 5574.58,
+          "bend_local": 2,
+          "d_end": 5.04
+        },
+        {
+          "i": 9,
+          "len_in": 3.04,
+          "len_out": 2.05,
+          "x": 234.26,
+          "y": 5604.1,
+          "bend_local": 2,
+          "d_end": 5.04
+        },
+        {
+          "i": 10,
+          "len_in": 2.05,
+          "len_out": 1.42,
+          "x": 236.31,
+          "y": 5604.1,
+          "bend_local": 2,
+          "d_end": 5.22
+        },
+        {
+          "i": 11,
+          "len_in": 1.42,
+          "len_out": 1.05,
+          "x": 236.31,
+          "y": 5605.52,
+          "bend_local": 2,
+          "d_end": 6.59
+        },
+        {
+          "i": 16,
+          "len_in": 1.05,
+          "len_out": 1.42,
+          "x": 285.71,
+          "y": 5605.52,
+          "bend_local": 3,
+          "d_end": 6.59
+        },
+        {
+          "i": 17,
+          "len_in": 1.42,
+          "len_out": 2.05,
+          "x": 285.71,
+          "y": 5604.1,
+          "bend_local": 3,
+          "d_end": 5.22
+        },
+        {
+          "i": 18,
+          "len_in": 2.05,
+          "len_out": 3.04,
+          "x": 287.76,
+          "y": 5604.1,
+          "bend_local": 3,
+          "d_end": 5.04
+        }
+      ],
+      "other_small_rect_sample": []
+    },
+    {
+      "source": "QL-5050_cached_dxf",
+      "profile_1based": 183,
+      "bend_count": 12,
+      "area_mm2": 515435.45,
+      "inner_hole_count": 17,
+      "drawing_relief_slots_classified": 0,
+      "small_rect_not_near_bend": 0,
+      "concave_aa_notches": 4,
+      "concave_notches_near_bend_end": 8,
+      "relief_holes": [],
+      "notches_near": [
+        {
+          "i": 15,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 3547.88,
+          "y": 5603.07,
+          "bend_local": 0,
+          "d_end": 6.09
+        },
+        {
+          "i": 15,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 3547.88,
+          "y": 5603.07,
+          "bend_local": 4,
+          "d_end": 10.03
+        },
+        {
+          "i": 48,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 2853.88,
+          "y": 5603.07,
+          "bend_local": 6,
+          "d_end": 6.09
+        },
+        {
+          "i": 48,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 2853.88,
+          "y": 5603.07,
+          "bend_local": 10,
+          "d_end": 10.03
+        },
+        {
+          "i": 77,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 2853.88,
+          "y": 5096.07,
+          "bend_local": 8,
+          "d_end": 6.08
+        },
+        {
+          "i": 77,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 2853.88,
+          "y": 5096.07,
+          "bend_local": 11,
+          "d_end": 10.03
+        },
+        {
+          "i": 110,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 3547.88,
+          "y": 5096.07,
+          "bend_local": 2,
+          "d_end": 6.08
+        },
+        {
+          "i": 110,
+          "len_in": 1.0,
+          "len_out": 1.0,
+          "x": 3547.88,
+          "y": 5096.07,
+          "bend_local": 5,
+          "d_end": 10.03
+        }
+      ],
+      "other_small_rect_sample": []
+    },
+    {
+      "source": "QL-5050_cached_dxf",
+      "profile_1based": 206,
+      "bend_count": 8,
+      "area_mm2": 65805.91,
+      "inner_hole_count": 2,
+      "drawing_relief_slots_classified": 0,
+      "small_rect_not_near_bend": 0,
+      "concave_aa_notches": 4,
+      "concave_notches_near_bend_end": 6,
+      "relief_holes": [],
+      "notches_near": [
+        {
+          "i": 32,
+          "len_in": 2.0,
+          "len_out": 1.5,
+          "x": 3374.79,
+          "y": 342.23,
+          "bend_local": 4,
+          "d_end": 5.0
+        },
+        {
+          "i": 33,
+          "len_in": 1.5,
+          "len_out": 2.0,
+          "x": 3373.29,
+          "y": 342.23,
+          "bend_local": 3,
+          "d_end": 11.67
+        },
+        {
+          "i": 33,
+          "len_in": 1.5,
+          "len_out": 2.0,
+          "x": 3373.29,
+          "y": 342.23,
+          "bend_local": 4,
+          "d_end": 6.5
+        },
+        {
+          "i": 62,
+          "len_in": 2.0,
+          "len_out": 1.5,
+          "x": 3373.29,
+          "y": 200.23,
+          "bend_local": 1,
+          "d_end": 11.68
+        },
+        {
+          "i": 62,
+          "len_in": 2.0,
+          "len_out": 1.5,
+          "x": 3373.29,
+          "y": 200.23,
+          "bend_local": 6,
+          "d_end": 6.5
+        },
+        {
+          "i": 63,
+          "len_in": 1.5,
+          "len_out": 2.0,
+          "x": 3374.79,
+          "y": 200.23,
+          "bend_local": 6,
+          "d_end": 5.0
+        }
+      ],
+      "other_small_rect_sample": []
+    },
+    {
+      "source": "QL-5050_cached_dxf",
+      "profile_1based": 271,
+      "bend_count": 4,
+      "area_mm2": 170952.63,
+      "inner_hole_count": 8,
+      "drawing_relief_slots_classified": 0,
+      "small_rect_not_near_bend": 0,
+      "concave_aa_notches": 4,
+      "concave_notches_near_bend_end": 4,
+      "relief_holes": [],
+      "notches_near": [
+        {
+          "i": 2,
+          "len_in": 4.0,
+          "len_out": 1.0,
+          "x": 2834.97,
+          "y": 3078.72,
+          "bend_local": 0,
+          "d_end": 11.18
+        },
+        {
+          "i": 5,
+          "len_in": 1.0,
+          "len_out": 4.0,
+          "x": 2834.97,
+          "y": 3244.72,
+          "bend_local": 1,
+          "d_end": 11.18
+        },
+        {
+          "i": 60,
+          "len_in": 4.0,
+          "len_out": 1.0,
+          "x": 3530.97,
+          "y": 3244.72,
+          "bend_local": 3,
+          "d_end": 11.18
+        },
+        {
+          "i": 63,
+          "len_in": 1.0,
+          "len_out": 4.0,
+          "x": 3530.97,
+          "y": 3078.72,
+          "bend_local": 2,
+          "d_end": 11.18
+        }
+      ],
+      "other_small_rect_sample": []
+    },
+    {
+      "source": "QL-斜滚筒线钣金下料图",
+      "profile_1based": 109,
+      "bend_count": 4,
+      "area_mm2": 21843.33,
+      "inner_hole_count": 2,
+      "drawing_relief_slots_classified": 0,
+      "small_rect_not_near_bend": 0,
+      "concave_aa_notches": 2,
+      "concave_notches_near_bend_end": 2,
+      "relief_holes": [],
+      "notches_near": [
+        {
+          "i": 0,
+          "len_in": 8.0,
+          "len_out": 1.0,
+          "x": 6048.22,
+          "y": 2929.18,
+          "bend_local": 3,
+          "d_end": 11.71
+        },
+        {
+          "i": 59,
+          "len_in": 1.0,
+          "len_out": 8.0,
+          "x": 6048.22,
+          "y": 2963.18,
+          "bend_local": 1,
+          "d_end": 11.7
+        }
+      ],
+      "other_small_rect_sample": []
+    },
+    {
+      "source": "钣金-总",
+      "profile_1based": 84,
+      "bend_count": 4,
+      "area_mm2": 21843.33,
+      "inner_hole_count": 2,
+      "drawing_relief_slots_classified": 0,
+      "small_rect_not_near_bend": 0,
+      "concave_aa_notches": 2,
+      "concave_notches_near_bend_end": 2,
+      "relief_holes": [],
+      "notches_near": [
+        {
+          "i": 0,
+          "len_in": 8.0,
+          "len_out": 1.0,
+          "x": 5949.32,
+          "y": 1868.06,
+          "bend_local": 3,
+          "d_end": 11.7
+        },
+        {
+          "i": 59,
+          "len_in": 1.0,
+          "len_out": 8.0,
+          "x": 5949.32,
+          "y": 1902.06,
+          "bend_local": 1,
+          "d_end": 11.7
+        }
+      ],
+      "other_small_rect_sample": []
+    }
+  ],
+  "found_any_drawing_relief_slots": false,
+  "found_any_notches_near_bend": true
+}

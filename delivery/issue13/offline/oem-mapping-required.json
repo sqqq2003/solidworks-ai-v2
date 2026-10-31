@@ -1,0 +1,833 @@
+[
+  {
+    "module": "assembly",
+    "path": "machine",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "frame",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "frame",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "frame",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/frame",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "conveyor",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "conveyor",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "conveyor",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/conveyor",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "left_drive",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "left_drive",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "left_drive",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/left_drive",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "right_drive",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "right_drive",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "right_drive",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/right_drive",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "sealing",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "sealing",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "sealing",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/sealing",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "interfaces",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "interfaces",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "interfaces",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/interfaces",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "standard_parts",
+    "field": "configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "standard_parts",
+    "field": "children",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "standard_parts",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine/standard_parts",
+    "field": "transform_mm",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine",
+    "field": "source_path_or_generation_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "assembly",
+    "path": "machine",
+    "field": "mate_inventory",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "end_allowance",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "side_allowance",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "pulley_driver_d",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "pulley_driven_d",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "motor_rpm",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "driver_teeth",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "driven_teeth",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "bearing_span",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "sealing_stroke",
+    "missing_dependencies": [],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "end_pair",
+    "missing_dependencies": [
+      "end_allowance"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "frame_length",
+    "missing_dependencies": [
+      "end_pair"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "side_pair",
+    "missing_dependencies": [
+      "side_allowance"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "conveyor_width",
+    "missing_dependencies": [
+      "side_pair"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "left_drive_x",
+    "missing_dependencies": [
+      "conveyor_width"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "right_drive_x",
+    "missing_dependencies": [
+      "conveyor_width"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "drive_ratio",
+    "missing_dependencies": [
+      "driver_teeth",
+      "driven_teeth"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "roller_rpm",
+    "missing_dependencies": [
+      "motor_rpm",
+      "drive_ratio"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "center_distance",
+    "missing_dependencies": [
+      "frame_length"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "belt_length",
+    "missing_dependencies": [
+      "pulley_driver_d",
+      "pulley_driven_d",
+      "center_distance"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "parameter": "belt_speed",
+    "missing_dependencies": [
+      "pulley_driven_d",
+      "roller_rpm"
+    ],
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "constraint": "bearing-fit",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drive",
+    "field": "source_assembly/assembly_configuration",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-frame",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-conveyor",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-left_drive",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-right_drive",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-sealing",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-interfaces",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-standard_parts",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "views",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "material",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "process",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "datum_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "tolerance_scheme",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "part_number",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "drawings",
+    "drawing": "drawing-machine",
+    "field": "bom_template",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "parameters",
+    "parameter": "bearing_diameter"
+  },
+  {
+    "module": "parameters",
+    "parameter": "belt_offset"
+  },
+  {
+    "module": "parameters",
+    "parameter": "conveyor_height"
+  },
+  {
+    "module": "parameters",
+    "parameter": "conveyor_length"
+  },
+  {
+    "module": "parameters",
+    "parameter": "conveyor_width"
+  },
+  {
+    "module": "parameters",
+    "parameter": "drive_belt_length"
+  },
+  {
+    "module": "parameters",
+    "parameter": "drive_speed"
+  },
+  {
+    "module": "parameters",
+    "parameter": "end_allowance"
+  },
+  {
+    "module": "parameters",
+    "parameter": "frame_height"
+  },
+  {
+    "module": "parameters",
+    "parameter": "frame_length"
+  },
+  {
+    "module": "parameters",
+    "parameter": "frame_width"
+  },
+  {
+    "module": "parameters",
+    "parameter": "left_drive_x"
+  },
+  {
+    "module": "parameters",
+    "parameter": "motor_power"
+  },
+  {
+    "module": "parameters",
+    "parameter": "motor_shaft_diameter"
+  },
+  {
+    "module": "parameters",
+    "parameter": "mount_pitch"
+  },
+  {
+    "module": "parameters",
+    "parameter": "right_drive_x"
+  },
+  {
+    "module": "parameters",
+    "parameter": "sealing_clearance"
+  },
+  {
+    "module": "parameters",
+    "parameter": "sealing_height"
+  },
+  {
+    "module": "parameters",
+    "parameter": "sheet_thickness"
+  },
+  {
+    "module": "parameters",
+    "parameter": "side_allowance"
+  },
+  {
+    "module": "parameters",
+    "parameter": "top_allowance"
+  },
+  {
+    "module": "intelligence",
+    "parameter": "length",
+    "status": "review_required"
+  },
+  {
+    "module": "intelligence",
+    "parameter": "width",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "intelligence",
+    "parameter": "height",
+    "status": "pending_mapping"
+  },
+  {
+    "module": "intelligence",
+    "parameter": "stroke",
+    "status": "pending_mapping"
+  }
+]

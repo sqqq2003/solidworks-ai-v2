@@ -1,0 +1,129 @@
+{
+  "scope": "portable_simulation_only",
+  "platform": "Linux",
+  "python": "3.12.3",
+  "tests_run": 739,
+  "passed": 735,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [
+    {
+      "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+      "reason": "测试用滚筒 DWG 不在 uploads"
+    },
+    {
+      "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+      "reason": "本机未安装 LibreDWG dwg2dxf"
+    },
+    {
+      "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+      "reason": "Drawing1_e7b7.dwg 未上传"
+    },
+    {
+      "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+      "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    }
+  ],
+  "pending_feature_cases": {
+    "test_turned_part.py": 22,
+    "test_border_relief_notch.py": 9,
+    "test_spur_segments.py": 5
+  },
+  "cross_process_lock_passed": true,
+  "solidworks_live_verified": false,
+  "sw_live": "not_run_simulation_only",
+  "a01_parametric": {
+    "status": "review_required",
+    "envelope_mm": {
+      "length": 1800.0,
+      "width": 900.0,
+      "height": 1500.0
+    },
+    "pending_mapping": [
+      "A01.conveyor.passline_height",
+      "A01.conveyor.roller_pitch",
+      "A01.conveyor.roller_count",
+      "A01.drive.center_along_length",
+      "A01.drive.chain_pitch",
+      "A01.drive.sprocket_teeth",
+      "A01.drive.bearing_journal",
+      "A01.mount.motor_x",
+      "A01.mount.motor_z",
+      "A01.mount.bearing_span",
+      "A01.interfaces.sheet_thickness",
+      "A01.interfaces.thread_major_diameter"
+    ],
+    "cad_executed": false,
+    "sw_live": "not_run_simulation_only"
+  },
+  "whole_project": {
+    "project": "SolidWorks AI V2",
+    "scope": "whole_project",
+    "modules": [
+      {
+        "id": "cad",
+        "state": "implemented",
+        "entry": "src/cad_analyzer.py"
+      },
+      {
+        "id": "sheet",
+        "state": "native_implemented_partial_live",
+        "entry": "src/sw_tool_cli.py --mode sheet"
+      },
+      {
+        "id": "roller",
+        "state": "native_implemented_pending_live",
+        "entry": "src/sw_tool_cli.py --mode roller"
+      },
+      {
+        "id": "turned",
+        "state": "native_implemented_pending_live",
+        "entry": "src/sw_tool_cli.py --mode turned"
+      },
+      {
+        "id": "parametric",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "src.a01_parametric.cli"
+      },
+      {
+        "id": "ql5050px",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "work/project.py ql"
+      },
+      {
+        "id": "ql_assembly_bom_drawing",
+        "state": "offline_implemented_pending_native",
+        "entry": "ql5050px.workflow"
+      },
+      {
+        "id": "assembly_mates_motion",
+        "state": "scaffold_pending_native",
+        "entry": "src/a01_next/mate_check.py"
+      },
+      {
+        "id": "native_engineering_drawings",
+        "state": "scaffold_pending_native",
+        "entry": "src/a01_next/drawing_export.py"
+      },
+      {
+        "id": "desktop",
+        "state": "implemented_pending_desktop_test",
+        "entry": "app.py"
+      }
+    ],
+    "mechanical_acceptance": "unverified",
+    "pending_original_feature_contracts": 36
+  },
+  "runtime_capabilities": {
+    "platform": "Linux",
+    "python": "3.12.3",
+    "python_executable": "/usr/bin/python3",
+    "ezdxf_available": true,
+    "tkinter_available": true,
+    "pywin32_available": false,
+    "sw_started": false,
+    "cad_executed": false,
+    "desktop_display_tested": false,
+    "note": "Import availability is not SolidWorks installation or ownership proof."
+  }
+}

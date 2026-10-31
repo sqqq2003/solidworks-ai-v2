@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "jobs": [
+    {
+      "kind": "ql5050px",
+      "action": "plan",
+      "config": "ql5050px_unified_config.json",
+      "name": "QL plan"
+    },
+    {
+      "kind": "ql5050px",
+      "action": "assembly",
+      "config": "ql5050px_unified_config.json",
+      "name": "QL offline assembly"
+    },
+    {
+      "kind": "ql5050px",
+      "action": "drawing",
+      "config": "ql5050px_unified_config.json",
+      "output_dir": "../runtime/ql-project-drawing-new",
+      "name": "QL drawing and BOM"
+    },
+    {
+      "kind": "ql5050px",
+      "action": "pipeline",
+      "config": "ql5050px_unified_config.json",
+      "output_dir": "../runtime/ql-project-pipeline-new",
+      "name": "QL pipeline"
+    }
+  ]
+}
