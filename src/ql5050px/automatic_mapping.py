@@ -1,5 +1,6 @@
 """Evidence-ranked candidate mappings. Never auto-confirm OEM targets."""
 import re
+from .assembly_builder import finite
 ALIASES={'length':('length','长度','总长'),'width':('width','宽度'),'height':('height','高度'),
  'conveyor_height':('passline','输送高度'),'center_distance':('center','中心距'),
  'stroke':('stroke','行程'),'left_drive_x':('left','左安装'),'right_drive_x':('right','右安装')}
@@ -23,7 +24,7 @@ def map_parameters(database, pending):
                 text=(dim.get('name','')+' '+dim.get('feature','')).casefold()
                 hits=[w for w in words if w.casefold() in text]
                 if not hits: continue
-                protected=doc.get('component_kind') in {'fixed','purchased'}
+                protected=doc.get('component_kind') in {'fixed','purchased','standard'} or bool(doc.get('protected_interface'))
                 measured=dim.get('value') is not None and dim.get('unit') in {'mm','m','deg'}
                 candidates.append({'document_id':key,'model_path':doc['path'],'configuration':doc['configuration'],
                     'feature':dim.get('feature'),'dimension':dim.get('name'),'units':dim.get('unit'),
@@ -41,12 +42,18 @@ def confirmed_targets(report, approvals):
     """Separate explicit approval boundary; reject ambiguous or unmeasured targets."""
     if report.get('dependency_cycles'): raise ValueError('cyclic dimensions require manual review')
     targets=[]
+    seen=set()
     for approval in approvals:
-        row=next(r for r in report['mappings'] if r['parameter']==approval['parameter'])
+        if approval['parameter'] in seen: raise ValueError('duplicate parameter approval')
+        seen.add(approval['parameter'])
+        rows=[r for r in report['mappings'] if r['parameter']==approval['parameter']]
+        if len(rows)!=1: raise ValueError('unknown or duplicate mapping parameter')
+        row=rows[0]
         matches=[c for c in row['candidates'] if c['document_id']==approval['document_id'] and c['dimension']==approval['dimension']]
         if len(matches)!=1 or approval.get('reviewed') is not True or not approval.get('source'):
             raise ValueError('unique sourced manual approval required')
         item=matches[0]
         if item['protected'] or item['measured_value'] is None: raise ValueError('protected/unmeasured target rejected')
+        finite(item['measured_value'])
         targets.append({**item,'parameter':row['parameter'],'review_status':'confirmed','approval_source':approval['source']})
     return targets

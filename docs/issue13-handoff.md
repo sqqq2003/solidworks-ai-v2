@@ -9,7 +9,7 @@ python work/check_issue13.py
 
 退出码 3 表示计划生成但仍待映射/审核，1 表示失败，0 表示完成。每次使用新目录。桌面选择 ql5050px / integrated 并加载同一配置；批处理 job 使用 kind=ql5050px、action=integrated、config 与 output_dir 字段。桌面 GUI 本身未在云端点击验证。
 
-入口复用 #12 的扫描、分类、候选映射、审批、决策和机械初算，以及 #10 的装配、传动、工程图/BOM 计划。target 是统一包络；manufacturing.envelope 如不同会被拒绝。manufacturing 包含原 #9 配置，无需重复实现规划器。未知 OEM 数据仍保留 pending。智能候选不会自动变成 OEM measurements 或装配/传动绑定；审核后须由工程师提供 manufacturing 的真实绑定、来源和配置。任意整机到原生操作的自动转换仍未验证，Windows 任务包是审核计划，不是可直接执行的通用脚本。
+入口复用 #12 的扫描、分类、候选映射、审批、决策和机械初算，以及 #10 的装配、传动、工程图/BOM 计划。target 是统一包络；manufacturing.envelope 如不同会被拒绝。manufacturing 包含原 #9 配置，无需重复实现规划器。未知 OEM 数据仍保留 pending。智能候选仍须审批；已审批 resize 现可自动生成带来源的原生尺寸绑定，translate 通过明确 execution_bindings 更新装配实例位置。详见 docs/approved-decision-bridge.md。OEM measurements、装配实例与原生配合依据仍需真实数据。任意整机到原生操作的自动转换仍未验证，Windows 任务包是审核计划，不是可直接执行的通用脚本。
 
 离线最小检查：端到端及校验和、已有目录拒绝、目标冲突拒绝、桌面/批处理共享命令，共 4 项通过；QL 模块及入口 compileall 通过。未进行全面回归、GUI 实测、原生 COM、运动/干涉或机械正确性验收。test-matrix.json 的 not_run 表示待 Gork 实机检查。
 
