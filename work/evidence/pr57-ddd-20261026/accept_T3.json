@@ -1,0 +1,33 @@
+{
+  "task": "T3 钣金 live 回归 @ 9544d3c（昨晚 3a927e8 已 live PASS，本轮回归）",
+  "owner": "WorkBuddy",
+  "sha": "9544d3ca27b5f4b255b60a3eab3061af8a930fc2",
+  "mode": "sheet_metal_live",
+  "input_dxf": "D:\\工程\\钣金导入\\wb_s2keep_20261025_000848\\synthetic-s2-100x80.dxf",
+  "out_dir": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\sheet_s2",
+  "python": "C:/Users/yue/AppData/Local/Python/pythoncore-3.14-64/python.exe (3.14.8)",
+  "exit_code": 0,
+  "verdict": "pass",
+  "verdict_reason": "钣金 live 回归通过：native_features_verified + sw_live_verified=true，SMBaseFlange/SM3dBend/FlatPattern 特征 reopen 验证 editable=true，k_factor readback 0.36、thickness 2.5、radius 1.0 一致。",
+  "note_param_gap": "任务详版 T3 命令缺 --angle 与 --profile，导致规划 pending: angle_degrees（exit 3）。按历史合成夹具标准补 --angle 90.0 后重跑通过；其余参数严格遵循详版（thickness 2.5 / radius 1 / k-factor 0.36 / direction normal / confirm-bends / confirm-unitless-mm）。",
+  "acceptance": {
+    "native_features_verified": true,
+    "sw_live_verified": true,
+    "mechanical_acceptance": "unverified",
+    "part_path": "sheet_s2/native-a1aa02df359b41b684bd81e50059d9e972da683cc83ef29a0866115b15792bc3/part.SLDPRT",
+    "part_size_bytes": 79428,
+    "flat_dxf_path": "sheet_s2/native-a1aa02df359b41b684bd81e50059d9e972da683cc83ef29a0866115b15792bc3/flat.DXF",
+    "bend_count": 1,
+    "hole_count": 1,
+    "feature_types_reopened": ["SMBaseFlange", "SM3dBend", "FlatPattern"],
+    "editable": true,
+    "k_factor_readback": 0.36,
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "bend_allowance_verified": true
+  },
+  "checkpoints": ["S0", "S1", "S2", "S3", "S4", "S5"],
+  "keepalive_verified": true,
+  "cleanup": "left_open_keepalive (只 CloseDoc，未 ExitApp / 未 taskkill)",
+  "toolchain": {"python": "3.14.8", "pywin32": "present", "ezdxf": "present", "solidworks_typelib_major": 33}
+}

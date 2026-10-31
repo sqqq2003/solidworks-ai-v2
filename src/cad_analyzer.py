@@ -312,7 +312,110 @@ def _is_dashed_linetype(linetype: str) -> bool:
     return any(hint in name for hint in _DASHED_LINETYPE_HINTS)
 
 
-def _is_bend_line(doc: ezdxf.document.Drawing, entity: ezdxf.entities.DXFEntity) -> bool:
+def _red_line_endpoints(
+    entity: ezdxf.entities.DXFEntity,
+) -> tuple[tuple[float, float], tuple[float, float]] | None:
+    """红色 LINE 实体的两端点；非红色直线返回 None。"""
+    if entity.dxftype() != "LINE":
+        return None
+    start = entity.dxf.start
+    end = entity.dxf.end
+    return (float(start.x), float(start.y)), (float(end.x), float(end.y))
+
+
+def _red_ring_line_ids(
+    doc: ezdxf.document.Drawing,
+    layout: ezdxf.layouts.Layout,
+) -> frozenset[int]:
+    """找出属于红色闭合环的 LINE 实体 id。
+
+    SolidWorks 导出 DXF 时常把文字框（图例框、焊接打码说明框）画成四段
+    红色直线首尾相接的闭合矩形，这些线不能当折弯线；而真正的折弯线是横穿
+    零件的孤立开放线。
+
+    区分依据：闭合环的每个角点处有两条「非共线」的红线首尾相接（夹角不是
+    180°）。共线重复画出的折弯线虽然端点度数也是 2，但相邻两条线共线，不
+    构成多边形角点，故不会被误判。判定时遍历每条红线，若其两端各自都连着
+    一条「非共线」红线，即视为环边。
+    """
+    if layout is None:
+        return frozenset()
+    lines: list[tuple[int, tuple[float, float], tuple[float, float]]] = []
+    for entity in layout:
+        if entity.dxftype() != "LINE":
+            continue
+        if not _is_red(doc, entity):
+            continue
+        endpoints = _red_line_endpoints(entity)
+        if endpoints is None:
+            continue
+        lines.append((id(entity), endpoints[0], endpoints[1]))
+
+    if not lines:
+        return frozenset()
+
+    all_points = [p for _, a, b in lines for p in (a, b)]
+    extent = max(
+        max(p[0] for p in all_points) - min(p[0] for p in all_points),
+        max(p[1] for p in all_points) - min(p[1] for p in all_points),
+        1.0,
+    )
+    tol = max(extent * 1e-4, 0.05)
+
+    def key(point: tuple[float, float]) -> tuple[int, int]:
+        return round(point[0] / tol), round(point[1] / tol)
+
+    from collections import defaultdict
+
+    adjacency: dict[tuple[int, int], list[int]] = defaultdict(list)
+    for index, (_lid, a, b) in enumerate(lines):
+        adjacency[key(a)].append(index)
+        adjacency[key(b)].append(index)
+
+    def direction(index: int, at: tuple[float, float]) -> tuple[float, float]:
+        """从端点 at 出发，该线的单位方向向量。"""
+        _lid, a, b = lines[index]
+        if key(a) == key(at):
+            other = b
+        else:
+            other = a
+        dx, dy = other[0] - at[0], other[1] - at[1]
+        length = math.hypot(dx, dy)
+        if length <= 1e-9:
+            return (0.0, 0.0)
+        return (dx / length, dy / length)
+
+    def _has_noncollinear_neighbor(index: int, at: tuple[float, float]) -> bool:
+        """端点 at 处是否存在另一条「非共线」红线与之相接。"""
+        d0 = direction(index, at)
+        for other in adjacency[key(at)]:
+            if other == index:
+                continue
+            d1 = direction(other, at)
+            if d0 == (0.0, 0.0) or d1 == (0.0, 0.0):
+                continue
+            # 共线（同向或反向）→ 不是角点；非共线 → 角点。
+            cross = abs(d0[0] * d1[1] - d0[1] * d1[0])
+            if cross > 1e-3:
+                return True
+        return False
+
+    ring_ids: set[int] = set()
+    for index, (_lid, a, b) in enumerate(lines):
+        # 两端点各自都连着非共线的红线 → 这条线是闭合多边形的边。
+        if _has_noncollinear_neighbor(index, a) and _has_noncollinear_neighbor(
+            index, b
+        ):
+            ring_ids.add(_lid)
+    return frozenset(ring_ids)
+
+
+def _is_bend_line(
+    doc: ezdxf.document.Drawing,
+    entity: ezdxf.entities.DXFEntity,
+    *,
+    ring_red_line_ids: frozenset[int] | None = None,
+) -> bool:
     if entity.dxftype() not in ("LINE", "LWPOLYLINE", "POLYLINE"):
         return False
     if _polyline_closed(entity):
@@ -325,10 +428,32 @@ def _is_bend_line(doc: ezdxf.document.Drawing, entity: ezdxf.entities.DXFEntity)
     # profile_bend_indices 按孔内中点剔除）。
     if any(word in layer_name for word in _CENTERLINE_BEND_LAYER_HINTS):
         return True
+
+    red = _is_red(doc, entity)
+
+    # SolidWorks 转 DXF 会把折弯线、文字框都丢进「标注」这类兜底图层。
+    # 红色孤立开放线是折弯线，红色闭合环边是文字框边框。这里必须先用
+    # 几何拓扑区分：成环的红线排除；非环的红色孤立线即使落在「标注」层
+    # 也是折弯线，不能被 _NON_BEND_LAYER_HINTS 的「标注」误杀。
+    if red:
+        if ring_red_line_ids is not None and id(entity) in ring_red_line_ids:
+            # 红色闭合环边（文字框边框），不是折弯线。
+            return False
+        # 红色孤立开放线：优先按折弯线处理，跳过图层名排除。
+        linetype = _entity_linetype(doc, entity)
+        dashed = _is_dashed_linetype(linetype)
+        lt = (linetype or "").casefold()
+        solid = not dashed and not any(
+            word in lt
+            for word in ("dot", "center", "dash", "hidden", "phantom", "中心", "点")
+        )
+        bend_layer = any(word in layer_name for word in _BEND_LAYER_HINTS)
+        if dashed or bend_layer or solid:
+            return True
+
     if any(word in layer_name for word in _NON_BEND_LAYER_HINTS):
         return False
 
-    red = _is_red(doc, entity)
     linetype = _entity_linetype(doc, entity)
     dashed = _is_dashed_linetype(linetype)
     lt = (linetype or "").casefold()
@@ -439,10 +564,12 @@ def _polyline_path(
 def _entity_primitive(
     doc: ezdxf.document.Drawing,
     entity: ezdxf.entities.DXFEntity,
+    *,
+    ring_red_line_ids: frozenset[int] | None = None,
 ) -> Primitive | None:
     kind = entity.dxftype()
     layer = entity.dxf.get("layer", "0")
-    is_bend = _is_bend_line(doc, entity)
+    is_bend = _is_bend_line(doc, entity, ring_red_line_ids=ring_red_line_ids)
     curve_segments: tuple[SketchSegment, ...] = ()
     circle_center: Point | None = None
     circle_radius: float | None = None
@@ -1482,7 +1609,11 @@ def analyze_dxf(
         return tuple(found)
 
     def layout_score(layout: ezdxf.layouts.Layout) -> tuple[int, int, int, int]:
-        bend_count = sum(_is_bend_line(doc, entity) for entity in layout)
+        ring_red_ids = _red_ring_line_ids(doc, layout)
+        bend_count = sum(
+            _is_bend_line(doc, entity, ring_red_line_ids=ring_red_ids)
+            for entity in layout
+        )
         geometry_count = sum(
             entity.dxftype() in ("LINE", "LWPOLYLINE", "POLYLINE", "CIRCLE", "ARC")
             for entity in layout
@@ -1520,10 +1651,16 @@ def analyze_dxf(
                 filename_rollers,
             )
         raise ValueError("CAD 文件中没有可识别的二维线条、圆弧或闭合轮廓。")
+    ring_red_line_ids = _red_ring_line_ids(doc, drawing_layout)
     raw_primitives = [
         primitive
         for entity in drawing_layout
-        if (primitive := _entity_primitive(doc, entity)) is not None
+        if (
+            primitive := _entity_primitive(
+                doc, entity, ring_red_line_ids=ring_red_line_ids
+            )
+        )
+        is not None
     ]
 
     drawing_units = doc.units
@@ -1706,8 +1843,10 @@ def analyze_cad_file(path: str | Path) -> DrawingAnalysis:
         # LibreDWG 反而能保留块内规格——取滚筒规格更多的那份。
         for converter_name, converter in iter_dwg_converters(source):
             converted_path = work / f"{source.stem}_{converter_name}_{stamp}.dxf"
+            phase = "转换"
             try:
                 converter(source, converted_path)
+                phase = "已转换，识别"
                 analysis = analyze_dxf(converted_path, display_path=source)
                 candidates.append((converter_name, analysis))
                 logger.info(
@@ -1718,12 +1857,14 @@ def analyze_cad_file(path: str | Path) -> DrawingAnalysis:
                     len(analysis.profiles),
                 )
             except (DwgConversionError, OSError, ValueError, ezdxf.DXFError) as error:
-                errors.append(f"{converter_name}: {error}")
+                errors.append(f"{converter_name} {phase}失败: {error}")
                 logger.warning(
-                    "DWG 转换器 %s 失败：%s（%s）",
+                    "DWG 转换器 %s %s失败：%s（%s）",
                     converter_name,
+                    phase,
                     source.name,
                     error,
+                    exc_info=True,
                 )
 
         if candidates:

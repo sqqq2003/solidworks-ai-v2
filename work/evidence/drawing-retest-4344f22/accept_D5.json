@@ -1,0 +1,58 @@
+{
+  "task": "D5 BOM + PDF path",
+  "tip_sha": "4344f222a2070d0f79082d219377e840f06ca30f",
+  "owner": "lxy",
+  "machine": "DDD",
+  "timestamp": "2026-10-26 14:57:12",
+  "zone": "Asia/Shanghai",
+  "mode": "explicit_partial_model_test",
+  "manufacturing_approved": false,
+  "status": "pass_readback_pending_visual_review",
+  "detail": "Verified from D2/D3 live products: BOM rows present; PDF SaveAs ok and pypdf parsed. Not claiming manufacturing/production pass.",
+  "D2": {
+    "sheet_scale": [
+      1.0,
+      10.0
+    ],
+    "sheet_size_mm": [
+      594.0,
+      420.0
+    ],
+    "views": 3,
+    "bom_rows": 8,
+    "bom_columns": 4,
+    "bom_configuration": "榛樿",
+    "pdf_parsed": true,
+    "pdf_pages": 1,
+    "pdf_sheets": [
+      "鍥剧焊1"
+    ],
+    "pdf_path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.pdf",
+    "drawing_path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-5\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+    "pdf_sha256": "43c926cdedcaf118921ac351ae9cbb424c3204b764eb49d7b304ea36ed8f2be7"
+  },
+  "D3": {
+    "sheet_scale": [
+      1.0,
+      10.0
+    ],
+    "sheet_size_mm": [
+      594.0,
+      420.0
+    ],
+    "views": 3,
+    "bom_rows": 8,
+    "bom_columns": 4,
+    "bom_configuration": "默认",
+    "pdf_parsed": true,
+    "pdf_pages": 1,
+    "pdf_sheets": [
+      "图纸1"
+    ],
+    "pdf_path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-6\\drawings\\QL-5050PX-PARTIAL-TEST.pdf",
+    "drawing_path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\stabilized-test-6\\drawings\\QL-5050PX-PARTIAL-TEST.SLDDRW",
+    "pdf_sha256": "0e122e352a8f0c6dd086f90d6679e779a616212a1b935a336b8c5de71900bf8b"
+  },
+  "pdf_check_1": "not_run (optional; products already validated inside D2/D3 pdf_validation)",
+  "original_hash_mismatches": []
+}

@@ -58,6 +58,17 @@ class ComSessionDisconnected(SessionOwnershipError):
     native_acceptance = "pending_windows_validation"
 
 
+class InventoryWalkDisconnected(ComSessionDisconnected):
+    """GetFirstDocument / GetNext / GetType dropped while listing documents.
+
+    Writes stay refused. This is not a modeling pass and does not call ExitApp.
+    Inventory may rebind the same PID and walk again. If the walk is still
+    unsafe, callers keep this status instead of "document inventory unavailable".
+    """
+
+    status = "partial_inventory_disconnect"
+
+
 class SwCallTimeoutError(TimeoutError):
     """A SolidWorks call exceeded its deadline.
 

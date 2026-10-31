@@ -89,5 +89,3 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
             f=sw._as_interface(module,raw,'IFeature')
             evidence.append({'name':name,'native_type':f.GetTypeName2()})
         return {'features':evidence,'dimensions_verified':False,'status':'pending_native_validation'}
-
-

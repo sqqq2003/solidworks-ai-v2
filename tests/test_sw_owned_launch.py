@@ -21,6 +21,21 @@ class Lifetime:
 
 
 class OwnedLaunchTests(unittest.TestCase):
+    def test_rot_unknown_is_queried_for_dispatch_and_pid_is_still_required(self):
+        from sw_owned_launch import _native_candidate
+        unknown=MagicMock();dispatch=object();unknown.QueryInterface.return_value=dispatch
+        moniker=MagicMock();moniker.GetDisplayName.return_value='SolidWorks_PID_43210'
+        rot=MagicMock();rot.EnumRunning.return_value=[moniker];rot.GetObject.return_value=unknown
+        pycom=MagicMock();pycom.GetRunningObjectTable.return_value=rot
+        client=MagicMock();client.GetActiveObject.return_value=SimpleNamespace(GetProcessID=999)
+        client.Dispatch.return_value=SimpleNamespace(GetProcessID=43210)
+        with patch.dict(sys.modules,{'pythoncom':pycom,'win32com':SimpleNamespace(client=client),'win32com.client':client}):
+            self.assertIs(_native_candidate(43210),client.Dispatch.return_value)
+            unknown.QueryInterface.assert_called_once_with(pycom.IID_IDispatch)
+            client.Dispatch.assert_called_once_with(dispatch)
+            client.Dispatch.return_value=SimpleNamespace(GetProcessID=123)
+            self.assertIsNone(_native_candidate(43210))
+
     def setUp(self):
         sw_session.reset_for_tests()
         self.addCleanup(sw_session.reset_for_tests)

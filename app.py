@@ -9,7 +9,42 @@ ROOT = Path(__file__).resolve().parent
 sys.path[:0] = [str(ROOT),str(ROOT/'src')]
 
 
+def job_from_form(values,action,*,confirmed=False,flip=False,allow_inferred=False):
+    """Parse only parameters consumed by this mode/action; never invent dimensions."""
+    from project_workbench import confirm_job
+    kind=values['kind']
+    if kind=='parametric':
+        return {'kind':kind,'machine':values['machine'],**{k:float(values[k]) for k in ('length','width','height')}}
+    if kind=='ql5050px':
+        job={'kind':kind,'action':values['ql_action'],'machine':'QL-5050PX',
+             'config':values['source'],'name':'QL '+values['ql_action']}
+        if values['output']:job['output_dir']=values['output']
+        return job
+    job={'kind':kind,'action':action,'name':Path(values['source']).name,
+         **{k:values[k] for k in ('source','output','sw_exe')},
+         'confirmed':confirmed,'flip':flip,'allow_inferred':allow_inferred}
+    if kind=='sheet' and action!='analyze':
+        job.update({k:float(values[k]) for k in ('thickness','radius','angle','k_factor')})
+        job['profile']=int(values['profile'])
+    if kind in {'roller','turned'}:job['variant']=int(values['variant'])
+    if action=='generate' and confirmed:job=confirm_job(job)
+    return job
+
+
 def main():
+    from app_logging import bootstrap
+    bootstrap(ROOT)
+    import argparse
+    parser=argparse.ArgumentParser(description='SolidWorks AI 项目工作台')
+    parser.add_argument('--repair-demo',type=Path)
+    parser.add_argument('--smoke-report',type=Path,help='只测试改型预检按钮，不连接 CAD；测试后退出')
+    parser.add_argument('--legacy-ui',action='store_true',help=argparse.SUPPRESS)
+    args=parser.parse_args()
+    if args.smoke_report and not args.repair_demo:parser.error('--smoke-report requires --repair-demo')
+    if not args.legacy_ui and not args.smoke_report:
+        from desktop_ui import run
+        run()
+        return
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
     from project_workbench import build_command, confirm_job, capabilities, doctor, run_batch, write_report
@@ -17,6 +52,12 @@ def main():
     root.title('SolidWorks AI V2 — 项目工作台')
     root.geometry('1080x820')
     state = {'busy':False,'jobs':[]}
+    def cleanup_poll(event):
+        if event.widget is root and state.get('poll_after'):
+            try:root.after_cancel(state['poll_after'])
+            except tk.TclError:pass
+            state['poll_after']=None
+    root.bind('<Destroy>',cleanup_poll,add='+')
     messages = queue.Queue()
     stop = threading.Event()
     # t/R/angle/K 故意留空：每单必须由操作员显式填写，不许用上次的数或通用值悄悄顶替（2026-10-24 用户纠正）。空值提交时 float('') 报错，走现有的参数检查弹窗。
@@ -34,6 +75,9 @@ def main():
     jobs_tab, overview = ttk.Frame(tabs), ttk.Frame(tabs)
     tabs.add(jobs_tab,text='零件与整机参数')
     tabs.add(overview,text='项目状态 / 环境')
+    from ql5050px.repair_panel import RepairPanel
+    repair=RepairPanel(tabs,ROOT,args.repair_demo)
+    tabs.add(repair.frame,text='整机试改验证')
     form = ttk.LabelFrame(jobs_tab,text='工作副本与参数（钣金轮廓从 1 开始，滚筒/车件规格从 0 开始）')
     form.pack(fill='x',pady=6)
     modes = ttk.Combobox(form,textvariable=values['kind'],values=('sheet','roller','turned','parametric','ql5050px'),state='readonly')
@@ -87,21 +131,8 @@ def main():
             return
         try:
             kind = values['kind'].get()
-            if kind == 'parametric':
-                job = {'kind':kind,'machine':values['machine'].get(),**{k:float(values[k].get()) for k in ('length','width','height')}}
-            elif kind == 'ql5050px':
-                job = {'kind':kind,'action':values['ql_action'].get(),'machine':'QL-5050PX',
-                       'config':values['source'].get(),'name':'QL '+values['ql_action'].get()}
-                if values['output'].get():
-                    job['output_dir'] = values['output'].get()
-            else:
-                job = {'kind':kind,'action':action,'name':Path(values['source'].get()).name,
-                    **{k:values[k].get() for k in ('source','output','sw_exe')},
-                    **{k:float(values[k].get()) for k in ('thickness','radius','angle','k_factor')},
-                    'profile':int(values['profile'].get()),'variant':int(values['variant'].get()),
-                    'confirmed':confirmed.get(),'flip':flip.get(),'allow_inferred':inferred.get()}
-            if kind in {'sheet','roller','turned'} and action == 'generate' and confirmed.get():
-                job = confirm_job(job)
+            job=job_from_form({k:v.get() for k,v in values.items()},action,
+                confirmed=confirmed.get(),flip=flip.get(),allow_inferred=inferred.get())
             build_command(job)
             if not state['jobs']:
                 for item in table.get_children():
@@ -139,7 +170,7 @@ def main():
             status.set(f"{report['status']}；报告：{path or '查看日志'}")
         except queue.Empty:
             pass
-        root.after(150,poll)
+        state['poll_after']=root.after(150,poll)
     for label,command in (('加入识别',lambda:append('analyze')),('加入计划 / 参数预检',lambda:append('plan')),
         ('加入原生生成',lambda:append('generate')),('加入 QL 任务',lambda:append('plan')),('开始队列',run),('当前任务后停止',stop.set)):
         ttk.Button(controls,text=label,command=command).pack(side='left',padx=3)
@@ -149,18 +180,31 @@ def main():
             for item in table.get_children():
                 table.delete(item)
     ttk.Button(controls,text='清空队列',command=clear).pack(side='left',padx=3)
+    def drawing_trial():
+        import subprocess
+        request=filedialog.askopenfilename(parent=root,title='选择三视图 / BOM 试验配置',filetypes=[('试验配置','*.json')])
+        if not request:return
+        folder=ROOT/'runtime'/'drawing-launches';folder.mkdir(parents=True,exist_ok=True)
+        import uuid
+        log_path=folder/(uuid.uuid4().hex+'.log')
+        with log_path.open('x',encoding='utf-8') as stream:
+            subprocess.Popen([sys.executable,'-X','utf8',str(ROOT/'drawing_trial_app.py'),'--request',request],cwd=ROOT,stdout=stream,stderr=subprocess.STDOUT)
+        status.set('三视图 / BOM 试验窗口已启动；请在该窗口核对并执行。')
+    ttk.Button(overview,text='打开三视图 / BOM 试验窗口',command=drawing_trial).pack(anchor='w',pady=8)
     overview_text = tk.Text(overview,wrap='word')
     overview_text.pack(fill='both',expand=True)
     overview_text.insert('end',json.dumps({'environment':doctor(),'project':capabilities()},ensure_ascii=False,indent=2))
     overview_text.configure(state='disabled')
     def close():
-        if state['busy']:
+        if state['busy'] or repair.busy:
             stop.set()
             messagebox.showinfo('任务仍在执行','已停止后续排队。请等待当前任务结束再关闭窗口；不会强制结束 CAD 进程。')
         else:
             root.destroy()
     root.protocol('WM_DELETE_WINDOW',close)
     poll()
+    if args.repair_demo:tabs.select(repair.frame)
+    if args.smoke_report:repair.start_smoke(args.smoke_report)
     root.mainloop()
 
 

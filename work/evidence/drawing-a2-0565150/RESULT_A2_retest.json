@@ -1,0 +1,62 @@
+{
+    "task":  "A2 1:10 and A2 1:20 retest after 5e07963 owned-refs + 0565150 GetNextView property-first",
+    "tip_com_sha":  "5e07963b793d7cab9a743a9a014555c5ec60067e",
+    "tip_drawing_sha":  "05651509bb0e0d7fce9d36d83ad43039255b3c1d",
+    "owner":  "lxy",
+    "machine":  "DDD",
+    "machineId":  "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+    "timestamp":  "2026-10-26 16:58:36",
+    "zone":  "Asia/Shanghai",
+    "mode":  "explicit_partial_model_test",
+    "out":  "D:\\工程\\钣金导入\\lxy_drawing_a2_0565150",
+    "docs":  "C:\\Users\\yue\\Documents\\lxy_drawing_a2_0565150",
+    "cells":  [
+                  {
+                      "tag":  "A2_1-10",
+                      "status":  "pass_pending_visual_review",
+                      "blocked_reason":  null,
+                      "failed_reason":  null,
+                      "error":  null,
+                      "sheet_readback":  {
+                                             "sheet_scale":  [
+                                                                 1.0,
+                                                                 10.0
+                                                             ],
+                                             "sheet_size_mm":  [
+                                                                   594.0,
+                                                                   420.0
+                                                               ]
+                                         },
+                      "sw_owned_pid":  61468
+                  },
+                  {
+                      "tag":  "A2_1-20",
+                      "status":  "pass_pending_visual_review",
+                      "blocked_reason":  null,
+                      "failed_reason":  null,
+                      "error":  null,
+                      "sheet_readback":  {
+                                             "sheet_scale":  [
+                                                                 1.0,
+                                                                 20.0
+                                                             ],
+                                             "sheet_size_mm":  [
+                                                                   594.0,
+                                                                   420.0
+                                                               ]
+                                         },
+                      "sw_owned_pid":  36756
+                  }
+              ],
+    "honest_block_policy":  "verify_view_layout raises on exceeds-frame/overlap/scale-mismatch; no silent autoscale",
+    "constraint_respected":  "no production claim; no desktop writes; no git push; Embedding left alone",
+    "finished_at":  "2026-10-26 16:59:01",
+    "tip_com_sha_full":  "5e07963b793d7cab9a743a9a014555c5ec60067e",
+    "tip_drawing_sha_full":  "05651509bb0e0d7fce9d36d83ad43039255b3c1d",
+    "getnextview_membernotfound":  false,
+    "session_ownership_error":  false,
+    "getannotation_attributeerror":  false,
+    "all_pass_pending_visual":  true,
+    "desk_head":  "4344f222a2070d0f79082d219377e840f06ca30f",
+    "manufacturing_approved":  false
+}

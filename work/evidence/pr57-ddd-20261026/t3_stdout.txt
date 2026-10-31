@@ -1,0 +1,277 @@
+{
+  "plan": {
+    "schema_version": 1,
+    "source": "D:\\工程\\钣金导入\\wb_s2keep_20261025_000848\\synthetic-s2-100x80.dxf",
+    "source_sha256": "906dc0f2e03a9177693f762d1d62980f356469c148abd7f1ef1e649fb963f76a",
+    "analysis_sha256": "a8930a954833d211c5bfa4f634d15a19892e83392295b98a968432826502c68d",
+    "code_sha256": "dbea02a568f121ed81ab504b003397386df67d6503ee60f9a9f06607330eba17",
+    "units": "mm",
+    "source_units": "Millimeters",
+    "profile_index": 0,
+    "hole_indices": [
+      1
+    ],
+    "bend_indices": [
+      0
+    ],
+    "relief_bend_indices": [],
+    "bend_classification_confirmed": true,
+    "parameters": {
+      "thickness_mm": 2.5,
+      "radius_mm": 1.0,
+      "angle_degrees": 90.0,
+      "k_factor": 0.36,
+      "flip_direction": false
+    },
+    "parameter_source": "explicit_operator_inputs",
+    "bend_allowance": {
+      "spec": {
+        "mode": "k_factor",
+        "k_factor": 0.36,
+        "bend_deduction_mm": 4.015486979089696,
+        "bend_allowance_mm": 2.9845130209103035,
+        "material_name": "软钢/冷轧"
+      },
+      "preview": {
+        "thickness_mm": 2.5,
+        "radius_mm": 1.0,
+        "angle_degrees": 90.0,
+        "k_factor": 0.36,
+        "bend_allowance_mm": 2.9845130209103035,
+        "bend_deduction_mm": 4.015486979089696,
+        "outside_setback_mm": 3.4999999999999996,
+        "deduction_factor": 1.6061947916358783
+      }
+    },
+    "relief_rule": {
+      "width_mm": 2.5,
+      "depth_past_centerline_mm": 4.0,
+      "source": "existing_generator_rule_not_measured",
+      "selected_bends": []
+    },
+    "pending": [],
+    "status": "ready_for_windows",
+    "feature_plan": [
+      "closed_profile_and_holes",
+      "native_base_flange",
+      "native_sketched_bends",
+      "rebuild",
+      "save",
+      "reopen_and_inspect_editable_features",
+      "flat_pattern",
+      "export_dxf"
+    ],
+    "sw_live_verified": false,
+    "plan_id": "a1aa02df359b41b684bd81e50059d9e972da683cc83ef29a0866115b15792bc3"
+  },
+  "session": {
+    "ownership": "spawned_pid_and_live_handle",
+    "pid": 38808,
+    "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+    "attached_existing": false,
+    "native_verification": "session_only_not_cad_acceptance",
+    "cleanup_status": "left_open_keepalive",
+    "cleanup_error": null,
+    "cleanup_disconnect": null,
+    "cleanup_exit_code": null,
+    "keepalive_policy": "close_doc_only_keep_alive_exit_not_required",
+    "exit_poll_seconds": 20.0,
+    "anchor_created": false,
+    "anchor_closed": false,
+    "keepalive_verified": true
+  },
+  "execution": {
+    "status": "native_features_verified",
+    "plan_id": "a1aa02df359b41b684bd81e50059d9e972da683cc83ef29a0866115b15792bc3",
+    "simulated_only": false,
+    "sw_live_verified": true,
+    "mechanical_acceptance": "unverified",
+    "generation": {
+      "path": "part.SLDPRT",
+      "profile_index": 0,
+      "bend_count": 1,
+      "hole_count": 1,
+      "folded_bounds": [
+        -2.691406479254948e-17,
+        -0.04,
+        -0.05401548697908967,
+        0.05,
+        0.040000000000000015,
+        0.0
+      ],
+      "flat_bounds": [
+        -0.05,
+        -0.04,
+        -0.0025000000000000005,
+        0.05,
+        0.04,
+        0.0
+      ],
+      "relief_slot_count": 0,
+      "auto_bent": true,
+      "bend_sketch_name": "",
+      "bend_sketch_line_count": 0,
+      "cad_imported": false,
+      "auto_bend_attempts": 1,
+      "auto_bend_abandoned": false,
+      "auto_bend_failed_count": 0,
+      "bend_allowance_verified": true,
+      "k_factor_readback": 0.36,
+      "relief_step_used": 0,
+      "bend_attempts": [
+        {
+          "attempt": 1,
+          "relief_step": 0,
+          "relief_extra_mm": 0.0,
+          "status": "completed",
+          "completed_bend_count": 1,
+          "relief_slot_count": 0,
+          "bend_group_attempts": [
+            {
+              "sequence": 1,
+              "bend_indices": [
+                0
+              ],
+              "index_base": 0,
+              "fixed_point_mm": [
+                73.07692307692308,
+                40.0
+              ],
+              "relief_step": 0,
+              "status": "created",
+              "native_attempts": [
+                {
+                  "face_index": 0,
+                  "pick_m": [
+                    0.02307692307692308,
+                    0.0,
+                    -0.0025
+                  ],
+                  "bend_indices": [
+                    0
+                  ],
+                  "index_base": 0,
+                  "stage": "complete",
+                  "status": "created",
+                  "feature_type": "SM3dBend",
+                  "native_error": [
+                    0,
+                    false
+                  ]
+                }
+              ],
+              "scope": "feature_creation_not_native_acceptance",
+              "elapsed_seconds": 2.035335300024599
+            }
+          ]
+        }
+      ],
+      "bend_group_attempts": [
+        {
+          "sequence": 1,
+          "bend_indices": [
+            0
+          ],
+          "index_base": 0,
+          "fixed_point_mm": [
+            73.07692307692308,
+            40.0
+          ],
+          "relief_step": 0,
+          "status": "created",
+          "native_attempts": [
+            {
+              "face_index": 0,
+              "pick_m": [
+                0.02307692307692308,
+                0.0,
+                -0.0025
+              ],
+              "bend_indices": [
+                0
+              ],
+              "index_base": 0,
+              "stage": "complete",
+              "status": "created",
+              "feature_type": "SM3dBend",
+              "native_error": [
+                0,
+                false
+              ]
+            }
+          ],
+          "scope": "feature_creation_not_native_acceptance",
+          "elapsed_seconds": 2.035335300024599
+        }
+      ],
+      "post_save_disconnect": ""
+    },
+    "reopen": {
+      "reopened": true,
+      "rebuilt": true,
+      "feature_types": [
+        "FlatPattern",
+        "SM3dBend",
+        "ProfileFeature",
+        "ICE",
+        "ProfileFeature",
+        "SMBaseFlange",
+        "SheetMetal",
+        "ProfileFeature",
+        "ConfigTableFolder",
+        "OriginProfileFeature",
+        "RefPlane",
+        "RefPlane",
+        "RefPlane",
+        "MaterialFolder",
+        "EqnFolder",
+        "CommentsFolder",
+        "SurfaceBodyFolder",
+        "SolidBodyFolder",
+        "EnvFolder",
+        "InkMarkupFolder",
+        "DetailCabinet",
+        "DocsFolder",
+        "SensorFolder",
+        "SelectionSetFolder",
+        "HistoryFolder",
+        "FavoriteFolder"
+      ],
+      "editable": true,
+      "completed_bend_count": 1,
+      "bend_feature_count": 1,
+      "thickness_mm": 2.5,
+      "radius_mm": 1.0,
+      "bend_allowance_type": 2,
+      "k_factor": 0.36,
+      "geometry_states": {
+        "status": "measured",
+        "units": "mm",
+        "folded_bounds": [
+          -2.691406479254948e-14,
+          -40.0,
+          -54.01548697908967,
+          50.0,
+          40.000000000000014,
+          0.0
+        ],
+        "flat_bounds": [
+          -50.0,
+          -40.0,
+          -2.5000000000000004,
+          50.0,
+          40.0,
+          0.0
+        ],
+        "axes": "model_axes",
+        "saved": false
+      }
+    },
+    "artifact_sha256": {
+      "part.SLDPRT": "480e90a7a5526e58c8e82b2e1e613601c8414f2b1de0be16cce1b85ea037318f",
+      "flat.DXF": "c59c543a64538d2b6ef9229b4a282947c1c2b45ac7d25d523c17575f2c1de104"
+    },
+    "resumed": false,
+    "output_dir": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\sheet_s2\\native-a1aa02df359b41b684bd81e50059d9e972da683cc83ef29a0866115b15792bc3"
+  }
+}

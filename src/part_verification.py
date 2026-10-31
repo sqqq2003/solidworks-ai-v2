@@ -445,6 +445,10 @@ def verify_saved_part(path, *, expected_dims_mm=None, expected_body_count=None):
                 raise RuntimeError('reopened solid body count differs from plan')
         # Bounds, even with body counts, cannot establish holes, bends or shape.
         status = 'reopen_dimensions_verified' if expected_dims_mm is not None else 'reopened_rebuilt'
+        from app_logging import get_journal
+        get_journal().record('part_reopen_geometry',path=str(path),rebuilt=True,reopened=True,
+            body_count=len(body_boxes),bounds_mm=bounds,dimensions_mm=dims,volume_mm3=None,
+            bounds_precision='approximate',geometry_verified=False,production_approved=False)
         return {'status':status,'rebuilt':True,'reopened':True,
                 'verification_scope':'solid_inventory_and_optional_envelope_only',
                 'body_count':len(body_boxes),'body_bounds_mm':body_boxes,

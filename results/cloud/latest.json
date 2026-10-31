@@ -1,9 +1,9 @@
 {
   "scope": "portable_simulation_only",
   "platform": "Linux",
-  "python": "3.12.14",
-  "tests_run": 385,
-  "passed": 381,
+  "python": "3.12.3",
+  "tests_run": 739,
+  "passed": 735,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -25,13 +25,13 @@
     }
   ],
   "pending_feature_cases": {
-    "test_border_relief_notch.py": 9,
     "test_turned_part.py": 22,
+    "test_border_relief_notch.py": 9,
     "test_spur_segments.py": 5
   },
   "cross_process_lock_passed": true,
   "solidworks_live_verified": false,
-  "sw_live": "not_applicable_on_linux",
+  "sw_live": "not_run_simulation_only",
   "a01_parametric": {
     "status": "review_required",
     "envelope_mm": {
@@ -54,7 +54,7 @@
       "A01.interfaces.thread_major_diameter"
     ],
     "cad_executed": false,
-    "sw_live": "not_applicable_on_linux"
+    "sw_live": "not_run_simulation_only"
   },
   "whole_project": {
     "project": "SolidWorks AI V2",
@@ -86,6 +86,16 @@
         "entry": "src.a01_parametric.cli"
       },
       {
+        "id": "ql5050px",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "work/project.py ql"
+      },
+      {
+        "id": "ql_assembly_bom_drawing",
+        "state": "offline_implemented_pending_native",
+        "entry": "ql5050px.workflow"
+      },
+      {
         "id": "assembly_mates_motion",
         "state": "scaffold_pending_native",
         "entry": "src/a01_next/mate_check.py"
@@ -106,8 +116,8 @@
   },
   "runtime_capabilities": {
     "platform": "Linux",
-    "python": "3.12.14",
-    "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "python": "3.12.3",
+    "python_executable": "/usr/bin/python3",
     "ezdxf_available": true,
     "tkinter_available": true,
     "pywin32_available": false,
