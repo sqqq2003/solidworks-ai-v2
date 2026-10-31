@@ -1,0 +1,11 @@
+test_math_double_array_variant (tests.test_sketch_transform.MathArrayVariantTests.test_math_double_array_variant) ... ok
+test_identity_and_translation_stay_compatible (tests.test_sketch_transform.SketchTransformTests.test_identity_and_translation_stay_compatible) ... ok
+test_invalid_transform_is_refused_before_sketch_write (tests.test_sketch_transform.SketchTransformTests.test_invalid_transform_is_refused_before_sketch_write) ... ok
+test_non_xy_model_point_maps_to_sketch_origin (tests.test_sketch_transform.SketchTransformTests.test_non_xy_model_point_maps_to_sketch_origin) ... ok
+test_quarter_turn_does_not_use_inverse_rotation (tests.test_sketch_transform.SketchTransformTests.test_quarter_turn_does_not_use_inverse_rotation) ... ok
+test_scale_precedes_translation (tests.test_sketch_transform.SketchTransformTests.test_scale_precedes_translation) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.032s
+
+OK

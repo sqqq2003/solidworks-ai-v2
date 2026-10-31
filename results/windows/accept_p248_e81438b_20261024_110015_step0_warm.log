@@ -1,0 +1,56 @@
+2026-10-24 11:10:00,714 INFO sw_session: running p248-step0-warm on task STA sw-task-463be2708cfa
+2026-10-24 11:10:01,400 INFO root: session evidence: {'mode': 'warm_reuse_operator_authorized', 'warm_pid': 16564, 'attached_existing': False, 'warm_reuse_authorized': False, 'verified_exclusive': False, 'observed_pid': None, 'foreign_titles_at_connect': [], 'teardown': 'CloseDoc owned documents only; no ExitApp; no taskkill'}
+2026-10-24 11:12:15,565 INFO sw_session: running p248-step0-warm on task STA sw-task-3019b4b524c7
+2026-10-24 11:12:16,361 INFO ezdxf: creating ACAD_COLOR dictionary
+2026-10-24 11:12:16,361 INFO ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-24 11:12:16,361 INFO ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-24 11:12:16,361 INFO ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-24 11:12:16,362 INFO ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-24 11:12:17,002 INFO cad_analyzer: 图纸判定为滚筒尺寸图：QL-5050_sheetmetal_work_solidworks_18e155a028bd744c.dxf（规格 1 种，折弯线 139 条）
+2026-10-24 11:12:17,049 INFO root: starting step0 profile=299 bends=(106, 107, 108, 109) (default fixed-face path, no pin)
+2026-10-24 11:12:17,123 INFO solidworks_generator: 生成钣金零件：图纸=C:\Users\Administrator\AppData\Local\Temp\cad2sw_dwg_dxf\QL-5050_sheetmetal_work_solidworks_18e155a028bd744c.dxf 轮廓=#299 折弯=4 条 板厚=2.500 半径=1.000 角度=90.000 反向=False 释放槽级别=0 输出=D:\工程\钣金导入\wb_p248_step0_20261024_110015\p248_step0_warm.SLDPRT
+2026-10-24 11:12:18,364 WARNING sw_session: OPERATOR-AUTHORIZED warm reuse: task=sw-task-3019b4b524c7 warm_pid=16564 exclusive=False attached_existing=True note=SW_WARM_REUSE_PID operator instruction (no ExitApp, no kill, CloseDoc owned only)
+2026-10-24 11:12:18,364 INFO solidworks_generator: 已连接 SolidWorks（本次由程序激活且尚未证明独占：created_by_task=False）
+2026-10-24 11:12:18,379 INFO solidworks_generator: SolidWorks 类型库主版本 30 加载成功
+2026-10-24 11:12:19,355 INFO solidworks_generator: 基体法兰创建成功：尝试=正向圆弧 加厚方向=True
+2026-10-24 11:12:19,357 INFO solidworks_generator: 基体法兰已创建：基体-法兰1
+2026-10-24 11:12:19,912 INFO solidworks_generator: 孔/槽切除：草图曲线 17 条，切除前实体面 18 个，切除后 35 个
+2026-10-24 11:12:19,912 INFO solidworks_generator: 孔/槽切除完成：14 个轮廓
+2026-10-24 11:12:19,996 INFO solidworks_generator: Fixed panel pinned for all bend groups: xy=(6853.318777746001, 5560.388523074131) bends=(107, 108, 109, 110)
+2026-10-24 11:12:20,284 INFO solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 16, 'not_planar': 17}
+2026-10-24 11:12:20,378 INFO solidworks_generator: Bend sketch coordinates: bend=107 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.5426885881005937, -0.02423621451479721, -0.0025)->(-0.5697323168899102, -0.01598154040680856, -0.0025) sketch=(0.5426885881005937, -0.02423621451479721)->(0.5697323168899102, -0.01598154040680856)
+2026-10-24 11:12:20,382 INFO solidworks_generator: Bend sketch coordinates: bend=108 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.569732316889882, 0.015981540406717613, -0.0025)->(-0.5426885881005664, 0.024236214514706263, -0.0025) sketch=(0.569732316889882, 0.015981540406717613)->(0.5426885881005664, 0.024236214514706263)
+2026-10-24 11:12:20,386 INFO solidworks_generator: Bend sketch coordinates: bend=110 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.5433227023807004, -0.02414159265360013, -0.0025)->(0.5883207963267996, -0.02414159265360013, -0.0025) sketch=(0.5433227023807004, -0.02414159265360013)->(-0.5883207963267996, -0.02414159265360013)
+2026-10-24 11:12:20,485 INFO solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-24 11:12:20,695 INFO solidworks_generator: 自动折弯成功：bends=(107, 108, 109, 110) face=0 pos=1 flip=False defaultR=False cba=False pick=(6853.319,5560.389)
+2026-10-24 11:12:21,467 INFO solidworks_generator: 展开验证通过：折叠包围盒=(-0.5883488276301817, -0.02414159265360016, -0.02123561944908664, 0.5873207963267996, 0.04128318530720026, 6.275e-06) 展开包围盒=(-0.5873270713268006, -0.04128318530720025, -0.002506275, 0.5873207963267996, 0.04128318530720026, 6.275e-06)
+2026-10-24 11:12:21,742 INFO solidworks_generator: 钣金零件已保存：D:\工程\钣金导入\wb_p248_step0_20261024_110015\p248_step0_warm.SLDPRT
+2026-10-24 11:12:21,797 INFO sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=False attached_existing=True spawn_claimed=False)
+2026-10-24 11:12:21,802 INFO root: session evidence (post-connect): {'mode': 'warm_reuse_operator_authorized', 'warm_pid': 16564, 'attached_existing': True, 'warm_reuse_authorized': True, 'verified_exclusive': False, 'observed_pid': 16564, 'foreign_titles_at_connect': [], 'teardown': 'CloseDoc owned documents only; no ExitApp; no taskkill'}
+2026-10-24 11:18:15,612 INFO sw_session: running p248-step0-warm on task STA sw-task-67bb009d079a
+2026-10-24 11:18:16,379 INFO ezdxf: creating ACAD_COLOR dictionary
+2026-10-24 11:18:16,379 INFO ezdxf: creating ACAD_MATERIAL dictionary
+2026-10-24 11:18:16,379 INFO ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-10-24 11:18:16,380 INFO ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-10-24 11:18:16,380 INFO ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-10-24 11:18:16,907 INFO cad_analyzer: 图纸判定为滚筒尺寸图：QL-5050_sheetmetal_work_solidworks_18e155a028bd744c.dxf（规格 1 种，折弯线 139 条）
+2026-10-24 11:18:16,939 INFO root: starting step0 profile=299 bends=(106, 107, 108, 109) (default fixed-face path, no pin)
+2026-10-24 11:18:17,008 INFO solidworks_generator: 生成钣金零件：图纸=C:\Users\Administrator\AppData\Local\Temp\cad2sw_dwg_dxf\QL-5050_sheetmetal_work_solidworks_18e155a028bd744c.dxf 轮廓=#299 折弯=4 条 板厚=2.500 半径=1.000 角度=90.000 反向=False 释放槽级别=0 输出=D:\工程\钣金导入\wb_p248_step0_20261024_110015\p248_step0_warm_r2.SLDPRT
+2026-10-24 11:18:18,283 WARNING sw_session: OPERATOR-AUTHORIZED warm reuse: task=sw-task-67bb009d079a warm_pid=16564 exclusive=False attached_existing=True note=SW_WARM_REUSE_PID operator instruction (no ExitApp, no kill, CloseDoc owned only)
+2026-10-24 11:18:18,283 INFO solidworks_generator: 已连接 SolidWorks（本次由程序激活且尚未证明独占：created_by_task=False）
+2026-10-24 11:18:18,297 INFO solidworks_generator: SolidWorks 类型库主版本 30 加载成功
+2026-10-24 11:18:19,090 INFO solidworks_generator: 基体法兰创建成功：尝试=正向圆弧 加厚方向=True
+2026-10-24 11:18:19,092 INFO solidworks_generator: 基体法兰已创建：基体-法兰1
+2026-10-24 11:18:19,613 INFO solidworks_generator: 孔/槽切除：草图曲线 17 条，切除前实体面 18 个，切除后 35 个
+2026-10-24 11:18:19,613 INFO solidworks_generator: 孔/槽切除完成：14 个轮廓
+2026-10-24 11:18:19,693 INFO solidworks_generator: Fixed panel pinned for all bend groups: xy=(6853.318777746001, 5560.388523074131) bends=(107, 108, 109, 110)
+2026-10-24 11:18:19,961 INFO solidworks_generator: Fixed panel face verification: candidates=2 rejected={'not_fixed_xy_plane': 16, 'not_planar': 17}
+2026-10-24 11:18:20,060 INFO solidworks_generator: Bend sketch coordinates: bend=107 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.5426885881005937, -0.02423621451479721, -0.0025)->(-0.5697323168899102, -0.01598154040680856, -0.0025) sketch=(0.5426885881005937, -0.02423621451479721)->(0.5697323168899102, -0.01598154040680856)
+2026-10-24 11:18:20,065 INFO solidworks_generator: Bend sketch coordinates: bend=108 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.569732316889882, 0.015981540406717613, -0.0025)->(-0.5426885881005664, 0.024236214514706263, -0.0025) sketch=(0.569732316889882, 0.015981540406717613)->(0.5426885881005664, 0.024236214514706263)
+2026-10-24 11:18:20,068 INFO solidworks_generator: Bend sketch coordinates: bend=110 transform=(-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -0.0025, 1.0, 0.0, 0.0, 0.0) model=(-0.5433227023807004, -0.02414159265360013, -0.0025)->(0.5883207963267996, -0.02414159265360013, -0.0025) sketch=(0.5433227023807004, -0.02414159265360013)->(-0.5883207963267996, -0.02414159265360013)
+2026-10-24 11:18:20,165 INFO solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-24 11:18:20,341 INFO solidworks_generator: 自动折弯成功：bends=(107, 108, 109, 110) face=0 pos=1 flip=False defaultR=False cba=False pick=(6853.319,5560.389)
+2026-10-24 11:18:21,090 INFO solidworks_generator: 展开验证通过：折叠包围盒=(-0.5883488276301817, -0.02414159265360016, -0.02123561944908664, 0.5873207963267996, 0.04128318530720026, 6.275e-06) 展开包围盒=(-0.5873270713268006, -0.04128318530720025, -0.002506275, 0.5873207963267996, 0.04128318530720026, 6.275e-06)
+2026-10-24 11:18:21,325 INFO solidworks_generator: 钣金零件已保存：D:\工程\钣金导入\wb_p248_step0_20261024_110015\p248_step0_warm_r2.SLDPRT
+2026-10-24 11:18:21,460 INFO sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=False attached_existing=True spawn_claimed=False)
+2026-10-24 11:18:21,471 INFO root: session evidence (post-connect): {'mode': 'warm_reuse_operator_authorized', 'warm_pid': 16564, 'attached_existing': True, 'warm_reuse_authorized': True, 'verified_exclusive': False, 'observed_pid': 16564, 'foreign_titles_at_connect': ['p248_step0_warm'], 'teardown': 'CloseDoc owned documents only; no ExitApp; no taskkill'}

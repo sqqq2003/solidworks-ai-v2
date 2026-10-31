@@ -1,0 +1,22 @@
+[
+  {
+    "location": "bend-1",
+    "native_code": null,
+    "reproduction": "synthetic diagnostic fixture",
+    "possible_causes": [
+      {
+        "hypothesis": "bend position/fixed face/relief mismatch",
+        "recommendation": "compare centerline and outside positioning in isolated copies",
+        "confidence": 0.5,
+        "evidence": {
+          "feature": "bend-1",
+          "code": null,
+          "message": "bend centerline failed",
+          "reproduction": "synthetic diagnostic fixture"
+        }
+      }
+    ],
+    "root_cause_confirmed": false,
+    "auto_repair": false
+  }
+]

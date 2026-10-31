@@ -1,0 +1,23 @@
+﻿python : test_math_double_array_variant (tests.test_sketch_transform.MathArrayVariantTests.test_math_double_array_varia
+nt) ... ok
+所在位置 C:\Users\Administrator\AppData\Local\Temp\ps-script-92f49c14-b647-41f0-8572-6125c24e780a.ps1:79 字符: 166
++ ... 2-e81438b'; python -m unittest tests.test_sketch_transform -v 2>&1 |  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_math_doubl...variant) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test_identity_and_translation_stay_compatible (tests.test_sketch_transform.SketchTransformTests.test_identity_and_trans
+lation_stay_compatible) ... ok
+test_invalid_transform_is_refused_before_sketch_write (tests.test_sketch_transform.SketchTransformTests.test_invalid_tr
+ansform_is_refused_before_sketch_write) ... ok
+test_non_xy_model_point_maps_to_sketch_origin (tests.test_sketch_transform.SketchTransformTests.test_non_xy_model_point
+_maps_to_sketch_origin) ... ok
+test_quarter_turn_does_not_use_inverse_rotation (tests.test_sketch_transform.SketchTransformTests.test_quarter_turn_doe
+s_not_use_inverse_rotation) ... ok
+test_scale_precedes_translation (tests.test_sketch_transform.SketchTransformTests.test_scale_precedes_translation) ... 
+ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.022s
+
+OK

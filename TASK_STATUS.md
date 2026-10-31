@@ -1,5 +1,12 @@
 # 任务状态
 
+## 2026-10-24 Qile3 Windows 证据（给 Codex）
+
+- 机器 Qile3，Asia/Shanghai 2026-10-24。p248 step0 **pass 4/4** @ `e81438b`（warm reuse PID 16564，只 CloseDoc，不 ExitApp）。证据：`results/windows/accept_p248_e81438b_20261024_110015.json`。
+- p248 retest **pass 4/4**（同一 warm PID；进程在生成后 COM teardown 崩溃，accept 按 log + 已落盘零件重建）。证据：`results/windows/accept_p248_retest_20261024_124127.json`。
+- Issue15 `cad_features` 离线烟测 **pass** @ `a3ec0d02`，`sw_live=false`，不宣称原生特征已在 SolidWorks 里生成。证据：`results/windows/accept_issue15_a3ec0d02_20261024.json`。
+- 生成之后的 COM teardown 崩溃仍已知：EXIT=139 / `0xC0000005`。不是生成失败；需要时 accept 从 log + 零件重建。交接：`delivery/p248/`。
+
 ## GORK-CLOUD-002
 
 - 状态：**完成（模拟）**。Linux 上会话安全测试与发现阶段为 OK。见 `results/cloud/result.json`。

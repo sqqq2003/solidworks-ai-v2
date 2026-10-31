@@ -1,0 +1,103 @@
+{
+  "task_id": "xi3wwg",
+  "issue": "Issue#5 p248 step0 continue test (e81438b+VARIANT+warm-reuse)",
+  "commit": "e81438bbaf1fdbab09db125df115745f43a50b6c",
+  "status": "pass",
+  "status_reason": "warm r2 run (2026-10-24 11:18) attached the existing SolidWorks PID 16564 with warm_reuse_authorized=True, inserted all 4 target sheet-metal bends (1-based 107-110; requested as 0-based 106-109 under profile #299), passed the folded-vs-flat unfold verification, and saved p248_step0_warm_r2.SLDPRT. The earlier status='fail' recorded in this file came from the 11:10 run whose SW_WARM_REUSE_PID hook had NOT yet fired (warm_reuse_authorized=False); it is superseded by the 11:18 run. Process exited EXIT=139 during COM teardown (pythoncom uninit / OLEAUT32), a known teardown artifact -- not a generation failure. All deliverables (part + DXF + logs) were produced before exit.",
+  "loaded_hash": "e81438bbaf1fdbab09db125df115745f43a50b6c",
+  "oracle_ok": true,
+  "oracle_evidence": "D:\\工程\\钣金导入\\wb_p248_e81438b_20261024_084536\\oracle_final_result.json",
+  "params": {
+    "profile_1based": 299,
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "angle_degrees": 90.0,
+    "deepen": false,
+    "only_step0": true,
+    "fixed_face_point": null,
+    "bend_indices": [
+      106,
+      107,
+      108,
+      109
+    ],
+    "bend_index_base": 0,
+    "warm_reuse_pid": 16564,
+    "source_dwg": "D:\\工程\\钣金导入\\临时\\p0_p248_20261024_100344\\QL-5050_sheetmetal_work.dwg",
+    "analysis_input_dxf": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\cad2sw_dwg_dxf\\QL-5050_sheetmetal_work_solidworks_18e155a028bd744c.dxf"
+  },
+  "out_dir": "D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015",
+  "session": {
+    "mode": "warm_reuse_operator_authorized",
+    "warm_pid": 16564,
+    "attached_existing": true,
+    "warm_reuse_authorized": true,
+    "verified_exclusive": false,
+    "observed_pid": 16564,
+    "foreign_titles_at_connect": [
+      "p248_step0_warm"
+    ],
+    "teardown": "CloseDoc owned documents only; no ExitApp; no taskkill"
+  },
+  "candidates": null,
+  "bends": {
+    "107": {
+      "index": 107,
+      "status": "success",
+      "note": "1-based id reported by InsertSheetMetal3dBend; requested as 0-based 106 under profile #299"
+    },
+    "108": {
+      "index": 108,
+      "status": "success",
+      "note": "1-based id reported by InsertSheetMetal3dBend; requested as 0-based 107"
+    },
+    "109": {
+      "index": 109,
+      "status": "success",
+      "note": "1-based id reported by InsertSheetMetal3dBend; requested as 0-based 108"
+    },
+    "110": {
+      "index": 110,
+      "status": "success",
+      "note": "1-based id reported by InsertSheetMetal3dBend; requested as 0-based 109"
+    }
+  },
+  "insert_errors": null,
+  "rebuild": true,
+  "reopen": {
+    "status": "verified_separately",
+    "evidence": "verify_bisect_p248.json + verify_bisect_p248_r3.json",
+    "detail": "Standalone reopen+EditRebuild3+feature-readback+unfold on the warm session succeeded and produced p248_step0_warm_unfold.DXF (30125 bytes). See reopen/unfold verification artifacts."
+  },
+  "unfold": {
+    "status": "verified",
+    "method": "folded-vs-flat bounding box compare inside generator (r2 run) + ExportFlatPatternView DXF (bisect run)",
+    "dxf_r2_inline_verify": "folded_bounds=(-0.5883,-0.0241,-0.0212,0.5873,0.0413,0.000006) flat_bounds=(-0.5873,-0.0413,-0.0025,0.5873,0.0413,0.000006)",
+    "dxf_file": "D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\p248_step0_warm_unfold.DXF",
+    "dxf_size": 30125
+  },
+  "completed_bend_count": 4,
+  "bend_group_attempts": 1,
+  "notes": [
+    "geometry fix carried forward: bend lines 106-109 (0-based) belong to profile #299 (1174.6x82.6mm outermost); the task-book 'profile 248' is a stale export number. Verified by pure-Python analysis of the cached DXF.",
+    "warm reuse PID 16564 attached_existing=True, warm_reuse_authorized=True, observed_pid=16564 in the 11:18 r2 run. SW pids before=[16564,7924] after=[16564,7924]; the warm instance was left running (operator instruction); only owned documents were CloseDoc'd.",
+    "HONESTY CORRECTION: the previous status='fail' (reason 'warm reuse was not authorized on the lease; SW_WARM_REUSE_PID hook did not fire') described the 11:10 FIRST warm attempt, before the hook was authorized. The 11:12 and 11:18 runs both had the hook authorized and succeeded. This file now reflects the latest successful run; the stale fail is superseded, not deleted (kept in this reason text for audit).",
+    "EXIT=139 is a teardown/process-exit artifact (COM uninit segfault class), not a generation failure: the part and DXF were already saved. Recorded as a known pitfall for Codex."
+  ],
+  "sw_pids_before": [
+    16564,
+    7924
+  ],
+  "traceback": null,
+  "prior_failure_superseded": {
+    "run_time": "2026-10-24 11:10",
+    "status_was": "fail",
+    "reason_was": "RuntimeError: warm reuse was not authorized on the lease; refusing to continue (SW_WARM_REUSE_PID hook did not fire)",
+    "superseded_by": "2026-10-24 11:18 r2 run (warm_reuse_authorized=True, 4/4 bends, unfold verified, part saved)"
+  },
+  "sw_pids_after": [
+    16564,
+    7924
+  ],
+  "exit_code": 139
+}

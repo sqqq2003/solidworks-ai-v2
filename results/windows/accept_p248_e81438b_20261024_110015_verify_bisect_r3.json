@@ -1,0 +1,75 @@
+{
+  "bisect": "reopen+unfold on warm session (r3, identity fix)",
+  "warm_pid": 16564,
+  "primed": {
+    "attached_existing": true,
+    "warm_reuse_authorized": true,
+    "observed_pid": 16564
+  },
+  "last_step": "final",
+  "reopened_title": "p248_step0_warm_r2",
+  "rebuilt": true,
+  "feature_types": [
+    "FlatPattern",
+    "SM3dBend",
+    "ProfileFeature",
+    "ICE",
+    "ProfileFeature",
+    "SMBaseFlange",
+    "SheetMetal",
+    "ProfileFeature",
+    "ConfigTableFolder",
+    "OriginProfileFeature",
+    "RefPlane",
+    "RefPlane",
+    "RefPlane",
+    "MaterialFolder",
+    "EqnFolder",
+    "CommentsFolder",
+    "SurfaceBodyFolder",
+    "SolidBodyFolder",
+    "EnvFolder",
+    "InkMarkupFolder",
+    "DetailCabinet",
+    "DocsFolder",
+    "SensorFolder",
+    "SelectionSetFolder",
+    "HistoryFolder",
+    "FavoriteFolder"
+  ],
+  "bend_feature_count": 1,
+  "sheetmetal_access_selections": true,
+  "thickness_mm": 2.5,
+  "radius_mm": 1.0,
+  "bend_allowance_type": 2,
+  "k_factor": 0.34,
+  "geometry_states": {
+    "status": "measured",
+    "units": "mm",
+    "folded_bounds": [
+      -588.3488276301817,
+      -24.14159265360016,
+      -21.23561944908664,
+      587.3207963267996,
+      41.283185307200256,
+      0.006275
+    ],
+    "flat_bounds": [
+      -587.3270713268007,
+      -41.28318530720024,
+      -2.506275,
+      587.3207963267996,
+      41.283185307200256,
+      0.006275
+    ],
+    "axes": "model_axes",
+    "saved": false
+  },
+  "phase_a_close": "closed_via_bound_app",
+  "unfold": {
+    "path": "D:\\工程\\钣金导入\\wb_p248_step0_20261024_110015\\p248_step0_warm_r2_unfold.DXF",
+    "exists": true,
+    "size": 30125
+  },
+  "job_outcome": "ok"
+}
