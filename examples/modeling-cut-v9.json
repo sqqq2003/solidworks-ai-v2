@@ -1,0 +1,159 @@
+{
+  "domain": "modeling",
+  "contract_version": 1,
+  "features": [
+    {
+      "id": "AI_Profile",
+      "kind": "sketch",
+      "unit": "mm",
+      "confirmed": true,
+      "evidence": [
+        "operator-reviewed synthetic example dimensions"
+      ],
+      "depends_on": [],
+      "parameters": {
+        "plane": "Front Plane",
+        "entities": [
+          {
+            "type": "line",
+            "start": [
+              0,
+              0
+            ],
+            "end": [
+              40,
+              0
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              40,
+              0
+            ],
+            "end": [
+              40,
+              30
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              40,
+              30
+            ],
+            "end": [
+              0,
+              30
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              0,
+              30
+            ],
+            "end": [
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "AI_Boss",
+      "kind": "extrude",
+      "unit": "mm",
+      "confirmed": true,
+      "evidence": [
+        "operator-reviewed synthetic example dimensions"
+      ],
+      "depends_on": [
+        "AI_Profile"
+      ],
+      "parameters": {
+        "sketch": "AI_Profile",
+        "depth_mm": 10,
+        "merge": false
+      },
+      "expected": {
+        "body_names": [
+          "AI_Main"
+        ],
+        "bounds_mm": [
+          0,
+          0,
+          0,
+          40,
+          30,
+          10
+        ],
+        "bbox_tolerance_mm": 0.05,
+        "min_faces": 6,
+        "min_volume_mm3": 11999,
+        "max_volume_mm3": 12001
+      }
+    },
+    {
+      "id": "AI_HoleProfile",
+      "kind": "sketch",
+      "unit": "mm",
+      "confirmed": true,
+      "evidence": [
+        "operator-reviewed synthetic example dimensions"
+      ],
+      "depends_on": [
+        "AI_Boss"
+      ],
+      "parameters": {
+        "plane": "Front Plane",
+        "entities": [
+          {
+            "type": "circle",
+            "center": [
+              20,
+              15
+            ],
+            "radius": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "AI_Cut",
+      "kind": "cut",
+      "unit": "mm",
+      "confirmed": true,
+      "evidence": [
+        "operator-reviewed synthetic example dimensions"
+      ],
+      "depends_on": [
+        "AI_HoleProfile",
+        "AI_Boss"
+      ],
+      "parameters": {
+        "sketch": "AI_HoleProfile",
+        "depth_mm": 5,
+        "reverse": false
+      },
+      "expected": {
+        "body_names": [
+          "AI_Main"
+        ],
+        "bounds_mm": [
+          0,
+          0,
+          0,
+          40,
+          30,
+          10
+        ],
+        "bbox_tolerance_mm": 0.05,
+        "min_faces": 8,
+        "min_volume_mm3": 11858.5,
+        "max_volume_mm3": 11858.8
+      }
+    }
+  ]
+}

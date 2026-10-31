@@ -36,6 +36,15 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
                         segment=manager.CreateArc(center[0]/1000,center[1]/1000,0,start[0]/1000,start[1]/1000,0,end[0]/1000,end[1]/1000,0,direction)
                     else:raise ValueError('unsupported sketch entity')
                     if segment is None:raise RuntimeError('sketch entity creation failed')
+                    if 'construction' in entity:
+                        if type(entity['construction']) is not bool:raise ValueError('explicit construction boolean required')
+                        segment.ConstructionGeometry=entity['construction']
+                        if segment.ConstructionGeometry is not entity['construction']:
+                            raise RuntimeError('sketch construction flag readback failed')
+                    if 'native_name' in entity:
+                        from .native_machine import read_member
+                        if str(read_member(segment,'GetName'))!=entity['native_name']:
+                            raise RuntimeError('explicit sketch segment name differs; no axis guessing')
                 self.apply_sketch_constraints(p.get('constraints',[]))
                 sketch=manager.ActiveSketch
                 if sketch is None:raise RuntimeError('no active native sketch')

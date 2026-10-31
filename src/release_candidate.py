@@ -20,7 +20,10 @@ CHECKS = [
     ('checkpoint_half_edit_restore','native'), ('request_idempotency_and_conflict','native'),
     ('unresolved_session_reconciliation','native'),
     ('drawing_visual_acceptance','native'),('drawing_atomic_evidence','native'),
-    ('drawing_dimension_rollback','native')]
+    ('drawing_dimension_rollback','native'),
+    ('modeling_named_bodies_and_features','native'),('modeling_half_build_rollback','native'),
+    ('modeling_revision_and_observation','native'),('modeling_body_clearance','native'),
+    ('modeling_request_replay_and_quarantine','native')]
 
 
 def git(root, *args):

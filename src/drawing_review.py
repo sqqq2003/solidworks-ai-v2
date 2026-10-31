@@ -22,7 +22,7 @@ CHECKLIST = ('views', 'dimensions_annotations', 'scale', 'frame_title_bom')
 def drawing_implementation_hashes():
     root=Path(__file__).resolve().parent
     return {name:digest_file(root/name) for name in
-        ('drawing_review.py','drawing_checkpoint.py','drawing_run.py',
+        ('drawing_review.py','drawing_checkpoint.py','drawing_run.py','cad_run.py',
          'ql5050px/native_drawings.py','ql5050px/drawing_verification.py',
          'a01_next/native_production.py','sw_compat/com_access.py','sw_compat/annotation.py')}
 
