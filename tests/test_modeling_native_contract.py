@@ -14,7 +14,8 @@ from cad_checkpoint import digest_file
 from cad_receipts import ReceiptStore, IdempotencyConflict, ReconcileRequired
 from modeling_domain.api import run_native_modeling
 from modeling_domain.contract import digest
-from modeling_domain.native import NativeModelingPort
+from modeling_domain.native import (NativeModelingPort, TEMPLATE_REFERENCE_FEATURES,
+                                    _include_inventory_feature, _validate_empty_template)
 from sw_feature_calls import solid_revolve
 import test_modeling_domain as fixtures
 
@@ -30,6 +31,26 @@ def variants():
 
 
 class NativeContractTests(unittest.TestCase):
+    def test_sw2025_template_inventory_ignores_system_nodes_but_rejects_unknown_features(self):
+        for kind in ('DocsFolder','InkMarkupFolder','EnvFolder','EqnFolder','ConfigTableFolder',
+                     'AnnotationFolder','FlatPatternFolder'):
+            self.assertFalse(_include_inventory_feature(kind),kind)
+        for kind in ('NativeConfigurationTableFeature','AmbientLight','CameraFeature','Notes'):
+            self.assertFalse(_include_inventory_feature(kind),kind)
+        self.assertTrue(_include_inventory_feature('UnrecognizedFeature'))
+        allowed={'bodies':[],'features':[{'native_type':kind} for kind in TEMPLATE_REFERENCE_FEATURES]}
+        self.assertTrue(_validate_empty_template(allowed))
+        for kind in ('BossExtrude','UnrecognizedFeature'):
+            with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,'extras='):
+                _validate_empty_template({'bodies':[],'features':[{'native_type':kind}]})
+        with self.assertRaisesRegex(ValueError,'extras='):
+            _validate_empty_template({'bodies':[{'name':'unexpected'}],'features':[]})
+
+    def test_get_feature_count_supports_method_and_property_com_wrappers(self):
+        import solidworks_generator as sw
+        self.assertEqual(sw._feature_count(NS(GetFeatureCount=7)),7)
+        self.assertEqual(sw._feature_count(NS(GetFeatureCount=lambda:8)),8)
+
     def test_native_save3_supplies_byref_long_outputs_and_reads_them_back(self):
         modules=variants();pythoncom=modules['pythoncom'];seen=[]
         class ByRefVariant:

@@ -11,7 +11,7 @@ class Host(EditableFeaturesMixin):
 
 class Interfaces(unittest.TestCase):
     def setUp(self):
-        fake_com=patch.dict(sys.modules,{'pythoncom':SimpleNamespace(VT_DISPATCH=9),'win32com':SimpleNamespace(),'win32com.client':SimpleNamespace(VARIANT=lambda kind,value:(kind,value))})
+        fake_com=patch.dict(sys.modules,{'pythoncom':SimpleNamespace(Nothing=object()),'win32com':SimpleNamespace(),'win32com.client':SimpleNamespace()})
         fake_com.start();self.addCleanup(fake_com.stop)
         self.feature=SimpleNamespace(Name='old',GetTypeName2=lambda:'ProfileFeature')
         self.part=SimpleNamespace(FeatureByName=lambda name:self.feature if name=='outline' else None)

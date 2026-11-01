@@ -13,10 +13,34 @@ from sw_feature_calls import solid_blind_extrude,solid_blind_cut
 from .contract import digest,validate_plan
 from .transaction import RevisionConflict
 
-FOLDERS={'SolidBodyFolder','SurfaceBodyFolder','HistoryFolder','CommentsFolder','SensorFolder',
-         'FavoriteFolder','SelectionSetFolder','DetailCabinet','MaterialFolder'}
+FOLDERS={
+    'SolidBodyFolder','SurfaceBodyFolder','HistoryFolder','CommentsFolder','SensorFolder',
+    'FavoriteFolder','SelectionSetFolder','DetailCabinet','MaterialFolder','DocsFolder',
+    'InkMarkupFolder','EnvFolder','EqnFolder','ConfigTableFolder','AnnotationFolder',
+    'DesignBinderFolder','LightsFolder','CameraFolder','TableFolder','MateReferenceFolder',
+    'FlatPatternFolder','SolidBodyFolderNode','SurfaceBodyFolderNode',
+}
+# Environment and annotation nodes present in blank SW2025 templates; these
+# are not model features and must not make an empty-template check fail.
+SYSTEM_FEATURE_NOISE={
+    'NativeConfigurationTableFeature','AmbientLight','DirectionLight','NotesAreaFtrFolder',
+    'AnnotationViewFeat','SpotLight','PointLight','CameraFeature','Notes','Note',
+    'LightingFolderNode','EnvLighting','ThreePointDefault','DefaultLights','GridFeature',
+}
+TEMPLATE_REFERENCE_FEATURES={'RefPlane','OriginProfileFeature','Origin','RefAxis','ReferenceAxis','CoordSys'}
 # SOLIDWORKS 2025 API swBodyOperationType_e; 2 is NOT SWBODYINTERSECT.
 SWBODYINTERSECT=15901
+
+
+def _include_inventory_feature(kind):
+    return kind not in FOLDERS and kind not in SYSTEM_FEATURE_NOISE
+
+
+def _validate_empty_template(inventory):
+    extras=[r for r in inventory['features'] if r['native_type'] not in TEMPLATE_REFERENCE_FEATURES]
+    if inventory['bodies'] or extras:
+        raise ValueError('template must contain only origin/planes; use a separate reviewed edit workflow; extras='+str(extras))
+    return True
 
 
 class NativeModelingPort:
@@ -52,8 +76,7 @@ class NativeModelingPort:
         assert_native_save(self.path,model.SaveAs3(str(self.path),0,1))
         retarget_saved_title(self.host.lease,title,model)
         inventory=self.inventory()
-        if inventory['bodies'] or any(r['native_type'] not in {'RefPlane','OriginProfileFeature','Origin'} for r in inventory['features']):
-            raise ValueError('template must contain only origin/planes; use a separate reviewed edit workflow')
+        _validate_empty_template(inventory)
         self._save();return self.revision()
 
     def _part(self):
@@ -75,9 +98,10 @@ class NativeModelingPort:
             if name in seen:return
             if len(seen)>=4096:raise RuntimeError('feature inventory limit exceeded')
             seen.add(name)
-            if kind not in FOLDERS:
-                error=feature_error(feature)
-                if error:raise RuntimeError('native feature rebuild error: '+name+': '+str(error))
+            if _include_inventory_feature(kind):
+                if kind not in TEMPLATE_REFERENCE_FEATURES:
+                    error=feature_error(feature)
+                    if error:raise RuntimeError('native feature rebuild error: '+name+': '+str(error))
                 features.append({'name':name,'native_type':kind})
             child=read_member(feature,'GetFirstSubFeature')
             walked=set()
