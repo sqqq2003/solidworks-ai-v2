@@ -157,10 +157,26 @@ class NativeModelingPort:
     def rebuild(self):self.host.rebuild()
 
     def _save(self):
-        self.guard();result=self.host.model.Save3(1,0,0)
-        ok=result[0] if isinstance(result,tuple) else result
-        errors=result[1] if isinstance(result,tuple) and len(result)>1 else 0
-        if ok is not True or errors:raise RuntimeError('isolated model Save3 failed')
+        self.guard()
+        import pythoncom
+        from win32com.client import VARIANT
+
+        # Save3's Errors and Warnings are COM [out] LONG parameters. Plain
+        # integers work with some generated wrappers, but pywin32's SW2025
+        # dispatch requires explicit by-reference VARIANTs.
+        errors = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
+        warnings = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
+        result = self.host.model.Save3(1, errors, warnings)
+        returned = result if isinstance(result, tuple) else (result,)
+        ok = returned[0]
+        error_value = returned[1] if len(returned) > 1 else errors
+        warning_value = returned[2] if len(returned) > 2 else warnings
+        error_code = int(getattr(error_value, 'value', error_value) or 0)
+        warning_code = int(getattr(warning_value, 'value', warning_value) or 0)
+        if (ok is not True and not (type(ok) is int and ok == 1)) or error_code:
+            raise RuntimeError(
+                'isolated model Save3 failed: errors='+str(error_code)+
+                ' warnings='+str(warning_code))
 
     def checkpoint(self):
         self._save();snapshot=self.inventory();self.host.close()

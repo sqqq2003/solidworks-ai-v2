@@ -30,6 +30,31 @@ def variants():
 
 
 class NativeContractTests(unittest.TestCase):
+    def test_native_save3_supplies_byref_long_outputs_and_reads_them_back(self):
+        modules=variants();pythoncom=modules['pythoncom'];seen=[]
+        class ByRefVariant:
+            def __init__(self,tag,value):self.tag=tag;self.value=value
+        modules['win32com.client'].VARIANT=ByRefVariant
+        def save3(options,errors,warnings):
+            seen.append((options,errors,warnings))
+            self.assertEqual(options,1)
+            self.assertEqual(errors.tag,pythoncom.VT_BYREF|pythoncom.VT_I4)
+            self.assertEqual(warnings.tag,pythoncom.VT_BYREF|pythoncom.VT_I4)
+            self.assertEqual((errors.value,warnings.value),(0,0))
+            errors.value=0;warnings.value=0
+            return True
+        port=object.__new__(NativeModelingPort)
+        port.host=NS(model=NS(Save3=save3));port.guard=lambda:None
+        with patch.dict(sys.modules,modules):port._save()
+        self.assertEqual(len(seen),1)
+
+    def test_native_save3_reports_returned_error_codes(self):
+        port=object.__new__(NativeModelingPort)
+        port.host=NS(model=NS(Save3=lambda *_args:(False,17,4)));port.guard=lambda:None
+        with patch.dict(sys.modules,variants()):
+            with self.assertRaisesRegex(RuntimeError,r'Save3.*errors=17.*warnings=4'):
+                port._save()
+
     def test_revolve_is_twenty_typed_args_with_explicit_merge_and_bounded_radians(self):
         seen = []
         manager = NS(FeatureRevolve2=lambda *a: seen.append(a) or NS(Name='new'))
