@@ -217,6 +217,7 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual(result['status'], 'simulated_only')
         self.assertEqual(self.port.writes, 2)
         self.assertEqual(len(result['steps']), 2)
+        self.assertEqual([step['native_type'] for step in result['steps']], ['ProfileFeature', 'Boss'])
         self.assertFalse(result['delivery_accepted'])
 
     def test_failure_halfway_restores_actual_bytes_and_reopen_snapshot(self):
@@ -275,6 +276,28 @@ class TransactionTests(unittest.TestCase):
         self.port.create_feature = create
         result = self.run_plan()
         self.assertEqual(result['rollback']['state'], 'RESTORED')
+        self.assertEqual(result['native_type'], 'MacroFeature')
+        self.assertIn('MacroFeature', result['error'])
+
+    def test_sw2022_boss_type_strings_are_accepted_and_recorded_raw(self):
+        from modeling_domain.transaction import native_type_accepted
+        for name in ('Boss', 'BossExtrude', 'Extrude', 'Extrusion', 'Boss-Extrude',
+                     '凸台-拉伸', '凸台拉伸', '基体-拉伸', '基体拉伸', '拉伸', '凸台/拉伸'):
+            self.assertTrue(native_type_accepted('extrude', name), name)
+        self.assertFalse(native_type_accepted('extrude', 'MacroFeature'))
+        self.assertFalse(native_type_accepted('extrude', 'Cut'))
+        self.assertFalse(native_type_accepted('cut', 'Extrusion'))
+        old = self.port.create_feature
+        def create(feature):
+            old(feature)
+            if feature['kind'] == 'extrude':
+                self.port.state['features'][-1]['native_type'] = 'Extrusion'
+                self.port.persist()
+        self.port.create_feature = create
+        result = self.run_plan()
+        self.assertEqual(result['status'], 'simulated_only')
+        extrude = next(step for step in result['steps'] if step['kind'] == 'extrude')
+        self.assertEqual(extrude['native_type'], 'Extrusion')
 
     def test_observation_restores_camera_and_binds_exact_image_and_revision(self):
         revision = self.port.revision()

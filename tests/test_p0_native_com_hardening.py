@@ -16,7 +16,7 @@ from part_verification import (
     read_active_document,
     rebind_model_after_save,
 )
-from ql5050px.com_selection import select_by_id
+from ql5050px.com_selection import reset_callout_state_for_tests, select_by_id
 from ql5050px.editable_features import EditableFeaturesMixin
 from ql5050px.native_machine import math_transform
 from sw_feature_calls import (
@@ -98,6 +98,8 @@ class PlateBracketCallTests(unittest.TestCase):
                 return True
 
         modules = _variant_modules()
+        reset_callout_state_for_tests()
+        self.addCleanup(reset_callout_state_for_tests)
         with patch.dict(sys.modules, modules):
             self.assertTrue(select_by_id(Extension(), "Front Plane", "PLANE"))
         self.assertEqual(len(seen), 1)

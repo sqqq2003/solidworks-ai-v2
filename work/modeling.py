@@ -1,4 +1,4 @@
-"""Analyze a narrow plan or execute it in a fresh owned Windows SolidWorks."""
+"""Analyze a narrow plan, or run it in one already-open SolidWorks (CloseDoc only)."""
 import argparse
 import json
 from pathlib import Path

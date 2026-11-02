@@ -8,7 +8,7 @@
 | --- | --- |
 | `modeling_domain.analyze_draft(plan, revision=None, inventory=None)` | 复用已有单位、依赖、草图验证；闭合轮廓面积/扫掠体积估算，自交、开口、旋转跨轴检查。估算不是原生体或验收；复杂弧线草图暂拒绝原生准入。 |
 | `modeling_domain.run_transaction(plan, port, expected_revision=..., reviewed_plan_sha256=...)` | 最多 32 特征、每草图 256 元素，草图/挤出/切除/旋转白名单；先检查点，再逐步写、重建、原生类型和命名体检查，保存重开再核对。 |
-| `modeling_domain.api.run_native_modeling(...)` | 新目录、新 owned PID、已有 STA/OS 锁/SQLite 回执；明确模板 SHA256 和已审核 plan SHA256。仅接受只有原点/基准面的空白零件模板，不改用户现有模型。 |
+| `modeling_domain.api.run_native_modeling(...)` | 新目录、附着到一个已打开且路径匹配的 SLDWORKS（不另开进程）、CloseDoc-only、已有 STA/OS 锁/SQLite 回执；明确模板 SHA256 和已审核 plan SHA256。仅接受只有原点/基准面的空白零件模板，不改用户现有模型，不调用 ExitApp，不结束进程。零个或多个匹配进程时拒绝。 |
 | `modeling_domain.edit_compatibility(inventory, owned_features)` | 输出受保护或未知特征；仅附加自有命名特征，不删除、抑制、修复陌生拓扑。 |
 | `modeling_domain.observe(port, expected_revision=..., directory=..., camera=...)` | 四个白名单视角，原始相机对象与数值还原，版本前后校验、BMP SHA256、原子 observation.json。只进入 reviewing。 |
 | `modeling_domain.body_clearance(port, left, right, expected_revision=...)` | 校验真实体有效性，真实体 `ClosestDistance`，两份 `Copy2(False)` 后求交，不将原体传入破坏性 Boolean。只有 separated/interfering/unknown；失败、空返回、矛盾数据、接触公差区都不是零间隙通过。 |
@@ -33,6 +33,10 @@ python work/modeling.py analyze examples/modeling-two-bodies-v9.json --out analy
 ```
 
 Windows PowerShell，先读分析结果、审核具体几何与体积/bbox，再执行新目录。`Front Plane`、`Line5` 是示例映射；本机语言或命名不同应先修订计划并重新分析、审核，不自动猜测。
+
+先手动打开一个与 `--sw-exe` 相同路径的 SolidWorks，并关掉其它 `SLDWORKS.exe`。验收只附着这一个进程，不另开，不调用 `ExitApp`，不结束进程。零个或多个匹配进程都会直接拒绝。附着后先对已打开文档（包括默认的「装配体1」）执行 `CloseDoc` 清干净，再写；进程保持打开。
+
+`SelectByID2` 的 Callout 看 pywin32 包装，不看修订号：`win32com.gen_py` 早绑定传 Python `None`（Qile3 上 `pythoncom.Nothing` 和 `VARIANT(VT_DISPATCH, None)` 都会报不能转换成 COM 对象）；晚绑定 `CDispatch` 传 `pythoncom.Nothing`（裸 `None` 类型不匹配）。第一次编组失败才换成另一个，只换一次；返回 False 不重试。`GetErrorCode2` 走晚绑定，避免早绑定 `_ApplyTypes_` 里 `int(VARIANT)`；`Save3` / `GetUpdateStamp` 在 `int` 之前解开 VARIANT。凸台拉伸的 `GetTypeName2` 接受 Boss、BossExtrude、Extrude、Extrusion、Boss-Extrude，以及中文环境的「凸台-拉伸」「凸台拉伸」「基体-拉伸」「拉伸」；空格、连字符和斜杠不参与比较。通过或拒绝都把实机原文字符串放进 `native_type`。本仓库未把这次改动再跑一遍 Windows 实机。
 
 ```powershell
 $sw = 'C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe'
@@ -64,7 +68,7 @@ python work/verify_modeling_rollback.py examples/modeling-block-v9.json --sw-exe
 4. `modeling_body_clearance`：分离、真实重叠、接触或误差区、Copy2/Boolean/距离接口失败。核对原体和模型文件未变，失败明确 unknown。正常分离但 Boolean 无结果也不能填 0 假通过。
 5. `modeling_request_replay_and_quarantine`：同请求重放不插特征、同 key 不同 payload 冲突、超时/COM 断开/回滚不确认后禁止新写，沿已有安全对账恢复，不杀进程。
 
-回传填写实际 source pin、Windows/Python/SolidWorks 版本、owned PID+存活句柄证明、原子 JSON/日志/BMP 的相对路径与 SHA256；截图含用户模型时留本机或按已授权范围回传，不把 CAD 和模板打进源码包。新组合测试不能引用 #66/#67/#68 的旧 pin 结果作为通过。passed/degraded/failed/review_required 如实区分，所有 manufacturing_approved=false。
+回传填写实际 source pin、Windows/Python/SolidWorks 版本、附着到的 PID 与只读查询句柄（不另开进程）、原子 JSON/日志/BMP 的相对路径与 SHA256；截图含用户模型时留本机或按已授权范围回传，不把 CAD 和模板打进源码包。新组合测试不能引用 #66/#67/#68 的旧 pin 结果作为通过。passed/degraded/failed/review_required 如实区分，所有 manufacturing_approved=false。
 
 ## 待实机确认与范围
 

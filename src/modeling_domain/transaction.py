@@ -29,8 +29,58 @@ def feature_map(inventory):
     return result
 
 
-NATIVE_TYPES = {'sketch': {'ProfileFeature'}, 'extrude': {'Boss', 'BossExtrude'},
-                'cut': {'Cut', 'CutExtrude'}, 'revolve': {'Revolution', 'RevBoss'}}
+class UnapprovedNativeType(RuntimeError):
+    """GetTypeName2 was not an accepted type. ``native_type`` is the raw string."""
+
+    def __init__(self, kind, native_type):
+        self.kind = kind
+        self.native_type = str(native_type)
+        super().__init__('created feature has unapproved native type: ' + self.native_type)
+
+
+NATIVE_TYPES = {
+    'sketch': {'ProfileFeature'},
+    # SW2022 GetTypeName2 for a boss extrude is often Extrusion, not Boss/BossExtrude.
+    # Chinese installs have also returned the localized feature type.
+    'extrude': {
+        'Boss', 'BossExtrude', 'Extrude', 'Extrusion', 'Boss-Extrude',
+        '凸台-拉伸', '凸台拉伸', '基体-拉伸', '基体拉伸', '拉伸',
+    },
+    'cut': {'Cut', 'CutExtrude'},
+    'revolve': {'Revolution', 'RevBoss'},
+}
+
+# Separator-insensitive forms of the extrude names above, plus short Chinese aliases.
+_EXTRUDE_FOLDS = {
+    'boss', 'bossextrude', 'extrude', 'extrusion', 'bossextrusion',
+    'baseextrude', 'baseextrusion',
+    '凸台拉伸', '基体拉伸', '拉伸凸台', '拉伸基体', '凸台基体', '基体凸台', '拉伸',
+}
+
+
+def _fold_native_type(value):
+    folded = str(value).strip().casefold()
+    for char in ' _-/\\—–':
+        folded = folded.replace(char, '')
+    return folded
+
+
+def native_type_accepted(kind, native_type):
+    """True when ``native_type`` is an approved GetTypeName2 for ``kind``.
+
+    The raw string is what evidence records. Matching ignores spaces, hyphens
+    and slashes so Boss-Extrude and 凸台-拉伸 compare with the whitelist.
+    """
+    raw = str(native_type).strip()
+    if not raw or kind not in NATIVE_TYPES:
+        return False
+    allowed = NATIVE_TYPES[kind]
+    if raw in allowed:
+        return True
+    folded = _fold_native_type(raw)
+    if any(_fold_native_type(item) == folded for item in allowed):
+        return True
+    return kind == 'extrude' and folded in _EXTRUDE_FOLDS
 
 
 def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
@@ -62,8 +112,9 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
                 raise RuntimeError('native feature set differs from append-only plan')
             if any(actual[n] != t for n, t in expected_features.items()):
                 raise RuntimeError('protected native feature type changed')
-            if actual[feature['id']] not in NATIVE_TYPES[feature['kind']]:
-                raise RuntimeError('created feature has unapproved native type')
+            native_type = actual[feature['id']]
+            if not native_type_accepted(feature['kind'], native_type):
+                raise UnapprovedNativeType(feature['kind'], native_type)
             if feature['kind'] != 'sketch':
                 port.name_bodies(feature['expected']['body_names'])
                 inventory = port.inventory()
@@ -76,7 +127,8 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
             owned.append(feature['id'])
             current = port.revision()
             steps.append({'feature': feature['id'], 'kind': feature['kind'],
-                          'revision': current, 'verification': verification})
+                          'native_type': native_type, 'revision': current,
+                          'verification': verification})
             port.record('feature_verified', {'step': steps[-1]})
         require_revision(port, current)
         port.save_reopen()
@@ -94,6 +146,9 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
         result = {'status': 'failed', 'error': type(error).__name__ + ': ' + str(error),
                   'steps': steps, 'simulated_only': port.simulated,
                   'delivery_accepted': False, 'manufacturing_approved': False}
+        if isinstance(error, UnapprovedNativeType):
+            result['native_type'] = error.native_type
+            result['feature_kind'] = error.kind
         if isinstance(error, RevisionConflict):
             # A foreign/manual edit is not authority to overwrite that edit.
             result['rollback'] = {'state': 'OUTCOME_UNKNOWN', 'reason': 'revision_conflict_requires_reconcile'}

@@ -126,13 +126,14 @@ class NativeModelingPort:
 
     def revision(self):
         self.guard();model=self.host.model
-        before=int(read_member(model,'GetUpdateStamp'))
+        from sw_compat.com_access import com_int
+        before=com_int(read_member(model,'GetUpdateStamp'))
         dirty=read_member(model,'GetSaveFlag')
         if type(dirty) is not bool:raise RuntimeError('native dirty state unavailable')
         manager=read_member(model,'ConfigurationManager')
         config=str(read_member(read_member(manager,'ActiveConfiguration'),'Name'))
         inventory=self.inventory();file_sha=digest_file(self.path)
-        after=int(read_member(model,'GetUpdateStamp'))
+        after=com_int(read_member(model,'GetUpdateStamp'))
         if before!=after or read_member(model,'GetSaveFlag')!=dirty:raise RevisionConflict('document changed during revision capture')
         return digest({'document':str(self.path.resolve()),'configuration':config,'file_sha256':file_sha,
                        'inventory':inventory,'dirty_stamp':after if dirty else None})
@@ -195,8 +196,9 @@ class NativeModelingPort:
         ok = returned[0]
         error_value = returned[1] if len(returned) > 1 else errors
         warning_value = returned[2] if len(returned) > 2 else warnings
-        error_code = int(getattr(error_value, 'value', error_value) or 0)
-        warning_code = int(getattr(warning_value, 'value', warning_value) or 0)
+        from sw_compat.com_access import com_int
+        error_code = com_int(getattr(error_value, 'value', error_value))
+        warning_code = com_int(getattr(warning_value, 'value', warning_value))
         if (ok is not True and not (type(ok) is int and ok == 1)) or error_code:
             raise RuntimeError(
                 'isolated model Save3 failed: errors='+str(error_code)+

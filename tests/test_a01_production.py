@@ -213,6 +213,29 @@ class ProductionTests(unittest.TestCase):
                 'win32com.client':NS(VARIANT=lambda tag,value:NS(value=value))}):
             self.assertEqual(feature_error(f),0)
 
+    def test_gen_py_feature_error_uses_late_bind_and_unwraps_variant(self):
+        from src.a01_next.native_production import feature_error
+
+        class VARIANT:
+            def __init__(self, value):
+                self.value = value
+
+        class Early:
+            _oleobj_ = object()
+
+            def GetErrorCode2(self, _warning):
+                raise AssertionError('early-bound GetErrorCode2')
+
+        Early.__module__ = 'win32com.gen_py.fixture'
+        late = NS(GetErrorCode2=lambda _warning: (VARIANT(0), True))
+        client = NS(VARIANT=lambda tag, value: NS(value=value), Dispatch=lambda ole: late)
+        with patch.dict(sys.modules, {'pythoncom': NS(VT_BYREF=1, VT_BOOL=2),
+                                      'win32com': NS(client=client), 'win32com.client': client}):
+            self.assertEqual(feature_error(Early()), 0)
+            plain = MagicMock()
+            plain.GetErrorCode2.return_value = VARIANT(4)
+            self.assertEqual(feature_error(plain), 4)
+
     def test_drawing_template_projection_is_checked_before_views(self):
         from src.ql5050px.native_drawings import ManufacturingDriver
         driver=ManufacturingDriver(MagicMock(durable_attempt=None),self.root)

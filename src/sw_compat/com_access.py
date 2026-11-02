@@ -26,6 +26,31 @@ def record_member_error(name, error):
     callback = _MEMBER_OBSERVER.get()
     if callback is not None and is_member_not_found(error): callback(name, error)
 
+
+def com_int(value, default=0):
+    """Read a COM return as int, unwrapping pywin32 VARIANT before ``int()``.
+
+    Early-bound ``_ApplyTypes_`` and some by-ref returns hand back a VARIANT.
+    ``int(VARIANT)`` raises ``TypeError: int() argument ... not 'VARIANT'``.
+    """
+    current = value
+    for _ in range(4):
+        if isinstance(current, bool):
+            return int(current)
+        if isinstance(current, int):
+            return current
+        if isinstance(current, float):
+            if current != current:
+                raise TypeError("COM value is not an integer")
+            return int(current)
+        inner = getattr(current, "value", None)
+        if inner is None or inner is current:
+            break
+        current = inner
+    if current is None:
+        return default
+    raise TypeError("COM value cannot be read as int: " + type(value).__name__)
+
 try:
     import pythoncom
     DISPATCH_METHOD = pythoncom.DISPATCH_METHOD

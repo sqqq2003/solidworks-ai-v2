@@ -199,14 +199,21 @@ class EntryReceiptTests(unittest.TestCase):
             def close_for_restore(self,targets):
                 super().close_for_restore(targets);self.host.model=None
         self.port_class=Port
-        self.binding=NS(evidence=lambda:{'cleanup_status':'left_open_keepalive','ownership':'spawned_pid_and_live_handle',
-                                         'attached_existing':False})
+        self.binding=NS(evidence=lambda:{'cleanup_status':'left_open_keepalive',
+                                         'ownership':'attached_pid_and_query_handle',
+                                         'instance_mode':'attach_existing_sldworks',
+                                         'attached_existing':True,'spawn_alongside':False,
+                                         'close_doc_only':True,'exit_app':False,'process_killed':False})
+        self.attached=[]
+        def _attach(*args, **kwargs):
+            self.attached.append(args)
+            return nullcontext(self.binding)
         for mocked in [patch('modeling_domain.api.sys.platform','win32'),
                        patch('sw_session.run_on_task_sta',side_effect=lambda fn,**kw:fn()),
                        patch('sw_session.current_lease',return_value=self.lease),
                        patch('cad_reconcile.current_controller_identity',return_value={'pid':123,'creation_filetime':1}),
                        patch('modeling_domain.api.note_owned_process'),
-                       patch('sw_owned_launch.owned_solidworks',side_effect=lambda *a,**kw:nullcontext(self.binding)),
+                       patch('sw_owned_launch.attached_solidworks',side_effect=_attach),
                        patch('ql5050px.native_part_host.NativePartHost',side_effect=lambda lease,root,template:NS(root=root)),
                        patch('modeling_domain.native.NativeModelingPort',self.port_class)]:
             mocked.start();self.addCleanup(mocked.stop)
@@ -220,7 +227,14 @@ class EntryReceiptTests(unittest.TestCase):
 
     def test_real_sqlite_receipt_replays_without_recreating_part_or_observation(self):
         first=self.call();self.assertEqual(first['request_receipt']['status'],'COMPLETED')
+        self.assertEqual(first['session']['instance_mode'],'attach_existing_sldworks')
+        self.assertFalse(first['session']['spawn_alongside'])
+        self.assertTrue(first['session']['close_doc_only'])
+        self.assertFalse(first['session']['exit_app'])
+        self.assertFalse(first['session']['process_killed'])
+        self.assertEqual(len(self.attached),1)
         second=self.call();self.assertTrue(second['request_receipt']['replayed'])
+        self.assertEqual(len(self.attached),1)
         self.assertEqual(len(self.calls),1);self.assertEqual(self.calls[0].writes,2)
         self.assertFalse(second['delivery_accepted']);self.assertTrue(self.lease.close_doc_only)
         self.assertTrue((self.root/'run/observation/observation.json').is_file())

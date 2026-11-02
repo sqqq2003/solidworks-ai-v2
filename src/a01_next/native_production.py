@@ -8,11 +8,25 @@ from ..ql5050px.native_machine import read_member
 
 
 def feature_error(feature):
+    """Read IFeature.GetErrorCode2 without early-bind ``int(VARIANT)``.
+
+    gen_py ``_ApplyTypes_`` does ``int()`` on the BYREF BOOL warning and raises
+    ``TypeError: int() argument ... not 'VARIANT'``. Call the late-bound
+    dispatch instead, then unwrap a VARIANT return before converting it.
+    """
     import pythoncom
     from win32com.client import VARIANT
-    warning=VARIANT(pythoncom.VT_BYREF|pythoncom.VT_BOOL,False)
-    result=feature.GetErrorCode2(warning)
-    return int(result[0] if isinstance(result,tuple) else result)
+    from sw_compat.com_access import com_int
+    target = feature
+    module = getattr(type(feature), "__module__", "") or ""
+    ole = getattr(feature, "_oleobj_", None)
+    if "gen_py" in module and ole is not None:
+        from win32com.client import Dispatch
+        target = Dispatch(ole)
+    warning = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_BOOL, False)
+    result = target.GetErrorCode2(warning)
+    code = result[0] if isinstance(result, tuple) else result
+    return com_int(code)
 
 
 def activate_configuration(model, expected):

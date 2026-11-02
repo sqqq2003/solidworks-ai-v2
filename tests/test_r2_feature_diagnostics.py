@@ -3,7 +3,7 @@ import json,sys,tempfile,unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
-from ql5050px.com_selection import select_by_id
+from ql5050px.com_selection import reset_callout_state_for_tests, select_by_id
 from ql5050px.staged_modeling import execute_part_job
 
 class R2Contracts(unittest.TestCase):
@@ -12,8 +12,10 @@ class R2Contracts(unittest.TestCase):
         class Extension:
             def SelectByID2(self,*args):calls.append(args);return True
         nothing=object()
-        modules={'pythoncom':SimpleNamespace(Nothing=nothing),'win32com':SimpleNamespace(),
-            'win32com.client':SimpleNamespace()}
+        modules={'pythoncom':SimpleNamespace(VT_DISPATCH=9, Nothing=nothing),'win32com':SimpleNamespace(),
+            'win32com.client':SimpleNamespace(VARIANT=lambda vt, value:('variant', vt, value))}
+        reset_callout_state_for_tests()
+        self.addCleanup(reset_callout_state_for_tests)
         with patch.dict(sys.modules,modules):
             self.assertTrue(select_by_id(Extension(),'Front Plane','PLANE'))
         self.assertEqual(len(calls),1)
@@ -22,8 +24,10 @@ class R2Contracts(unittest.TestCase):
     def test_selection_failure_retains_method_and_cause(self):
         class Extension:
             def SelectByID2(self,*args):raise ValueError('fixture mismatch')
-        modules={'pythoncom':SimpleNamespace(Nothing=object()),'win32com':SimpleNamespace(),
-            'win32com.client':SimpleNamespace()}
+        modules={'pythoncom':SimpleNamespace(VT_DISPATCH=9, Nothing=object()),'win32com':SimpleNamespace(),
+            'win32com.client':SimpleNamespace(VARIANT=lambda vt, value:(vt, value))}
+        reset_callout_state_for_tests()
+        self.addCleanup(reset_callout_state_for_tests)
         with patch.dict(sys.modules,modules):
             with self.assertRaisesRegex(RuntimeError,'SelectByID2 failed for PLANE Front Plane') as caught:
                 select_by_id(Extension(),'Front Plane','PLANE')

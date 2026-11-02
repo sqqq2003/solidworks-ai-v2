@@ -1,4 +1,8 @@
-"""Fresh owned native entry; existing user models are never modified here."""
+"""Attach to one running SolidWorks and model in a new directory.
+
+Existing user documents stay open. This entry does not start another
+SLDWORKS, call ExitApp, or terminate a process.
+"""
 from copy import deepcopy
 from pathlib import Path
 import sys
@@ -55,13 +59,15 @@ def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template
 
     def job():
         from sw_session import current_lease
-        from sw_owned_launch import owned_solidworks
+        # CloseDoc-only acceptance attaches to one existing SLDWORKS.
+        # It does not start another process.
+        from sw_owned_launch import attached_solidworks
         from ql5050px.native_part_host import NativePartHost
         from .native import NativeModelingPort
         if digest_file(template) != expected_template_sha256:
             raise ValueError('template changed before launch')
         root.mkdir(parents=True, exist_ok=False)
-        with owned_solidworks(Path(sw_exe)) as binding:
+        with attached_solidworks(Path(sw_exe)) as binding:
             lease = current_lease()
             note_owned_process(lease)
             port = NativeModelingPort(NativePartHost(lease, root, template), originals=originals)
