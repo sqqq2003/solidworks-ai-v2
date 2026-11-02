@@ -34,7 +34,7 @@ python work/modeling.py analyze examples/modeling-two-bodies-v9.json --out analy
 
 Windows PowerShell，先读分析结果、审核具体几何与体积/bbox，再执行新目录。`Front Plane`、`Line5` 是示例映射；本机语言或命名不同应先修订计划并重新分析、审核，不自动猜测。
 
-先手动打开一个与 `--sw-exe` 相同路径的 SolidWorks，并关掉其它 `SLDWORKS.exe`。验收只附着这一个进程，不另开，不调用 `ExitApp`，不结束进程。零个或多个匹配进程都会直接拒绝。附着后先对已打开文档（包括默认的「装配体1」）执行 `CloseDoc` 清干净，再写；进程保持打开。
+先手动打开一个与 `--sw-exe` 相同路径的 SolidWorks，并关掉其它 `SLDWORKS.exe`。验收只附着这一个进程，不另开，不调用 `ExitApp`，不结束进程。零个或多个匹配进程都会直接拒绝。附着后对 ActiveDoc 和 GetDocuments 循环 `CloseDoc`，直到连续两轮没有任何文档（已 `NewDocument` 且登记为本次任务的那一份可以留下）。写入过程中若再冒出未拥有标题（例如会自动重开的「装配体1」），立刻再 `CloseDoc` 一次；仍然在就拒绝写入，并在错误里带上标题和 `GetPathName`。进程保持打开。
 
 `SelectByID2` 的 Callout 看 pywin32 包装，不看修订号：`win32com.gen_py` 早绑定传 Python `None`（Qile3 上 `pythoncom.Nothing` 和 `VARIANT(VT_DISPATCH, None)` 都会报不能转换成 COM 对象）；晚绑定 `CDispatch` 传 `pythoncom.Nothing`（裸 `None` 类型不匹配）。第一次编组失败才换成另一个，只换一次；返回 False 不重试。`GetErrorCode2` 走晚绑定，避免早绑定 `_ApplyTypes_` 里 `int(VARIANT)`；`Save3` / `GetUpdateStamp` 在 `int` 之前解开 VARIANT。凸台拉伸的 `GetTypeName2` 接受 Boss、BossExtrude、Extrude、Extrusion、Boss-Extrude，以及中文环境的「凸台-拉伸」「凸台拉伸」「基体-拉伸」「拉伸」；空格、连字符和斜杠不参与比较。通过或拒绝都把实机原文字符串放进 `native_type`。本仓库未把这次改动再跑一遍 Windows 实机。
 

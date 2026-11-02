@@ -562,25 +562,160 @@ def _discover_attached(pid, *, get_active=None):
     return None
 
 
-def _clear_attached_documents(app, list_titles):
-    """CloseDoc every document already open on the attached instance.
+# Qile3: CloseDoc can clear 装配体1, then the whole default assembly set reopens.
+# Two back-to-back empty snapshots are required before writes are allowed.
+_ATTACH_QUIET_ROUNDS = 2
+_ATTACH_CLOSE_LIMIT = 8
+_ATTACH_QUIET_PAUSE_SEC = 0.05
 
-    Qile3: a foreign default assembly such as 装配体1 makes reuse report
-    unowned documents. Close those documents before any modeling write.
-    ExitApp is not called. UserControl is set first so the last CloseDoc
-    does not quit SolidWorks.
-    """
+
+def _member_value(obj, name):
+    if obj is None:
+        return None
+    try:
+        value = getattr(obj, name, None)
+    except Exception:
+        return None
+    if value is None:
+        return None
+    if callable(value):
+        try:
+            return value()
+        except Exception:
+            return None
+    return value
+
+
+def _document_title(doc):
+    title = _member_value(doc, 'GetTitle')
+    if title is None:
+        return ''
+    return str(title).strip()
+
+
+def _document_path(doc):
+    path = _member_value(doc, 'GetPathName')
+    if path is None:
+        return ''
+    return str(path)
+
+
+def _note_for_document(doc):
+    title = doc.get('title') or '(empty title)'
+    path = doc.get('path') or '(no GetPathName)'
+    return title + ' GetPathName=' + path
+
+
+def _snapshot_open_documents(app, list_titles):
+    """Titles from GetDocuments, ActiveDoc, and the title lister, with paths."""
+    by_title = {}
+    untitled = []
+
+    def add(title, path):
+        title = str(title or '').strip()
+        path = str(path or '')
+        if not title:
+            untitled.append({'title': '', 'path': path})
+            return
+        current = by_title.get(title)
+        if current is None or (not current['path'] and path):
+            by_title[title] = {'title': title, 'path': path}
+
+    raw = _member_value(app, 'GetDocuments')
+    if isinstance(raw, (list, tuple)):
+        for document in raw:
+            add(_document_title(document), _document_path(document))
+    active = _member_value(app, 'ActiveDoc')
+    if active is not None and not isinstance(active, (str, bytes, bool, int, float)):
+        add(_document_title(active), _document_path(active))
+    listed = []
+    if list_titles is not None:
+        listed = [str(title).strip() for title in (list_titles(app) or []) if str(title).strip()]
+    lookup = getattr(app, 'GetOpenDocumentByName', None)
+    for title in listed:
+        path = ''
+        if callable(lookup):
+            try:
+                document = lookup(title)
+            except Exception:
+                document = None
+            if document is not None:
+                path = _document_path(document)
+                named = _document_title(document)
+                if named:
+                    title = named
+        add(title, path)
+    return list(by_title.values()), untitled
+
+
+def _format_open_documents(docs):
+    if not docs:
+        return '(none)'
+    return '; '.join(_note_for_document(doc) for doc in docs)
+
+
+def _keep_visible(app):
     try:
         app.UserControl = True
     except Exception:
         pass
-    titles = [str(title) for title in (list_titles(app) or []) if str(title).strip()]
+
+
+def _close_documents(app, docs):
     closed = []
-    for title in titles:
+    for doc in docs:
+        title = doc.get('title') or ''
+        if not title:
+            continue
         app.CloseDoc(title)
         closed.append(title)
-    remaining = [str(title) for title in (list_titles(app) or []) if str(title).strip()]
-    return closed, remaining
+    return closed
+
+
+def _clear_until_quiet(app, list_titles, *, allowed_titles=(), pump=None, pause=None):
+    """CloseDoc until two consecutive snapshots contain only allowed titles.
+
+    ExitApp is not called. A document that keeps reopening raises with its
+    GetPathName instead of authorizing a write.
+    """
+    if pause is None:
+        pause = _ATTACH_QUIET_PAUSE_SEC
+    _keep_visible(app)
+    allowed = {str(title) for title in allowed_titles if str(title)}
+    closed = []
+    notes = []
+    quiet = 0
+    closes = 0
+    last = []
+    while True:
+        opened, untitled = _snapshot_open_documents(app, list_titles)
+        stray = [doc for doc in opened if doc['title'] not in allowed]
+        stray.extend(doc for doc in untitled if doc not in stray)
+        if not stray:
+            quiet += 1
+            if quiet >= _ATTACH_QUIET_ROUNDS:
+                return closed, notes
+        else:
+            quiet = 0
+            last = stray
+            if closes >= _ATTACH_CLOSE_LIMIT:
+                break
+            _keep_visible(app)
+            for doc in stray:
+                if not doc.get('title'):
+                    continue
+                app.CloseDoc(doc['title'])
+                closed.append(doc['title'])
+                notes.append(_note_for_document(doc))
+            closes += 1
+        if pump:
+            pump()
+        if pause:
+            time.sleep(pause)
+    raise SessionOwnershipError(
+        'CloseDoc did not keep the attached session clear; '
+        'a document reopened after close (ExitApp was not called): '
+        + _format_open_documents(last))
 
 
 class AttachedBinding(OwnedBinding):
@@ -591,6 +726,8 @@ class AttachedBinding(OwnedBinding):
     def __init__(self, lifetime, app, read_pid, list_titles):
         super().__init__(lifetime, app, read_pid, list_titles)
         self.closed_before_write = []
+        self.closed_during_write = []
+        self.closed_document_notes = []
 
     def validate(self, lease, *, documents=True):
         from sw_session import normalize_com_disconnect
@@ -626,16 +763,43 @@ class AttachedBinding(OwnedBinding):
                         "writes refused; ExitApp was not called"
                     ) from exc
                 raise SessionOwnershipError('document inventory unavailable; refusing writes') from exc
-            unknown = titles - set(lease.owned_docs) - set(lease.foreign_titles)
-            if unknown:
-                # Remember them so cleanup does not CloseDoc a document this task
-                # did not create. Writes stop.
-                lease.foreign_titles.update(unknown)
-                lease.verified_exclusive = False
-                lease.writes_blocked = True
-                raise SessionOwnershipError(
-                    'new documents appeared in the attached SolidWorks process; '
-                    'left open and not closed: ' + ', '.join(sorted(unknown)))
+            # One extra CloseDoc if a default assembly (装配体1) or any other
+            # unowned title reopens during the write. A second sighting after
+            # that close is a diagnosed refusal, not a silent block.
+            opened, untitled = _snapshot_open_documents(self.app, self.list_titles)
+            allowed = set(lease.owned_docs)
+            stray = [doc for doc in opened if doc['title'] not in allowed]
+            stray.extend(untitled)
+            listed_stray = sorted(title for title in titles if title not in allowed)
+            known = {doc['title'] for doc in stray}
+            for title in listed_stray:
+                if title not in known:
+                    stray.append({'title': title, 'path': ''})
+            if stray:
+                _keep_visible(self.app)
+                try:
+                    for doc in stray:
+                        if not doc.get('title'):
+                            continue
+                        self.app.CloseDoc(doc['title'])
+                        self.closed_during_write.append(doc['title'])
+                        self.closed_document_notes.append(_note_for_document(doc))
+                except Exception as exc:
+                    lease.verified_exclusive = False
+                    lease.writes_blocked = True
+                    raise SessionOwnershipError(
+                        'CloseDoc failed for a document that reopened during the write; '
+                        'ExitApp was not called: ' + _format_open_documents(stray)
+                    ) from exc
+                opened, untitled = _snapshot_open_documents(self.app, self.list_titles)
+                still = [doc for doc in opened if doc['title'] not in allowed]
+                still.extend(untitled)
+                if still:
+                    lease.verified_exclusive = False
+                    lease.writes_blocked = True
+                    raise SessionOwnershipError(
+                        'unowned document reopened after CloseDoc; '
+                        'ExitApp was not called: ' + _format_open_documents(still))
         if not lease.prove_attached_reuse(self.lifetime.pid, self.lifetime.probe):
             lease.writes_blocked = True
             raise SessionOwnershipError('attached reuse proof failed')
@@ -673,6 +837,8 @@ class AttachedBinding(OwnedBinding):
             'keepalive_verified': self.keepalive_verified,
             'callout': callout_status(),
             'closed_before_write': list(self.closed_before_write),
+            'closed_during_write': list(self.closed_during_write),
+            'closed_document_notes': list(self.closed_document_notes),
         }
 
 
@@ -708,16 +874,15 @@ def bind_attached(lifetime, discover, read_pid, list_titles, *, timeout=30, pump
     binding = AttachedBinding(lifetime, app, read_pid, list_titles)
     binding.rediscover = discover
     try:
-        closed, remaining = _clear_attached_documents(app, list_titles)
+        closed, notes = _clear_until_quiet(app, list_titles, pump=pump)
+    except SessionOwnershipError:
+        raise
     except Exception as exc:
         raise SessionOwnershipError(
             'CloseDoc failed while clearing the attached session; '
             'ExitApp was not called: ' + str(exc)) from exc
-    if remaining:
-        raise SessionOwnershipError(
-            'CloseDoc did not clear the attached session; left open and '
-            'ExitApp was not called: ' + ', '.join(remaining))
     binding.closed_before_write = closed
+    binding.closed_document_notes = notes
     lease.attached_existing = True
     lease.created_by_task = False
     lease.spawn_claimed = False

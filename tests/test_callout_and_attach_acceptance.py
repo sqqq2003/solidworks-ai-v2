@@ -157,6 +157,9 @@ class AttachReuseTests(unittest.TestCase):
         self.addCleanup(sw_session.reset_for_tests)
         reset_callout_state_for_tests()
         self.addCleanup(reset_callout_state_for_tests)
+        paused = patch.object(launch, "_ATTACH_QUIET_PAUSE_SEC", 0)
+        paused.start()
+        self.addCleanup(paused.stop)
 
     def test_acceptance_runner_source_attaches_and_does_not_spawn(self):
         api = (ROOT / "src" / "modeling_domain" / "api.py").read_text(encoding="utf-8")
@@ -240,7 +243,7 @@ class AttachReuseTests(unittest.TestCase):
 
         sw_session.run_on_task_sta(job, timeout=5, task_name="attach-reuse")
 
-    def test_new_unowned_document_stops_writes_and_is_not_closed(self):
+    def test_write_window_closes_a_reopened_assembly_once(self):
         listing = ["装配体1"]
         closed = []
 
@@ -264,16 +267,87 @@ class AttachReuseTests(unittest.TestCase):
         )
 
         def job():
-            launch.bind_attached(
+            binding = launch.bind_attached(
                 lifetime, lambda pid: app, lambda _app: 43210, lambda _app: list(listing), timeout=1)
             self.assertEqual(closed, ["装配体1"])
-            listing.append("Mystery.SLDPRT")
-            with self.assertRaisesRegex(SessionOwnershipError, "left open and not closed"):
-                sw_session.require_model_write()
-            self.assertEqual(closed, ["装配体1"])
+            listing.append("装配体1")
+            sw_session.require_model_write()
+            self.assertEqual(closed, ["装配体1", "装配体1"])
+            self.assertEqual(binding.closed_during_write, ["装配体1"])
             self.assertNotIn("exit", closed)
 
-        sw_session.run_on_task_sta(job, timeout=5, task_name="attach-unknown-doc")
+        sw_session.run_on_task_sta(job, timeout=5, task_name="attach-reclose")
+
+    def test_repeated_reopen_reports_pathname_and_does_not_exit(self):
+        listing = []
+        closed = []
+        path = r"D:\工程\装配体1.SLDASM"
+
+        def close_doc(title):
+            closed.append(title)
+
+        def lookup(name):
+            return SimpleNamespace(GetTitle=lambda: name, GetPathName=lambda: path)
+
+        app = SimpleNamespace(
+            GetProcessID=lambda: 43210,
+            UserControl=True,
+            CloseDoc=close_doc,
+            ExitApp=lambda: closed.append("exit"),
+            GetOpenDocumentByName=lookup,
+            ActiveDoc=None,
+        )
+        lifetime = SimpleNamespace(
+            pid=43210,
+            executable=r"C:\Program Files\SOLIDWORKS\SLDWORKS.exe",
+            process=SimpleNamespace(poll=lambda: None),
+            probe=lambda pid: ProcessProbeInfo(43210, True, "SLDWORKS.exe") if pid == 43210 else None,
+        )
+
+        def job():
+            launch.bind_attached(
+                lifetime, lambda pid: app, lambda _app: 43210, lambda _app: list(listing), timeout=1)
+            listing.append("装配体1")
+            with self.assertRaisesRegex(SessionOwnershipError, "reopened after CloseDoc") as caught:
+                sw_session.require_model_write()
+            self.assertIn("装配体1", str(caught.exception))
+            self.assertIn(path, str(caught.exception))
+            self.assertIn("GetPathName", str(caught.exception))
+            self.assertIn("ExitApp was not called", str(caught.exception))
+            self.assertEqual(closed, ["装配体1"])
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="attach-reopen-path")
+
+    def test_active_doc_is_closed_until_two_empty_rounds(self):
+        closed = []
+        app = SimpleNamespace(
+            GetProcessID=lambda: 43210,
+            UserControl=True,
+            ExitApp=lambda: closed.append("exit"),
+            ActiveDoc=SimpleNamespace(GetTitle=lambda: "装配体1", GetPathName=lambda: ""),
+        )
+
+        def close_doc(title):
+            closed.append(title)
+            app.ActiveDoc = None
+
+        app.CloseDoc = close_doc
+        lifetime = SimpleNamespace(
+            pid=43210,
+            executable=r"C:\Program Files\SOLIDWORKS\SLDWORKS.exe",
+            process=SimpleNamespace(poll=lambda: None),
+            probe=lambda pid: ProcessProbeInfo(43210, True, "SLDWORKS.exe") if pid == 43210 else None,
+        )
+
+        def job():
+            binding = launch.bind_attached(
+                lifetime, lambda pid: app, lambda _app: 43210, lambda _app: [], timeout=1)
+            self.assertEqual(closed, ["装配体1"])
+            self.assertEqual(binding.closed_before_write, ["装配体1"])
+            self.assertTrue(any("no GetPathName" in note for note in binding.closed_document_notes))
+            self.assertNotIn("exit", closed)
+
+        sw_session.run_on_task_sta(job, timeout=5, task_name="attach-activedoc")
 
     def test_zero_or_many_processes_do_not_spawn(self):
         opened = []
