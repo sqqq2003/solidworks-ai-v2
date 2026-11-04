@@ -1,0 +1,19 @@
+{
+  "archive_sha256": "552ffa44abea7dcd6f80e1ca1c7fe36394560fde1b60785ee83fd5bac03c35c9",
+  "source": "Crosswalk grokcodex834708555 / roller_frame_parametric/roller_frame_20261104.zip v1",
+  "scope": "reviewed pure geometry, errors and drive-side planning only",
+  "files": {
+    "geometry.py": {
+      "original_sha256": "c006b638ff7f2206e50497a658271ba2c49480fd379bd4a92d1e610a81273a25",
+      "imported_sha256": "78445db72102c339cd1fb05e9230f302d69fe06c9a19f1fb6ac542b6bf693395"
+    },
+    "errors.py": {
+      "original_sha256": "1a2875435987061ba0032595067010c3633b1055f05ee5e51510a641d7e263d5",
+      "imported_sha256": "1a2875435987061ba0032595067010c3633b1055f05ee5e51510a641d7e263d5"
+    },
+    "drive_side.py": {
+      "original_sha256": "514cfc8865a42314ba688aeca0c9af78efd94b8790b7ce4d604e602e7203694e",
+      "imported_sha256": "3008d2945b35a088689df12d602531ab6739831c9ea73c9e1153e20ba710bce3"
+    }
+  }
+}

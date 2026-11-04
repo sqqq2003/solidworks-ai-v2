@@ -27,16 +27,33 @@ def preview_parameters(length, width, height, *, spec_path=None):
     path = Path(spec_path) if spec_path else SPEC_PATH
     path = path.expanduser().resolve()
     raw = path.read_bytes()
-    plan = solve_spec(path, **dimensions)
+    if path.suffix.casefold() in {'.yaml','.yml'}:
+        import yaml
+        try:specification=yaml.safe_load(raw.decode('utf-8-sig'))
+        except yaml.YAMLError as error:raise ValueError('无法解析机型YAML规则') from error
+    else:
+        specification=json.loads(raw.decode('utf-8-sig'))
+    if not isinstance(specification,dict):raise ValueError('机型规则必须是JSON或YAML对象')
+    is_frame='mother_width_mm' in specification and 'pitch_mm' in specification
+    if is_frame:
+        from roller_frame_preview import frame_plan
+        from roller_frame_math.errors import RollerFrameError
+        try:plan,mappings=frame_plan(specification,**dimensions)
+        except RollerFrameError as error:raise ValueError(str(error)) from error
+    else:
+        plan=solve_spec(path,**dimensions)
+        mappings=mapping_template(plan)
     if path.read_bytes() != raw:
         raise ValueError('机型规则已变化，请重新计算')
     result = {'schema_version':1, 'kind':'parametric_modeling_workspace',
               'source_spec':{'path':str(path),'sha256':hashlib.sha256(raw).hexdigest()},
-              'spec_snapshot':json.loads(raw.decode('utf-8-sig')),
-              'target_envelope_mm':dimensions, 'plan':plan,
-              'mapping_template':mapping_template(plan),
+              'spec_snapshot':specification,
+              'target_dimensions_mm':dimensions, 'plan':plan,
+              'mapping_template':mappings,
               'status':'review_required', 'native_write_allowed':False,
               'cad_executed':False, 'manufacturing_approved':False}
+    if not is_frame:result['target_envelope_mm']=dimensions
+    else:result['dimension_basis']='W_inner_clear_L_frame_H_plate_plus_legs'
     result['review_sha256'] = _digest(result)
     return result
 

@@ -2,3 +2,4 @@
 # Linux cloud installs use requirements-cloud.txt and do not install pywin32.
 ezdxf==1.4.4
 pywin32==312
+PyYAML==6.0.3

@@ -1,3 +1,4 @@
 # Linux / cloud simulated tests only. Do not install pywin32 here.
 ezdxf==1.4.4
 pypdf==6.21.2
+PyYAML==6.0.3

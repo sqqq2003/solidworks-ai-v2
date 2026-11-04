@@ -20,11 +20,12 @@ class ParametricModelingWindow:
         self.spec_path=tk.StringVar();self.rule_label=tk.StringVar(value='内置 A01 规则（示例目标尺寸，非实测尺寸）')
         rule=ttk.Frame(body);rule.pack(fill='x')
         ttk.Label(rule,textvariable=self.rule_label).pack(side='left',fill='x',expand=True)
-        ttk.Button(rule,text='导入机型规则 JSON',command=self.choose_spec).pack(side='right')
+        ttk.Button(rule,text='导入机型规则 JSON / YAML',command=self.choose_spec).pack(side='right')
         fields=ttk.Frame(body);fields.pack(fill='x',pady=16)
         self.values={key:tk.StringVar(value=value) for key,value in [('length','1800'),('width','900'),('height','1500')]}
+        self.dimension_labels={}
         for column,(key,label) in enumerate([('length','目标长度'),('width','目标宽度'),('height','目标高度')]):
-            ttk.Label(fields,text=label+' · mm').grid(row=0,column=column*2,padx=(0,8))
+            self.dimension_labels[key]=ttk.Label(fields,text=label+' · mm');self.dimension_labels[key].grid(row=0,column=column*2,padx=(0,8))
             ttk.Entry(fields,textvariable=self.values[key],width=12).grid(row=0,column=column*2+1,padx=(0,20))
             self.values[key].trace_add('write',self.invalidate)
         actions=ttk.Frame(body);actions.pack(fill='x')
@@ -33,7 +34,9 @@ class ParametricModelingWindow:
         ttk.Button(actions,text='执行 SolidWorks 改型',state='disabled').pack(side='left')
         self.status=tk.StringVar(value='先计算参数；完成真实模型绑定与实机验证后，开放模型改型。')
         ttk.Label(body,textvariable=self.status,wraplength=900).pack(anchor='w',pady=12)
-        ttk.Label(body,text='未确认的尺寸保留为“待确认”；机型规则仅支持已有 JSON 契约，不执行导入的程序。\n方案和映射表不等于已生成模型，也不表示工程或生产验收通过。',wraplength=900).pack(side='bottom',anchor='w',pady=(12,0))
+        ttk.Label(body,text='未确认的尺寸保留为“待确认”；支持A01规则和滚筒机架JSON/YAML规则，不执行导入的程序。\n方案和映射表不等于已生成模型，也不表示工程或生产验收通过。',wraplength=900).pack(side='bottom',anchor='w',pady=(12,0))
+        self.warning=tk.StringVar()
+        ttk.Label(body,textvariable=self.warning,wraplength=900,foreground='#9A5200').pack(side='bottom',anchor='w',pady=(8,0))
         table=ttk.Frame(body);table.pack(fill='both',expand=True)
         columns=('parameter','value','unit','depends','confirmation')
         self.table=ttk.Treeview(table,columns=columns,show='headings')
@@ -49,7 +52,7 @@ class ParametricModelingWindow:
 
     def choose_spec(self):
         from tkinter import filedialog
-        path=filedialog.askopenfilename(parent=self.window,title='选择机型参数规则',filetypes=[('机型规则 JSON','*.json')])
+        path=filedialog.askopenfilename(parent=self.window,title='选择机型参数规则',filetypes=[('机型规则','*.json *.yaml *.yml')])
         if path:
             self.spec_path.set(path);self.rule_label.set(Path(path).name);self.invalidate()
             self.journal.record('parametric_rule_selected',path=path)
@@ -59,14 +62,17 @@ class ParametricModelingWindow:
         self.invalidate()
         try:
             result=preview_parameters(**{k:v.get() for k,v in self.values.items()},spec_path=self.spec_path.get() or None)
-        except (OSError,ValueError,TypeError,KeyError,RuntimeError) as error:
+        except (OSError,ValueError,TypeError,KeyError,RuntimeError,ImportError) as error:
             self.journal.exception('parametric_preview_failed',error)
             self.status.set('计算未完成，请检查尺寸或机型规则。')
             messagebox.showerror('请检查参数',str(error),parent=self.window);return
         self.preview_data=result
-        self.journal.record('parametric_preview_completed',target=result['target_envelope_mm'],review_sha256=result['review_sha256'])
+        self.journal.record('parametric_preview_completed',target=result['target_dimensions_mm'],review_sha256=result['review_sha256'])
         for item in self.table.get_children():self.table.delete(item)
         plan=result['plan']
+        self.dimension_labels['width'].configure(text='目标内档W · mm' if plan['machine_id']=='roller_frame' else '目标宽度 · mm')
+        self.dimension_labels['height'].configure(text='侧板+支腿H · mm' if plan['machine_id']=='roller_frame' else '目标高度 · mm')
+        self.warning.set('\n'.join(plan.get('warnings',[])))
         for name,row in plan['parameter_register'].items():
             value=plan['values_mm'].get(name)
             confirmation=row.get('confirmation_status','unconfirmed')
