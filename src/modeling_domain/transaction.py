@@ -1,5 +1,6 @@
 """Bounded modeling writes, revision-bound observation and honest clearance."""
 import math
+import traceback
 from pathlib import Path
 
 from cad_checkpoint import digest_file
@@ -93,8 +94,10 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
     current = port.revision()
     expected_features = feature_map(port.inventory())
     steps, owned = [], []
+    active_feature = None
     try:
         for feature in draft['plan']['features']:
+            active_feature = {'id': feature['id'], 'kind': feature['kind']}
             require_revision(port, current)
             before = port.inventory()
             if feature_map(before) != expected_features:
@@ -144,6 +147,7 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
         return result
     except BaseException as error:
         result = {'status': 'failed', 'error': type(error).__name__ + ': ' + str(error),
+                  'failed_feature': active_feature, 'traceback': traceback.format_exc(),
                   'steps': steps, 'simulated_only': port.simulated,
                   'delivery_accepted': False, 'manufacturing_approved': False}
         if isinstance(error, UnapprovedNativeType):

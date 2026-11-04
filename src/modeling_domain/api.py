@@ -6,6 +6,9 @@ SLDWORKS, call ExitApp, or terminate a process.
 from copy import deepcopy
 from pathlib import Path
 import sys
+import platform
+import struct
+from importlib.metadata import version, PackageNotFoundError
 
 from cad_checkpoint import digest_file
 from cad_run import note_owned_process, run_receipted_cad
@@ -14,10 +17,23 @@ from .contract import analyze_draft
 from .transaction import run_transaction, observe, body_clearance
 
 
+def runtime_environment():
+    """Record runtime versions without collecting user environment variables."""
+    try:
+        pywin32_version=version('pywin32')
+    except PackageNotFoundError:
+        pywin32_version=None
+    return {'python':platform.python_version(), 'implementation':platform.python_implementation(),
+            'python_bits':struct.calcsize('P')*8, 'os':platform.system(),
+            'os_release':platform.release(), 'os_version':platform.version(),
+            'machine':platform.machine(), 'pywin32':pywin32_version}
+
+
 def implementation_hashes():
     root = Path(__file__).resolve().parents[1]
     names = ['cad_run.py', 'cad_checkpoint.py', 'cad_receipts.py', 'sw_session.py',
-             'sw_owned_launch.py', 'sw_feature_calls.py', 'ql5050px/native_part_host.py',
+             'sw_owned_launch.py', 'sw_feature_calls.py', 'solidworks_generator.py',
+             'sw_compat/com_access.py', 'ql5050px/native_part_host.py',
              'ql5050px/native_machine.py', 'ql5050px/editable_features.py',
              'ql5050px/feature_operations.py', 'ql5050px/com_selection.py',
              'a01_next/native_production.py', 'profile_sanitize.py',
@@ -67,6 +83,7 @@ def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template
         if digest_file(template) != expected_template_sha256:
             raise ValueError('template changed before launch')
         root.mkdir(parents=True, exist_ok=False)
+        atomic_json(root / 'runtime-environment.json', runtime_environment(), exclusive=True)
         with attached_solidworks(Path(sw_exe)) as binding:
             lease = current_lease()
             note_owned_process(lease)

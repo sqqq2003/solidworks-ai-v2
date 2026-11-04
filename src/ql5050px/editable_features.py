@@ -53,7 +53,8 @@ class EditableFeaturesMixin(FeatureOperationsMixin):
                 raw=model.FeatureByPositionReverse(0)
                 if raw is None:raise RuntimeError('active sketch feature not found')
                 native=sw._as_interface(module,raw,'IFeature')
-                if native.GetTypeName2() not in {'ProfileFeature','3DProfileFeature'}:
+                from .native_machine import read_member
+                if read_member(native,'GetTypeName2') not in {'ProfileFeature','3DProfileFeature'}:
                     raise RuntimeError('latest feature is not the active sketch; refusing to rename it')
                 native.Name=feature['id']
             finally:manager.InsertSketch(True)

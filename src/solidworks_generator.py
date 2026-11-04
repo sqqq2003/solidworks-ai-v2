@@ -2581,7 +2581,8 @@ def _as_interface(module: Any, instance: Any, interface: str) -> Any:
 def _feature_count(model: Any) -> int:
     """Normalize GetFeatureCount across SW COM wrappers exposing method or property."""
     value = model.GetFeatureCount
-    return int(value() if callable(value) else value)
+    from sw_compat.com_access import com_int
+    return com_int(value() if callable(value) else value)
 
 
 def _features(model: Any, module: Any) -> list[Any]:

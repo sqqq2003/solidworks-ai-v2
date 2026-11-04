@@ -50,6 +50,8 @@ class NativeContractTests(unittest.TestCase):
         import solidworks_generator as sw
         self.assertEqual(sw._feature_count(NS(GetFeatureCount=7)),7)
         self.assertEqual(sw._feature_count(NS(GetFeatureCount=lambda:8)),8)
+        self.assertEqual(sw._feature_count(NS(GetFeatureCount=NS(value=9))),9)
+        self.assertEqual(sw._feature_count(NS(GetFeatureCount=lambda:NS(value=10))),10)
 
     def test_native_save3_supplies_byref_long_outputs_and_reads_them_back(self):
         modules=variants();pythoncom=modules['pythoncom'];seen=[]

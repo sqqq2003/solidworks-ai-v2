@@ -224,6 +224,8 @@ class TransactionTests(unittest.TestCase):
         self.port.fail_after = 2
         result = self.run_plan()
         self.assertEqual(result['status'], 'failed')
+        self.assertEqual(result['failed_feature']['id'], example()['features'][1]['id'])
+        self.assertIn('Traceback (most recent call last)',result['traceback'])
         self.assertEqual(result['rollback']['state'], 'RESTORED')
         self.assertEqual(self.port.path.read_bytes(), self.port.initial)
         self.assertEqual(self.port.writes, 2)

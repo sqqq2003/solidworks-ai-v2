@@ -25,6 +25,7 @@ class Interfaces(unittest.TestCase):
             Extension=SimpleNamespace(SelectByID2=lambda *_:True),SketchManager=self.manager,
             FeatureByPositionReverse=lambda _:self.feature)
     def test_sketch_without_GetFeature_uses_typed_latest_feature(self):
+        self.feature.GetTypeName2='ProfileFeature'
         feature={'id':'outline','kind':'sketch','confirmed':True,'evidence':['fixture'],
             'parameters':{'plane':'fixture_plane','entities':[{'type':'line','start':[0,0],'end':[10,0]}]}}
         with patch.dict(sys.modules,{'solidworks_generator':self.sw}):self.host.create_editable_feature(feature)
