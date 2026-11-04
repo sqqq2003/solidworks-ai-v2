@@ -183,15 +183,23 @@ class NativeModelingPort:
 
     def _save(self):
         self.guard()
-        import pythoncom
-        from win32com.client import VARIANT
-
-        # Save3's Errors and Warnings are COM [out] LONG parameters. Plain
-        # integers work with some generated wrappers, but pywin32's SW2025
-        # dispatch requires explicit by-reference VARIANTs.
-        errors = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
-        warnings = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
-        result = self.host.model.Save3(1, errors, warnings)
+        from ql5050px.com_selection import is_gen_py_early_bound
+        save = self.host.model.Save3
+        receiver = getattr(save, '__self__', self.host.model)
+        early = is_gen_py_early_bound(receiver)
+        if early:
+            # gen_py's typed InvokeTypes marshals LONG placeholders itself and
+            # returns the out values. Explicit VARIANTs fail int conversion.
+            errors = warnings = 0
+            result = save(1, 0, 0)
+            if not isinstance(result, tuple) or len(result) != 3:
+                raise RuntimeError('early-bound Save3 did not return error/warning outputs')
+        else:
+            import pythoncom
+            from win32com.client import VARIANT
+            errors = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
+            warnings = VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
+            result = save(1, errors, warnings)
         returned = result if isinstance(result, tuple) else (result,)
         ok = returned[0]
         error_value = returned[1] if len(returned) > 1 else errors
@@ -263,11 +271,11 @@ class NativeModelingPort:
 
     def capture_camera(self):
         self.guard();view=read_member(self.host.model,'ActiveView')
-        # Keep native value objects as well as independent arrays; restore must
-        # not recompute an approximate camera from a standard view name.
+        # COM math objects may be live aliases of the view. Only their copied
+        # arrays are a stable baseline after ShowNamedView/zoom mutates it.
         orientation=read_member(view,'Orientation3');translation=read_member(view,'Translation3')
         scale=float(read_member(view,'Scale2'))
-        return {'orientation':orientation,'translation':translation,'scale':scale,
+        return {'scale':scale,
                 'orientation_array':list(read_member(orientation,'ArrayData')),
                 'translation_array':list(read_member(translation,'ArrayData'))}
 
@@ -278,11 +286,20 @@ class NativeModelingPort:
 
     def restore_camera(self,prior):
         self.guard();view=read_member(self.host.model,'ActiveView')
-        view.Orientation3=prior['orientation'];view.Translation3=prior['translation'];view.Scale2=prior['scale']
+        from sw_math_arrays import create_transform,double_array
+        utility=read_member(self.host.app,'GetMathUtility')
+        if '_oleobj_' in getattr(utility,'__dict__',{}):
+            import solidworks_generator as sw
+            utility=sw._as_interface(sw.ensure_solidworks_typelib(),utility,'IMathUtility')
+        orientation=create_transform(utility,prior['orientation_array'])
+        translation=utility.CreateVector(double_array(prior['translation_array'],3))
+        if translation is None:raise RuntimeError('camera translation reconstruction failed')
+        view.Orientation3=orientation;view.Scale2=prior['scale'];view.Translation3=translation
         self.host.model.GraphicsRedraw2()
 
     def camera_matches(self,prior):
         actual=self.capture_camera()
+        self.camera_comparison={'expected':prior,'actual':actual}
         return (len(actual['orientation_array'])==len(prior['orientation_array']) and
                 len(actual['translation_array'])==len(prior['translation_array']) and
                 all(math.isclose(a,b,rel_tol=1e-9,abs_tol=1e-10) for key in ('orientation_array','translation_array') for a,b in zip(actual[key],prior[key])) and

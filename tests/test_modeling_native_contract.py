@@ -78,6 +78,84 @@ class NativeContractTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError,r'Save3.*errors=17.*warnings=4'):
                 port._save()
 
+    def test_early_bound_save3_uses_typed_long_placeholders_once(self):
+        calls=[]
+        class Model:
+            __module__='win32com.gen_py.native_save_test'
+            def Save3(self,*args):calls.append(args);return (True,0,4)
+        port=object.__new__(NativeModelingPort)
+        port.host=NS(model=Model());port.guard=lambda:None
+        port._save()
+        self.assertEqual(calls,[(1,0,0)])
+
+    def test_early_bound_save3_retains_error_codes_and_requires_outputs(self):
+        for response, message in [((False,17,4),'errors=17.*warnings=4'),
+                                  (True,'did not return'),((True,),'did not return')]:
+            calls=[]
+            class Model:
+                __module__='win32com.gen_py.native_save_test'
+                def Save3(self,*args):calls.append(args);return response
+            port=object.__new__(NativeModelingPort)
+            port.host=NS(model=Model());port.guard=lambda:None
+            with self.subTest(response=response),self.assertRaisesRegex(RuntimeError,message):port._save()
+            self.assertEqual(len(calls),1)
+
+    def test_dual_document_save3_detects_bound_receiver(self):
+        from sw_compat.model_document import DualDocument
+        calls=[]
+        class Model:
+            __module__='win32com.gen_py.native_save_test'
+            def Save3(self,*args):calls.append(args);return (True,0,0)
+        model=Model();port=object.__new__(NativeModelingPort)
+        port.host=NS(model=DualDocument(NS(),NS(),model));port.guard=lambda:None
+        port._save();self.assertEqual(calls,[(1,0,0)])
+
+    def test_camera_restore_recreates_values_from_arrays_and_sets_translation_last(self):
+        matrix=[1.,0.,0.,0.,1.,0.,0.,0.,1.,0.,0.,0.,1.,0.,0.,0.]
+        orientation=NS(ArrayData=list(matrix));translation=NS(ArrayData=[.1,.2,.3])
+        class View:
+            Orientation3=orientation;Translation3=translation;scale=2.
+            @property
+            def Scale2(self):return self.scale
+            @Scale2.setter
+            def Scale2(self,value):self.scale=value;self.Translation3=NS(ArrayData=[99.,99.,99.])
+        view=View();utility=NS(_oleobj_=object(),CreateTransform=lambda values:NS(ArrayData=list(values)),
+                             CreateVector=lambda values:NS(ArrayData=list(values)))
+        port=object.__new__(NativeModelingPort);port.guard=lambda:None
+        port.host=NS(model=NS(ActiveView=view,GraphicsRedraw2=lambda:None),app=NS(GetMathUtility=lambda:utility))
+        prior=port.capture_camera();orientation.ArrayData[0]=99.;translation.ArrayData[0]=99.
+        with patch('sw_math_arrays.double_array',side_effect=lambda values,length:tuple(values)), \
+             patch('solidworks_generator.ensure_solidworks_typelib',return_value='module'), \
+             patch('solidworks_generator._as_interface',return_value=utility) as cast:
+            port.restore_camera(prior)
+        cast.assert_called_once_with('module',utility,'IMathUtility')
+        self.assertTrue(port.camera_matches(prior))
+        self.assertEqual(prior['orientation_array'],matrix)
+
+    def test_observation_primary_error_and_completed_model_evidence_survive_cleanup_refusal(self):
+        from modeling_domain import api
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);template=root/'empty.prtdot';template.write_bytes(b'synthetic template')
+            output=root/'out';host=NS(root=output,model=object())
+            port=NS(host=host,path=output/'work.SLDPRT',initialize=lambda:'baseline',
+                    inventory=lambda:{'features':[{'name':'Front Plane','native_type':'RefPlane'}],'bodies':[]},
+                    camera_comparison={},close_for_restore=lambda *_:(_ for _ in ()).throw(RuntimeError('cleanup refused')))
+            plan=fixtures.example()
+            with patch('ql5050px.native_part_host.NativePartHost',return_value=host), \
+                 patch('modeling_domain.native.NativeModelingPort',return_value=port), \
+                 patch('sw_session.current_lease',return_value=NS()), \
+                 patch('sw_owned_launch.attached_solidworks',return_value=nullcontext(NS())), \
+                 patch.object(api,'note_owned_process'), \
+                 patch.object(api,'run_receipted_cad',side_effect=lambda doc,originals,payload,job,**kwargs:job()), \
+                 patch.object(api,'run_transaction',return_value={'status':'native_readback_pending_review','revision':'saved'}), \
+                 patch.object(api,'observe',side_effect=RuntimeError('camera root error')):
+                with self.assertRaisesRegex(RuntimeError,'camera root error'):
+                    api.run_native_modeling(plan,root/'fake.exe',template,output,
+                        expected_template_sha256=digest_file(template),reviewed_plan_sha256=digest(plan),request_key='test')
+            self.assertTrue((output/'model-transaction-result.json').is_file())
+            self.assertIn('camera root error',json.loads((output/'native-failure.json').read_text())['error'])
+            self.assertIn('cleanup refused',json.loads((output/'cleanup-failure.json').read_text())['error'])
+
     def test_revolve_is_twenty_typed_args_with_explicit_merge_and_bounded_radians(self):
         seen = []
         manager = NS(FeatureRevolve2=lambda *a: seen.append(a) or NS(Name='new'))

@@ -220,6 +220,14 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual([step['native_type'] for step in result['steps']], ['ProfileFeature', 'Boss'])
         self.assertFalse(result['delivery_accepted'])
 
+    def test_save_failure_reports_stage_without_blaming_verified_feature(self):
+        with patch.object(self.port,'save_reopen',side_effect=RuntimeError('injected save error')):
+            result=self.run_plan()
+        self.assertEqual(result['failed_stage'],'save_reopen')
+        self.assertIsNone(result['failed_feature'])
+        self.assertEqual(len(result['steps']),2)
+        self.assertEqual(result['rollback']['state'],'RESTORED')
+
     def test_failure_halfway_restores_actual_bytes_and_reopen_snapshot(self):
         self.port.fail_after = 2
         result = self.run_plan()

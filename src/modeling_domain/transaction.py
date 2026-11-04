@@ -95,6 +95,7 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
     expected_features = feature_map(port.inventory())
     steps, owned = [], []
     active_feature = None
+    active_stage = 'feature_execution'
     try:
         for feature in draft['plan']['features']:
             active_feature = {'id': feature['id'], 'kind': feature['kind']}
@@ -133,8 +134,11 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
                           'native_type': native_type, 'revision': current,
                           'verification': verification})
             port.record('feature_verified', {'step': steps[-1]})
+        active_feature = None
+        active_stage = 'save_reopen'
         require_revision(port, current)
         port.save_reopen()
+        active_stage = 'persisted_readback'
         final = port.inventory()
         if feature_map(final) != expected_features:
             raise RuntimeError('saved feature inventory differs')
@@ -147,7 +151,7 @@ def run_transaction(plan, port, *, expected_revision, reviewed_plan_sha256):
         return result
     except BaseException as error:
         result = {'status': 'failed', 'error': type(error).__name__ + ': ' + str(error),
-                  'failed_feature': active_feature, 'traceback': traceback.format_exc(),
+                  'failed_feature': active_feature, 'failed_stage': active_stage, 'traceback': traceback.format_exc(),
                   'steps': steps, 'simulated_only': port.simulated,
                   'delivery_accepted': False, 'manufacturing_approved': False}
         if isinstance(error, UnapprovedNativeType):

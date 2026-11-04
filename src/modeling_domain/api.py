@@ -94,6 +94,9 @@ def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template
                 atomic_json(root / 'analysis.json', baseline_draft, exclusive=True)
                 result = run_transaction(plan, port, expected_revision=revision,
                                          reviewed_plan_sha256=reviewed_plan_sha256)
+                # Persist the geometry/save/reopen outcome before optional view
+                # work, so a camera failure cannot hide successful model readback.
+                atomic_json(root / 'model-transaction-result.json', result, exclusive=True)
                 if result['status'] == 'native_readback_pending_review':
                     result['observation'] = observe(port, expected_revision=result['revision'],
                                                     directory=root / 'observation', camera=camera)
@@ -104,9 +107,23 @@ def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template
                 result['template_sha256'] = expected_template_sha256
                 result['model_sha256'] = digest_file(port.path)
                 result['model_path'] = str(port.path)
+            except BaseException as error:
+                import traceback
+                failure={'error':type(error).__name__+': '+str(error),
+                         'traceback':traceback.format_exc(),
+                         'camera_comparison':getattr(port,'camera_comparison',None),
+                         'manufacturing_approved':False}
+                atomic_json(root / 'native-failure.json',failure,exclusive=True)
+                raise
             finally:
                 if port.host.model is not None:
-                    port.close_for_restore({str(port.path.resolve())})
+                    if sys.exc_info()[0] is not None:
+                        # Preserve the primary error if the quarantined lease
+                        # also refuses cleanup. Never relax its write guard.
+                        try:port.close_for_restore({str(port.path.resolve())})
+                        except Exception as cleanup:
+                            atomic_json(root/'cleanup-failure.json',{'error':str(cleanup)},exclusive=True)
+                    else:port.close_for_restore({str(port.path.resolve())})
         result['session'] = binding.evidence()
         atomic_json(root / 'native-result.json', result, exclusive=True)
         return result

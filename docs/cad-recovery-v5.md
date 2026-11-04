@@ -66,6 +66,14 @@ python work/delivery.py reconcile --key <request_key>
 
 程序自己不杀进程。使用 PID + Windows 创建时间区分原进程和复用 PID；无权限探测、身份未记录、旧进程仍活着、checkpoint 未封存或未恢复基线时均拒绝解除隔离。必须先人工处理具体现场，再重新核对。reconcile 只证明进程已退出和文件基线一致，明确 `native_reopen_verified=false`，不授予工程验收。运行中 PID 仍活着时，本版没有强制接管/解锁按钮。
 
+封存检查点存在、但任务副本仍是失败后的模型时，可使用受控字节恢复：
+
+```powershell
+python work/delivery.py reconcile --key <request_key> --restore-checkpoint-bytes
+```
+
+该入口要求旧控制器和旧CAD身份均已退出，而且没有任何SolidWorks实例运行；验证检查点与原件哈希，将替换前的任务副本保留在独立`pre-recovery-*`目录，再从封存备份原子恢复字节并执行标准对账。目标出现别名、原件变化、文件并发变化或新SolidWorks实例时拒绝恢复，保持隔离。恢复将旧请求记为FAILED/RESOLVED，明确`native_reopen_verified=false`；不执行模型重开、不伪造检查点、不删除原件或旧模型，不授予生产批准。没有封存检查点的旧请求不适用此入口。
+
 ## Gork 统一实机验收
 
 在独立目录 checkout 本 PR 的**代码 pin**；保留原安装、原 CAD、旧候选包。新版候选矩阵增加三项 native 检查：
