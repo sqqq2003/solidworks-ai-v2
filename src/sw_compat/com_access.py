@@ -53,11 +53,11 @@ def com_int(value, default=0):
 
 try:
     import pythoncom
-    DISPATCH_METHOD = pythoncom.DISPATCH_METHOD
-    DISPATCH_PROPERTYGET = pythoncom.DISPATCH_PROPERTYGET
-except ImportError:  # Linux tests have no pywin32; these match pythoncom.
-    DISPATCH_METHOD = 1
-    DISPATCH_PROPERTYGET = 2
+except ImportError:  # Linux tests have no pywin32; values match pythoncom.
+    pythoncom = None
+# Partial test doubles need the same portable constants as a missing pywin32.
+DISPATCH_METHOD = getattr(pythoncom, 'DISPATCH_METHOD', 1)
+DISPATCH_PROPERTYGET = getattr(pythoncom, 'DISPATCH_PROPERTYGET', 2)
 
 # GetIDsOfNames uses this when the name is not on the object.
 _DISP_E_UNKNOWNNAME = -2147352570
