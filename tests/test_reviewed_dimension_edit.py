@@ -62,3 +62,8 @@ class ReviewedLengthEditTests(unittest.TestCase):
         self.dim.status=1
         with self.assertRaises(RuntimeError):self.run_edit()
         self.assertEqual(len(self.dim.calls),1)
+    def test_dimension_editor_is_in_receipt_implementation_fingerprint(self):
+        from modeling_domain.api import implementation_hashes
+        import modeling_domain.dimension_edit as module
+        from cad_checkpoint import digest_file
+        self.assertEqual(implementation_hashes()['modeling_domain/dimension_edit.py'],digest_file(module.__file__))

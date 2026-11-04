@@ -38,7 +38,7 @@ def implementation_hashes():
              'ql5050px/feature_operations.py', 'ql5050px/com_selection.py',
              'a01_next/native_production.py', 'profile_sanitize.py',
              'modeling_domain/contract.py', 'modeling_domain/transaction.py',
-             'modeling_domain/native.py', 'modeling_domain/api.py']
+             'modeling_domain/native.py', 'modeling_domain/dimension_edit.py', 'modeling_domain/api.py']
     return {name: digest_file(root / name) for name in names}
 
 
