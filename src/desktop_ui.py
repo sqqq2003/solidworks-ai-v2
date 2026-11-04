@@ -110,27 +110,32 @@ class Workbench:
         tk,ttk=self.tk,self.ttk
         self.root.configure(bg=WHITE)
         nav=tk.Frame(self.root,bg=NAV,width=218);nav.pack(side='left',fill='y');nav.pack_propagate(False)
-        brand=tk.Frame(nav,bg=NAV);brand.pack(fill='x',padx=20,pady=(24,22))
+        brand=tk.Frame(nav,bg=NAV);brand.pack(fill='x',padx=20,pady=(16,12))
         self.label(brand,'◈',size=21,bg=NAV,bold=True).pack(side='left',padx=(0,9))
         self.label(brand,'SolidWorks AI',size=13,bg=NAV,bold=True).pack(side='left')
-        self.button(nav,'＋  新建设计任务',self.new_task).pack(fill='x',padx=12,pady=(0,20))
-        self.label(nav,'设计工作空间',size=9,bg=NAV,color=MUTED).pack(anchor='w',padx=22,pady=(0,8))
+        self.button(nav,'＋  新建设计任务',self.new_task).pack(fill='x',padx=12,pady=(0,10))
+        self.label(nav,'设计工作空间',size=9,bg=NAV,color=MUTED).pack(anchor='w',padx=22,pady=(0,4))
         for key,(title,_) in MODES.items():
-            if key in {'roller','turned','parametric'}:continue
-            title={'sheet':'图纸转模型','ql5050px':'整机改型'}.get(key,title)
-            button=self.button(nav,title,lambda k=key:self.switch_mode(k))
+            if key in {'roller','turned'}:continue
+            title={'sheet':'图纸转模型','ql5050px':'整机改型','parametric':'参数化建模'}.get(key,title)
+            command=self.open_parametric_modeling if key=='parametric' else lambda k=key:self.switch_mode(k)
+            button=self.button(nav,title,command)
             button.configure(anchor='w',pady=10,padx=16)
             button.pack(fill='x',padx=12,pady=2);self.nav_buttons[key]=button
         self.button(nav,'三视图 / BOM',self.open_drawing).pack(fill='x',padx=12,pady=2)
         self.button(nav,'DXF 图纸概览',self.open_dxf_overview).pack(fill='x',padx=12,pady=2)
         self.button(nav,'钣金批量预检',self.open_sheet_batch_review).pack(fill='x',padx=12,pady=2)
         self.button(nav,'尺寸试改预检',self.native_review).pack(fill='x',padx=12,pady=2)
-        tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=20)
+        tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=8)
         self.button(nav,'任务队列',self.show_queue).pack(fill='x',padx=12,pady=2)
         self.button(nav,'项目交付 / 验收',self.open_delivery).pack(fill='x',padx=12,pady=2)
         self.button(nav,'AI 连接',self.configure_ai).pack(fill='x',padx=12,pady=2)
         self.button(nav,'设置',self.show_environment).pack(fill='x',padx=12,pady=2)
         self.button(nav,'运行记录',self.show_logs).pack(fill='x',padx=12,pady=2)
+        # Keep the added workspace and the log/settings entries reachable on
+        # the supported 1080x740 desktop size.
+        for widget in nav.winfo_children():
+            if isinstance(widget,tk.Button):widget.configure(pady=6)
         self.label(nav,'V2  ·  本地工作副本',size=9,bg=NAV,color=MUTED).pack(side='bottom',anchor='w',padx=22,pady=24)
         shell=tk.Frame(self.root,bg=WHITE);shell.pack(side='left',fill='both',expand=True)
         bar=tk.Frame(shell,bg=WHITE,padx=24,pady=16);bar.pack(fill='x')
@@ -758,6 +763,10 @@ class Workbench:
         win=self.tk.Toplevel(self.root);win.title('尺寸试改预检');win.geometry('960x620')
         panel=RepairPanel(win,ROOT);panel.frame.pack(fill='both',expand=True);self.tool_panels.append(panel)
         win.protocol('WM_DELETE_WINDOW',lambda:win.destroy() if not panel.busy else panel.status.set('请等待当前预检结束。'))
+
+    def open_parametric_modeling(self):
+        from parametric_modeling_ui import open_parametric_modeling
+        return open_parametric_modeling(self.root,self.add_message)
 
     def open_drawing(self):
         from drawing_setup import open_drawing_setup
