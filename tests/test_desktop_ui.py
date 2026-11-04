@@ -166,3 +166,31 @@ class DesktopUITests(unittest.TestCase):
             self.assertTrue(any('无法完整识别轮廓' in label for label in labels))
             button=next(w for w in card.winfo_children() if isinstance(w,tk.Button) and w.cget('text')=='查看这张图的概览')
             button.invoke();overview.assert_called_once_with(source)
+
+    def test_analysis_result_keeps_file_and_offers_next_step_without_generation(self):
+        import tkinter as tk
+        source='reviewed.dxf'
+        self.view.running_jobs=[{'kind':'sheet','source':source}]
+        self.view.messages.put(({'status':'completed','results':[{'status':'analyzed','name':source,
+            'events':[{'event':'analysis','profile_count':2,'bend_line_count':0}]}]},None))
+        self.view.poll();self.root.update()
+        self.assertEqual(self.view.status.get(),'识别完成 · 未生成模型')
+        card=self.view.chat_cards[-1]
+        button=next(w for w in card.winfo_children() if isinstance(w,tk.Button) and w.cget('text')=='填写建模参数')
+        button.invoke();self.root.update()
+        self.assertTrue(self.view.settings_open)
+        self.assertEqual(self.view.values['source'].get(),source)
+        self.assertEqual(self.view.action.get(),'生成计划')
+        self.assertFalse(self.view.confirmed.get())
+        self.assertFalse(self.view.state['busy'])
+        self.assertEqual(self.view.state['jobs'],[])
+
+    def test_missing_parameter_opens_settings_without_queuing(self):
+        self.view.values['source'].set('plate.dxf')
+        with patch('tkinter.messagebox.showerror') as error:
+            self.view.run_current()
+        self.root.update()
+        error.assert_called_once()
+        self.assertTrue(self.view.settings_open)
+        self.assertTrue(self.view.parameter_entries['thickness'].winfo_ismapped())
+        self.assertEqual(self.view.state['jobs'],[])

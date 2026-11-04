@@ -63,7 +63,7 @@ class Workbench:
             'length':'1800','width':'900','height':'1500'}.items()}
         self.confirmed=tk.BooleanVar();self.flip=tk.BooleanVar();self.inferred=tk.BooleanVar();self.preserve_circle_holes=tk.BooleanVar()
         self.native_open=False;self.advanced_open=False;self.detail_open=False
-        self.report_text='';self.inputs=[];self.nav_buttons={};self.row_ids=[]
+        self.report_text='';self.inputs=[];self.nav_buttons={};self.row_ids=[];self.parameter_entries={}
         self.running_rows=[];self.running_jobs=[];self.queue_running=False;self.last_request=None
         self.settings_open=False;self.chat_cards=[];self.tool_panels=[]
         self.ai_session=None;self.ai_busy=False;self.ai_generation=0
@@ -288,6 +288,7 @@ class Workbench:
             row,column=divmod(i,2);parent.columnconfigure(column,weight=1)
             self.label(parent,title,size=9,color=MUTED).grid(row=row*2,column=column,sticky='w',padx=(0,8),pady=(8,5))
             entry=self.ttk.Entry(parent,textvariable=self.values[key],width=10);entry.grid(row=row*2+1,column=column,sticky='ew',padx=(0,8));self.inputs.append((entry,'normal'))
+            self.parameter_entries[key]=entry
 
     def _invalidate(self,*_):
         self.confirmed.set(False)
@@ -384,7 +385,13 @@ class Workbench:
             return True
         except (OSError,ValueError,KeyError) as exc:
             self.journal.exception('job_validation_failed',exc)
+            missing=next((key for key,label in {'thickness':'板厚','radius':'内半径','angle':'折弯角度','k_factor':'K 因子'}.items()
+                          if str(exc)=='请填写本次任务的'+label),None)
+            if missing:
+                if not self.settings_open:self.toggle_settings()
+                self.status.set(str(exc)+' · 已展开任务设置')
             messagebox.showerror('请检查任务信息',str(exc),parent=self.root)
+            if missing:self.parameter_entries[missing].focus_set()
             return False
 
     def run_current(self):
@@ -449,15 +456,23 @@ class Workbench:
                     self.queue_count.set(f'{len(rows)} 项结果')
                 self.state['busy']=False;self.progress.stop();self.progress.place_forget()
                 translated=STATUS_LABELS.get(report.get('status'),report.get('status','待复核'))
-                self.status.set(translated);self.summary.set('处理结束，请查看结果。' if not report.get('error') else '任务未完成，请查看运行详情。')
+                analysis_only=bool(rows) and all(row.get('status')=='analyzed' for row in rows) and not report.get('error')
+                if analysis_only:translated='识别完成 · 未生成模型'
+                self.status.set(translated);self.summary.set('下一步：查看图纸概览，核对轮廓后填写建模参数。' if analysis_only else '处理结束，请查看结果。' if not report.get('error') else '任务未完成，请查看运行详情。')
                 content='\n\n'.join(explain_task_result(row) for row in rows)
                 overview_source=None
                 for job,row in zip(self.running_jobs,rows):
                     source=job.get('source','')
                     if row.get('status')=='failed' and source and Path(source).suffix.casefold()=='.dxf':
                         overview_source=source;break
+                next_task=None
+                if analysis_only and len(rows)==1 and self.running_jobs:
+                    job=self.running_jobs[0];source=job.get('source','');kind=job.get('kind')
+                    if source and kind in {'sheet','roller','turned'}:
+                        next_task=(kind,source)
+                        if Path(source).suffix.casefold()=='.dxf':overview_source=source
                 self.running_jobs=[]
-                self.add_message('执行结果 · '+translated,content or str(report.get('error','请在运行详情中查看完整记录。')),overview_source=overview_source)
+                self.add_message('执行结果 · '+translated,content or str(report.get('error','请在运行详情中查看完整记录。')),overview_source=overview_source,next_task=next_task)
                 if path:self.report_text+='报告位置：'+path+'\n'
                 self._update_log();self._sync_buttons()
         except queue.Empty:pass
@@ -505,7 +520,12 @@ class Workbench:
         if not self.composer.get('1.0','end').strip():
             self.composer.insert('1.0',self.placeholder);self.composer.configure(fg=MUTED);self.placeholder_visible=True
 
-    def add_message(self,title,body,*,request=None,overview_source=None):
+    def prepare_model_settings(self,kind,source):
+        if self.state['busy']:return
+        self.quick_task(kind);self.values['source'].set(source);self.action.set('生成计划')
+        self.status.set('请填写本次建模参数 · 尚未生成模型')
+
+    def add_message(self,title,body,*,request=None,overview_source=None,next_task=None):
         self.welcome.place_forget()
         card=self.tk.Frame(self.conversation,bg=WHITE,pady=16);card.pack(fill='x',anchor='n')
         self.chat_cards.append(card)
@@ -514,6 +534,7 @@ class Workbench:
         self.label(card,body,size=11,justify='left',anchor='w',wraplength=width).pack(anchor='w',fill='x')
         if request is not None:self.button(card,'保存审核请求',lambda:self.save_request(request)).pack(anchor='w',pady=(12,0))
         if overview_source:self.button(card,'查看这张图的概览',lambda:self.open_dxf_overview(overview_source)).pack(anchor='w',pady=(12,0))
+        if next_task:self.button(card,'填写建模参数',lambda:self.prepare_model_settings(*next_task),primary=True).pack(anchor='w',pady=(8,0))
         self.root.update_idletasks();self.feed_canvas.yview_moveto(1)
 
     def send_instruction(self):
