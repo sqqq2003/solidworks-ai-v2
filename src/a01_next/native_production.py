@@ -253,6 +253,12 @@ class A01ProductionDriver(ManufacturingDriver):
                     finally:self.close_document(drawing)
                 evidence.artifact('pdf',pdf)
                 evidence.data['pdf_validation']=item['pdf_validation']
+                if evidence.data['requested'].get('pdf_dimension_correlation_required'):
+                    from ..ql5050px.pdf_dimensions import correlate_pdf_dimensions
+                    binding=correlate_pdf_dimensions(pdf,evidence.data)
+                    evidence.data['pdf_dimension_correlation']=binding
+                    item['pdf_dimension_correlation']=binding
+                    evidence.data.setdefault('manufacturing_review',{})['pdf_dimension_text_correlation']=binding['status']
                 evidence.finish()
             except Exception as error:
                 evidence.fail(error)

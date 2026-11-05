@@ -17,9 +17,17 @@ with `IAnnotation.Visible=3`, never deleted or numerically changed. Conflicting
 values are not hidden. Hidden states and kept values must survive save/reopen;
 the evidence gate also rejects duplicate visible model identities.
 
+Optional `correlate_model_dimensions_pdf: true` requires one-to-one native
+value/XY-to-PDF-word-bounds matching on one unrotated sheet. `pdfplumber` extracts
+real text rectangles; glyph matrices determine horizontal/vertical reading
+order. Missing/ambiguous matches, text collisions, frame escapes and title-block
+intrusions remain `pdf_dimensions_pending`. Independent evidence inspection
+re-extracts the PDF; changed native rows or PDF hashes invalidate the binding.
+
 Native values use metres/radians; view outlines are not part dimensions.
-PDF text-to-dimension association, tolerances, material and title-block fields
-still require engineering review. This pilot grants no manufacturing approval.
+OCR, arbitrary-angle pages/text and complex dimension text need review.
+Tolerances, material and title-block fields still require engineering review.
+This pilot grants no manufacturing approval.
 
 API references: [InsertModelAnnotations3](https://help.solidworks.com/2016/english/api/sldworksapi/SolidWorks.Interop.sldworks~SolidWorks.Interop.sldworks.IDrawingDoc~InsertModelAnnotations3.html),
 [GetOverride](https://help.solidworks.com/2025/English/api/sldworksapi/SOLIDWORKS.Interop.sldworks~SOLIDWORKS.Interop.sldworks.IDisplayDimension~GetOverride.html).

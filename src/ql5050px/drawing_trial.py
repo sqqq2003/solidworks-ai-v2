@@ -149,6 +149,9 @@ def run_trial(request):
     preferences=request.get('dimension_view_preferences',{})
     if type(deduplicate) is not bool or (deduplicate and not import_dimensions):
         raise ValueError('dimension deduplication requires explicit model dimension import')
+    correlate_pdf=request.get('correlate_model_dimensions_pdf',False)
+    if type(correlate_pdf) is not bool or (correlate_pdf and not import_dimensions):
+        raise ValueError('PDF dimension correlation requires explicit model dimension import')
     if not isinstance(preferences,dict) or any(key not in request.get('required_model_dimensions',[]) or value not in {'front','top','right'} for key,value in preferences.items()):
         raise ValueError('view preferences must refer to required model dimensions and named standard views')
     originals={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in models.rglob('*') if p.is_file() and not p.name.startswith('~$')}
@@ -201,7 +204,8 @@ def run_trial(request):
                     tag=case['sheet']+'-1-'+str(case['denominator']);cell={'tag':tag,'status':'running'};report['cells'].append(cell);checkpoint()
                     task=trial_task(case,request['templates'][case['sheet']],config,request['bom_template'],model_kind=model_kind)
                     if import_dimensions:task.update(import_model_dimensions=True,required_model_dimensions=request['required_model_dimensions'],
-                        deduplicate_model_dimensions=deduplicate,dimension_view_preferences=preferences)
+                        deduplicate_model_dimensions=deduplicate,dimension_view_preferences=preferences,
+                        correlate_model_dimensions_pdf=correlate_pdf)
                     try:
                         cell['drawing']=driver.export_manufacturing({'status':'ready_for_native','tasks':[task]},{'documents':{'machine':{'path':str(assembly),'configuration':config}}},root/tag)
                         cell['status']='pass_pending_visual'
@@ -210,7 +214,9 @@ def run_trial(request):
                             evidence=DrawingEvidence.load(cell['drawing']['results'][0]['drawing_evidence'])
                             cell['model_dimension_import']=evidence.data.get('model_dimension_import')
                             cell['dimension_deduplication']=evidence.data.get('dimension_deduplication')
-                            if not evidence.data['complete']:cell['status']='dimensions_pending'
+                            cell['pdf_dimension_correlation']=evidence.data.get('pdf_dimension_correlation')
+                            if not evidence.data['complete']:
+                                cell['status']='pdf_dimensions_pending' if correlate_pdf and evidence.data.get('pdf_dimension_correlation',{}).get('status')!='verified' else 'dimensions_pending'
                         cell.update(acceptance_state='reviewing',delivery_accepted=False)
                     except (ValueError,RuntimeError) as error:
                         message=str(error);cell.update(error=message,status='failed')
@@ -225,7 +231,7 @@ def run_trial(request):
                         cell['diagnostic']=driver.save_reopen(doc,root/(tag+'-BLOCKED-DIAGNOSTIC.SLDDRW'),'')
                     checkpoint()
                 report['case_summary']={state:sum(cell['status']==state for cell in report['cells'])
-                    for state in ('pass_pending_visual','expected_layout_block','dimensions_pending','failed')}
+                    for state in ('pass_pending_visual','expected_layout_block','dimensions_pending','pdf_dimensions_pending','failed')}
                 report['status']='completed_partial_model_trial'
         finally:
             if binding:report['session']=binding.evidence()

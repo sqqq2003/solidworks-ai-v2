@@ -39,6 +39,11 @@ class VisualReviewTests(unittest.TestCase):
         e.finish()
         self.assertFalse(e.data['complete'])
         self.assertIn('model_dimensions_unverified',inspect_drawing(e.path)['issues'])
+    def test_pdf_binding_gate_rejects_missing_correspondence(self):
+        self.task['correlate_model_dimensions_pdf']=True
+        e=self.evidence();e.finish()
+        self.assertFalse(e.data['complete'])
+        self.assertIn('pdf_model_dimension_binding_unverified',inspect_drawing(e.path)['issues'])
 
     def test_save_reopen_only_enters_reviewing_until_named_visual_acceptance(self):
         e=self.evidence();report=e.finish()

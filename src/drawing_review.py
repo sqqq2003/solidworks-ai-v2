@@ -24,7 +24,7 @@ def drawing_implementation_hashes():
     return {name:digest_file(root/name) for name in
         ('drawing_review.py','drawing_checkpoint.py','drawing_run.py','cad_run.py',
          'ql5050px/native_drawings.py','ql5050px/drawing_verification.py',
-         'ql5050px/drawing_trial.py','ql5050px/auto_layout.py','ql5050px/model_dimensions.py','part_verification.py',
+         'ql5050px/drawing_trial.py','ql5050px/auto_layout.py','ql5050px/model_dimensions.py','ql5050px/pdf_dimensions.py','part_verification.py',
          'a01_next/native_production.py','sw_compat/com_access.py','sw_compat/annotation.py')}
 
 
@@ -70,12 +70,16 @@ class DrawingEvidence:
                                    'annotation_count': sum(len(task.get(k, [])) for k in ('dimensions', 'annotations', 'balloons'))+
                                    int(bool(task.get('drawing_model',{}).get('bom'))),
                                    'model_dimensions_required':bool(task.get('import_model_dimensions')),
-                                   'deduplicate_model_dimensions':bool(task.get('deduplicate_model_dimensions'))},
+                                   'deduplicate_model_dimensions':bool(task.get('deduplicate_model_dimensions')),
+                                   'pdf_dimension_correlation_required':bool(task.get('correlate_model_dimensions_pdf'))},
                      'views': [], 'annotations': [], 'layout_readback': None,
                      'annotation_reopen_verified': False,
                      'member_not_found': False, 'member_not_found_events': [],
                      'delivery_accepted': False, 'manufacturing_approved': False}
         self.data['implementation_sha256']=drawing_implementation_hashes()
+        if task.get('correlate_model_dimensions_pdf'):
+            self.data['pdf_dimension_options']={'decimal_places':task.get('decimal_places',3),
+                **({'reserved_rectangles_mm':task['reserved_rectangles_mm']} if 'reserved_rectangles_mm' in task else {})}
         if model_path and Path(model_path).is_file():
             self.data['source'] = {'path': str(Path(model_path).resolve()), 'sha256': digest_file(model_path)}
         self.flush(exclusive=True)
@@ -119,6 +123,9 @@ class DrawingEvidence:
         if d['requested'].get('model_dimensions_required'):
             from ql5050px.model_dimensions import dimension_import_verified
             d['complete']=d['complete'] and dimension_import_verified(d)
+        if d['requested'].get('pdf_dimension_correlation_required'):
+            from ql5050px.pdf_dimensions import pdf_dimension_correlation_verified
+            d['complete']=d['complete'] and pdf_dimension_correlation_verified(d)
         d['technical_status'] = 'saved_reopened' if d['complete'] else 'incomplete_evidence'
         d['state'] = 'reviewing' if d['complete'] else 'generating'
         d['delivery_accepted'] = False
@@ -153,6 +160,9 @@ def _verified_evidence(path):
     if requested.get('model_dimensions_required'):
         from ql5050px.model_dimensions import dimension_import_verified
         if not dimension_import_verified(data):issues.append('model_dimensions_unverified')
+    if requested.get('pdf_dimension_correlation_required'):
+        from ql5050px.pdf_dimensions import pdf_dimension_correlation_verified
+        if not pdf_dimension_correlation_verified(data,reextract=True):issues.append('pdf_model_dimension_binding_unverified')
     for row in [data.get('source', {}), *artifacts.values()]:
         try:
             if not row or digest_file(row['path']) != row['sha256']: issues.append('source_or_artifact_changed')
