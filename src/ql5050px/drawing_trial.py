@@ -63,6 +63,21 @@ class TrialDriver(A01ProductionDriver):
         return model
 
 
+def trial_task(case,template,configuration,bom_template,*,model_kind):
+    """Part views never claim an assembly BOM; both routes require PDF proof."""
+    if model_kind not in (1,2):raise ValueError('trial requires a part or assembly model')
+    w,h={'A2':(594,420),'A3':(420,297)}[case['sheet']]
+    tag=case['sheet']+'-1-'+str(case['denominator'])
+    return dict(id=tag,node='machine',filename=tag+'-TRIAL.SLDDRW',template=template,
+        width_mm=w,height_mm=h,scale=[1,case['denominator']],projection='first_angle',
+        configuration=configuration,auto_layout=True,dimensions=[],
+        annotations=[{'text':'TEST ONLY - NOT FOR PRODUCTION','position_mm':[30,h-40]}],
+        balloons=[],exports=['SLDDRW','PDF'],bom_type='top_level',bom_template=bom_template,
+        drawing_model={'views':[dict(id=k,kind='model',orientation=o,position_mm=[100,100])
+            for k,o in [('front','*Front'),('top','*Top'),('right','*Right')]],
+            'bom':[{'scope':'available_top_level_only'}] if model_kind==2 else []})
+
+
 def run_trial(request):
     if request.get('explicit_partial_model_test') is not True:raise ValueError('explicit trial-mode confirmation required')
     from sw_session import run_on_task_sta,current_lease
@@ -93,10 +108,11 @@ def run_trial(request):
                 driver=TrialDriver(current_lease(),root,models,report)
                 source=driver.open_document(assembly,readonly=True)
                 config=str(source.ConfigurationManager.ActiveConfiguration.Name)
+                model_kind=int(read_member(source,'GetType'))
+                report['source_model_kind']='part' if model_kind==1 else 'assembly' if model_kind==2 else 'unsupported'
                 for case in request['cases']:
                     tag=case['sheet']+'-1-'+str(case['denominator']);cell={'tag':tag,'status':'running'};report['cells'].append(cell);checkpoint()
-                    w,h={'A2':(594,420),'A3':(420,297)}[case['sheet']]
-                    task=dict(id=tag,node='machine',filename=tag+'-TRIAL.SLDDRW',template=request['templates'][case['sheet']],width_mm=w,height_mm=h,scale=[1,case['denominator']],projection='first_angle',configuration=config,auto_layout=True,dimensions=[],annotations=[{'text':'TEST ONLY - INCOMPLETE MODEL - NOT FOR PRODUCTION','position_mm':[30,h-40]}],balloons=[],exports=['SLDDRW'],bom_type='top_level',bom_template=request['bom_template'],drawing_model={'views':[dict(id=k,kind='model',orientation=o,position_mm=[100,100]) for k,o in [('front','*Front'),('top','*Top'),('right','*Right')]],'bom':[{'scope':'available_top_level_only'}]})
+                    task=trial_task(case,request['templates'][case['sheet']],config,request['bom_template'],model_kind=model_kind)
                     try:
                         cell['drawing']=driver.export_manufacturing({'status':'ready_for_native','tasks':[task]},{'documents':{'machine':{'path':str(assembly),'configuration':config}}},root/tag)
                         cell['status']='pass_pending_visual'

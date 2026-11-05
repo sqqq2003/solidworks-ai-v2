@@ -24,12 +24,30 @@ class DesktopUITests(unittest.TestCase):
         self.assertFalse(self.view.native.winfo_ismapped())
 
     def test_instruction_creates_review_only(self):
+        self.view.quick_task('sheet');self.view.values['source'].set('pending-plate.dxf')
         self.view._composer_focus();self.view.composer.insert('1.0','把这个滚筒总长度改成800 mm，轴径不变，两端安装结构不变。')
         self.view.send_instruction();self.root.update()
         self.assertEqual(self.view.last_request['parsed']['target_overall_mm'],800)
         self.assertFalse(self.view.last_request['native_write_allowed'])
         self.assertEqual(self.view.state['jobs'],[])
         self.assertEqual(len(self.view.chat_cards),2)
+        self.assertFalse(self.view.settings_open)
+        self.assertEqual(self.view.values['source'].get(),'pending-plate.dxf')
+        self.assertEqual(self.view.values['kind'].get(),'sheet')
+
+    def test_roller_model_handoff_preserves_intent_without_native_write(self):
+        from design_instruction import instruction_request
+        from cad_checkpoint import digest_file
+        request=instruction_request({'text':'滚筒总长度改成800 mm，轴径不变'})
+        with tempfile.TemporaryDirectory() as folder:
+            model=Path(folder)/'roller.SLDPRT';model.write_bytes(b'fixture only')
+            with patch('tkinter.filedialog.askopenfilename',return_value=str(model)),patch.object(self.view,'save_request') as save:
+                self.view.select_roller_model(request)
+            bound=save.call_args.args[0]
+            self.assertEqual(bound['parsed']['target_overall_mm'],800)
+            self.assertEqual(bound['source_model']['sha256'],digest_file(model))
+            self.assertFalse(bound['native_write_allowed']);self.assertFalse(bound['cad_executed'])
+            self.assertNotIn('source_model',request);self.assertEqual(self.view.state['jobs'],[])
 
     def test_input_changes_clear_confirmation(self):
         self.view.confirmed.set(True);self.view.values['source'].set('changed.json')

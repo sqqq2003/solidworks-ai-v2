@@ -537,7 +537,10 @@ class Workbench:
         self.label(card,title,size=10,bold=True).pack(anchor='w',pady=(0,10))
         width=max(340,self.feed_canvas.winfo_width()-130)
         self.label(card,body,size=11,justify='left',anchor='w',wraplength=width).pack(anchor='w',fill='x')
-        if request is not None:self.button(card,'保存审核请求',lambda:self.save_request(request)).pack(anchor='w',pady=(12,0))
+        if request is not None:
+            if request.get('parsed',{}).get('part_kind')=='roller':
+                self.button(card,'选择滚筒模型',lambda:self.select_roller_model(request),primary=True).pack(anchor='w',pady=(12,0))
+            self.button(card,'保存审核请求',lambda:self.save_request(request)).pack(anchor='w',pady=(8,0))
         if overview_source:self.button(card,'查看这张图的概览',lambda:self.open_dxf_overview(overview_source)).pack(anchor='w',pady=(12,0))
         if next_task:self.button(card,'填写建模参数',lambda:self.prepare_model_settings(*next_task),primary=True).pack(anchor='w',pady=(8,0))
         self.root.update_idletasks();self.feed_canvas.yview_moveto(1)
@@ -560,10 +563,13 @@ class Workbench:
         if parsed['part_kind']!='roller' or parsed['target_overall_mm'] is None:
             summary='当前快捷指令支持滚筒总长改型，请写明总长（mm）和需要保持不变的接口。其他任务可在任务设置中选择配置文件。'
         else:
+            # Keep the pending DXF task intact; its sheet controls do not
+            # belong to this separate existing-model review request.
+            if self.settings_open:self.toggle_settings()
             names={'shaft_diameter':'轴径','shaft_end_installation_interfaces':'两端安装结构'}
             protected='、'.join(names[k] for k in parsed['protected_requirements'])
             summary=f'目标总长：{parsed["target_overall_mm"]:g} mm\n'+('保持不变：'+protected+'\n' if protected else '待补充：需要保持不变的接口。\n')
-            summary+='下一步：在真实模型上确认尺寸绑定与修改范围。\n尚未执行模型修改。'
+            summary+='下一步：点击“选择滚筒模型”，将来源模型与本次改型要求一起保存，供尺寸绑定核对。\n原图任务已保留；尚未执行模型修改。'
         self.add_message('方案待审核',summary,request=request)
         self.composer.delete('1.0','end');self._composer_blur();self.status.set('审核请求已生成 · 未执行模型修改')
         return 'break'
@@ -662,6 +668,24 @@ class Workbench:
                 self._sync_buttons()
         except queue.Empty:pass
 
+
+    def select_roller_model(self,request):
+        from tkinter import filedialog,messagebox
+        from copy import deepcopy
+        from cad_checkpoint import digest_file
+        path=filedialog.askopenfilename(parent=self.root,title='选择滚筒来源模型（只读）',
+            filetypes=[('SolidWorks 模型','*.sldprt *.sldasm')])
+        if not path:return
+        try:
+            model=Path(path).resolve(strict=True)
+            if not model.is_file() or model.suffix.lower() not in {'.sldprt','.sldasm'}:
+                raise ValueError('请选择真实的 SolidWorks 零件或装配模型。')
+            bound=deepcopy(request)
+            bound.update(source_model={'path':str(model),'sha256':digest_file(model)},
+                status='pending_native_dimension_mapping',native_write_allowed=False,cad_executed=False)
+            self.save_request(bound)
+        except (OSError,ValueError) as error:
+            messagebox.showerror('未绑定滚筒模型',str(error),parent=self.root)
 
     def save_request(self,request):
         from tkinter import filedialog,messagebox
@@ -770,7 +794,8 @@ class Workbench:
 
     def open_drawing(self):
         from drawing_setup import open_drawing_setup
-        open_drawing_setup(self.root,ROOT,self.add_message)
+        open_drawing_setup(self.root,ROOT,self.add_message,context={
+            'assembly':self.values['source'].get(),'sw_exe':self.values['sw_exe'].get()})
 
     def open_sheet_batch_review(self):
         if self.state['busy']:return
