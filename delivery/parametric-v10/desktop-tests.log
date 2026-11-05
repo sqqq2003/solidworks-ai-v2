@@ -1,0 +1,10 @@
+test_feature_preview_requires_named_confirmation_and_never_runs_cad_on_linux (test_function_modeling_ui.FunctionDesktopTests.test_feature_preview_requires_named_confirmation_and_never_runs_cad_on_linux) ... ok
+test_formula_values_visible_and_edit_invalidates_review (test_function_modeling_ui.FunctionDesktopTests.test_formula_values_visible_and_edit_invalidates_review) ... ok
+test_native_actions_remain_visible_at_minimum_window_size (test_function_modeling_ui.FunctionDesktopTests.test_native_actions_remain_visible_at_minimum_window_size) ... ok
+test_worker_posts_result_on_tk_thread_and_preserves_stale_output_notice (test_function_modeling_ui.FunctionDesktopTests.test_worker_posts_result_on_tk_thread_and_preserves_stale_output_notice) ... ok
+test_visible_entry_calculates_and_input_edit_invalidates_export (test_parametric_workspace.ParametricDesktopTests.test_visible_entry_calculates_and_input_edit_invalidates_export) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.792s
+
+OK

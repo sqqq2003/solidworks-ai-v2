@@ -1,0 +1,66 @@
+{
+  "source_revision": "6882a05e390327b1f44b0c18dd963c1a8747c0a0",
+  "candidate": {
+    "schema_version": 1,
+    "source_revision": "6882a05e390327b1f44b0c18dd963c1a8747c0a0",
+    "package_sha256": "856b0528ec332afd299b49523e61e12b16164d2e6c10d0e32ab456311470b387",
+    "file_count": 599,
+    "source_manifest_sha256": "fd5a60b2f845914ac5e59eeaa30ed5231bcd7ef867f36e22b49d7c2932df4957",
+    "matrix_sha256": "f390f52afca8fdf438ffea2b11e35125108436bca2acf49d3163471b804f64ba",
+    "native_acceptance": "not_run",
+    "manufacturing_approved": false,
+    "runtime_bundled": false,
+    "source_only": true,
+    "candidate_id": "deccade1db6567b88388b5e2f574da61524db3c05b3fc267c5ea3608f7c177e4"
+  },
+  "kit_bytes": 1450245,
+  "kit_sha256": "d557cb5fb50dd28d2f32b21e8f75e6db9495e2b54d698ffc15dcbf94c29b28b5",
+  "kit_git_blob_sha": "8e7a26f96c498433ef38041ed992c55e82ccf23b",
+  "inspection": {
+    "schema_version": 1,
+    "status": "passed",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "d557cb5fb50dd28d2f32b21e8f75e6db9495e2b54d698ffc15dcbf94c29b28b5",
+    "source_revision": "6882a05e390327b1f44b0c18dd963c1a8747c0a0",
+    "candidate_id": "deccade1db6567b88388b5e2f574da61524db3c05b3fc267c5ea3608f7c177e4",
+    "source_files": 599,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false
+  },
+  "installation": {
+    "schema_version": 1,
+    "status": "review_required",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "d557cb5fb50dd28d2f32b21e8f75e6db9495e2b54d698ffc15dcbf94c29b28b5",
+    "source_revision": "6882a05e390327b1f44b0c18dd963c1a8747c0a0",
+    "candidate_id": "deccade1db6567b88388b5e2f574da61524db3c05b3fc267c5ea3608f7c177e4",
+    "source_files": 599,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false,
+    "phase": "source_installed_runtime_required",
+    "directory": "/workspace/parametric-v10-delivery-installed",
+    "app_directory": "/workspace/parametric-v10-delivery-installed/app",
+    "files_written": 601,
+    "next_steps": [
+      "Create a new Python environment and install app/requirements-cloud.txt.",
+      "Run python work/verify_test_handoff.py . inside app.",
+      "Run python app.py; native work still requires explicit Windows review."
+    ],
+    "original_installation_modified": false,
+    "code_executed": false
+  },
+  "verification": {
+    "status": "passed",
+    "issues": [],
+    "source_revision": "6882a05e390327b1f44b0c18dd963c1a8747c0a0",
+    "scope": "candidate_file_integrity_only",
+    "manufacturing_approved": false
+  },
+  "installed_source_executed": false,
+  "native_tested": false,
+  "manufacturing_approved": false
+}

@@ -1,0 +1,34 @@
+{
+  "source_revision": "6882a05e390327b1f44b0c18dd963c1a8747c0a0",
+  "code_tree": "693715eb16489f978528acf31f7d72cb6dfb5af5",
+  "targeted": {
+    "run": 160,
+    "passed": 160,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "python": "3.12.14",
+    "scope": "arithmetic, fake COM, actual temporary files/SQLite, related transaction and evidence contracts",
+    "command": "XDG_CACHE_HOME=/workspace/cache PYTHONPATH=src:tests:. python -m unittest test_function_modeling test_function_native test_parametric_workspace.ParameterWorkspaceTests test_reviewed_dimension_edit test_roller_frame_preview test_modeling_domain test_modeling_native_contract test_drawing_pipeline_contract test_cad_receipts test_cad_checkpoint test_release_candidate test_release_evidence test_sw2022_feature_interfaces test_callout_and_attach_acceptance -v"
+  },
+  "desktop": {
+    "run": 5,
+    "passed": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "python": "3.13.5",
+    "tk": "8.6",
+    "scope": "actual Tk virtual display; formula values, review gates, minimum window, worker queue, legacy navigation; no native CAD",
+    "command": "DISPLAY=:102 PYTHONPATH=/workspace/ui-tools/python313:src:tests:. /usr/bin/python3 -m unittest test_function_modeling_ui test_parametric_workspace.ParametricDesktopTests -v",
+    "ui_source_blob": "ce77f54d52745c5a650d7e3b83c5e580ba9ff678",
+    "snapshot": "ui-preview.png",
+    "snapshot_sha256": "3ab885660d3faa8c2c5297c4eb724926f1737b35e09462b6f8d3d44c7e247291"
+  },
+  "source_blobs_changed_verified": 26,
+  "base_blobs_unchanged": 747,
+  "full_regression": false,
+  "windows_native_tested": false,
+  "installed_source_executed": false,
+  "manufacturing_approved": false
+}
