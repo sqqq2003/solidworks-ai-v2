@@ -1,7 +1,10 @@
 import tempfile
 import unittest
+import os
+from types import SimpleNamespace
+from unittest.mock import patch
 from pathlib import Path
-from drawing_setup import drawing_defaults
+from drawing_setup import drawing_defaults,detect_drawing_resources
 
 
 class DrawingDefaultsTests(unittest.TestCase):
@@ -29,3 +32,20 @@ class DrawingDefaultsTests(unittest.TestCase):
     def test_malformed_stored_values_are_ignored(self):
         result=drawing_defaults(dict(assembly=['invalid'],sw_exe=7,models=None,output_parent={}))
         self.assertEqual(result['assembly'],'');self.assertEqual(result['sw_exe'],'')
+    def test_part_context_can_be_used_for_single_part_drawing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            part=Path(folder)/'tube.SLDPRT';part.touch()
+            result=drawing_defaults({},dict(assembly=str(part)),output_parent=folder)
+            self.assertEqual(result['assembly'],str(part.resolve()))
+    def test_template_choice_matches_requested_sheet_and_installed_version(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);exe=root/'app/SLDWORKS.exe';exe.parent.mkdir();exe.touch()
+            bom=exe.parent/'lang/english/bom-standard.sldbomtbt';bom.parent.mkdir(parents=True);bom.touch()
+            frames=root/'data/SOLIDWORKS/SOLIDWORKS 2025/templates';frames.mkdir(parents=True)
+            for name in ('gb_a2.drwdot','gb_a3.drwdot'):(frames/name).touch()
+            api=SimpleNamespace(GetFileVersionInfo=lambda *args:{'FileVersionMS':33<<16})
+            with patch.dict(os.environ,PROGRAMDATA=str(root/'data')),patch.dict('sys.modules',win32api=api):
+                templates,_=detect_drawing_resources(exe,sheets=('A3',))
+                self.assertEqual(templates,{'A3':str(frames/'gb_a3.drwdot')})
+                (frames/'gb_a3.drwdot').unlink()
+                with self.assertRaises(ValueError):detect_drawing_resources(exe,sheets=('A3',))

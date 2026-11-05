@@ -79,14 +79,20 @@ def _clean(boxes, width, height):
     return not any(rectangles_overlap(boxes[a], boxes[b]) for i,a in enumerate(names) for b in names[i+1:])
 
 
-def first_angle_layout(width, height, sizes, gap=10):
+def first_angle_layout(width, height, sizes, gap=10, *, centered=False):
     if set(sizes)!={'front','top','right'}:raise ValueError('three standard views required')
     if any(len(v)!=2 or any(not math.isfinite(n) or n<=0 for n in v) for v in sizes.values()):
         raise ValueError('positive finite view sizes required')
     _,group_w,group_h=_arranged(sizes, gap, 0, 0)
     # (30, 15) is the historical bottom-left slot. The later slots clear the
     # GB title block or sit in the rest of the frame. The first clean slot wins.
-    origins=[(30, 15), (30, 60+gap), (25, 10), (25, 60+gap)]
+    origins=[]
+    if centered:
+        # Center the complete aligned group in the usable drawing body,
+        # keeping the requested scale and first-angle relationships intact.
+        origins.extend([((25+width-10-group_w)/2,(60+gap+height-10-group_h)/2),
+                        ((25+width-10-group_w)/2,(10+height-10-group_h)/2)])
+    origins.extend([(30, 15), (30, 60+gap), (25, 10), (25, 60+gap)])
     title_left=width-180
     if group_w+gap<=title_left-25:
         origins.append((25, 10))

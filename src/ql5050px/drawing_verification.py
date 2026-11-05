@@ -225,9 +225,10 @@ def _settle_auto_layout(drawing, task, views):
     from .auto_layout import first_angle_layout
     frame,reserved=_sheet_frame(drawing, task)
     previous=None
+    center_requested=bool(task.get('center_views'))
     for _ in range(12):
         measured=_measure_views(views)
-        if previous is not None and not _centers_moved(previous, measured):
+        if previous is not None and not _centers_moved(previous, measured) and not _boxes_pass(measured,frame,reserved):
             caught=measured
             for _catch in range(3):
                 if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
@@ -236,7 +237,7 @@ def _settle_auto_layout(drawing, task, views):
                     measured=caught
                     break
             else:_refuse_measured(caught, task=task)
-        if _boxes_pass(measured, frame, reserved):
+        if _boxes_pass(measured, frame, reserved) and not center_requested:
             if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
             confirmed=_measure_views(views)
             if _boxes_pass(confirmed, frame, reserved):
@@ -244,11 +245,13 @@ def _settle_auto_layout(drawing, task, views):
                 return
             measured=confirmed
         try:
-            centers=first_angle_layout(task['width_mm'], task['height_mm'], {name:item['size'] for name,item in measured.items()})
+            centers=first_angle_layout(task['width_mm'], task['height_mm'], {name:item['size'] for name,item in measured.items()},
+                                       centered=bool(task.get('center_views')))
         except ValueError as error:
             _refuse_measured(measured, error, task)
         previous=measured
         _apply_outline_centers(task, views, centers, measured)
+        center_requested=False
         if not read_member(drawing,'EditRebuild3'):raise RuntimeError('drawing layout rebuild failed')
     _refuse_measured(_measure_views(views), task=task)
 

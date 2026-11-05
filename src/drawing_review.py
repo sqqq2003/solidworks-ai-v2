@@ -24,6 +24,7 @@ def drawing_implementation_hashes():
     return {name:digest_file(root/name) for name in
         ('drawing_review.py','drawing_checkpoint.py','drawing_run.py','cad_run.py',
          'ql5050px/native_drawings.py','ql5050px/drawing_verification.py',
+         'ql5050px/drawing_trial.py','ql5050px/auto_layout.py','part_verification.py',
          'a01_next/native_production.py','sw_compat/com_access.py','sw_compat/annotation.py')}
 
 

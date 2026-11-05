@@ -86,12 +86,13 @@ def main():
     ttk.Label(body,text='一键生成三视图、关联 BOM 与 PDF',font=('Microsoft YaHei UI',16)).pack(anchor='w')
     ttk.Label(body,text='测试模式：保留缺件说明；结果不用于生产。已有 SolidWorks 实例不自动关闭。').pack(anchor='w',pady=10)
     source=tk.StringVar(value=request['assembly']);output=tk.StringVar(value=request['output'])
-    sheet=tk.StringVar(value='A2');scale=tk.StringVar(value='1:10');confirm=tk.BooleanVar(value=False)
-    for label,var in [('隔离总装副本',source),('新输出目录',output)]:
+    initial=(request.get('cases') or [{'sheet':'A2','denominator':10}])[0]
+    sheet=tk.StringVar(value=initial['sheet']);scale=tk.StringVar(value='1:'+str(initial['denominator']));confirm=tk.BooleanVar(value=False)
+    for label,var in [('隔离零件或总装副本',source),('新输出目录',output)]:
         ttk.Label(body,text=label).pack(anchor='w');ttk.Entry(body,textvariable=var).pack(fill='x',pady=4)
     row=ttk.Frame(body);row.pack(fill='x',pady=8)
     ttk.Combobox(row,textvariable=sheet,values=['A2','A3'],state='readonly',width=12).pack(side='left')
-    ttk.Combobox(row,textvariable=scale,values=['1:5','1:10','1:20'],state='readonly',width=12).pack(side='left',padx=10)
+    ttk.Combobox(row,textvariable=scale,values=['1:2','1:5','1:10','1:20'],state='readonly',width=12).pack(side='left',padx=10)
     ttk.Checkbutton(body,text='我确认这是缺件测试副本，允许生成测试图纸',variable=confirm).pack(anchor='w',pady=8)
     status=tk.StringVar(value='待确认');ttk.Label(body,textvariable=status,wraplength=840).pack(anchor='w',pady=10)
     messages=queue.Queue();state={'busy':False,'process':None,'poll_after':None,'result_dir':None}
@@ -106,8 +107,12 @@ def main():
         if not confirm.get():status.set('请先勾选缺件测试确认。');return
         target=Path(output.get()).resolve()
         if target.exists():status.set('输出目录已存在，请选择新目录；不会覆盖旧成果。');return
+        try:
+            from drawing_setup import detect_drawing_resources
+            templates,bom=detect_drawing_resources(request.get('sw_exe',''),sheets=(sheet.get(),))
+        except (OSError,ValueError) as error:status.set(str(error));return
         updated=dict(request,assembly=source.get(),output=str(target),idempotency_key='drawing-ui-'+target.name,
-                     explicit_partial_model_test=True,cases=[{'sheet':sheet.get(),'denominator':int(scale.get().split(':')[1])}])
+                     explicit_partial_model_test=True,templates=templates,bom_template=bom,cases=[{'sheet':sheet.get(),'denominator':int(scale.get().split(':')[1])}])
         journal.record('drawing_started',assembly=source.get(),output=str(target),sheet=sheet.get(),scale=scale.get())
         request_path=args.request.parent/(target.name+'-request.json')
         request_path.write_text(json.dumps(updated,ensure_ascii=False,indent=2),encoding='utf-8')
