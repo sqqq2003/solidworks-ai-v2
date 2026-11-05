@@ -43,6 +43,26 @@ def _drawing_visual_hold(row,evidence_root):
     return None
 
 
+def _controlled_session(row):
+    session=row.get('session',{})
+    if session.get('ownership')=='spawned_pid_and_live_handle' and session.get('attached_existing') is False:
+        return True
+    # Only the new parameter workflow has the two-empty-snapshot/no-adoption
+    # contract. Legacy attached sessions retain their independent review hold.
+    if row.get('id') not in {'parametric_generated_feature_part','parametric_existing_part_batch',
+                            'parametric_review_and_request_replay','parametric_saved_batch_rollback'}:
+        return False
+    return (session.get('ownership')=='attached_pid_and_query_handle' and
+            session.get('connection_policy')=='verified_idle_existing_pid_no_document_adoption' and
+            session.get('attached_existing') is True and type(session.get('pid')) is int and session['pid']>0 and
+            session.get('initial_empty_verified') is True and session.get('initial_empty_snapshots')==2 and
+            session.get('close_doc_only') is True and session.get('exit_app') is False and
+            session.get('process_killed') is False and session.get('foreign_documents_closed') is False and
+            session.get('closed_before_write')==[] and session.get('closed_during_write')==[] and
+            session.get('cleanup_status') in {'left_open_keepalive','process_exited_cleanly'} and
+            not session.get('cleanup_error') and not session.get('cleanup_disconnect'))
+
+
 def audit_submission(matrix, submission, evidence_root):
     validate_matrix(matrix)
     normalized = deepcopy(submission)
@@ -56,7 +76,7 @@ def audit_submission(matrix, submission, evidence_root):
                 hold=_drawing_visual_hold(row,evidence_root)
                 if hold:reasons.append(hold)
             if row.get('simulated_only') is not False: reasons.append('native_execution_not_declared')
-            if row.get('session', {}).get('ownership') != 'spawned_pid_and_live_handle' or row.get('session', {}).get('attached_existing') is not False:
+            if not _controlled_session(row):
                 reasons.append('owned_session_evidence_missing')
             if reasons:
                 holds.setdefault(key, []).extend(reasons)

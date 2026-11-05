@@ -1,0 +1,151 @@
+{
+  "kind": "parametric_functions",
+  "schema_version": 1,
+  "machine_id": "function_block_demo",
+  "source": "operator-reviewed mathematical block example; not OEM dimensions",
+  "inputs": {
+    "length": {
+      "unit": "mm",
+      "value": 40,
+      "range": [
+        0.1,
+        2000
+      ]
+    },
+    "width": {
+      "unit": "mm",
+      "value": 30,
+      "range": [
+        0.1,
+        2000
+      ]
+    },
+    "height": {
+      "unit": "mm",
+      "value": 10,
+      "range": [
+        0.1,
+        2000
+      ]
+    }
+  },
+  "parameters": {
+    "volume": {
+      "unit": "mm3",
+      "expression": "length * width * height"
+    },
+    "volume_min": {
+      "unit": "mm3",
+      "expression": "volume * 0.9999"
+    },
+    "volume_max": {
+      "unit": "mm3",
+      "expression": "volume * 1.0001"
+    }
+  },
+  "constraints": [
+    {
+      "expression": "length > height",
+      "message": "示例要求长度大于高度"
+    }
+  ],
+  "feature_template": {
+    "domain": "modeling",
+    "contract_version": 1,
+    "features": [
+      {
+        "id": "AI_Profile",
+        "kind": "sketch",
+        "unit": "mm",
+        "confirmed": true,
+        "evidence": [
+          "operator-reviewed synthetic example dimensions"
+        ],
+        "depends_on": [],
+        "parameters": {
+          "plane": "Front Plane",
+          "entities": [
+            {
+              "type": "line",
+              "start": [
+                0,
+                0
+              ],
+              "end": [
+                "${length}",
+                0
+              ]
+            },
+            {
+              "type": "line",
+              "start": [
+                "${length}",
+                0
+              ],
+              "end": [
+                "${length}",
+                "${width}"
+              ]
+            },
+            {
+              "type": "line",
+              "start": [
+                "${length}",
+                "${width}"
+              ],
+              "end": [
+                0,
+                "${width}"
+              ]
+            },
+            {
+              "type": "line",
+              "start": [
+                0,
+                "${width}"
+              ],
+              "end": [
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "AI_Boss",
+        "kind": "extrude",
+        "unit": "mm",
+        "confirmed": true,
+        "evidence": [
+          "operator-reviewed synthetic example dimensions"
+        ],
+        "depends_on": [
+          "AI_Profile"
+        ],
+        "parameters": {
+          "sketch": "AI_Profile",
+          "depth_mm": "${height}",
+          "merge": false
+        },
+        "expected": {
+          "body_names": [
+            "AI_Main"
+          ],
+          "bounds_mm": [
+            0,
+            0,
+            0,
+            "${length}",
+            "${width}",
+            "${height}"
+          ],
+          "bbox_tolerance_mm": 0.05,
+          "min_faces": 6,
+          "min_volume_mm3": "${volume_min}",
+          "max_volume_mm3": "${volume_max}"
+        }
+      }
+    ]
+  }
+}

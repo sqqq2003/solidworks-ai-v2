@@ -11,7 +11,7 @@ def note_owned_process(lease):
     store.update_metadata(key,owner,process=owned_process_identity(lease))
 
 
-def run_receipted_cad(document,originals,payload,job,*,timeout,task_name,implementation_hashes,success_statuses,state_db=None,key=None):
+def run_receipted_cad(document,originals,payload,job,*,timeout,task_name,implementation_hashes,success_statuses,state_db=None,key=None,safe_failure_statuses=()):
     from sw_session import run_on_task_sta,current_lease
     from cad_reconcile import current_controller_identity
     store=ReceiptStore(state_db)
@@ -41,7 +41,8 @@ def run_receipted_cad(document,originals,payload,job,*,timeout,task_name,impleme
                  not session.get('cleanup_error') and not session.get('cleanup_disconnect'))
         success=result.get('status') in success_statuses
         restored=result.get('rollback',{}).get('state')=='RESTORED'
-        if unchanged and cleanup and (success or restored):
+        safe_read_failure=result.get('status') in safe_failure_statuses
+        if unchanged and cleanup and (success or restored or safe_read_failure):
             store.finish(key,owner,result,succeeded=success)
         else:
             store.quarantine(key,owner,'ROLLBACK_UNCONFIRMED' if result.get('rollback',{}).get('state')=='ROLLBACK_UNCONFIRMED' else 'OUTCOME_UNKNOWN')

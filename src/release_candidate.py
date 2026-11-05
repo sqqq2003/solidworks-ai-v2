@@ -23,7 +23,10 @@ CHECKS = [
     ('drawing_dimension_rollback','native'),
     ('modeling_named_bodies_and_features','native'),('modeling_half_build_rollback','native'),
     ('modeling_revision_and_observation','native'),('modeling_body_clearance','native'),
-    ('modeling_request_replay_and_quarantine','native')]
+    ('modeling_request_replay_and_quarantine','native'),
+    ('parametric_function_units_and_dependencies','offline'),
+    ('parametric_generated_feature_part','native'),('parametric_existing_part_batch','native'),
+    ('parametric_review_and_request_replay','native'),('parametric_saved_batch_rollback','native')]
 
 
 def git(root, *args):

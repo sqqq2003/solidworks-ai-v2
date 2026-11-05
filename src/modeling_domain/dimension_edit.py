@@ -9,6 +9,7 @@ from pathlib import Path
 
 from cad_checkpoint import digest_file, inspect_checkpoint
 from ql5050px.native_machine import read_member
+from sw_compat.com_access import com_int
 
 
 def _number(value):
@@ -45,15 +46,15 @@ def edit_reviewed_length(port, checkpoint, *, configuration, dimension_name,
     if hasattr(dimension, '_oleobj_'):
         import solidworks_generator as sw
         dimension = sw._as_interface(sw.ensure_solidworks_typelib(), dimension, 'IDimension')
-    if (int(dimension.GetType()) != 0 or bool(dimension.ReadOnly)
-            or int(dimension.DrivenState) != 2):
+    if (com_int(dimension.GetType()) != 0 or bool(dimension.ReadOnly)
+            or com_int(dimension.DrivenState) != 2):
         raise ValueError('editable driving linear dimension required')
     current = float(dimension.SystemValue) * 1000
     if not math.isclose(current, before_mm, rel_tol=0, abs_tol=1e-6):
         raise ValueError('stale dimension mapping')
     # One write only. Any failure is returned to the caller for checkpoint rollback.
     port.guard()
-    status = int(dimension.SetSystemValue3(after_mm / 1000, 3, [configuration]))
+    status = com_int(dimension.SetSystemValue3(after_mm / 1000, 3, [configuration]))
     if status != 0:raise RuntimeError('native dimension edit rejected: ' + str(status))
     if read_member(model, 'EditRebuild3') is not True:raise RuntimeError('dimension rebuild failed')
     actual = float(dimension.SystemValue) * 1000
