@@ -83,9 +83,12 @@ def _native_mappings(edit, original_payload):
     for mapping in load_mappings(original_payload):
         if mapping.parameter not in changed:continue
         row=asdict(mapping)
+        row['document']=edit['source_document']
         row['unit']='mm'
         row['allowed_range']=next(c['allowed_range'] for c in edit['changes'] if c['parameter']==mapping.parameter)
         result.append(row)
+    order={name:index for index,name in enumerate(edit['parameter_order'])}
+    result.sort(key=lambda row:order[row['parameter']])
     return {'schema_version':1,'parameters':result}
 
 

@@ -128,6 +128,22 @@ class NativeFlowTests(unittest.TestCase):
         self.assertEqual(json.loads(target.read_bytes()),{'D1@Sketch1':40.,'D2@Sketch1':30.})
         self.assertEqual(self.call()['request_receipt']['replayed'],True)
 
+    def test_two_edits_normalize_equivalent_paths_metres_and_parameter_order(self):
+        from parametric_workspace import preview_parameters
+        preview=preview_parameters(80,35,10,spec_path=fixtures.ROOT/'examples/function-block.json')
+        mappings=deepcopy(self.mappings)
+        alias=str(self.source.parent/'..'/self.source.parent.name/self.source.name)
+        for row in mappings['parameters']:row['document']=alias
+        mappings['parameters'][0].update(unit='m',allowed_range=[.001,1.])
+        mappings['parameters'][1].update(component_kind='editable',allowed_range=[1,100])
+        mappings['parameters'].reverse()
+        status=prepare_edit_workspace(preview,mappings,self.inspection,self.root/'review-batch')
+        approved=approve_edit_workspace(self.root/'review-batch',reviewer='Engineer',expected_review_sha256=status['review_sha256'])
+        result=execute_edit_workspace(self.root/'review-batch',self.exe,self.root/'batch',
+            approval_sha256=approved['approval_sha256'],request_key='batch-key',state_db=self.db)
+        self.assertEqual(result['status'],'native_parameter_edit_pending_review')
+        self.assertEqual([r[:2] for r in ByteFunctionPort.hosts[0].writes],[('D1@Sketch1',.08),('D2@Sketch1',.035)])
+
     def test_native_coupling_that_changes_protected_dimension_rolls_back(self):
         ByteFunctionPort.move_protected=True
         result=self.call();self.assertEqual(result['status'],'failed')
