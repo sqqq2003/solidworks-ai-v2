@@ -14,7 +14,7 @@ def _digest(value):
                                     allow_nan=False).encode('utf8')).hexdigest()
 
 
-def preview_parameters(length, width, height, *, spec_path=None):
+def preview_parameters(length, width, height, *, spec_path=None, input_values=None):
     dimensions = {}
     for key, label, value in [('length','长度',length), ('width','宽度',width), ('height','高度',height)]:
         try:
@@ -35,7 +35,16 @@ def preview_parameters(length, width, height, *, spec_path=None):
         specification=json.loads(raw.decode('utf-8-sig'))
     if not isinstance(specification,dict):raise ValueError('机型规则必须是JSON或YAML对象')
     is_frame='mother_width_mm' in specification and 'pitch_mm' in specification
-    if is_frame:
+    is_function=specification.get('kind')=='parametric_functions'
+    if is_function:
+        from parametric_functions import solve_functions
+        extra=dict(input_values or {})
+        if set(extra)&set(dimensions):raise ValueError('额外输入不能覆盖界面长宽高')
+        supplied={k:v for k,v in dimensions.items() if k in specification.get('inputs',{})}
+        supplied.update(extra)
+        plan=solve_functions(specification,supplied)
+        mappings=mapping_template(plan)
+    elif is_frame:
         from roller_frame_preview import frame_plan
         from roller_frame_math.errors import RollerFrameError
         try:plan,mappings=frame_plan(specification,**dimensions)
@@ -52,6 +61,8 @@ def preview_parameters(length, width, height, *, spec_path=None):
               'mapping_template':mappings,
               'status':'review_required', 'native_write_allowed':False,
               'cad_executed':False, 'manufacturing_approved':False}
+    if is_function:result['function_inputs']=supplied
+    if is_function and plan.get('conflicts'):result['status']='blocked'
     if not is_frame:result['target_envelope_mm']=dimensions
     else:result['dimension_basis']='W_inner_clear_L_frame_H_plate_plus_legs'
     result['review_sha256'] = _digest(result)

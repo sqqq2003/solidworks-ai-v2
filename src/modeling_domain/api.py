@@ -39,12 +39,13 @@ def implementation_hashes():
              'a01_next/native_production.py', 'profile_sanitize.py',
              'modeling_domain/contract.py', 'modeling_domain/transaction.py',
              'modeling_domain/native.py', 'modeling_domain/dimension_edit.py', 'modeling_domain/api.py']
+    names.extend(p.relative_to(root).as_posix() for p in (root/'parametric_functions').glob('*.py'))
     return {name: digest_file(root / name) for name in names}
 
 
 def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template_sha256,
                         reviewed_plan_sha256, request_key, camera='isometric',
-                        clearance_pairs=(), state_db=None, timeout=900):
+                        clearance_pairs=(), state_db=None, timeout=900, session_mode=None):
     if sys.platform != 'win32':
         raise RuntimeError('Windows SolidWorks required; cloud results are simulations only')
     draft = analyze_draft(plan)
@@ -72,6 +73,9 @@ def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template
     payload = {'domain': 'modeling', 'plan': plan, 'reviewed_plan_sha256': reviewed_plan_sha256,
                'expected_template_sha256': expected_template_sha256, 'output_dir': str(root),
                'sw_exe': str(Path(sw_exe).resolve()), 'camera': camera, 'clearance_pairs': pairs}
+    if session_mode is not None:
+        if session_mode not in {'auto','dedicated','idle_existing'}:raise ValueError('unknown session mode')
+        payload['session_mode']=session_mode
 
     def job():
         from sw_session import current_lease
@@ -84,7 +88,11 @@ def run_native_modeling(plan, sw_exe, template, output_dir, *, expected_template
             raise ValueError('template changed before launch')
         root.mkdir(parents=True, exist_ok=False)
         atomic_json(root / 'runtime-environment.json', runtime_environment(), exclusive=True)
-        with attached_solidworks(Path(sw_exe)) as binding:
+        if session_mode is None:session=attached_solidworks(Path(sw_exe))
+        else:
+            from parametric_functions.session import modeling_session
+            session=modeling_session(Path(sw_exe),session_mode)
+        with session as binding:
             lease = current_lease()
             note_owned_process(lease)
             port = NativeModelingPort(NativePartHost(lease, root, template), originals=originals)

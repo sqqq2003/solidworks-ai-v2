@@ -1,0 +1,78 @@
+{
+  "kind": "parametric_functions",
+  "schema_version": 1,
+  "machine_id": "roller_function_demo",
+  "source": "explicit illustrative roller relationship; real interface dimensions must be inspected",
+  "inputs": {
+    "length": {
+      "unit": "mm",
+      "value": 800,
+      "range": [
+        100,
+        2000
+      ]
+    },
+    "left_end": {
+      "unit": "mm",
+      "value": 20,
+      "range": [
+        1,
+        200
+      ],
+      "preserve_interface": true
+    },
+    "right_end": {
+      "unit": "mm",
+      "value": 35,
+      "range": [
+        1,
+        200
+      ],
+      "preserve_interface": true
+    },
+    "pitch": {
+      "unit": "mm",
+      "value": 88.9,
+      "range": [
+        1,
+        500
+      ]
+    },
+    "margin": {
+      "unit": "mm",
+      "value": 30,
+      "range": [
+        1,
+        200
+      ]
+    }
+  },
+  "parameters": {
+    "barrel_length": {
+      "unit": "mm",
+      "expression": "length - left_end - right_end",
+      "range": [
+        1,
+        1998
+      ]
+    },
+    "hole_count": {
+      "unit": "count",
+      "expression": "floor((length - 2*margin) / pitch) + 1",
+      "range": [
+        1,
+        1000
+      ]
+    },
+    "actual_margin": {
+      "unit": "mm",
+      "expression": "(length - (hole_count - 1) * pitch) / 2"
+    }
+  },
+  "constraints": [
+    {
+      "expression": "length > left_end + right_end",
+      "message": "总长必须大于两端安装长度之和"
+    }
+  ]
+}

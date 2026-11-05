@@ -141,7 +141,8 @@ class NativeContractTests(unittest.TestCase):
                     inventory=lambda:{'features':[{'name':'Front Plane','native_type':'RefPlane'}],'bodies':[]},
                     camera_comparison={},close_for_restore=lambda *_:(_ for _ in ()).throw(RuntimeError('cleanup refused')))
             plan=fixtures.example()
-            with patch('ql5050px.native_part_host.NativePartHost',return_value=host), \
+            with patch.object(api.sys,'platform','win32'), \
+                 patch('ql5050px.native_part_host.NativePartHost',return_value=host), \
                  patch('modeling_domain.native.NativeModelingPort',return_value=port), \
                  patch('sw_session.current_lease',return_value=NS()), \
                  patch('sw_owned_launch.attached_solidworks',return_value=nullcontext(NS())), \
