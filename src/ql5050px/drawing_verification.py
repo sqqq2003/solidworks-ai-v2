@@ -35,7 +35,7 @@ def annotation_evidence(owner, kind, requested):
 
 
 def verify_annotation_evidence(drawing,expected):
-    """Bind inserted annotations by native name after save/reopen, not counts."""
+    """Require one matching native object; view enumeration may expose it twice."""
     if not expected:return []
     from sw_compat.com_access import read_com_member
     annotations={};view=read_member(drawing,'GetFirstView');seen=set()
@@ -45,22 +45,32 @@ def verify_annotation_evidence(drawing,expected):
         seen.add(view_name)
         for annotation in read_member(view,'GetAnnotations') or []:
             name=str(read_com_member(annotation,'GetName'))
-            if name in annotations:raise RuntimeError('duplicate native annotation name')
-            annotations[name]=annotation
+            entries=annotations.setdefault(name,[])
+            def same_object(other):
+                if annotation is other:return True
+                if hasattr(annotation,'_oleobj_') and hasattr(other,'_oleobj_'):
+                    import pythoncom
+                    return annotation._oleobj_.QueryInterface(pythoncom.IID_IUnknown)==other._oleobj_.QueryInterface(pythoncom.IID_IUnknown)
+                return False
+            if not any(same_object(other) for other in entries):entries.append(annotation)
         view=read_member(view,'GetNextView')
     results=[]
     for item in expected:
-        annotation=annotations.get(item['name'])
-        if annotation is None:raise RuntimeError('saved drawing annotation missing: '+item['name'])
-        position=[float(v)*1000 for v in read_com_member(annotation,'GetPosition')]
-        if (len(position)!=3 or not all(math.isfinite(v) for v in position) or
-                int(read_com_member(annotation,'GetType'))!=item['type'] or
-                any(not math.isclose(a,b,abs_tol=.1) for a,b in zip(position,item['position_mm']))):
-            raise RuntimeError('saved annotation type/position differs: '+item['name'])
-        if item['kind']=='note':
-            note=read_com_member(annotation,'GetSpecificAnnotation')
-            if str(read_com_member(note,'GetText'))!=item['text']:raise RuntimeError('saved annotation text differs')
-        results.append({**item,'reopened':True,'position_mm':position})
+        candidates=annotations.get(item['name'],[])
+        if not candidates:raise RuntimeError('saved drawing annotation missing: '+item['name'])
+        matches=[]
+        for annotation in candidates:
+            position=[float(v)*1000 for v in read_com_member(annotation,'GetPosition')]
+            if (len(position)!=3 or not all(math.isfinite(v) for v in position) or
+                    int(read_com_member(annotation,'GetType'))!=item['type'] or
+                    any(not math.isclose(a,b,abs_tol=.1) for a,b in zip(position,item['position_mm']))):continue
+            if item['kind']=='note':
+                note=read_com_member(annotation,'GetSpecificAnnotation')
+                if str(read_com_member(note,'GetText'))!=item['text']:continue
+            matches.append(position)
+        if not matches:raise RuntimeError('saved annotation type/position/text differs: '+item['name'])
+        if len(matches)!=1:raise RuntimeError('ambiguous saved annotation identity: '+item['name'])
+        results.append({**item,'reopened':True,'position_mm':matches[0]})
     return results
 
 
