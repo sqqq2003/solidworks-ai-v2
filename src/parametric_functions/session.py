@@ -30,7 +30,9 @@ class IdleBinding(AttachedBinding):
     def evidence(self):
         result=super().evidence()
         result.update(connection_policy='verified_idle_existing_pid_no_document_adoption',
-                      closed_before_write=[],closed_during_write=[],foreign_documents_closed=False)
+                      closed_before_write=[],closed_during_write=[],foreign_documents_closed=False,
+                      initial_empty_verified=getattr(self,'initial_empty_verified',False),
+                      initial_empty_snapshots=2 if getattr(self,'initial_empty_verified',False) else 0)
         return result
 
 
@@ -48,6 +50,7 @@ def bind_idle(lifetime, discover, list_titles):
         opened,untitled=_snapshot_open_documents(app,list_titles)
         if opened or untitled:raise SessionOwnershipError('save/close documents yourself, or select dedicated session: '+_format_open_documents(opened+untitled))
     binding=IdleBinding(lifetime,app,_read_pid,list_titles);binding.rediscover=discover
+    binding.initial_empty_verified=True
     lease.attached_existing=True;lease.created_by_task=False;lease.spawn_claimed=False
     lease.close_doc_only=True;lease.reuse_attached=True;lease.shared_com_bound=True
     lease.foreign_titles=set();lease.foreign_titles_known=True

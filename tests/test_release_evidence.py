@@ -38,6 +38,29 @@ class EvidenceTests(unittest.TestCase):
         self.row.update(status='failed',simulated_only=True)
         self.assertEqual(self.audit()['status'],'failed')
 
+    def test_strict_idle_parameter_session_can_complete_only_record_audit(self):
+        self.row['id']='parametric_existing_part_batch';self.matrix['lanes'][0]['checks'][0]['id']=self.row['id']
+        self.row['session']={'ownership':'attached_pid_and_query_handle',
+            'connection_policy':'verified_idle_existing_pid_no_document_adoption','pid':123,'attached_existing':True,
+            'initial_empty_verified':True,'initial_empty_snapshots':2,'close_doc_only':True,'exit_app':False,
+            'process_killed':False,'foreign_documents_closed':False,'closed_before_write':[],
+            'closed_during_write':[],'cleanup_status':'left_open_keepalive'}
+        report=self.audit();self.assertEqual(report['status'],'passed')
+        self.assertFalse(report['manufacturing_approved'])
+        self.row['id']='reopen';self.matrix['lanes'][0]['checks'][0]['id']='reopen'
+        self.assertEqual(self.audit()['status'],'review_required')
+
+    def test_missing_empty_proof_foreign_close_or_disconnect_keeps_idle_record_pending(self):
+        self.row['id']='parametric_existing_part_batch';self.matrix['lanes'][0]['checks'][0]['id']=self.row['id']
+        original={'ownership':'attached_pid_and_query_handle','connection_policy':'verified_idle_existing_pid_no_document_adoption',
+            'pid':123,'attached_existing':True,'initial_empty_verified':True,'initial_empty_snapshots':2,
+            'close_doc_only':True,'exit_app':False,'process_killed':False,'foreign_documents_closed':False,
+            'closed_before_write':[],'closed_during_write':[],'cleanup_status':'left_open_keepalive'}
+        for key,value in [('initial_empty_verified',False),('initial_empty_snapshots',1),
+                          ('closed_before_write',['Customer']),('cleanup_disconnect','lost COM'),('pid',0)]:
+            self.row['session']={**original,key:value}
+            with self.subTest(key=key):self.assertEqual(self.audit()['status'],'review_required')
+
     def drawing_case(self):
         self.row['id']='drawings_bom_manufacturing'
         self.matrix['lanes'][0]['checks'][0]['id']=self.row['id']
