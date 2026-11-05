@@ -34,7 +34,7 @@ def open_drawing_setup(parent,project_root,on_message):
     from tkinter import ttk,filedialog,messagebox
     root=Path(project_root);win=tk.Toplevel(parent);win.title('三视图 / BOM');win.geometry('760x390')
     body=ttk.Frame(win,padding=22);body.pack(fill='both',expand=True)
-    ttk.Label(body,text='从总装工作副本生成图纸',font=('Microsoft YaHei UI',15)).pack(anchor='w',pady=(0,12))
+    ttk.Label(body,text='从总装工作副本生成测试图纸',font=('Microsoft YaHei UI',15)).pack(anchor='w',pady=(0,12))
     fields={key:tk.StringVar() for key in ('models','assembly','output','sw_exe')}
     labels={'models':'模型工作副本目录','assembly':'总装文件','output':'新建输出目录','sw_exe':'SolidWorks 程序'}
     form=ttk.Frame(body);form.pack(fill='x');form.columnconfigure(1,weight=1)
@@ -48,7 +48,7 @@ def open_drawing_setup(parent,project_root,on_message):
         ttk.Label(form,text=labels[key]).grid(row=row,column=0,sticky='w',pady=6)
         ttk.Entry(form,textvariable=fields[key]).grid(row=row,column=1,sticky='ew',padx=8)
         ttk.Button(form,text='选择',command=lambda k=key:choose(k)).grid(row=row,column=2)
-    ttk.Label(body,text='A2 · 1:10 · 三视图 + 顶层 BOM + PDF\n原件只读，输出到新目录；生成后需复核。').pack(anchor='w',pady=16)
+    ttk.Label(body,text='A2 · 1:10 · 三视图 + 顶层 BOM + PDF\n当前为测试出图，尚未完成生产验收。\n原件只读，输出到新目录；生成后需复核。').pack(anchor='w',pady=16)
     def start():
         try:
             values={k:v.get().strip() for k,v in fields.items()}
