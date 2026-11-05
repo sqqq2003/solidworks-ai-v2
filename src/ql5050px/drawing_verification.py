@@ -67,6 +67,10 @@ def verify_annotation_evidence(drawing,expected):
             if item['kind']=='note':
                 note=read_com_member(annotation,'GetSpecificAnnotation')
                 if str(read_com_member(note,'GetText'))!=item['text']:continue
+            if item['kind']=='model_dimension':
+                from .model_dimensions import display_dimension_value,dimension_values_match
+                display=read_com_member(annotation,'GetSpecificAnnotation')
+                if not dimension_values_match(display_dimension_value(display),item['model_dimension']):continue
             matches.append(position)
         if not matches:raise RuntimeError('saved annotation type/position/text differs: '+item['name'])
         if len(matches)!=1:raise RuntimeError('ambiguous saved annotation identity: '+item['name'])

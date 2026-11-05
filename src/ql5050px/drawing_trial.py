@@ -137,6 +137,14 @@ def run_trial(request):
     root=Path(request['output']).resolve()
     models=Path(request['models']).resolve();assembly=Path(request['assembly']).resolve()
     if not assembly.is_relative_to(models):raise ValueError('assembly outside isolated model root')
+    import_dimensions=request.get('import_model_dimensions',False)
+    if type(import_dimensions) is not bool:raise ValueError('model dimension import must be explicit boolean')
+    if import_dimensions:
+        if assembly.suffix.lower()!='.sldprt':raise ValueError('model dimension import pilot supports standalone parts only')
+        from .model_dimensions import validate_required_parameters
+        validate_required_parameters(request.get('required_model_dimensions'))
+    elif request.get('required_model_dimensions'):
+        raise ValueError('required model dimensions cannot be ignored; enable explicit import')
     originals={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in models.rglob('*') if p.is_file() and not p.name.startswith('~$')}
     report={'mode':'explicit_partial_model_test','manufacturing_approved':False,'status':'running','cells':[],
             'acceptance_state':'reviewing','delivery_accepted':False}
@@ -186,9 +194,15 @@ def run_trial(request):
                 for case in request['cases']:
                     tag=case['sheet']+'-1-'+str(case['denominator']);cell={'tag':tag,'status':'running'};report['cells'].append(cell);checkpoint()
                     task=trial_task(case,request['templates'][case['sheet']],config,request['bom_template'],model_kind=model_kind)
+                    if import_dimensions:task.update(import_model_dimensions=True,required_model_dimensions=request['required_model_dimensions'])
                     try:
                         cell['drawing']=driver.export_manufacturing({'status':'ready_for_native','tasks':[task]},{'documents':{'machine':{'path':str(assembly),'configuration':config}}},root/tag)
                         cell['status']='pass_pending_visual'
+                        if import_dimensions:
+                            from drawing_review import DrawingEvidence
+                            evidence=DrawingEvidence.load(cell['drawing']['results'][0]['drawing_evidence'])
+                            cell['model_dimension_import']=evidence.data.get('model_dimension_import')
+                            if not evidence.data['complete']:cell['status']='dimensions_pending'
                         cell.update(acceptance_state='reviewing',delivery_accepted=False)
                     except (ValueError,RuntimeError) as error:
                         message=str(error);cell.update(error=message,status='failed')
@@ -203,7 +217,7 @@ def run_trial(request):
                         cell['diagnostic']=driver.save_reopen(doc,root/(tag+'-BLOCKED-DIAGNOSTIC.SLDDRW'),'')
                     checkpoint()
                 report['case_summary']={state:sum(cell['status']==state for cell in report['cells'])
-                    for state in ('pass_pending_visual','expected_layout_block','failed')}
+                    for state in ('pass_pending_visual','expected_layout_block','dimensions_pending','failed')}
                 report['status']='completed_partial_model_trial'
         finally:
             if binding:report['session']=binding.evidence()
