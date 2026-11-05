@@ -37,3 +37,23 @@ class DimensionDeduplicationTests(unittest.TestCase):
     def test_already_hidden_dimensions_are_not_counted_as_visible_evidence(self):
         dim=display();dim.GetAnnotation().Visible=3
         self.assertEqual(collect_model_dimensions({'front':NS(GetFirstDisplayDimension5=dim)}),[])
+    def test_hidden_annotation_chain_is_used_when_display_iterator_omits_it(self):
+        dim=display();ann=dim.GetAnnotation();ann.Visible=3;ann.GetNext3=None
+        record={'view':'front','name':'dimension1','model_dimension':display_dimension_value(dim)}
+        proof={'status':'applied','hidden_dimensions':[record]}
+        views={'front':NS(GetFirstDisplayDimension5=None,GetFirstAnnotation3=ann)}
+        self.assertTrue(verify_hidden_dimensions(views,proof)['reopened_verified'])
+        ann.Visible=1
+        self.assertFalse(verify_hidden_dimensions(views,proof)['reopened_verified'])
+    def test_different_hidden_dimensions_can_share_the_short_name_d1(self):
+        first=display(value=.04,name='D1@Sketch@tube.Part');second=display()
+        a=first.GetAnnotation();b=second.GetAnnotation()
+        for annotation in (a,b):annotation.Visible=3;annotation.GetName=lambda:'D1'
+        a.GetNext3=b;b.GetNext3=None
+        proof={'status':'applied','hidden_dimensions':[
+            {'view':'top','name':'D1','annotation_type':4,'model_dimension':display_dimension_value(dim)}
+            for dim in (first,second)]}
+        views={'top':NS(GetFirstDisplayDimension5=None,GetFirstAnnotation3=a)}
+        self.assertTrue(verify_hidden_dimensions(views,proof)['reopened_verified'])
+        b.GetNext3=a
+        with self.assertRaisesRegex(RuntimeError,'cyclic'):verify_hidden_dimensions(views,proof)

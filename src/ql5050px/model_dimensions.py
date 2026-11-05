@@ -87,7 +87,8 @@ def _display_records(views):
             identity=(name,row['full_name'])
             if identity in seen or len(seen)>=512:raise RuntimeError('cyclic/oversized display dimension chain')
             seen.add(identity)
-            yield {'view':view_id,'name':name,'model_dimension':row},display,annotation
+            yield {'view':view_id,'name':name,'annotation_type':int(read_member(annotation,'GetType')),
+                   'model_dimension':row},display,annotation
             display=read_member(display,'GetNext5')
 
 
@@ -143,12 +144,39 @@ def deduplicate_model_dimensions(driver,drawing,views,preferences=None):
 def verify_hidden_dimensions(views,proof):
     actual={(row['view'],row['name'],row['model_dimension']['full_name']):row
             for row,_,_ in _display_records(views)}
+    # Some SW drawing view display-dimension chains omit hidden dimensions.
+    # IAnnotation.GetNext3 explicitly includes hidden/suppressed annotations.
+    wanted_by_view={}
+    for row in proof['hidden_dimensions']:
+        key=(row['view'],row['name'],row['model_dimension']['full_name'])
+        if key not in actual:wanted_by_view.setdefault(row['view'],set()).add(row['name'])
+    for view_id,names in wanted_by_view.items():
+        view=_typed(views[view_id],'IView');annotation=read_member(view,'GetFirstAnnotation3');seen=[]
+        while annotation is not None:
+            annotation=_typed(annotation,'IAnnotation');name=str(read_member(annotation,'GetName'))
+            # D1 can refer to multiple different features in the same view.
+            # Cycle detection must compare native object identity, not names.
+            if hasattr(annotation,'_oleobj_'):
+                import pythoncom
+                identity=annotation._oleobj_.QueryInterface(pythoncom.IID_IUnknown)
+            else:identity=id(annotation)
+            if any(identity==previous for previous in seen) or len(seen)>=4096:
+                raise RuntimeError('cyclic/oversized hidden annotation chain')
+            seen.append(identity)
+            types={row.get('annotation_type') for row in proof['hidden_dimensions']
+                   if row['view']==view_id and row['name']==name}
+            if name in names and (None in types or int(read_member(annotation,'GetType')) in types):
+                display=read_member(annotation,'GetSpecificAnnotation')
+                row=display_dimension_value(display)
+                actual[(view_id,name,row['full_name'])]={'view':view_id,'name':name,'model_dimension':row}
+            annotation=read_member(annotation,'GetNext3')
     missing=[]
     for row in proof['hidden_dimensions']:
         key=(row['view'],row['name'],row['model_dimension']['full_name'])
         if key not in actual or not dimension_values_match(actual[key]['model_dimension'],row['model_dimension']):missing.append(key)
     return {**proof,'reopened_verified':not missing and proof['status']=='applied',
-            'unverified_hidden_dimensions':[list(key) for key in missing]}
+            'unverified_hidden_dimensions':[list(key) for key in missing],
+            'hidden_lookup':'display_dimension_and_complete_annotation_chains'}
 
 
 def dimension_coverage(source,imported):
