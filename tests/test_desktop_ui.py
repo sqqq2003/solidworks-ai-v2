@@ -24,12 +24,30 @@ class DesktopUITests(unittest.TestCase):
         self.assertFalse(self.view.native.winfo_ismapped())
 
     def test_instruction_creates_review_only(self):
+        self.view.quick_task('sheet');self.view.values['source'].set('pending-plate.dxf')
         self.view._composer_focus();self.view.composer.insert('1.0','把这个滚筒总长度改成800 mm，轴径不变，两端安装结构不变。')
         self.view.send_instruction();self.root.update()
         self.assertEqual(self.view.last_request['parsed']['target_overall_mm'],800)
         self.assertFalse(self.view.last_request['native_write_allowed'])
         self.assertEqual(self.view.state['jobs'],[])
         self.assertEqual(len(self.view.chat_cards),2)
+        self.assertFalse(self.view.settings_open)
+        self.assertEqual(self.view.values['source'].get(),'pending-plate.dxf')
+        self.assertEqual(self.view.values['kind'].get(),'sheet')
+
+    def test_roller_model_handoff_preserves_intent_without_native_write(self):
+        from design_instruction import instruction_request
+        from cad_checkpoint import digest_file
+        request=instruction_request({'text':'滚筒总长度改成800 mm，轴径不变'})
+        with tempfile.TemporaryDirectory() as folder:
+            model=Path(folder)/'roller.SLDPRT';model.write_bytes(b'fixture only')
+            with patch('tkinter.filedialog.askopenfilename',return_value=str(model)),patch.object(self.view,'save_request') as save:
+                self.view.select_roller_model(request)
+            bound=save.call_args.args[0]
+            self.assertEqual(bound['parsed']['target_overall_mm'],800)
+            self.assertEqual(bound['source_model']['sha256'],digest_file(model))
+            self.assertFalse(bound['native_write_allowed']);self.assertFalse(bound['cad_executed'])
+            self.assertNotIn('source_model',request);self.assertEqual(self.view.state['jobs'],[])
 
     def test_input_changes_clear_confirmation(self):
         self.view.confirmed.set(True);self.view.values['source'].set('changed.json')
@@ -166,3 +184,31 @@ class DesktopUITests(unittest.TestCase):
             self.assertTrue(any('无法完整识别轮廓' in label for label in labels))
             button=next(w for w in card.winfo_children() if isinstance(w,tk.Button) and w.cget('text')=='查看这张图的概览')
             button.invoke();overview.assert_called_once_with(source)
+
+    def test_analysis_result_keeps_file_and_offers_next_step_without_generation(self):
+        import tkinter as tk
+        source='reviewed.dxf'
+        self.view.running_jobs=[{'kind':'sheet','source':source}]
+        self.view.messages.put(({'status':'completed','results':[{'status':'analyzed','name':source,
+            'events':[{'event':'analysis','profile_count':2,'bend_line_count':0}]}]},None))
+        self.view.poll();self.root.update()
+        self.assertEqual(self.view.status.get(),'识别完成 · 未生成模型')
+        card=self.view.chat_cards[-1]
+        button=next(w for w in card.winfo_children() if isinstance(w,tk.Button) and w.cget('text')=='填写建模参数')
+        button.invoke();self.root.update()
+        self.assertTrue(self.view.settings_open)
+        self.assertEqual(self.view.values['source'].get(),source)
+        self.assertEqual(self.view.action.get(),'生成计划')
+        self.assertFalse(self.view.confirmed.get())
+        self.assertFalse(self.view.state['busy'])
+        self.assertEqual(self.view.state['jobs'],[])
+
+    def test_missing_parameter_opens_settings_without_queuing(self):
+        self.view.values['source'].set('plate.dxf')
+        with patch('tkinter.messagebox.showerror') as error:
+            self.view.run_current()
+        self.root.update()
+        error.assert_called_once()
+        self.assertTrue(self.view.settings_open)
+        self.assertTrue(self.view.parameter_entries['thickness'].winfo_ismapped())
+        self.assertEqual(self.view.state['jobs'],[])

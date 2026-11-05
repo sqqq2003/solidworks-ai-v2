@@ -1,0 +1,17 @@
+{
+  "source_revision": "584c7ed1c5eb735a43290f74523fb20040825fd6",
+  "checks_run": 157,
+  "passed": 157,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "python": "3.12.14",
+  "scope": "targeted_fake_COM_and_real_temporary_file_SQLite_checks",
+  "command": "XDG_CACHE_HOME=/workspace/cache PYTHONPATH=src:tests:. python -m unittest test_modeling_domain test_modeling_native_contract test_drawing_pipeline_contract test_p0_native_com_hardening test_modeling_validation test_sw2022_feature_interfaces test_cad_checkpoint test_cad_receipts test_cad_recovery_native_contract test_sheet_metal_pipeline test_release_candidate test_release_evidence test_drawing_review test_drawing_followup -v",
+  "full_regression": false,
+  "windows_native_tested": false,
+  "desktop_tested_this_batch": false,
+  "installed_source_executed": false,
+  "manual_visual_accepted": false,
+  "manufacturing_approved": false
+}

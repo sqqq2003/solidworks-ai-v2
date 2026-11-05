@@ -12,7 +12,7 @@ def main():
     from app_logging import bootstrap
     journal=bootstrap(ROOT,'portable-doctor')
     checks={}
-    for name in ('tkinter','ezdxf','numpy','pypdf','pythoncom','win32com.client','comtypes','desktop_ui','app_logging','capability_registry'):
+    for name in ('tkinter','ezdxf','numpy','pypdf','pdfplumber','pythoncom','win32com.client','comtypes','desktop_ui','app_logging','capability_registry'):
         try:importlib.import_module(name);checks[name]='ok'
         except Exception as error:checks[name]=str(error)
     try:

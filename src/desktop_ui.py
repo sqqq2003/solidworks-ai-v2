@@ -63,7 +63,7 @@ class Workbench:
             'length':'1800','width':'900','height':'1500'}.items()}
         self.confirmed=tk.BooleanVar();self.flip=tk.BooleanVar();self.inferred=tk.BooleanVar();self.preserve_circle_holes=tk.BooleanVar()
         self.native_open=False;self.advanced_open=False;self.detail_open=False
-        self.report_text='';self.inputs=[];self.nav_buttons={};self.row_ids=[]
+        self.report_text='';self.inputs=[];self.nav_buttons={};self.row_ids=[];self.parameter_entries={}
         self.running_rows=[];self.running_jobs=[];self.queue_running=False;self.last_request=None
         self.settings_open=False;self.chat_cards=[];self.tool_panels=[]
         self.ai_session=None;self.ai_busy=False;self.ai_generation=0
@@ -110,27 +110,32 @@ class Workbench:
         tk,ttk=self.tk,self.ttk
         self.root.configure(bg=WHITE)
         nav=tk.Frame(self.root,bg=NAV,width=218);nav.pack(side='left',fill='y');nav.pack_propagate(False)
-        brand=tk.Frame(nav,bg=NAV);brand.pack(fill='x',padx=20,pady=(24,22))
+        brand=tk.Frame(nav,bg=NAV);brand.pack(fill='x',padx=20,pady=(16,12))
         self.label(brand,'◈',size=21,bg=NAV,bold=True).pack(side='left',padx=(0,9))
         self.label(brand,'SolidWorks AI',size=13,bg=NAV,bold=True).pack(side='left')
-        self.button(nav,'＋  新建设计任务',self.new_task).pack(fill='x',padx=12,pady=(0,20))
-        self.label(nav,'设计工作空间',size=9,bg=NAV,color=MUTED).pack(anchor='w',padx=22,pady=(0,8))
+        self.button(nav,'＋  新建设计任务',self.new_task).pack(fill='x',padx=12,pady=(0,10))
+        self.label(nav,'设计工作空间',size=9,bg=NAV,color=MUTED).pack(anchor='w',padx=22,pady=(0,4))
         for key,(title,_) in MODES.items():
-            if key in {'roller','turned','parametric'}:continue
-            title={'sheet':'图纸转模型','ql5050px':'整机改型'}.get(key,title)
-            button=self.button(nav,title,lambda k=key:self.switch_mode(k))
+            if key in {'roller','turned'}:continue
+            title={'sheet':'图纸转模型','ql5050px':'整机改型','parametric':'参数化建模'}.get(key,title)
+            command=self.open_parametric_modeling if key=='parametric' else lambda k=key:self.switch_mode(k)
+            button=self.button(nav,title,command)
             button.configure(anchor='w',pady=10,padx=16)
             button.pack(fill='x',padx=12,pady=2);self.nav_buttons[key]=button
         self.button(nav,'三视图 / BOM',self.open_drawing).pack(fill='x',padx=12,pady=2)
         self.button(nav,'DXF 图纸概览',self.open_dxf_overview).pack(fill='x',padx=12,pady=2)
         self.button(nav,'钣金批量预检',self.open_sheet_batch_review).pack(fill='x',padx=12,pady=2)
         self.button(nav,'尺寸试改预检',self.native_review).pack(fill='x',padx=12,pady=2)
-        tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=20)
+        tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=8)
         self.button(nav,'任务队列',self.show_queue).pack(fill='x',padx=12,pady=2)
         self.button(nav,'项目交付 / 验收',self.open_delivery).pack(fill='x',padx=12,pady=2)
         self.button(nav,'AI 连接',self.configure_ai).pack(fill='x',padx=12,pady=2)
         self.button(nav,'设置',self.show_environment).pack(fill='x',padx=12,pady=2)
         self.button(nav,'运行记录',self.show_logs).pack(fill='x',padx=12,pady=2)
+        # Keep the added workspace and the log/settings entries reachable on
+        # the supported 1080x740 desktop size.
+        for widget in nav.winfo_children():
+            if isinstance(widget,tk.Button):widget.configure(pady=6)
         self.label(nav,'V2  ·  本地工作副本',size=9,bg=NAV,color=MUTED).pack(side='bottom',anchor='w',padx=22,pady=24)
         shell=tk.Frame(self.root,bg=WHITE);shell.pack(side='left',fill='both',expand=True)
         bar=tk.Frame(shell,bg=WHITE,padx=24,pady=16);bar.pack(fill='x')
@@ -288,6 +293,7 @@ class Workbench:
             row,column=divmod(i,2);parent.columnconfigure(column,weight=1)
             self.label(parent,title,size=9,color=MUTED).grid(row=row*2,column=column,sticky='w',padx=(0,8),pady=(8,5))
             entry=self.ttk.Entry(parent,textvariable=self.values[key],width=10);entry.grid(row=row*2+1,column=column,sticky='ew',padx=(0,8));self.inputs.append((entry,'normal'))
+            self.parameter_entries[key]=entry
 
     def _invalidate(self,*_):
         self.confirmed.set(False)
@@ -384,7 +390,13 @@ class Workbench:
             return True
         except (OSError,ValueError,KeyError) as exc:
             self.journal.exception('job_validation_failed',exc)
+            missing=next((key for key,label in {'thickness':'板厚','radius':'内半径','angle':'折弯角度','k_factor':'K 因子'}.items()
+                          if str(exc)=='请填写本次任务的'+label),None)
+            if missing:
+                if not self.settings_open:self.toggle_settings()
+                self.status.set(str(exc)+' · 已展开任务设置')
             messagebox.showerror('请检查任务信息',str(exc),parent=self.root)
+            if missing:self.parameter_entries[missing].focus_set()
             return False
 
     def run_current(self):
@@ -449,15 +461,23 @@ class Workbench:
                     self.queue_count.set(f'{len(rows)} 项结果')
                 self.state['busy']=False;self.progress.stop();self.progress.place_forget()
                 translated=STATUS_LABELS.get(report.get('status'),report.get('status','待复核'))
-                self.status.set(translated);self.summary.set('处理结束，请查看结果。' if not report.get('error') else '任务未完成，请查看运行详情。')
+                analysis_only=bool(rows) and all(row.get('status')=='analyzed' for row in rows) and not report.get('error')
+                if analysis_only:translated='识别完成 · 未生成模型'
+                self.status.set(translated);self.summary.set('下一步：查看图纸概览，核对轮廓后填写建模参数。' if analysis_only else '处理结束，请查看结果。' if not report.get('error') else '任务未完成，请查看运行详情。')
                 content='\n\n'.join(explain_task_result(row) for row in rows)
                 overview_source=None
                 for job,row in zip(self.running_jobs,rows):
                     source=job.get('source','')
                     if row.get('status')=='failed' and source and Path(source).suffix.casefold()=='.dxf':
                         overview_source=source;break
+                next_task=None
+                if analysis_only and len(rows)==1 and self.running_jobs:
+                    job=self.running_jobs[0];source=job.get('source','');kind=job.get('kind')
+                    if source and kind in {'sheet','roller','turned'}:
+                        next_task=(kind,source)
+                        if Path(source).suffix.casefold()=='.dxf':overview_source=source
                 self.running_jobs=[]
-                self.add_message('执行结果 · '+translated,content or str(report.get('error','请在运行详情中查看完整记录。')),overview_source=overview_source)
+                self.add_message('执行结果 · '+translated,content or str(report.get('error','请在运行详情中查看完整记录。')),overview_source=overview_source,next_task=next_task)
                 if path:self.report_text+='报告位置：'+path+'\n'
                 self._update_log();self._sync_buttons()
         except queue.Empty:pass
@@ -505,15 +525,24 @@ class Workbench:
         if not self.composer.get('1.0','end').strip():
             self.composer.insert('1.0',self.placeholder);self.composer.configure(fg=MUTED);self.placeholder_visible=True
 
-    def add_message(self,title,body,*,request=None,overview_source=None):
+    def prepare_model_settings(self,kind,source):
+        if self.state['busy']:return
+        self.quick_task(kind);self.values['source'].set(source);self.action.set('生成计划')
+        self.status.set('请填写本次建模参数 · 尚未生成模型')
+
+    def add_message(self,title,body,*,request=None,overview_source=None,next_task=None):
         self.welcome.place_forget()
         card=self.tk.Frame(self.conversation,bg=WHITE,pady=16);card.pack(fill='x',anchor='n')
         self.chat_cards.append(card)
         self.label(card,title,size=10,bold=True).pack(anchor='w',pady=(0,10))
         width=max(340,self.feed_canvas.winfo_width()-130)
         self.label(card,body,size=11,justify='left',anchor='w',wraplength=width).pack(anchor='w',fill='x')
-        if request is not None:self.button(card,'保存审核请求',lambda:self.save_request(request)).pack(anchor='w',pady=(12,0))
+        if request is not None:
+            if request.get('parsed',{}).get('part_kind')=='roller':
+                self.button(card,'选择滚筒模型',lambda:self.select_roller_model(request),primary=True).pack(anchor='w',pady=(12,0))
+            self.button(card,'保存审核请求',lambda:self.save_request(request)).pack(anchor='w',pady=(8,0))
         if overview_source:self.button(card,'查看这张图的概览',lambda:self.open_dxf_overview(overview_source)).pack(anchor='w',pady=(12,0))
+        if next_task:self.button(card,'填写建模参数',lambda:self.prepare_model_settings(*next_task),primary=True).pack(anchor='w',pady=(8,0))
         self.root.update_idletasks();self.feed_canvas.yview_moveto(1)
 
     def send_instruction(self):
@@ -534,10 +563,13 @@ class Workbench:
         if parsed['part_kind']!='roller' or parsed['target_overall_mm'] is None:
             summary='当前快捷指令支持滚筒总长改型，请写明总长（mm）和需要保持不变的接口。其他任务可在任务设置中选择配置文件。'
         else:
+            # Keep the pending DXF task intact; its sheet controls do not
+            # belong to this separate existing-model review request.
+            if self.settings_open:self.toggle_settings()
             names={'shaft_diameter':'轴径','shaft_end_installation_interfaces':'两端安装结构'}
             protected='、'.join(names[k] for k in parsed['protected_requirements'])
             summary=f'目标总长：{parsed["target_overall_mm"]:g} mm\n'+('保持不变：'+protected+'\n' if protected else '待补充：需要保持不变的接口。\n')
-            summary+='下一步：在真实模型上确认尺寸绑定与修改范围。\n尚未执行模型修改。'
+            summary+='下一步：点击“选择滚筒模型”，将来源模型与本次改型要求一起保存，供尺寸绑定核对。\n原图任务已保留；尚未执行模型修改。'
         self.add_message('方案待审核',summary,request=request)
         self.composer.delete('1.0','end');self._composer_blur();self.status.set('审核请求已生成 · 未执行模型修改')
         return 'break'
@@ -636,6 +668,24 @@ class Workbench:
                 self._sync_buttons()
         except queue.Empty:pass
 
+
+    def select_roller_model(self,request):
+        from tkinter import filedialog,messagebox
+        from copy import deepcopy
+        from cad_checkpoint import digest_file
+        path=filedialog.askopenfilename(parent=self.root,title='选择滚筒来源模型（只读）',
+            filetypes=[('SolidWorks 模型','*.sldprt *.sldasm')])
+        if not path:return
+        try:
+            model=Path(path).resolve(strict=True)
+            if not model.is_file() or model.suffix.lower() not in {'.sldprt','.sldasm'}:
+                raise ValueError('请选择真实的 SolidWorks 零件或装配模型。')
+            bound=deepcopy(request)
+            bound.update(source_model={'path':str(model),'sha256':digest_file(model)},
+                status='pending_native_dimension_mapping',native_write_allowed=False,cad_executed=False)
+            self.save_request(bound)
+        except (OSError,ValueError) as error:
+            messagebox.showerror('未绑定滚筒模型',str(error),parent=self.root)
 
     def save_request(self,request):
         from tkinter import filedialog,messagebox
@@ -738,9 +788,14 @@ class Workbench:
         panel=RepairPanel(win,ROOT);panel.frame.pack(fill='both',expand=True);self.tool_panels.append(panel)
         win.protocol('WM_DELETE_WINDOW',lambda:win.destroy() if not panel.busy else panel.status.set('请等待当前预检结束。'))
 
+    def open_parametric_modeling(self):
+        from parametric_modeling_ui import open_parametric_modeling
+        return open_parametric_modeling(self.root,self.add_message)
+
     def open_drawing(self):
         from drawing_setup import open_drawing_setup
-        open_drawing_setup(self.root,ROOT,self.add_message)
+        open_drawing_setup(self.root,ROOT,self.add_message,context={
+            'assembly':self.values['source'].get(),'sw_exe':self.values['sw_exe'].get()})
 
     def open_sheet_batch_review(self):
         if self.state['busy']:return

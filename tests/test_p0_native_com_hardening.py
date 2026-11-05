@@ -16,7 +16,7 @@ from part_verification import (
     read_active_document,
     rebind_model_after_save,
 )
-from ql5050px.com_selection import select_by_id
+from ql5050px.com_selection import reset_callout_state_for_tests, select_by_id
 from ql5050px.editable_features import EditableFeaturesMixin
 from ql5050px.native_machine import math_transform
 from sw_feature_calls import (
@@ -49,8 +49,9 @@ class _Lifetime:
 
 def _variant_modules():
     client = SimpleNamespace(VARIANT=lambda tag, value: ("variant", tag, value))
+    nothing = object()
     return {
-        "pythoncom": SimpleNamespace(VT_ARRAY=0x2000, VT_R8=5, VT_DISPATCH=9),
+        "pythoncom": SimpleNamespace(VT_ARRAY=0x2000, VT_R8=5, VT_DISPATCH=9, Nothing=nothing),
         "win32com": SimpleNamespace(client=client),
         "win32com.client": client,
     }
@@ -88,7 +89,7 @@ class SafeArrayTests(unittest.TestCase):
 
 
 class PlateBracketCallTests(unittest.TestCase):
-    def test_selection_callout_is_null_dispatch(self):
+    def test_selection_callout_is_com_nothing(self):
         seen = []
 
         class Extension:
@@ -96,11 +97,14 @@ class PlateBracketCallTests(unittest.TestCase):
                 seen.append(args)
                 return True
 
-        with patch.dict(sys.modules, _variant_modules()):
+        modules = _variant_modules()
+        reset_callout_state_for_tests()
+        self.addCleanup(reset_callout_state_for_tests)
+        with patch.dict(sys.modules, modules):
             self.assertTrue(select_by_id(Extension(), "Front Plane", "PLANE"))
         self.assertEqual(len(seen), 1)
         self.assertEqual(seen[0][2:5], (0.0, 0.0, 0.0))
-        self.assertEqual(seen[0][7], ("variant", 9, None))
+        self.assertIs(seen[0][7], modules["pythoncom"].Nothing)
         self.assertIs(type(seen[0][8]), int)
 
     def test_solid_cut_is_not_the_sheet_metal_call(self):

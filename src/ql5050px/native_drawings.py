@@ -162,7 +162,24 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                         raise RuntimeError('drawing model configuration readback mismatch')
                 views[item['id']] = view
                 drawing.ClearSelection2(True)
+            dimension_source=None
+            if task.get('import_model_dimensions'):
+                from .model_dimensions import insert_model_dimensions
+                dimension_source=insert_model_dimensions(self,drawing,source_model,views,task['required_model_dimensions'])
+                if task.get('deduplicate_model_dimensions'):
+                    from .model_dimensions import deduplicate_model_dimensions
+                    _evidence.data['dimension_deduplication']=deduplicate_model_dimensions(
+                        self,drawing,views,task.get('dimension_view_preferences'))
             layout_evidence=lock_view_layout(drawing,task,views)
+            if dimension_source is not None:
+                from .model_dimensions import collect_model_dimensions,dimension_coverage
+                imported=collect_model_dimensions(views)
+                _evidence.data['model_dimension_import']=dimension_coverage(dimension_source,imported)
+                _evidence.data['manufacturing_review']={'status':'pending_engineering_review',
+                    'unverified_fields':['dimension_tolerances','material','part_number','revision','title_block'],
+                    'pdf_dimension_text_correlation':'not_verified','manufacturing_approved':False}
+                _evidence.data['requested']['annotation_count']+=len(imported)
+                _evidence.data['annotations'].extend(imported)
             for dimension in task['dimensions']:
                 drawing.ClearSelection2(True)
                 for reference in dimension['references']: self.select_drawing_entity(drawing,reference)
@@ -250,6 +267,11 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                     for name,view in actual_views.items()]
                 _evidence.data['annotations']=verify_annotation_evidence(reopened,_evidence.data['annotations'])
                 _evidence.data['annotation_reopen_verified']=True
+                if dimension_source is not None:
+                    _evidence.data['model_dimension_import']['reopened_verified']=True
+                    if task.get('deduplicate_model_dimensions'):
+                        from .model_dimensions import verify_hidden_dimensions
+                        _evidence.data['dimension_deduplication']=verify_hidden_dimensions(actual_views,_evidence.data['dimension_deduplication'])
             finally:self.close_document(reopened)
             if bom_evidence:
                 receipt['bom_readback']=bom_evidence

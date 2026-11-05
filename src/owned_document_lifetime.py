@@ -491,9 +491,15 @@ def finish_owned_session(lease, binding, *, exit_poll_seconds=None):
     try:
         binding.validate(lease)
         foreign = [title for title in _open_titles(binding, lease) if title not in lease.owned_docs]
-        if foreign:
+        if foreign and not getattr(binding, "preserve_foreign_documents", False):
             raise SessionOwnershipError(
                 "unowned documents remain; preserve session: " + ", ".join(foreign)
+            )
+        if foreign:
+            logger.info(
+                "attached session left %s pre-existing document(s) open: %s",
+                len(foreign),
+                ", ".join(foreign[:8]),
             )
         for title in [name for name in list(lease.owned_docs) if name in set(_open_titles(binding, lease))]:
             close_owned_document(lease, binding.app, title)

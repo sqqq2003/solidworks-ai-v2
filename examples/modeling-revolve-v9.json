@@ -1,0 +1,116 @@
+{
+  "domain": "modeling",
+  "contract_version": 1,
+  "features": [
+    {
+      "id": "AI_Profile",
+      "kind": "sketch",
+      "unit": "mm",
+      "confirmed": true,
+      "evidence": [
+        "operator-reviewed synthetic example dimensions"
+      ],
+      "depends_on": [],
+      "parameters": {
+        "plane": "Front Plane",
+        "entities": [
+          {
+            "type": "line",
+            "start": [
+              5,
+              0
+            ],
+            "end": [
+              10,
+              0
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              10,
+              0
+            ],
+            "end": [
+              10,
+              20
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              10,
+              20
+            ],
+            "end": [
+              5,
+              20
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              5,
+              20
+            ],
+            "end": [
+              5,
+              0
+            ]
+          },
+          {
+            "type": "line",
+            "start": [
+              0,
+              -5
+            ],
+            "end": [
+              0,
+              25
+            ],
+            "construction": true,
+            "native_name": "Line5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "AI_Revolve",
+      "kind": "revolve",
+      "unit": "mm",
+      "confirmed": true,
+      "evidence": [
+        "operator-reviewed synthetic example dimensions"
+      ],
+      "depends_on": [
+        "AI_Profile"
+      ],
+      "parameters": {
+        "sketch": "AI_Profile",
+        "angle_degrees": 360,
+        "merge": false,
+        "axis": {
+          "type": "SKETCHSEGMENT",
+          "name": "Line5@AI_Profile"
+        }
+      },
+      "expected": {
+        "body_names": [
+          "AI_Tube"
+        ],
+        "bounds_mm": [
+          -10,
+          0,
+          -10,
+          10,
+          20,
+          10
+        ],
+        "bbox_tolerance_mm": 0.05,
+        "min_faces": 4,
+        "min_volume_mm3": 4712.3,
+        "max_volume_mm3": 4712.5
+      }
+    }
+  ]
+}

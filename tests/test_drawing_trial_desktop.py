@@ -34,6 +34,7 @@ class TrialDesktopTests(unittest.TestCase):
                     'cells':[{'status':'pass_pending_visual'}],'components':[]}))
                 return 0,None
             with patch.object(tk,'Tk',side_effect=window),patch.object(app,'run_trial_worker',side_effect=fake_worker), \
+                 patch('drawing_setup.detect_drawing_resources',return_value=({'A2':'fixture.drwdot'},'fixture.bom')), \
                  patch('app_logging.bootstrap',return_value=MagicMock()),patch('app_logging.install_tk_hook'), \
                  patch.object(sys,'argv',['drawing_trial_app.py','--request',str(request),'--smoke-test']):
                 app.main()

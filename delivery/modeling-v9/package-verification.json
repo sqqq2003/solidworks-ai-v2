@@ -1,0 +1,66 @@
+{
+  "source_revision": "584c7ed1c5eb735a43290f74523fb20040825fd6",
+  "candidate": {
+    "schema_version": 1,
+    "source_revision": "584c7ed1c5eb735a43290f74523fb20040825fd6",
+    "package_sha256": "a3a55c477dbf876b2840a3bc91468b45474efce05538d3b71520929bb99b6def",
+    "file_count": 567,
+    "source_manifest_sha256": "f437ca7820ac102ee3e405e549752c71adac5b19fff128e6b1c26a44f5afc836",
+    "matrix_sha256": "458b2d5c2152115e4fcc809973deda5dc1319358505277f79e2eae78b259893e",
+    "native_acceptance": "not_run",
+    "manufacturing_approved": false,
+    "runtime_bundled": false,
+    "source_only": true,
+    "candidate_id": "503e9ed35d2e910c6127dbb8abcfbaba1809a95cf7cb8cc3587e33d246493d52"
+  },
+  "kit_bytes": 1359797,
+  "kit_sha256": "36f87f0af5b78e1408739afdac9f600da7f0fb03dcc2feef0d4516ee49bfbef4",
+  "kit_git_blob_sha": "ef31d23f726f3d8960171751c87608bafd42d050",
+  "inspection": {
+    "schema_version": 1,
+    "status": "passed",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "36f87f0af5b78e1408739afdac9f600da7f0fb03dcc2feef0d4516ee49bfbef4",
+    "source_revision": "584c7ed1c5eb735a43290f74523fb20040825fd6",
+    "candidate_id": "503e9ed35d2e910c6127dbb8abcfbaba1809a95cf7cb8cc3587e33d246493d52",
+    "source_files": 567,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false
+  },
+  "installation": {
+    "schema_version": 1,
+    "status": "review_required",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "36f87f0af5b78e1408739afdac9f600da7f0fb03dcc2feef0d4516ee49bfbef4",
+    "source_revision": "584c7ed1c5eb735a43290f74523fb20040825fd6",
+    "candidate_id": "503e9ed35d2e910c6127dbb8abcfbaba1809a95cf7cb8cc3587e33d246493d52",
+    "source_files": 567,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false,
+    "phase": "source_installed_runtime_required",
+    "directory": "/workspace/modeling-v9-installed",
+    "app_directory": "/workspace/modeling-v9-installed/app",
+    "files_written": 569,
+    "next_steps": [
+      "Create a new Python environment and install app/requirements-cloud.txt.",
+      "Run python work/verify_test_handoff.py . inside app.",
+      "Run python app.py; native work still requires explicit Windows review."
+    ],
+    "original_installation_modified": false,
+    "code_executed": false
+  },
+  "verification": {
+    "status": "passed",
+    "issues": [],
+    "source_revision": "584c7ed1c5eb735a43290f74523fb20040825fd6",
+    "scope": "candidate_file_integrity_only",
+    "manufacturing_approved": false
+  },
+  "installed_source_executed": false,
+  "native_tested": false,
+  "manufacturing_approved": false
+}

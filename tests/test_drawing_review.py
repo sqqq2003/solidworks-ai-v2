@@ -33,6 +33,18 @@ class VisualReviewTests(unittest.TestCase):
         return review_drawing(path,reviewer='Human fixture reviewer',expected_sha256=current['evidence_sha256'],
                               decision='accepted',checklist=self.checklist,**kwargs)
 
+    def test_missing_imported_model_dimensions_keep_technical_evidence_incomplete(self):
+        self.task['import_model_dimensions']=True
+        e=self.evidence();e.data['model_dimension_import']={'status':'verified','reopened_verified':True}
+        e.finish()
+        self.assertFalse(e.data['complete'])
+        self.assertIn('model_dimensions_unverified',inspect_drawing(e.path)['issues'])
+    def test_pdf_binding_gate_rejects_missing_correspondence(self):
+        self.task['correlate_model_dimensions_pdf']=True
+        e=self.evidence();e.finish()
+        self.assertFalse(e.data['complete'])
+        self.assertIn('pdf_model_dimension_binding_unverified',inspect_drawing(e.path)['issues'])
+
     def test_save_reopen_only_enters_reviewing_until_named_visual_acceptance(self):
         e=self.evidence();report=e.finish()
         self.assertEqual(report['state'],'reviewing');self.assertFalse(report['delivery_accepted'])

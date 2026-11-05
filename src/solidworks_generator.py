@@ -2578,9 +2578,16 @@ def _as_interface(module: Any, instance: Any, interface: str) -> Any:
     return getattr(module, interface)(instance._oleobj_)
 
 
+def _feature_count(model: Any) -> int:
+    """Normalize GetFeatureCount across SW COM wrappers exposing method or property."""
+    value = model.GetFeatureCount
+    from sw_compat.com_access import com_int
+    return com_int(value() if callable(value) else value)
+
+
 def _features(model: Any, module: Any) -> list[Any]:
     features: list[Any] = []
-    for index in range(model.GetFeatureCount()):
+    for index in range(_feature_count(model)):
         raw_feature = model.FeatureByPositionReverse(index)
         if raw_feature is not None:
             features.append(_as_interface(module, raw_feature, "IFeature"))
@@ -6063,7 +6070,7 @@ def generate_roller_part(
                 # 本机 SW2025 实测：cut_flip=True 才是切得动的方向，排在最前，
                 # 省掉一次注定失败的建模；False 留作其他版本的兜底。
                 for cut_flip in (True, False):
-                    feature_count = model.GetFeatureCount()
+                    feature_count = _feature_count(model)
                     volume_before = model_volume_m3()
                     try:
                         model.ClearSelection2(True)
@@ -6169,7 +6176,7 @@ def generate_roller_part(
                     except Exception as error:  # noqa: BLE001 - 翻转后重试
                         last_error = error
                         logger.warning("链轮切齿尝试失败：%s", error)
-                    steps = model.GetFeatureCount() - feature_count
+                    steps = _feature_count(model) - feature_count
                     for _ in range(max(0, steps)):
                         model.EditUndo2(1)
             raise SolidWorksGenerationError(

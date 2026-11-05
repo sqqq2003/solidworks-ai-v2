@@ -77,6 +77,21 @@ def sheet_metal_through_cut(manager):
     )
 
 
+def solid_revolve(manager, angle_radians, *, merge):
+    """Single-direction blind solid revolve, explicit axis selected by caller.
+
+    FeatureRevolve2 uses twenty typed arguments. No thin/cut or guessed axis.
+    """
+    angle = _float(angle_radians, 'angle_radians')
+    if not 0 < angle <= 2 * math.pi:
+        raise ValueError('revolve angle must be in (0, 2*pi]')
+    return manager.FeatureRevolve2(
+        True, True, False, False, False, False, 0, 0,
+        angle, 0.0, False, False, 0.0, 0.0, 0, 0.0, 0.0,
+        _bool(merge, 'merge'), True, True,
+    )
+
+
 # Positions that the typelib types as double. Ints here are the r2 mismatch class.
 DOUBLE_ARG_INDEXES = (5, 6, 11, 12, 24)
 NORMAL_CUT_INDEX = 17

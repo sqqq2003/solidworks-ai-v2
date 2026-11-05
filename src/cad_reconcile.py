@@ -112,3 +112,64 @@ def reconcile_native(key, *, state_db=None):
     if sys.platform != 'win32':
         raise RuntimeError('native reconciliation requires Windows; cloud can inspect receipts')
     return ReceiptStore(state_db).reconcile(key, verify_quiescent_baseline)
+
+
+def restore_dead_attempt_bytes(key, *, state_db=None):
+    """Restore sealed task-copy bytes after both exact old processes exited.
+
+    Preserve pre-recovery artifacts. This proves byte baseline only, never a
+    native reopen, and uses the existing serialized reconciliation transaction.
+    """
+    import shutil
+    import tempfile
+    import uuid
+    from cad_checkpoint import safe_file
+    if sys.platform!='win32':raise RuntimeError('native recovery requires Windows')
+
+    def restore_and_verify(row):
+        from sw_owned_launch import _snapshot_sldworks_pids
+        metadata=row['metadata']
+        for role in ('controller','process'):
+            if process_still_matches(metadata.get(role)):
+                raise ReconcileRequired('old '+role+' still alive; restore refused')
+        if _snapshot_sldworks_pids():
+            raise ReconcileRequired('SolidWorks instances still running; task-copy restore refused')
+        declared=metadata.get('checkpoint')
+        if not declared:raise ReconcileRequired('sealed checkpoint required for byte restoration')
+        checkpoint=Checkpoint(Path(declared['directory']),declared['manifest_sha256'],Path(declared['scope']))
+        manifest=inspect_checkpoint(checkpoint)
+        if not metadata.get('original_sha256') or manifest['original_sha256']!=metadata['original_sha256']:
+            raise ReconcileRequired('original baseline differs from receipt')
+        for name,expected in metadata['original_sha256'].items():
+            if digest_file(name)!=expected:raise ReconcileRequired('original changed; restore refused')
+        archive=checkpoint.directory.parent/('pre-recovery-'+uuid.uuid4().hex)
+        archive.mkdir(exist_ok=False)
+        preserved=[]
+        for index,item in enumerate(manifest['files']):
+            target=safe_file(item['target'],checkpoint.scope)
+            before=digest_file(target);retained=archive/(str(index)+target.suffix)
+            with target.open('rb') as source,retained.open('xb') as output:shutil.copyfileobj(source,output)
+            if digest_file(retained)!=before or digest_file(target)!=before:
+                raise ReconcileRequired('task copy changed during preservation')
+            preserved.append({'target':str(target),'archive':str(retained),'sha256':before})
+        # Re-check liveness immediately before replacements; do not signal CAD.
+        for role in ('controller','process'):
+            if process_still_matches(metadata[role]):raise ReconcileRequired('old process became active')
+        for index,item in enumerate(manifest['files']):
+            target=safe_file(item['target'],checkpoint.scope)
+            fd,temp=tempfile.mkstemp(prefix='.dead-restore-',dir=target.parent)
+            try:
+                with os.fdopen(fd,'wb') as output,(checkpoint.directory/item['backup']).open('rb') as source:
+                    shutil.copyfileobj(source,output);output.flush();os.fsync(output.fileno())
+                if digest_file(temp)!=item['source_sha256']:raise ReconcileRequired('restore bytes differ from checkpoint')
+                if digest_file(target)!=preserved[index]['sha256']:
+                    raise ReconcileRequired('task copy changed after preservation')
+                if _snapshot_sldworks_pids():raise ReconcileRequired('SolidWorks appeared during recovery')
+                os.replace(temp,target)
+            finally:
+                if Path(temp).exists():Path(temp).unlink()
+        proof=verify_quiescent_baseline(row,process_probe=process_still_matches)
+        proof.update(byte_restore_performed=True,preserved_artifacts=preserved)
+        return proof
+
+    return ReceiptStore(state_db).reconcile(key,restore_and_verify)

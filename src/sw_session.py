@@ -130,6 +130,9 @@ class SessionLease:
     post_save_outcome: str | None = None
     durable_write_guard: Callable[[], None] | None = None
     close_doc_only: bool = False
+    # True when this lease proved an already-running SLDWORKS PID.
+    # spawned_pid then names that process; this task did not create it.
+    reuse_attached: bool = False
     killer: Killer | None = None
     abandon: threading.Event = field(default_factory=threading.Event)
     watchdog_thread_ids: list[int] = field(default_factory=list)
@@ -209,6 +212,37 @@ class SessionLease:
             return False
         if not _is_sldworks_image(info.image):
             return False
+        self.spawned_pid = int(pid)
+        self.verified_exclusive = True
+        return True
+
+    def prove_attached_reuse(self, pid: int, probe: Probe) -> bool:
+        """Prove one already-running SLDWORKS for CloseDoc-only reuse.
+
+        GetActiveObject alone is not enough: the PID, query handle and image
+        still have to match. This task did not spawn the process, so ExitApp
+        and termination stay refused even if close_doc_only is later cleared.
+        """
+
+        self.verified_exclusive = False
+        self.probe = probe
+        self.close_doc_only = True
+        self.reuse_attached = True
+        self.attached_existing = True
+        self.created_by_task = False
+        if self.spawn_claimed or self.poisoned or self.timed_out or self.writes_blocked or self.disconnected:
+            return False
+        if not self.foreign_titles_known:
+            return False
+        if self.observed_pid is None or int(self.observed_pid) != int(pid):
+            return False
+        info = probe(int(pid))
+        if info is None or not info.alive or int(info.pid) != int(pid):
+            return False
+        if not _is_sldworks_image(info.image):
+            return False
+        # require_model_write checks spawned_pid. Here it is the attached PID.
+        self.spawn_claimed = False
         self.spawned_pid = int(pid)
         self.verified_exclusive = True
         return True
@@ -365,7 +399,7 @@ class SwTaskWorker:
                 break
             if self.lease.abandon.is_set() or time.monotonic() >= deadline:
                 exclusive = self.lease.verified_exclusive
-                if exclusive and not self.lease.close_doc_only:
+                if exclusive and not self.lease.close_doc_only and not self.lease.reuse_attached:
                     try:
                         terminate_owned_process(self.lease)
                     except SessionOwnershipError:
@@ -378,12 +412,12 @@ class SwTaskWorker:
                 # saves are refused. reset_for_tests is not a recovery path.
                 self.lease.writes_blocked = True
                 self._poison("call timed out or the watchdog abandoned the wait")
-                if exclusive and not self.lease.close_doc_only:
+                if exclusive and not self.lease.close_doc_only and not self.lease.reuse_attached:
                     detail = (
                         " An owned pid terminate was requested from outside the "
                         "STA. ExitApp was not called from the watchdog thread."
                     )
-                elif self.lease.close_doc_only:
+                elif self.lease.close_doc_only or self.lease.reuse_attached:
                     detail = " CloseDoc-only policy forbids ExitApp and process termination; reconcile is required."
                 else:
                     detail = (
@@ -931,7 +965,7 @@ def _listed_open_titles(lease: SessionLease, app: Any) -> list[str]:
 
 
 def exit_owned_application(lease: SessionLease, app: Any) -> None:
-    if lease.close_doc_only:
+    if lease.close_doc_only or lease.reuse_attached:
         raise SessionOwnershipError('CloseDoc-only lease forbids ExitApp')
     _require_sta(lease)
     _require_bound_application(lease, app, "ExitApp")
@@ -1148,7 +1182,7 @@ def terminate_owned_process(
 ) -> None:
     """Signal the exact spawned PID. Never a process-name kill."""
 
-    if lease.close_doc_only:
+    if lease.close_doc_only or lease.reuse_attached:
         raise SessionOwnershipError('CloseDoc-only lease forbids process termination')
     if lease.terminate_sent:
         return
@@ -1261,7 +1295,7 @@ def call_with_watchdog(
         if lease is None:
             return
         lease.timed_out = True
-        if lease.verified_exclusive:
+        if lease.verified_exclusive and not lease.close_doc_only and not lease.reuse_attached:
             try:
                 terminate_owned_process(lease)
             except SessionOwnershipError:
@@ -1346,7 +1380,7 @@ def call_with_watchdog(
         if not finished.wait(timeout_sec + 0.05):
             if lease is not None and not lease.abandon.is_set():
                 lease.timed_out = True
-                if lease.verified_exclusive:
+                if lease.verified_exclusive and not lease.close_doc_only and not lease.reuse_attached:
                     try:
                         terminate_owned_process(lease)
                     except SessionOwnershipError:
