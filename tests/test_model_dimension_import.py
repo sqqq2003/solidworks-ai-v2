@@ -12,7 +12,7 @@ def dimension(value=.514,name='D1@Extrude@tube.Part',kind=0):
 def display(value=.514,name='D1@Extrude@tube.Part',override=False,doc_units=True):
     obj=NS(GetDimension2=lambda index:dimension(value,name),GetOverride=lambda:override,
         GetUseDocUnits=lambda:doc_units,GetNext5=None)
-    ann=NS(GetName=lambda:'dimension1',GetType=lambda:4,GetPosition=lambda:[.1,.2,0],GetSpecificAnnotation=lambda:obj)
+    ann=NS(GetName=lambda:'dimension1',GetType=lambda:4,GetPosition=lambda:[.1,.2,0],GetSpecificAnnotation=lambda:obj,Visible=1)
     obj.GetAnnotation=lambda:ann
     return obj
 

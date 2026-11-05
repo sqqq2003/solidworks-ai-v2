@@ -145,6 +145,12 @@ def run_trial(request):
         validate_required_parameters(request.get('required_model_dimensions'))
     elif request.get('required_model_dimensions'):
         raise ValueError('required model dimensions cannot be ignored; enable explicit import')
+    deduplicate=request.get('deduplicate_model_dimensions',False)
+    preferences=request.get('dimension_view_preferences',{})
+    if type(deduplicate) is not bool or (deduplicate and not import_dimensions):
+        raise ValueError('dimension deduplication requires explicit model dimension import')
+    if not isinstance(preferences,dict) or any(key not in request.get('required_model_dimensions',[]) or value not in {'front','top','right'} for key,value in preferences.items()):
+        raise ValueError('view preferences must refer to required model dimensions and named standard views')
     originals={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in models.rglob('*') if p.is_file() and not p.name.startswith('~$')}
     report={'mode':'explicit_partial_model_test','manufacturing_approved':False,'status':'running','cells':[],
             'acceptance_state':'reviewing','delivery_accepted':False}
@@ -194,7 +200,8 @@ def run_trial(request):
                 for case in request['cases']:
                     tag=case['sheet']+'-1-'+str(case['denominator']);cell={'tag':tag,'status':'running'};report['cells'].append(cell);checkpoint()
                     task=trial_task(case,request['templates'][case['sheet']],config,request['bom_template'],model_kind=model_kind)
-                    if import_dimensions:task.update(import_model_dimensions=True,required_model_dimensions=request['required_model_dimensions'])
+                    if import_dimensions:task.update(import_model_dimensions=True,required_model_dimensions=request['required_model_dimensions'],
+                        deduplicate_model_dimensions=deduplicate,dimension_view_preferences=preferences)
                     try:
                         cell['drawing']=driver.export_manufacturing({'status':'ready_for_native','tasks':[task]},{'documents':{'machine':{'path':str(assembly),'configuration':config}}},root/tag)
                         cell['status']='pass_pending_visual'
@@ -202,6 +209,7 @@ def run_trial(request):
                             from drawing_review import DrawingEvidence
                             evidence=DrawingEvidence.load(cell['drawing']['results'][0]['drawing_evidence'])
                             cell['model_dimension_import']=evidence.data.get('model_dimension_import')
+                            cell['dimension_deduplication']=evidence.data.get('dimension_deduplication')
                             if not evidence.data['complete']:cell['status']='dimensions_pending'
                         cell.update(acceptance_state='reviewing',delivery_accepted=False)
                     except (ValueError,RuntimeError) as error:

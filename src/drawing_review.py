@@ -69,7 +69,8 @@ class DrawingEvidence:
                      'requested': {'scale': task.get('scale'), 'views': task.get('drawing_model', {}).get('views', []),
                                    'annotation_count': sum(len(task.get(k, [])) for k in ('dimensions', 'annotations', 'balloons'))+
                                    int(bool(task.get('drawing_model',{}).get('bom'))),
-                                   'model_dimensions_required':bool(task.get('import_model_dimensions'))},
+                                   'model_dimensions_required':bool(task.get('import_model_dimensions')),
+                                   'deduplicate_model_dimensions':bool(task.get('deduplicate_model_dimensions'))},
                      'views': [], 'annotations': [], 'layout_readback': None,
                      'annotation_reopen_verified': False,
                      'member_not_found': False, 'member_not_found_events': [],

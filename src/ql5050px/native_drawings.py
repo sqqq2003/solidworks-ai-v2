@@ -166,6 +166,10 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
             if task.get('import_model_dimensions'):
                 from .model_dimensions import insert_model_dimensions
                 dimension_source=insert_model_dimensions(self,drawing,source_model,views,task['required_model_dimensions'])
+                if task.get('deduplicate_model_dimensions'):
+                    from .model_dimensions import deduplicate_model_dimensions
+                    _evidence.data['dimension_deduplication']=deduplicate_model_dimensions(
+                        self,drawing,views,task.get('dimension_view_preferences'))
             layout_evidence=lock_view_layout(drawing,task,views)
             if dimension_source is not None:
                 from .model_dimensions import collect_model_dimensions,dimension_coverage
@@ -265,6 +269,9 @@ class ManufacturingDriver(NativeMachineDriver,NativeExportsMixin,DrawingAnnotati
                 _evidence.data['annotation_reopen_verified']=True
                 if dimension_source is not None:
                     _evidence.data['model_dimension_import']['reopened_verified']=True
+                    if task.get('deduplicate_model_dimensions'):
+                        from .model_dimensions import verify_hidden_dimensions
+                        _evidence.data['dimension_deduplication']=verify_hidden_dimensions(actual_views,_evidence.data['dimension_deduplication'])
             finally:self.close_document(reopened)
             if bom_evidence:
                 receipt['bom_readback']=bom_evidence
