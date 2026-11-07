@@ -14,6 +14,7 @@ app.py 需要桌面与 tkinter。Windows 原生生成另需 pywin32、SolidWorks
 - [整体项目测试与交接](docs/project-testing.md)：桌面、三类零件、批量任务和测试回传。
 - [钣金实机联调](docs/p0-sheet-metal.md)：独占进程、K因子、展开与p248未解决项。
 - [整机参数预检](docs/a01-parametric.md)：真实OEM未知值保持pending，不冒充整机完成。
+- [日常使用辅助](docs/project-testing.md#日常使用辅助设计工作台)：文字参数填表、记住 SolidWorks 路径与最近文件、队列调整、历史报告。
 
 ```bash
 python work/run_cloud_tests.py
