@@ -1,0 +1,318 @@
+{
+  "issue": 5,
+  "title": "P0 relief-slot path acceptance",
+  "generated_at": "2026-10-23T14:44:53+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": {
+    "label": "DDD",
+    "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e"
+  },
+  "tier": "relief_slot",
+  "params": {
+    "thickness_mm": 2.5,
+    "radius_mm": 1,
+    "angle_deg": 90
+  },
+  "scanned_sources": [
+    {
+      "label": "QL-5050_cached_dxf",
+      "path": "C:\\Users\\yue\\AppData\\Local\\Temp\\cad2sw_dwg_dxf\\QL-5050_sheetmetal_work_solidworks_18e1153116eb87a4.dxf",
+      "profiles_with_bends": 27,
+      "profiles_with_drawing_relief_holes": 0,
+      "profiles_with_notches_near_bend": 4,
+      "error": null,
+      "skipped": null
+    },
+    {
+      "label": "QL-斜滚筒线钣金下料图",
+      "path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\QL-斜滚筒线钣金下料图.DWG",
+      "profiles_with_bends": 18,
+      "profiles_with_drawing_relief_holes": 0,
+      "profiles_with_notches_near_bend": 1,
+      "error": null,
+      "skipped": null
+    },
+    {
+      "label": "钣金-总",
+      "path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\钣金-总.DWG",
+      "profiles_with_bends": 9,
+      "profiles_with_drawing_relief_holes": 0,
+      "profiles_with_notches_near_bend": 1,
+      "error": null,
+      "skipped": null
+    },
+    {
+      "label": "QL-斜滚筒线201不锈钢钣金补料",
+      "path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\QL-斜滚筒线201不锈钢钣金补料.dwg",
+      "profiles_with_bends": 4,
+      "profiles_with_drawing_relief_holes": 0,
+      "profiles_with_notches_near_bend": 0,
+      "error": null,
+      "skipped": null
+    },
+    {
+      "label": "钣金图_latest",
+      "path": "D:\\工程\\钣金导入\\临时\\p0_relief_20261023\\钣金图_latest.dwg",
+      "profiles_with_bends": 0,
+      "profiles_with_drawing_relief_holes": 0,
+      "profiles_with_notches_near_bend": 0,
+      "error": null,
+      "skipped": null
+    }
+  ],
+  "inner_rect_relief_holes_classified_anywhere": false,
+  "classifier": "is_small_rectangular_relief_hole(hole, outer) AND near bend end (<=12mm)",
+  "edge_concave_aa_notches_near_bend_found": true,
+  "best_edge_notch_candidates": [
+    {
+      "source": "QL-5050",
+      "profile": 248,
+      "bends": 4,
+      "notches_near": 12,
+      "area": 5182.92
+    },
+    {
+      "source": "QL-5050",
+      "profile": 206,
+      "bends": 8,
+      "notches_near": 6,
+      "area": 65805.91
+    },
+    {
+      "source": "QL-斜滚筒线钣金下料图",
+      "profile": 109,
+      "bends": 4,
+      "notches_near": 2,
+      "area": 21843.33
+    }
+  ],
+  "invented_slots": false,
+  "ran_profiles": [
+    {
+      "issue": 5,
+      "generated_at": "2026-10-23T14:44:53+08:00",
+      "timezone": "Asia/Shanghai",
+      "machine": {
+        "label": "DDD",
+        "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e"
+      },
+      "tier": "relief_slot_path",
+      "profile": 248,
+      "status": "partial",
+      "reasons": [
+        "edge_notches_on_drawing_not_invented",
+        "editable_BaseFlange_plus_SM3dBend_plus_FlatPattern",
+        "unfold_dxF_ok",
+        "only_2_of_4_bends_inserted_as_SM3dBend_rest_sketch_ref",
+        "ForceRebuild3_returned_False",
+        "no_BendRejected",
+        "relief_deepen_1mm_then_0.5mm_NEVER_triggered"
+      ],
+      "why_chosen": "QL-5050 edge-notch relief candidate: bend_count=4, area~5183; 12 concave AA notches near bend ends on drawing (NOT invented). No is_small_rectangular_relief_hole in inventory.",
+      "expected_bend_count": 4,
+      "bend_feature_count": 1,
+      "base_flange_count": 1,
+      "cut_feature_count": 1,
+      "rebuild_ok": false,
+      "rebuild_note": "ForceRebuild3(True)=False",
+      "editable_sheet_metal": true,
+      "has_flat_pattern": true,
+      "sheet_hints": [
+        {
+          "name": "平板型式6",
+          "type": "FlatPattern"
+        },
+        {
+          "name": "折弯线_手折参考",
+          "type": "ProfileFeature"
+        },
+        {
+          "name": "绘制的折弯5",
+          "type": "SM3dBend"
+        },
+        {
+          "name": "基体-法兰1",
+          "type": "SMBaseFlange"
+        },
+        {
+          "name": "钣金6",
+          "type": "SheetMetal"
+        }
+      ],
+      "all_features": [
+        {
+          "name": "平板型式6",
+          "type": "FlatPattern"
+        },
+        {
+          "name": "折弯线_手折参考",
+          "type": "ProfileFeature"
+        },
+        {
+          "name": "绘制的折弯5",
+          "type": "SM3dBend"
+        },
+        {
+          "name": "草图9",
+          "type": "ProfileFeature"
+        },
+        {
+          "name": "切除-拉伸1",
+          "type": "ICE"
+        },
+        {
+          "name": "草图6",
+          "type": "ProfileFeature"
+        },
+        {
+          "name": "基体-法兰1",
+          "type": "SMBaseFlange"
+        },
+        {
+          "name": "钣金6",
+          "type": "SheetMetal"
+        },
+        {
+          "name": "草图1",
+          "type": "ProfileFeature"
+        },
+        {
+          "name": "Tables",
+          "type": "ConfigTableFolder"
+        },
+        {
+          "name": "原点",
+          "type": "OriginProfileFeature"
+        },
+        {
+          "name": "右视基准面",
+          "type": "RefPlane"
+        },
+        {
+          "name": "上视基准面",
+          "type": "RefPlane"
+        },
+        {
+          "name": "前视基准面",
+          "type": "RefPlane"
+        },
+        {
+          "name": "材质 <未指定>",
+          "type": "MaterialFolder"
+        },
+        {
+          "name": "方程式",
+          "type": "EqnFolder"
+        },
+        {
+          "name": "备注",
+          "type": "CommentsFolder"
+        },
+        {
+          "name": "曲面实体",
+          "type": "SurfaceBodyFolder"
+        },
+        {
+          "name": "实体",
+          "type": "SolidBodyFolder"
+        },
+        {
+          "name": "光源与相机",
+          "type": "EnvFolder"
+        },
+        {
+          "name": "标注",
+          "type": "InkMarkupFolder"
+        },
+        {
+          "name": "注解",
+          "type": "DetailCabinet"
+        },
+        {
+          "name": "设计活页夹",
+          "type": "DocsFolder"
+        },
+        {
+          "name": "传感器",
+          "type": "SensorFolder"
+        },
+        {
+          "name": "选择集",
+          "type": "SelectionSetFolder"
+        },
+        {
+          "name": "历史记录",
+          "type": "HistoryFolder"
+        },
+        {
+          "name": "收藏",
+          "type": "FavoriteFolder"
+        }
+      ],
+      "dxf_ok": true,
+      "dxf_bytes": 25867,
+      "dxf_path": "D:\\工程\\钣金导入\\导出\\p0_accept_relief\\01x1_2.5mm_p248_unfold.DXF",
+      "part_bytes": 182148,
+      "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_relief\\01x1_2.5mm_p248.SLDPRT",
+      "part_mtime": "2026-10-23T14:42:58.410511+08:00",
+      "gen_exit_code": 0,
+      "gen_elapsed_ms": 30384,
+      "relief_retry_hint": false,
+      "mentions_bend_rejected": false,
+      "mentions_relief_expand": false,
+      "drawing_relief_classification": {
+        "classifier": "is_small_rectangular_relief_hole + concave_aa_notches_near_bend_end",
+        "inner_small_rect_relief_holes_across_inventory": 0,
+        "edge_concave_aa_notches_near_bend_ends_on_p248": 12,
+        "invented_slots": false,
+        "deepen_triggered": false,
+        "note": "Scanned QL-5050 + 4 other sheet DWGs: 0 hole-class relief slots. p248 has drawing edge notches near bend ends. Generate done without BendRejected; deepen +1.0/+0.5 not exercised."
+      },
+      "source_dwg_work": "D:\\工程\\钣金导入\\临时\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+      "source_mother_untouched": true,
+      "packgo_docs_kept_open": true,
+      "bend_indices_attempted": [
+        106,
+        107,
+        108,
+        109
+      ],
+      "bend_indices_succeeded": [
+        106,
+        107
+      ],
+      "bend_indices_fallback_sketch_ref": [
+        108,
+        109
+      ],
+      "relief_step_logged": 0,
+      "failure_path": "same_group_fail_then_parallel_split_then_sketch_ref_fallback",
+      "BendRejected": false,
+      "deepen_upward_inward_triggered": false
+    }
+  ],
+  "overall": "partial_no_deepen",
+  "blockers": [
+    "No sample in inventory classified as inner rectangular relief-slot holes (is_small_rectangular_relief_hole=0 across QL-5050 + 4 other sheet DWGs).",
+    "On edge-notch candidate p248, bend insert failures used parallel-split + sketch-ref fallback; BendRejected was NOT raised so upward+inward deepen (+1.0 then +0.5mm) never ran (relief_step stayed 0)."
+  ],
+  "status_detail": {
+    "hole_class_relief_sample": "no_relief_sample",
+    "edge_notch_sample_ran": "partial",
+    "deepen_path": "not_triggered"
+  },
+  "artifacts": {
+    "scan_json": "D:\\工程\\钣金导入\\导出\\p0_accept_relief\\relief_slot_scan.json",
+    "accept_p248": "D:\\工程\\钣金导入\\导出\\p0_accept_relief\\accept_p248.json",
+    "part": "D:\\工程\\钣金导入\\导出\\p0_accept_relief\\01x1_2.5mm_p248.SLDPRT",
+    "dxf": "D:\\工程\\钣金导入\\导出\\p0_accept_relief\\01x1_2.5mm_p248_unfold.DXF",
+    "gen_err_log": "C:\\Users\\yue\\A01-live-work\\p0_relief_py_err_p248.log"
+  },
+  "source_mother_untouched": true,
+  "notes": [
+    "Multi-bend 185/222/203 prior PASS unchanged.",
+    "Did not invent relief slots.",
+    "Did not Save mothers under 滚筒工程 / 封箱机; packgo A01 docs kept open.",
+    "p248: BaseFlange + cut(ICE) + SM3dBend(106,107) + sketch-ref for (108,109) + FlatPattern; unfold DXF 25867 bytes; ForceRebuild3 returned False."
+  ]
+}

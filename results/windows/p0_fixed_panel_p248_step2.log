@@ -1,0 +1,91 @@
+2026-10-23 17:18:10,008 INFO [ezdxf] creating ACAD_COLOR dictionary
+2026-10-23 17:18:10,008 INFO [ezdxf] creating ACAD_MATERIAL dictionary
+2026-10-23 17:18:10,008 INFO [ezdxf] creating ACAD_MLEADERSTYLE dictionary
+2026-10-23 17:18:10,008 INFO [ezdxf] creating ACAD_TABLESTYLE dictionary
+2026-10-23 17:18:10,008 INFO [ezdxf] creating ACAD_VISUALSTYLE dictionary
+2026-10-23 17:18:10,864 INFO [cad_analyzer] 图纸判定为滚筒尺寸图：QL-5050_sheetmetal_work.dxf（规格 1 种，折弯线 143 条）
+2026-10-23 17:18:10,888 INFO [p248_fixed_panel] worker step=2 profile=#248 bends=(106, 107, 108, 109) extra_mm=1.5 out=D:\工程\钣金导入\p0_fixed_panel_retest_20261023_171258\attempts\p248_step2.SLDPRT
+2026-10-23 17:18:10,903 INFO [sw_session] running p248-fixed-step2 on task STA sw-task-fea0cbde8023
+2026-10-23 17:18:15,772 INFO [solidworks_generator] 生成钣金零件：图纸=D:\工程\钣金导入\p0_fixed_panel_retest_20261023_171258\QL-5050_sheetmetal_work.dxf 轮廓=#248 折弯=4 条 板厚=2.500 半径=1.000 角度=90.000 反向=False 释放槽级别=2 输出=D:\工程\钣金导入\p0_fixed_panel_retest_20261023_171258\attempts\p248_step2.SLDPRT
+2026-10-23 17:18:15,772 INFO [solidworks_generator] 矩形释放槽扩大：级别=2 边长各+1.5mm 改动=1
+2026-10-23 17:18:16,015 INFO [solidworks_generator] 已连接 SolidWorks（本次由程序激活且尚未证明独占：created_by_task=True）
+2026-10-23 17:18:16,021 INFO [solidworks_generator] SolidWorks 类型库主版本 33 加载成功
+2026-10-23 17:18:23,043 INFO [solidworks_generator] 基体法兰创建成功：尝试=正向圆弧 加厚方向=True
+2026-10-23 17:18:23,050 INFO [solidworks_generator] 基体法兰已创建：基体-法兰1
+2026-10-23 17:18:24,714 INFO [solidworks_generator] 孔/槽切除：草图曲线 1 条，切除前实体面 36 个，切除后 37 个
+2026-10-23 17:18:24,714 INFO [solidworks_generator] 孔/槽切除完成：1 个轮廓
+2026-10-23 17:18:24,732 INFO [solidworks_generator] Fixed panel pinned for all bend groups: xy=(275.4327977756461, 5595.010852622654) bends=(106, 107, 108, 109)
+2026-10-23 17:18:25,945 INFO [solidworks_generator] InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-23 17:18:27,816 INFO [solidworks_generator] InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-23 17:18:28,644 WARNING [solidworks_generator] 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-23 17:18:28,644 WARNING [solidworks_generator] 同草图一次折弯失败 bends=(106, 107, 108, 109)，改为平行分组再逐条
+2026-10-23 17:18:29,836 INFO [solidworks_generator] InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-23 17:18:30,880 INFO [solidworks_generator] 自动折弯成功：bends=(106, 107) face=0 pos=1 flip=False defaultR=False cba=False pick=(275.433,5595.011)
+2026-10-23 17:18:32,109 INFO [solidworks_generator] InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-23 17:18:33,878 INFO [solidworks_generator] InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-23 17:18:34,641 WARNING [solidworks_generator] 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-23 17:18:35,870 INFO [solidworks_generator] InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-23 17:18:37,609 INFO [solidworks_generator] InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-23 17:18:38,371 WARNING [solidworks_generator] 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-23 17:18:39,606 INFO [solidworks_generator] InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-10-23 17:18:41,361 INFO [solidworks_generator] InsertSheetMetal3dBend try #2 face=1 pos=1 flip=False
+2026-10-23 17:18:42,122 WARNING [solidworks_generator] 自动折弯全部策略失败，最后错误：面 1 上 InsertSheetMetal3dBend 全部参数组合失败。
+2026-10-23 17:18:42,276 INFO [sw_session] leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-10-23 17:18:42,320 ERROR [sw_owned_launch] owned process left open; no forced cleanup
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 3577, in _create_bends_with_fallbacks
+    _attempt(bend_indices)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 3553, in _attempt
+    _create_bend_feature(
+    ~~~~~~~~~~~~~~~~~~~~^
+        model,
+        ^^^^^^
+    ...<15 lines>...
+        outer_profile=outer_profile,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 3414, in _create_bend_feature
+    raise BendRejectedError(
+    ...<2 lines>...
+    )
+solidworks_generator.BendRejectedError: SolidWorks 拒绝创建第 106, 107, 108, 109 条折弯特征。可能原因包括折弯交会处释放槽不足、折弯线相交，或折弯线未穿过当前平面区域。已尝试扩大释放槽 2 次。已达到自动尝试上限，请人工检查释放槽和折弯线。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 178, in owned_solidworks
+    yield binding
+  File "C:\sw-ai-v2-work\work\retest_p248_fixed_panel.py", line 104, in job
+    result = generate_sheet_metal(
+        analysis,
+    ...<8 lines>...
+        relief_step=args.step,
+    )
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 4798, in generate_sheet_metal
+    completed_bends = _create_bends_with_fallbacks(
+        model,
+    ...<16 lines>...
+        hole_profiles=tuple(hole for hole, _ in hole_profiles),
+    )
+  File "C:\sw-ai-v2-work\src\solidworks_generator.py", line 3629, in _create_bends_with_fallbacks
+    raise error
+solidworks_generator.BendRejectedError: SolidWorks 拒绝创建第 108, 109 条折弯特征。可能原因包括折弯交会处释放槽不足、折弯线相交，或折弯线未穿过当前平面区域。已尝试扩大释放槽 2 次。已达到自动尝试上限，请人工检查释放槽和折弯线。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 184, in owned_solidworks
+    binding.validate(lease)
+    ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 84, in validate
+    if self.lifetime.probe(self.lifetime.pid) is None or self.read_pid(self.app) != self.lifetime.pid:
+                                                         ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\sw-ai-v2-work\src\sw_owned_launch.py", line 73, in _read_pid
+    return int(value() if callable(value) else value)
+               ~~~~~^^
+  File "C:\Users\yue\AppData\Local\Temp\gen_py\3.14\83A33D31-27C5-11CE-BFD4-00400513BB57x0x33x0.py", line 59407, in GetProcessID
+    return self._oleobj_.InvokeTypes(166, LCID, 1, (3, 0), (),)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147220995, '对象没有连接到服务器', None, None)

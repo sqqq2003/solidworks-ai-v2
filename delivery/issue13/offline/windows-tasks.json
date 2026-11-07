@@ -1,0 +1,2523 @@
+{
+  "status": "review_required",
+  "native_write_allowed": false,
+  "reason": "review mappings, decisions and independent native plans before Windows execution",
+  "sequence": [
+    "isolate_sources",
+    "assembly",
+    "drive",
+    "native_checks",
+    "manufacturing_drawings"
+  ],
+  "assembly": {
+    "schema_version": 1,
+    "machine": "QL-5050PX",
+    "tree": {
+      "schema_version": 1,
+      "machine": "QL-5050PX",
+      "units": "mm",
+      "root": "machine",
+      "catalog": {
+        "machine": {
+          "id": "machine",
+          "type": "assembly",
+          "module": "machine",
+          "part_number": "QL-5050PX-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [
+            {
+              "id": "frame",
+              "ref": "frame",
+              "transform_mm": null
+            },
+            {
+              "id": "conveyor",
+              "ref": "conveyor",
+              "transform_mm": null
+            },
+            {
+              "id": "left_drive",
+              "ref": "left_drive",
+              "transform_mm": null
+            },
+            {
+              "id": "right_drive",
+              "ref": "right_drive",
+              "transform_mm": null
+            },
+            {
+              "id": "sealing",
+              "ref": "sealing",
+              "transform_mm": null
+            },
+            {
+              "id": "interfaces",
+              "ref": "interfaces",
+              "transform_mm": null
+            },
+            {
+              "id": "standard_parts",
+              "ref": "standard_parts",
+              "transform_mm": null
+            }
+          ]
+        },
+        "frame": {
+          "id": "frame",
+          "type": "assembly",
+          "module": "frame",
+          "part_number": "QL-FRAME-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        },
+        "conveyor": {
+          "id": "conveyor",
+          "type": "assembly",
+          "module": "conveyor",
+          "part_number": "QL-CONVEYOR-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        },
+        "left_drive": {
+          "id": "left_drive",
+          "type": "assembly",
+          "module": "left_drive",
+          "part_number": "QL-LEFT_DRIVE-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        },
+        "right_drive": {
+          "id": "right_drive",
+          "type": "assembly",
+          "module": "right_drive",
+          "part_number": "QL-RIGHT_DRIVE-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        },
+        "sealing": {
+          "id": "sealing",
+          "type": "assembly",
+          "module": "sealing",
+          "part_number": "QL-SEALING-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        },
+        "interfaces": {
+          "id": "interfaces",
+          "type": "assembly",
+          "module": "interfaces",
+          "part_number": "QL-INTERFACES-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        },
+        "standard_parts": {
+          "id": "standard_parts",
+          "type": "assembly",
+          "module": "standard_parts",
+          "part_number": "QL-STANDARD_PARTS-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      "mates": [],
+      "mate_inventory_status": "pending_mapping"
+    },
+    "dependency_order": [
+      "frame",
+      "conveyor",
+      "left_drive",
+      "right_drive",
+      "sealing",
+      "interfaces",
+      "standard_parts",
+      "machine"
+    ],
+    "operations": [
+      {
+        "op": "rebuild_save_reopen",
+        "node": "frame",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "conveyor",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "left_drive",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "right_drive",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "sealing",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "interfaces",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "standard_parts",
+        "expected_occurrences": 0
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "frame",
+        "ref": "frame",
+        "transform_mm": null
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "conveyor",
+        "ref": "conveyor",
+        "transform_mm": null
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "left_drive",
+        "ref": "left_drive",
+        "transform_mm": null
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "right_drive",
+        "ref": "right_drive",
+        "transform_mm": null
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "sealing",
+        "ref": "sealing",
+        "transform_mm": null
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "interfaces",
+        "ref": "interfaces",
+        "transform_mm": null
+      },
+      {
+        "op": "insert_component",
+        "assembly": "machine",
+        "id": "standard_parts",
+        "ref": "standard_parts",
+        "transform_mm": null
+      },
+      {
+        "op": "rebuild_save_reopen",
+        "node": "machine",
+        "expected_occurrences": 7
+      }
+    ],
+    "differences": [
+      {
+        "node": "frame",
+        "before": null,
+        "after": {
+          "id": "frame",
+          "type": "assembly",
+          "module": "frame",
+          "part_number": "QL-FRAME-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "conveyor",
+        "before": null,
+        "after": {
+          "id": "conveyor",
+          "type": "assembly",
+          "module": "conveyor",
+          "part_number": "QL-CONVEYOR-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "left_drive",
+        "before": null,
+        "after": {
+          "id": "left_drive",
+          "type": "assembly",
+          "module": "left_drive",
+          "part_number": "QL-LEFT_DRIVE-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "right_drive",
+        "before": null,
+        "after": {
+          "id": "right_drive",
+          "type": "assembly",
+          "module": "right_drive",
+          "part_number": "QL-RIGHT_DRIVE-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "sealing",
+        "before": null,
+        "after": {
+          "id": "sealing",
+          "type": "assembly",
+          "module": "sealing",
+          "part_number": "QL-SEALING-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "interfaces",
+        "before": null,
+        "after": {
+          "id": "interfaces",
+          "type": "assembly",
+          "module": "interfaces",
+          "part_number": "QL-INTERFACES-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "standard_parts",
+        "before": null,
+        "after": {
+          "id": "standard_parts",
+          "type": "assembly",
+          "module": "standard_parts",
+          "part_number": "QL-STANDARD_PARTS-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [],
+          "structure_status": "pending_mapping",
+          "material": null
+        }
+      },
+      {
+        "node": "machine",
+        "before": null,
+        "after": {
+          "id": "machine",
+          "type": "assembly",
+          "module": "machine",
+          "part_number": "QL-5050PX-PENDING",
+          "component_kind": "editable",
+          "source_path": null,
+          "template": null,
+          "configuration": null,
+          "children": [
+            {
+              "id": "frame",
+              "ref": "frame",
+              "transform_mm": null
+            },
+            {
+              "id": "conveyor",
+              "ref": "conveyor",
+              "transform_mm": null
+            },
+            {
+              "id": "left_drive",
+              "ref": "left_drive",
+              "transform_mm": null
+            },
+            {
+              "id": "right_drive",
+              "ref": "right_drive",
+              "transform_mm": null
+            },
+            {
+              "id": "sealing",
+              "ref": "sealing",
+              "transform_mm": null
+            },
+            {
+              "id": "interfaces",
+              "ref": "interfaces",
+              "transform_mm": null
+            },
+            {
+              "id": "standard_parts",
+              "ref": "standard_parts",
+              "transform_mm": null
+            }
+          ]
+        }
+      }
+    ],
+    "values_mm": {
+      "target_length": 1800.0,
+      "target_width": 900.0,
+      "target_height": 1500.0,
+      "conveyor_height": null,
+      "mount_pitch": null,
+      "sheet_thickness": null,
+      "sealing_height": null,
+      "left_drive_x": null,
+      "end_allowance": null,
+      "top_allowance": null,
+      "belt_offset": null,
+      "side_allowance": null,
+      "right_drive_x": null,
+      "frame_width": null,
+      "conveyor_length": null,
+      "motor_shaft_diameter": null,
+      "bearing_diameter": null,
+      "frame_length": null,
+      "conveyor_width": null,
+      "drive_speed": null,
+      "motor_power": null,
+      "drive_belt_length": null,
+      "sealing_clearance": null,
+      "frame_height": null
+    },
+    "pending_mapping": [
+      {
+        "path": "machine",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "frame",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "frame",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "frame",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/frame",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "conveyor",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "conveyor",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "conveyor",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/conveyor",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "left_drive",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "left_drive",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "left_drive",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/left_drive",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "right_drive",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "right_drive",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "right_drive",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/right_drive",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "sealing",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "sealing",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "sealing",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/sealing",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "interfaces",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "interfaces",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "interfaces",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/interfaces",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "standard_parts",
+        "field": "configuration",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "standard_parts",
+        "field": "children",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "standard_parts",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine/standard_parts",
+        "field": "transform_mm",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine",
+        "field": "source_path_or_generation_template",
+        "status": "pending_mapping"
+      },
+      {
+        "path": "machine",
+        "field": "mate_inventory",
+        "status": "pending_mapping"
+      }
+    ],
+    "status": "pending_mapping",
+    "native_acceptance": "unverified",
+    "cad_executed": false
+  },
+  "drive": {
+    "schema_version": 1,
+    "machine": "QL-5050PX",
+    "values": {
+      "target_length": 1800.0,
+      "target_width": 900.0,
+      "target_height": 1500.0,
+      "end_allowance": null,
+      "side_allowance": null,
+      "pulley_driver_d": null,
+      "pulley_driven_d": null,
+      "motor_rpm": null,
+      "driver_teeth": null,
+      "driven_teeth": null,
+      "bearing_span": null,
+      "sealing_stroke": null,
+      "end_pair": null,
+      "frame_length": null,
+      "side_pair": null,
+      "conveyor_width": null,
+      "left_drive_x": null,
+      "right_drive_x": null,
+      "drive_ratio": null,
+      "roller_rpm": null,
+      "center_distance": null,
+      "belt_length": null,
+      "belt_speed": null
+    },
+    "parameter_register": {
+      "target_length": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "resolved_design"
+      },
+      "target_width": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "resolved_design"
+      },
+      "target_height": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "resolved_design"
+      },
+      "end_allowance": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "side_allowance": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "pulley_driver_d": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "pulley_driven_d": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "motor_rpm": {
+        "unit": "rpm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "driver_teeth": {
+        "unit": "count",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "driven_teeth": {
+        "unit": "count",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "bearing_span": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "sealing_stroke": {
+        "unit": "mm",
+        "depends_on": [],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "end_pair": {
+        "unit": "mm",
+        "depends_on": [
+          "end_allowance"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "frame_length": {
+        "unit": "mm",
+        "depends_on": [
+          "target_length",
+          "end_pair"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "side_pair": {
+        "unit": "mm",
+        "depends_on": [
+          "side_allowance"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "conveyor_width": {
+        "unit": "mm",
+        "depends_on": [
+          "target_width",
+          "side_pair"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "left_drive_x": {
+        "unit": "mm",
+        "depends_on": [
+          "conveyor_width"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "right_drive_x": {
+        "unit": "mm",
+        "depends_on": [
+          "conveyor_width"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "drive_ratio": {
+        "unit": "ratio",
+        "depends_on": [
+          "driver_teeth",
+          "driven_teeth"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "roller_rpm": {
+        "unit": "rpm",
+        "depends_on": [
+          "motor_rpm",
+          "drive_ratio"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "center_distance": {
+        "unit": "mm",
+        "depends_on": [
+          "frame_length"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "belt_length": {
+        "unit": "mm",
+        "depends_on": [
+          "pulley_driver_d",
+          "pulley_driven_d",
+          "center_distance"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      },
+      "belt_speed": {
+        "unit": "mm/s",
+        "depends_on": [
+          "pulley_driven_d",
+          "roller_rpm"
+        ],
+        "source": null,
+        "status": "pending_mapping"
+      }
+    },
+    "dependency_order": [
+      "target_length",
+      "target_width",
+      "target_height",
+      "end_allowance",
+      "side_allowance",
+      "pulley_driver_d",
+      "pulley_driven_d",
+      "motor_rpm",
+      "driver_teeth",
+      "driven_teeth",
+      "bearing_span",
+      "sealing_stroke",
+      "end_pair",
+      "frame_length",
+      "side_pair",
+      "conveyor_width",
+      "left_drive_x",
+      "right_drive_x",
+      "drive_ratio",
+      "roller_rpm",
+      "center_distance",
+      "belt_length",
+      "belt_speed"
+    ],
+    "changed_parameters": [
+      "target_height",
+      "target_length",
+      "target_width"
+    ],
+    "component_modifications": [],
+    "affected_mates": [],
+    "pending_mapping": [
+      {
+        "parameter": "end_allowance",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "side_allowance",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "pulley_driver_d",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "pulley_driven_d",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "motor_rpm",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "driver_teeth",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "driven_teeth",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "bearing_span",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "sealing_stroke",
+        "missing_dependencies": [],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "end_pair",
+        "missing_dependencies": [
+          "end_allowance"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "frame_length",
+        "missing_dependencies": [
+          "end_pair"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "side_pair",
+        "missing_dependencies": [
+          "side_allowance"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "conveyor_width",
+        "missing_dependencies": [
+          "side_pair"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "left_drive_x",
+        "missing_dependencies": [
+          "conveyor_width"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "right_drive_x",
+        "missing_dependencies": [
+          "conveyor_width"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "drive_ratio",
+        "missing_dependencies": [
+          "driver_teeth",
+          "driven_teeth"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "roller_rpm",
+        "missing_dependencies": [
+          "motor_rpm",
+          "drive_ratio"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "center_distance",
+        "missing_dependencies": [
+          "frame_length"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "belt_length",
+        "missing_dependencies": [
+          "pulley_driver_d",
+          "pulley_driven_d",
+          "center_distance"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "parameter": "belt_speed",
+        "missing_dependencies": [
+          "pulley_driven_d",
+          "roller_rpm"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "constraint": "bearing-fit",
+        "status": "pending_mapping"
+      },
+      {
+        "field": "source_assembly/assembly_configuration",
+        "status": "pending_mapping"
+      }
+    ],
+    "conflicts": [],
+    "source_assembly": null,
+    "assembly_configuration": null,
+    "status": "pending_mapping",
+    "native_checks": {
+      "mates": {
+        "status": "unverified",
+        "evidence": null
+      },
+      "motion": {
+        "status": "unverified",
+        "evidence": null
+      },
+      "interference": {
+        "status": "unverified",
+        "evidence": null
+      }
+    },
+    "cad_executed": false,
+    "engineering_approval": false
+  },
+  "drawings": {
+    "schema_version": 1,
+    "machine": "QL-5050PX",
+    "tasks": [
+      {
+        "id": "drawing-frame",
+        "node": "frame",
+        "document_kind": "assembly",
+        "filename": "QL-FRAME-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-FRAME-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-conveyor",
+        "node": "conveyor",
+        "document_kind": "assembly",
+        "filename": "QL-CONVEYOR-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-CONVEYOR-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-left_drive",
+        "node": "left_drive",
+        "document_kind": "assembly",
+        "filename": "QL-LEFT_DRIVE-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-LEFT_DRIVE-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-right_drive",
+        "node": "right_drive",
+        "document_kind": "assembly",
+        "filename": "QL-RIGHT_DRIVE-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-RIGHT_DRIVE-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-sealing",
+        "node": "sealing",
+        "document_kind": "assembly",
+        "filename": "QL-SEALING-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-SEALING-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-interfaces",
+        "node": "interfaces",
+        "document_kind": "assembly",
+        "filename": "QL-INTERFACES-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-INTERFACES-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-standard_parts",
+        "node": "standard_parts",
+        "document_kind": "assembly",
+        "filename": "QL-STANDARD_PARTS-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-STANDARD_PARTS-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      },
+      {
+        "id": "drawing-machine",
+        "node": "machine",
+        "document_kind": "assembly",
+        "filename": "QL-5050PX-PENDING-DEV.SLDDRW",
+        "template": null,
+        "sheet_format": null,
+        "bom_template": null,
+        "width_mm": 420,
+        "height_mm": 297,
+        "scale": [
+          1,
+          1
+        ],
+        "units": "mm",
+        "drawing_model": {
+          "schema_version": 1,
+          "units": "mm",
+          "part_number": "QL-5050PX-PENDING",
+          "material": null,
+          "dimensions_mm": {},
+          "views": [],
+          "notes": [],
+          "bom": [
+            {
+              "item": 1,
+              "part_number": "QL-CONVEYOR-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/conveyor"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 2,
+              "part_number": "QL-FRAME-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/frame"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 3,
+              "part_number": "QL-INTERFACES-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/interfaces"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 4,
+              "part_number": "QL-LEFT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/left_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 5,
+              "part_number": "QL-RIGHT_DRIVE-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/right_drive"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 6,
+              "part_number": "QL-SEALING-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/sealing"
+              ],
+              "status": "pending_mapping"
+            },
+            {
+              "item": 7,
+              "part_number": "QL-STANDARD_PARTS-PENDING",
+              "configuration": null,
+              "material": "pending_mapping",
+              "purchased": false,
+              "quantity": 1,
+              "instances": [
+                "machine/standard_parts"
+              ],
+              "status": "pending_mapping"
+            }
+          ],
+          "native_status": "unverified"
+        },
+        "dimensions": [],
+        "annotations": [],
+        "balloons": [],
+        "process": null,
+        "datum_scheme": null,
+        "tolerance_scheme": null,
+        "thickness_mm": null,
+        "exports": [
+          "SLDDRW"
+        ],
+        "pending_mapping": [
+          "template",
+          "views",
+          "material",
+          "process",
+          "datum_scheme",
+          "tolerance_scheme",
+          "part_number",
+          "bom_template"
+        ],
+        "manufacturing_approved": false
+      }
+    ],
+    "bom": [
+      {
+        "item": 1,
+        "part_number": "QL-CONVEYOR-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/conveyor"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "item": 2,
+        "part_number": "QL-FRAME-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/frame"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "item": 3,
+        "part_number": "QL-INTERFACES-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/interfaces"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "item": 4,
+        "part_number": "QL-LEFT_DRIVE-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/left_drive"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "item": 5,
+        "part_number": "QL-RIGHT_DRIVE-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/right_drive"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "item": 6,
+        "part_number": "QL-SEALING-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/sealing"
+        ],
+        "status": "pending_mapping"
+      },
+      {
+        "item": 7,
+        "part_number": "QL-STANDARD_PARTS-PENDING",
+        "configuration": null,
+        "material": "pending_mapping",
+        "purchased": false,
+        "quantity": 1,
+        "instances": [
+          "machine/standard_parts"
+        ],
+        "status": "pending_mapping"
+      }
+    ],
+    "pending_mapping": [
+      {
+        "drawing": "drawing-frame",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-frame",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-conveyor",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-left_drive",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-right_drive",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-sealing",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-interfaces",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-standard_parts",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "template",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "views",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "material",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "process",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "datum_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "tolerance_scheme",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "part_number",
+        "status": "pending_mapping"
+      },
+      {
+        "drawing": "drawing-machine",
+        "field": "bom_template",
+        "status": "pending_mapping"
+      }
+    ],
+    "status": "pending_mapping",
+    "native_status": "unverified",
+    "manufacturing_approved": false
+  },
+  "decision_plan": {
+    "target_mm": {
+      "length": 1800,
+      "width": 900,
+      "height": 1500
+    },
+    "actions": [
+      {
+        "document": "e0fe3913caf2b708eceab2b8",
+        "path": "SIMULATION/frame.SLDPRT",
+        "action": "manual_review",
+        "changes": [],
+        "translation_mm": null,
+        "affected_mates": [],
+        "risks": [
+          "interference and travel require native verification"
+        ],
+        "rollback": {
+          "restore_dimensions": [],
+          "discard_only_isolated_work_copy": true
+        },
+        "native_write_allowed": false
+      }
+    ],
+    "pending_mapping": [],
+    "status": "review_required",
+    "propagation_order": [
+      "e0fe3913caf2b708eceab2b8"
+    ],
+    "automatic_scaling": false,
+    "native_write_allowed": false
+  }
+}

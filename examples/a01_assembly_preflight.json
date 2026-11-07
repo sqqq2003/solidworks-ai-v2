@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "scope": "synthetic_example_not_production",
+  "components": [
+    {"id": "base", "fixed": true, "bbox_mm": [0, 0, 0, 10, 10, 10]},
+    {"id": "slider", "bbox_mm": [30, 0, 0, 40, 10, 10], "expected_dof": 2}
+  ],
+  "mates": [{"a": "base", "b": "slider", "type": "concentric"}],
+  "linear_motion": [{"component": "slider", "velocity_mm_s": [5, 0, 0]}],
+  "times_s": [0, 0.5, 1],
+  "clearance_mm": 1
+}

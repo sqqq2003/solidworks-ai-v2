@@ -1,0 +1,12 @@
+{
+  "source_revision": "dde46651cd12a6144a2541ca4477ab9bee7fb678",
+  "native_acceptance": "unverified",
+  "files": {
+    "request.json": "559f3c84aaf532080c6823f7c2a54bf5db8d871db97685e442db6398b10d67af",
+    "test-matrix.json": "6132cb5a275fc227ead63faac13dfd94ecda3eb9990eeef29cd012319c50de7b",
+    "bom.csv": "6b43e2f4013cdf92a835a92e943b23274199fe64950a96ad8c42bbc98bddde4f",
+    "oem-mapping-required.json": "0448c2c7782bef1d2226eec72b00e1dab91d5cf044512d6f0d9d3237e24511ee",
+    "integrated-result.json": "b088a179c16eef6489ef56ab01be4b809d77ed22b3f251a83ae34850fb5175d7",
+    "windows-tasks.json": "035204f2fb694d417b22455130db6b367caac47509827e2fd460d2faa43bf132"
+  }
+}

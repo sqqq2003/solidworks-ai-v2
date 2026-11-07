@@ -1,0 +1,37 @@
+{
+  "task": "A2 1:10 and A2 1:20 retest after 9dd6908 annotation fix",
+  "tip_com_sha": "4344f222a2070d0f79082d219377e840f06ca30f",
+  "tip_drawing_sha": "9dd6908910c52fa22599305110fc93616ed56037",
+  "owner": "lxy",
+  "machine": "DDD",
+  "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+  "timestamp": "2026-10-26 16:15:02",
+  "zone": "Asia/Shanghai",
+  "mode": "explicit_partial_model_test",
+  "manufacturing_approved": false,
+  "out": "D:\\工程\\钣金导入\\lxy_drawing_a2_9dd6908",
+  "docs": "C:\\Users\\yue\\Documents\\lxy_drawing_a2_9dd6908",
+  "cells": [
+    {
+      "tag": "A2_1-10",
+      "status": "failed",
+      "blocked_reason": null,
+      "failed_reason": "failed",
+      "error": "GetAnnotation",
+      "sheet_readback": null,
+      "sw_owned_pid": 47500
+    },
+    {
+      "tag": "A2_1-20",
+      "status": "failed",
+      "blocked_reason": null,
+      "failed_reason": "failed",
+      "error": "GetAnnotation",
+      "sheet_readback": null,
+      "sw_owned_pid": 49368
+    }
+  ],
+  "all_pass_pending_visual": false,
+  "honest_block_policy": "verify_view_layout raises on exceeds-frame/overlap/scale-mismatch; no silent autoscale",
+  "constraint_respected": "no production claim; no desktop writes; no git push; Embedding left alone"
+}

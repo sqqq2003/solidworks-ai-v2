@@ -1,0 +1,100 @@
+{
+  "issue": 5,
+  "check": "k_factor_unfold",
+  "generated_at": "2026-10-23T14:52:52+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": "DDD",
+  "machineId": "53b729f9-00c0-4608-a10e-6cf246cf0a4e",
+  "status": "blocked",
+  "source_mother_untouched": true,
+  "profile": 209,
+  "source_part_known_good": "D:\\工程\\钣金导入\\导出\\p0_accept\\01x1_2.5mm_p209.SLDPRT",
+  "source_dwg_work": "D:\\工程\\钣金导入\\临时\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+  "out_dir": "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor",
+  "cli_exposes_k": false,
+  "cli_note": "sw_tool_cli.py has no --k-factor / --bend-deduction; only thickness/radius/angle/flip/no-auto-bend",
+  "default_k_in_generator": 0.44,
+  "theoretical": {
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "angle_deg": 90.0,
+    "ba_k0p5_mm": 3.5342917352885173,
+    "ba_k0p25_mm": 2.552544031041707,
+    "delta_ba_mm": 0.9817477042468101,
+    "note": "flat length delta ≈ BA(0.5)-BA(0.25) = θ·ΔK·T if K actually applied"
+  },
+  "code_inspection": {
+    "bend_allowance_module": "D:\\工程\\钣金导入\\程序\\bend_allowance.py",
+    "apply_fn": "solidworks_generator._apply_sheet_metal_bend_allowance",
+    "build_custom_fn": "solidworks_generator._build_custom_bend_allowance",
+    "findings": [
+      "_build_custom_bend_allowance is DEFINED but NEVER called (dead code)",
+      "_create_bend_feature sets allowance_candidates=(None,) — InsertSheetMetal3dBend always gets custom_bend=None",
+      "InsertSheetMetalBaseFlange / BaseFlange2 passes CustomBendAllowance=None; one numeric arg hardcodes 0.5 (K-like)",
+      "generate_sheet_metal DOES call _apply_sheet_metal_bend_allowance at end when BendAllowanceSpec provided",
+      "GUI app.py exposes K-factor / bend deduction / BA and builds BendAllowanceSpec; CLI does not"
+    ]
+  },
+  "attempts": [
+    {
+      "name": "regen_with_BendAllowanceSpec",
+      "detail": "analyze work DWG; generate_sheet_metal_with_relief_retries twice with BendAllowanceSpec(mode=k_factor, k=0.5) and k=0.25",
+      "result": {
+        "both_generate_ok": true,
+        "both_unfold_ok": true,
+        "k_read_after_both": 0.31,
+        "bend_type_read": 2,
+        "k_match": false,
+        "dxf_max_extent_k0p5_mm": 431.0042917354,
+        "dxf_max_extent_k0p25_mm": 431.0042917354,
+        "delta_max_extent_mm": 0.0,
+        "delta_width_mm": 0.0,
+        "delta_height_mm": 0.0,
+        "parts": [
+          "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor\\01x1_2.5mm_p209_k0p5.SLDPRT",
+          "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor\\01x1_2.5mm_p209_k0p25.SLDPRT"
+        ],
+        "dxfs": [
+          "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor\\01x1_2.5mm_p209_k0p5_unfold.DXF",
+          "D:\\工程\\钣金导入\\导出\\p0_accept_kfactor\\01x1_2.5mm_p209_k0p25_unfold.DXF"
+        ]
+      }
+    },
+    {
+      "name": "post_edit_SetCustomBendAllowance",
+      "detail": "Open known-good p209 copy; AccessSelections; mutate GetCustomBendAllowance K or BendDeduction; SetCustomBendAllowance; ModifyDefinition; rebuild; export",
+      "result": {
+        "modify_ok_reported": true,
+        "k_before": 0.31,
+        "k_after_set": 0.31,
+        "k_after_rebuild": 0.31,
+        "bd_stuck": false,
+        "unfold_delta_mm": 0.0,
+        "note": "ModifyDefinition returns True but CustomBendAllowance values do not change (K stays 0.31, Type stays 2, BD stays 0)"
+      }
+    },
+    {
+      "name": "force_CreateCustomBendAllowance_and_direct_KFactor",
+      "detail": "FeatureManager.CreateCustomBendAllowance fresh object + direct ISheetMetalFeatureData.KFactor",
+      "result": {
+        "status": "crashed",
+        "exit_code": -1073741819,
+        "note": "Python process AV during probe; SolidWorks still alive (Rev 33.1.2). No successful K stick observed before crash."
+      }
+    }
+  ],
+  "compare": {
+    "possible": false,
+    "reason": "K-factor could not be changed on the part (readback always 0.31)",
+    "observed_unfold_delta_mm_when_requesting_0p5_vs_0p25": 0.0,
+    "theoretical_delta_ba_mm": 0.9817477042468101,
+    "honest_verdict": "blocked — cannot attribute unfold sameness to 'K change ignored by flatten' because K itself never stuck; also cannot prove unfold WOULD change if K stuck"
+  },
+  "blocker": "Cannot set K-factor (or bend deduction) via current cad2sw/SW API path on this sketched-bend part. CLI has no K flag; BendAllowanceSpec apply/ModifyDefinition does not persist (K readback stays 0.31); InsertSheetMetal3dBend/BaseFlange creation passes CustomBendAllowance=None; _build_custom_bend_allowance is dead code. Observed unfold DXF extents identical (delta 0.0 mm) for requested K=0.5 vs 0.25.",
+  "summary": "status=blocked. Requested K 0.5 vs 0.25; K never stuck (always read 0.31); unfold DXF max-extent delta=0.000 mm (theory BA delta≈0.982 mm). Need fix: wire CreateCustomBendAllowance into BaseFlange/3dBend insert and/or fix SetCustomBendAllowance persistence before K-unfold regression can be judged.",
+  "next_fix_hint": [
+    "Call _build_custom_bend_allowance and pass into InsertSheetMetalBaseFlange* and InsertSheetMetal3dBend (replace allowance_candidates=(None,))",
+    "Expose --k-factor on sw_tool_cli",
+    "Verify K stick by reading SheetMetal CustomBendAllowance after generate before claiming unfold regression"
+  ]
+}

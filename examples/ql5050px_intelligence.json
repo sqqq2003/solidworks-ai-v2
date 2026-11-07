@@ -1,0 +1,6 @@
+{
+ "snapshot":{"machine":"QL-5050PX","documents":[{"path":"SIMULATION/frame.SLDPRT","configuration":"SIM","exists":true,"component_kind":"editable","dimensions":[{"name":"Length@Sketch1","feature":"Sketch1","value":1000,"unit":"mm","source":"synthetic fixture, not OEM"}],"features":[],"equations":[],"mates":[]}]},
+ "target":{"length":1800,"width":900,"height":1500},
+ "pending_parameters":["length","width","height","stroke"],
+ "calculations":[{"kind":"motor","inputs":{}},{"kind":"conveyor","inputs":{"diameter":{"value":50,"unit":"mm","source":"synthetic fixture"},"rpm":{"value":60,"unit":"rpm","source":"synthetic fixture"}}}]
+}

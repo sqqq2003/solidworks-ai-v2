@@ -1,0 +1,55 @@
+{
+  "scope": "portable_simulation_only",
+  "platform": "Windows",
+  "python": "3.14.7",
+  "tests_run": 478,
+  "passed": 473,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [
+    {
+      "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+      "reason": "测试用滚筒 DWG 不在 uploads"
+    },
+    {
+      "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+      "reason": "本机未安装 LibreDWG dwg2dxf"
+    },
+    {
+      "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+      "reason": "Drawing1_e7b7.dwg 未上传"
+    },
+    {
+      "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+      "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    },
+    {
+      "test": "test_windows_bridge_refuses_linux (test_sw_transaction.TransactionTests.test_windows_bridge_refuses_linux)",
+      "reason": "Linux refusal test"
+    }
+  ],
+  "cross_process_lock_passed": true,
+  "pending_feature_cases": {
+    "test_border_relief_notch.py": 9,
+    "test_spur_segments.py": 5,
+    "test_turned_part.py": 22
+  },
+  "base_commit": "4fe6e05c55bd2c091875d7ad9e90b532ef6eb2cd",
+  "native_patch_acceptance": "pending_windows_retest",
+  "review": {
+    "WB_NATIVE_001": "confirmed_documented_background_close_lifecycle; code_fixed_native_pending",
+    "WB_RECOVERY_001": "already_fixed_def70f3",
+    "WB_TEST_001": "already_fixed_def70f3",
+    "warm_p248": "geometry_signal_only_sample_identity_and_teardown_not_accepted",
+    "qoder_totals": "not_aggregated_inconsistent_counts"
+  },
+  "fixture": {
+    "dry_run": "simulated_pass",
+    "cad_executed": false
+  },
+  "csharp_contracts": {
+    "passed": 17,
+    "failed": 0,
+    "native_build": "not_run"
+  }
+}

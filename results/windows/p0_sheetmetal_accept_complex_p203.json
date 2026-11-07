@@ -1,0 +1,125 @@
+{
+  "issue": 5,
+  "generated_at": "2026-10-23T14:37:20+08:00",
+  "timezone": "Asia/Shanghai",
+  "machine": "DDD",
+  "profile": 203,
+  "part_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p203.SLDPRT",
+  "status": "pass",
+  "generate": {
+    "profile": 203,
+    "exit_code": 0,
+    "elapsed_ms": 13485,
+    "out_exists": true,
+    "out_path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p203.SLDPRT",
+    "out_bytes": 168159,
+    "out_mtime": "2026-10-23T14:37:19.860195+08:00",
+    "py_out": "C:\\Users\\yue\\A01-live-work\\p0_generate_py_out_p203.log",
+    "py_err": "C:\\Users\\yue\\A01-live-work\\p0_generate_py_err_p203.log",
+    "cli_done_event": true,
+    "cli_error_event": false,
+    "cli_out_tail": "{\"message\": \"����ʶ��ͼֽ��\", \"event\": \"progress\"}\n{\"message\": \"���� #203�������� 6 ������ʼ�����ӽ�\", \"event\": \"progress\"}\n{\"kind\": \"sheet\", \"path\": \"D:\\\\����\\\\�ӽ���\\\\����\\\\p0_accept_complex\\\\01x1_2.5mm_p203.SLDPRT\", \"message\": \"�ӽ���������ɣ�01x1_2.5mm_p203.SLDPRT\", \"event\": \"done\"}\n",
+    "cli_out_tail_ascii": "{\"message\": \"\\ufffd\\ufffd\\ufffd\\ufffd\\u02b6\\ufffd\\ufffd\\u037c\\u05bd\\ufffd\\ufffd\", \"event\": \"progress\"}\n{\"message\": \"\\ufffd\\ufffd\\ufffd\\ufffd #203\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd 6 \\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u02bc\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u04fd\\ufffd\", \"event\": \"progress\"}\n{\"kind\": \"sheet\", \"path\": \"D:\\\\\\ufffd\\ufffd\\ufffd\\ufffd\\\\\\ufffd\\u04fd\\ufffd\\ufffd\\ufffd\\\\\\ufffd\\ufffd\\ufffd\\ufffd\\\\p0_accept_complex\\\\01x1_2.5mm_p203.SLDPRT\", \"message\": \"\\ufffd\\u04fd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u0263\\ufffd01x1_2.5mm_p203.SLDPRT\", \"event\": \"done\"}\n",
+    "cli_err_tail_ascii": "\\ufffd\\ufffd\\ufffd\\u0633\\u0279\\ufffd\n2026-10-23 14:37:15,638 INFO    [MainThread] solidworks_generator: \\ufffd\\ufffd\\ufffd\\u5de8\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u0279\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd=\\ufffd\\ufffd\\ufffd\\ufffd\\u0532\\ufffd\\ufffd \\ufffd\\u04fa\\ufffd\\ufffd\\ufffd=True\n2026-10-23 14:37:15,643 INFO    [MainThread] solidworks_generator: \\ufffd\\ufffd\\ufffd\\u5de8\\ufffd\\ufffd\\ufffd\\u0474\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd-\\ufffd\\ufffd\\ufffd\\ufffd1\n2026-10-23 14:37:17,123 INFO    [MainThread] solidworks_generator: \\ufffd\\ufffd/\\ufffd\\ufffd\\ufffd\\u0433\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u037c\\ufffd\\ufffd\\ufffd\\ufffd 16 \\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u0433\\ufffd\\u01f0\\u02b5\\ufffd\\ufffd\\ufffd\\ufffd 15 \\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u0433\\ufffd\\ufffd\\ufffd 31 \\ufffd\\ufffd\n2026-10-23 14:37:17,123 INFO    [MainThread] solidworks_generator: \\ufffd\\ufffd/\\ufffd\\ufffd\\ufffd\\u0433\\ufffd\\ufffd\\ufffd\\u0263\\ufffd10 \\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\n2026-10-23 14:37:17,701 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False\n2026-10-23 14:37:18,556 INFO    [MainThread] solidworks_generator: \\ufffd\\u0536\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u0279\\ufffd\\ufffd\\ufffdbends=(13, 14, 15, 16, 27, 28) face=0 pos=1 flip=False defaultR=False cba=False pick=(3178.264,1953.185)\n2026-10-23 14:37:19,680 INFO    [MainThread] solidworks_generator: \\u0579\\ufffd\\ufffd\\ufffd\\ufffd\\u05a4\\u0368\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u06f5\\ufffd\\ufffd\\ufffd\\u03a7\\ufffd\\ufffd=(-0.2532512407024927, 0.023267145867650003, -0.0025, 0.25380192331227414, 0.04626714586765002, 0.06071183651993907) \\u0579\\ufffd\\ufffd\\ufffd\\ufffd\\u03a7\\ufffd\\ufffd=(-0.25382673736122635, -0.04626714586765005, -0.002500000000000009, 0.2538019233122741, 0.04626714586765002, 6.938893903907228e-18)\n2026-10-23 14:37:20,008 INFO    [MainThread] solidworks_generator: \\ufffd\\u04fd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u0471\\ufffd\\ufffd\\u68faD:\\\\ufffd\\ufffd\\ufffd\\ufffd\\\\ufffd\\u04fd\\ufffd\\ufffd\\ufffd\\\\ufffd\\ufffd\\ufffd\\ufffd\\p0_accept_complex\\01x1_2.5mm_p203.SLDPRT\n",
+    "relief_retry_hint": false,
+    "mentions_bend_rejected": false,
+    "expected_bend_count": 6,
+    "why_chosen": "multi-bend: bend_count=6, area~46753mm2, 10 inner holes (bolt/cutouts; not relief-slot classified)"
+  },
+  "source_dwg_work": "D:\\工程\\钣金导入\\临时\\p0_dry_20261023\\QL-5050_sheetmetal_work.dwg",
+  "source_mother_untouched": true,
+  "reasons": [
+    "single_sketched_bend_feature_for_expected_6_bends_ok_if_internal"
+  ],
+  "part_bytes": 168159,
+  "part_mtime": "2026-10-23T14:37:19.860195+08:00",
+  "open": {
+    "ok": true
+  },
+  "doc_count_pre": 34,
+  "doc_count_after_clean": 34,
+  "closed_before_verify": [],
+  "feature_count": 30,
+  "features_enumerated": 26,
+  "title": "01x1_2.5mm_p203.SLDPRT",
+  "sheet_metal_features": [
+    {
+      "name": "平板型式6",
+      "type": "FlatPattern"
+    },
+    {
+      "name": "绘制的折弯1",
+      "type": "SM3dBend"
+    },
+    {
+      "name": "基体-法兰1",
+      "type": "SMBaseFlange"
+    },
+    {
+      "name": "钣金6",
+      "type": "SheetMetal"
+    },
+    {
+      "name": "实体",
+      "type": "SolidBodyFolder"
+    }
+  ],
+  "feature_names_sample": [
+    "平板型式6|FlatPattern",
+    "绘制的折弯1|SM3dBend",
+    "草图7|ProfileFeature",
+    "切除-拉伸1|ICE",
+    "草图6|ProfileFeature",
+    "基体-法兰1|SMBaseFlange",
+    "钣金6|SheetMetal",
+    "草图1|ProfileFeature",
+    "Tables|ConfigTableFolder",
+    "原点|OriginProfileFeature",
+    "右视基准面|RefPlane",
+    "上视基准面|RefPlane",
+    "前视基准面|RefPlane",
+    "材质 <未指定>|MaterialFolder",
+    "方程式|EqnFolder",
+    "备注|CommentsFolder",
+    "曲面实体|SurfaceBodyFolder",
+    "实体|SolidBodyFolder",
+    "光源与相机|EnvFolder",
+    "标注|InkMarkupFolder",
+    "注解|DetailCabinet",
+    "设计活页夹|DocsFolder",
+    "传感器|SensorFolder",
+    "选择集|SelectionSetFolder",
+    "历史记录|HistoryFolder",
+    "收藏|FavoriteFolder"
+  ],
+  "rebuild_ok": true,
+  "rebuild_error": null,
+  "editable_sheet_metal": true,
+  "has_flat_pattern": true,
+  "unfold": {
+    "attempted": true,
+    "ok": true,
+    "note": "flat_pattern_export_succeeded"
+  },
+  "dxf": {
+    "attempted": true,
+    "ok": true,
+    "note": "ExportFlatPatternView ok",
+    "path": "D:\\工程\\钣金导入\\导出\\p0_accept_complex\\01x1_2.5mm_p203_unfold.DXF",
+    "bytes": 25558
+  },
+  "expected_bend_count": 6,
+  "why_chosen": "multi-bend: bend_count=6, area~46753mm2, 10 inner holes (bolt/cutouts; not relief-slot classified)",
+  "bend_features": [
+    {
+      "name": "绘制的折弯1",
+      "type": "SM3dBend"
+    }
+  ],
+  "bend_feature_count": 1,
+  "cut_feature_sample": [
+    "切除-拉伸1|ICE"
+  ],
+  "cut_feature_count": 1,
+  "tier": "multi_bend_or_relief"
+}

@@ -1,0 +1,64 @@
+{
+  "task": "GORK-A01-005",
+  "sw_live": true,
+  "verified_at_local": "2026-10-23T13:25:27",
+  "sw_version": "SOLIDWORKS Premium 2025 SP1.2 / Rev 33.1.2",
+  "equation_write_method": "Delete + Add2(same_index, solve=False); PROPERTYPUT verified no-op on this machine",
+  "mother": {
+    "path": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\斜滚筒线-1300x000x750-方向A\\装配图\\GT-ZX-1300x000x750-001x1.SLDASM",
+    "globals_mm": {
+      "Length": 1300,
+      "Width": 600,
+      "Height": 750,
+      "FootHeight": 50
+    },
+    "status": "baseline_preserved_on_disk"
+  },
+  "work_copy": {
+    "path": "C:\\Users\\yue\\A01-live-work\\A01-1800x900x1500-v2.SLDASM",
+    "globals": {
+      "Length": {
+        "eq": "\"Length\"= 1800mm",
+        "value": 1800.0,
+        "idx": 12
+      },
+      "Width": {
+        "eq": "\"Width\"= 900mm",
+        "value": 900.0,
+        "idx": 0
+      },
+      "Height": {
+        "eq": "\"Height\"= 1500mm",
+        "value": 1500.0,
+        "idx": 1
+      },
+      "FootHeight": {
+        "eq": "\"FootHeight\"= 50mm",
+        "value": 50.0,
+        "idx": 3
+      },
+      "DeckHeight": {
+        "eq": "\"DeckHeight\"= \"Height\" - \"FootHeight\"",
+        "value": -50.0,
+        "idx": 4,
+        "value_after_rebuild": -50.0
+      },
+      "RollerLong": {
+        "eq": "\"RollerLong\"= \"Width\" + \"RollerLongExtra\"",
+        "value": 100.0,
+        "idx": 10
+      }
+    },
+    "target_mm": {
+      "Length": 1800,
+      "Width": 900,
+      "Height": 1500
+    },
+    "envelope_match": true
+  },
+  "checks": {
+    "equations_readback": "pass",
+    "mate_interference_motion": "not_separately_certified",
+    "shared_parts_warning": "SaveAs work copy still references mother parts; Pack and Go recommended for archival"
+  }
+}

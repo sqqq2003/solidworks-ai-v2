@@ -1,0 +1,21 @@
+{
+  "task": "GORK-A01-005",
+  "sw_live": true,
+  "status": "envelope_equations_verified_on_work_copy",
+  "work_copy": "C:\\Users\\yue\\A01-live-work\\A01-1800x900x1500-v2.SLDASM",
+  "verified": {
+    "Length": 1800,
+    "Width": 900,
+    "Height": 1500
+  },
+  "mother_baseline_ok": true,
+  "not_claimed": [
+    "mate check",
+    "interference",
+    "motion",
+    "Pack and Go",
+    "formula Value() for DeckHeight/RollerLong"
+  ],
+  "equation_write_fix": "apply_variant._equation_put → Delete+Add2@idx",
+  "timestamp_local": "2026-10-23T13:26:54"
+}

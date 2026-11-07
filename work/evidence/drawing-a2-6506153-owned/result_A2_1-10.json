@@ -1,0 +1,116 @@
+{
+  "status": "failed",
+  "error": "unowned documents appeared in task process",
+  "case": {
+    "sheet": "A2",
+    "scale_label": "1:10",
+    "width_mm": 594,
+    "height_mm": 420,
+    "scale": [
+      1,
+      10
+    ],
+    "template": "C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2025\\templates\\gb_a2.drwdot"
+  },
+  "settings": {
+    "projection": "first_angle",
+    "bom_template": "D:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/lang/chinese-simplified/bom-standard.sldbomtbt",
+    "width_mm": 594,
+    "height_mm": 420,
+    "scale": [
+      1,
+      10
+    ],
+    "assembly_template": "C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2025\\templates\\gb_a2.drwdot"
+  },
+  "task": {
+    "template": "C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2025\\templates\\gb_a2.drwdot",
+    "width_mm": 594.0,
+    "height_mm": 420.0,
+    "scale": [
+      1,
+      10
+    ],
+    "filename": "QL-5050PX-A2R-A2_1-10.SLDDRW",
+    "bom_position_mm": [
+      400.0,
+      390.0
+    ],
+    "view_positions_mm": [
+      {
+        "id": "front",
+        "position_mm": [
+          300.0,
+          280.0
+        ]
+      },
+      {
+        "id": "top",
+        "position_mm": [
+          300.0,
+          110.0
+        ]
+      },
+      {
+        "id": "right",
+        "position_mm": [
+          150.0,
+          280.0
+        ]
+      }
+    ]
+  },
+  "sheet_readback": null,
+  "session": {
+    "ownership": "spawned_pid_and_live_handle",
+    "pid": 27940,
+    "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+    "attached_existing": false,
+    "native_verification": "session_only_not_cad_acceptance",
+    "cleanup_status": "left_open_for_recovery",
+    "cleanup_error": "SessionOwnershipError: unowned documents appeared in task process",
+    "cleanup_disconnect": null,
+    "cleanup_exit_code": null,
+    "keepalive_policy": "close_doc_only_keep_alive_exit_not_required",
+    "exit_poll_seconds": 20.0,
+    "anchor_created": false,
+    "anchor_closed": false,
+    "keepalive_verified": false
+  },
+  "loads": [
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\总图\\FX-PX-ZYQDYT-001×1.SLDASM",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\总图\\FX-PX-ZYQDYT-001×1.SLDASM",
+      "error": 0,
+      "readonly": true
+    }
+  ],
+  "bom_configuration_binding": {
+    "before": [
+      [
+        "默认"
+      ],
+      [
+        true
+      ]
+    ],
+    "set_ok": true,
+    "after": [
+      [
+        "默认"
+      ],
+      [
+        true
+      ]
+    ]
+  },
+  "readback_error": null,
+  "silent_autoscale": false,
+  "manufacturing_approved": false,
+  "mode": "explicit_partial_model_test",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\lxy_drawing_a2_6506153\\run_a2_retest_6506153.py\", line 370, in run_one_case\n    run_on_task_sta(job, timeout=900, task_name=f\"ql-a2r-{tag}\")\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\sw_session.py\", line 622, in run_on_task_sta\n    return worker.call(fn, timeout=timeout, lock_token=token)\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\sw_session.py\", line 395, in call\n    raise job.error\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\sw_session.py\", line 318, in _loop\n    result = job.fn(*job.args, **job.kwargs)\n  File \"D:\\工程\\钣金导入\\lxy_drawing_a2_6506153\\run_a2_retest_6506153.py\", line 314, in job\n    drawing_result = driver.export_manufacturing(\n        {\"status\": \"ready_for_native\", \"tasks\": [task]},\n    ...<5 lines>...\n        drawings_dir,\n    )\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\a01_next\\native_production.py\", line 152, in export_manufacturing\n    result=super().export_manufacturing(plan,assembly_receipt,destination)\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\ql5050px\\native_drawings.py\", line 174, in export_manufacturing\n    receipt = self.save_reopen(drawing,output,'')\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\ql5050px\\native_machine.py\", line 124, in save_reopen\n    self.close_document(model)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\ql5050px\\native_machine.py\", line 68, in close_document\n    self.guard()\n    ~~~~~~~~~~^^\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\ql5050px\\native_machine.py\", line 34, in guard\n    require_model_write(self.lease)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\sw_session.py\", line 826, in require_model_write\n    lease.native_launch.validate(lease)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^\n  File \"C:\\Users\\yue\\Desktop\\solidworks-ai-v2\\src\\sw_owned_launch.py\", line 209, in validate\n    raise SessionOwnershipError('unowned documents appeared in task process')\nsw_session.SessionOwnershipError: unowned documents appeared in task process\n"
+}

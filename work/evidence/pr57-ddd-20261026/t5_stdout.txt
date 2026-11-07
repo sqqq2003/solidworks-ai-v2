@@ -1,0 +1,5 @@
+{"ok": false, "report": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\accept_chejian.json", "n": 4}
+f09 FAIL plan 166.0 got None fin None err SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。
+f11 PASS plan 75.0 got (75.0, 19.629909152447276, 17.0) fin (75.0, 19.629837434606326, 17.0264691186446) err None
+f15 FAIL plan 54.967988245700326 got None fin (55.0, 9.999999999999998, 9.999999999999998) err SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。
+f19 FAIL plan 385.0 got None fin (385.0, 15.0, 15.0) err SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。

@@ -1,0 +1,134 @@
+{
+  "task": "GORK-A01-005",
+  "sw_live": true,
+  "sw_version": "SOLIDWORKS Premium 2025 SP1.2 / Rev 33.1.2",
+  "updated_local": "2026-10-23T13:26:54",
+  "native_template": {
+    "machine_family": "斜动力滚筒线 GT-ZX",
+    "file": "GT-ZX-1300x000x750-001x1.SLDASM",
+    "path": "D:\\工程\\滚筒工程\\滚筒\\斜\\斜滚筒线（120W电机） 标准\\斜滚筒线-1300x000x750-方向A\\装配图\\GT-ZX-1300x000x750-001x1.SLDASM",
+    "baseline_mm": {
+      "Length": 1300,
+      "Width": 600,
+      "Height": 750,
+      "FootHeight": 50,
+      "DeckHeight": 700
+    },
+    "note": "QL-5050 为封箱机仅有 DWG，不是本任务 A01 原生装配。"
+  },
+  "equation_write": {
+    "propertyput": "no-op on this SW2025 (readback unchanged)",
+    "working_method": "Delete(index) then Add2(same_index, equation, solve=False)",
+    "pitfall": "After Delete, Add(-1)/Add3(-1) returns -1 if dependents still reference the name; never leave mother dirty—close without save to recover",
+    "local_tool_patch": "D:\\工程\\改机工具\\apply_variant.py _equation_put now falls back to Delete+Add2 with readback verify; backup *.bak_eqfix_*"
+  },
+  "mapped": [
+    {
+      "parameter": "A01.envelope.length",
+      "sw_name": "Length",
+      "kind": "global_variable",
+      "status": "confirmed",
+      "mother_mm": 1300,
+      "work_copy_mm": 1800
+    },
+    {
+      "parameter": "A01.envelope.width",
+      "sw_name": "Width",
+      "kind": "global_variable",
+      "status": "confirmed",
+      "mother_mm": 600,
+      "work_copy_mm": 900
+    },
+    {
+      "parameter": "A01.envelope.height",
+      "sw_name": "Height",
+      "kind": "global_variable",
+      "meaning": "脚杯+台面之和",
+      "status": "confirmed",
+      "mother_mm": 750,
+      "work_copy_mm": 1500
+    },
+    {
+      "parameter": "A01.conveyor.passline_height",
+      "sw_name": "DeckHeight",
+      "kind": "global_variable",
+      "formula": "Height - FootHeight",
+      "status": "confirmed_mapped",
+      "note": "EquationMgr.Value() for formula eqs returned nonsense (-50) after rebuild; equation text is correct; treat Value() as unreliable for linked formulas"
+    },
+    {
+      "parameter": "A01.interfaces.sheet_thickness",
+      "inferred_mm": 2.0,
+      "status": "inferred_from_part_name",
+      "production_approved": false
+    }
+  ],
+  "pending_mapping": [
+    {
+      "parameter": "A01.conveyor.roller_pitch",
+      "reason": "方程与 frame_map 无滚筒间距"
+    },
+    {
+      "parameter": "A01.conveyor.roller_count",
+      "reason": "需装配实例统计"
+    },
+    {
+      "parameter": "A01.drive.center_along_length",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.drive.chain_pitch",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.drive.sprocket_teeth",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.drive.bearing_journal",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.mount.motor_x",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.mount.motor_z",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.mount.bearing_span",
+      "reason": "无对应全局变量"
+    },
+    {
+      "parameter": "A01.interfaces.thread_major_diameter",
+      "reason": "无对应全局变量"
+    }
+  ],
+  "live_reshape": {
+    "status": "sw_live_envelope_verified",
+    "work_copy": "C:\\Users\\yue\\A01-live-work\\A01-1800x900x1500-v2.SLDASM",
+    "target_mm": {
+      "Length": 1800,
+      "Width": 900,
+      "Height": 1500,
+      "FootHeight": 50
+    },
+    "readback_Value": {
+      "Length": 1800.0,
+      "Width": 900.0,
+      "Height": 1500.0,
+      "FootHeight": 50.0
+    },
+    "mother_restored": true,
+    "mate_interference_motion": "not_separately_certified",
+    "shared_parts": "work copy still references mother part files; Pack and Go needed for isolated archive",
+    "evidence": "results/windows/live_reshape_verified.json"
+  },
+  "counts": {
+    "mapped_or_inferred": 5,
+    "pending_mapping": 10,
+    "envelope_globals_confirmed": 3,
+    "envelope_live_verified": 3
+  }
+}

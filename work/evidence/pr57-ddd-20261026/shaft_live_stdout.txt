@@ -1,0 +1,18 @@
+2026-10-26 13:50:32,819 INFO    [MainThread] sw_session: running owned-sheet-metal-cli on task STA sw-task-5e71ccc6c774
+INFO    sw_session: running owned-sheet-metal-cli on task STA sw-task-5e71ccc6c774
+{"ownership": "spawned_pid_and_live_handle", "pid": 35420, "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe", "attached_existing": false, "native_verification": "session_only_not_cad_acceptance", "cleanup_status": "not_attempted", "cleanup_error": null, "cleanup_disconnect": null, "cleanup_exit_code": null, "keepalive_policy": "close_doc_only_keep_alive_exit_not_required", "exit_poll_seconds": 20.0, "anchor_created": false, "anchor_closed": false, "keepalive_verified": false, "event": "session"}
+C:\Users\yue\Desktop\solidworks-ai-v2\src\turned_part.py:1069: SyntaxWarning: 'return' in a 'finally' block
+  return kept
+2026-10-26 13:50:45,713 INFO    [sw-task-sta] solidworks_generator: SolidWorks 类型库主版本 33 加载成功
+INFO    solidworks_generator: SolidWorks 类型库主版本 33 加载成功
+2026-10-26 13:50:45,891 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=35420
+INFO    sw_session: owned application keepalive verified: UserControl=True pid=35420
+2026-10-26 13:50:53,951 ERROR   [sw-task-sta] sw_session: skipped close of unowned document 'shaft_9544d3c.SLDPRT': document inventory unavailable; refusing writes
+ERROR   sw_session: skipped close of unowned document 'shaft_9544d3c.SLDPRT': document inventory unavailable; refusing writes
+2026-10-26 13:50:53,951 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+INFO    sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+{"kind": "turned", "path": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\shaft_9544d3c.SLDPRT", "reopen": null, "mechanical_acceptance": "unverified", "status": "generated_unverified", "warnings": [], "threads": "cosmetic_or_pending_not_certified", "event": "done"}
+2026-10-26 13:50:54,061 WARNING [sw-task-sta] owned_document_lifetime: saved part kept after cleanup/inventory COM failure; ExitApp was not called: SessionOwnershipError: document inventory unavailable; refusing writes
+WARNING owned_document_lifetime: saved part kept after cleanup/inventory COM failure; ExitApp was not called: SessionOwnershipError: document inventory unavailable; refusing writes
+{"ownership": "spawned_pid_and_live_handle", "pid": 35420, "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe", "attached_existing": false, "native_verification": "session_only_not_cad_acceptance", "cleanup_status": "partial_com_disconnect", "cleanup_error": null, "cleanup_disconnect": "SessionOwnershipError: document inventory unavailable; refusing writes", "cleanup_exit_code": null, "keepalive_policy": "close_doc_only_keep_alive_exit_not_required", "exit_poll_seconds": 20.0, "anchor_created": false, "anchor_closed": false, "keepalive_verified": true, "event": "session_end"}
+{"status": "partial_com_disconnect", "path": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\shaft_9544d3c.SLDPRT", "exit_code": 0, "passed": false, "sw_live_verified": false, "native_acceptance": "pending_windows_validation", "file_on_disk": true, "exit_app": false, "cleanup_status": "partial_com_disconnect", "cleanup_disconnect": "SessionOwnershipError: document inventory unavailable; refusing writes", "message": "saved part kept; cleanup/inventory COM disconnect is not a hard failure; ExitApp was not called", "event": "partial"}

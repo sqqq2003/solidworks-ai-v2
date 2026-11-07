@@ -1,0 +1,179 @@
+{
+  "cases": [
+    {
+      "id": "f09",
+      "file": "f09.dxf",
+      "name": "主动轴",
+      "expect": [
+        166.0,
+        28.0,
+        28.0
+      ],
+      "stock": "revolve",
+      "dxf": "C:\\Users\\yue\\Desktop\\chejian_cmp\\dxf_fixtures\\f09.dxf",
+      "out": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\chejian\\f09_主动轴.SLDPRT",
+      "plan": {
+        "length_mm": 166.0,
+        "max_radius_mm": 14.0,
+        "stock": "revolve",
+        "stock_size_mm": [],
+        "profile_n": 68
+      },
+      "error": "SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。",
+      "trace": "Traceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\run_turned_accept_out.py\", line 127, in main\n    path = generate_turned_part(plan, str(out))\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 829, in generate_turned_part\n    profile_sketch = draw(\n        build.revolve.contour_mm,\n    ...<2 lines>...\n        build.revolve.segments,\n    )\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 738, in draw\n    _require_closed_contour(type_library, sketch, name)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 942, in _require_closed_contour\n    raise sw.SolidWorksGenerationError(\n        f\"{name}没有闭合轮廓，已中止保存，避免生成片体。\"\n    )\nsolidworks_generator.SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。\n",
+      "fin_path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-03-Z0203-001×2-主动轴.SLDPRT",
+      "fin_measure": {
+        "path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-03-Z0203-001×2-主动轴.SLDPRT",
+        "exists": true,
+        "error": "com_error: (-2147221008, '尚未调用 CoInitialize。', None, None)",
+        "trace": "During handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\yue\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\win32com\\client\\dynamic.py\", line 81, in _GetGoodDispatch\n    IDispatch = pythoncom.connect(IDispatch)\npywintypes.com_error: (-2147221008, '尚未调用 CoInitialize。', None, None)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\run_turned_accept_out.py\", line 51, in measure_sldprt\n    sw = win32com.client.Dispatch(\"SldWorks.Application\")\n  File \"C:\\Users\\yue\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\win32com\\client\\__init__.py\", line 116, in Dispatch\n    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)\n                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\win32com\\client\\dynamic.py\", line 101, in _GetGoodDispatchAndUserName\n    return (_GetGoodDispatch(IDispatch, clsctx), userName)\n            ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\win32com\\client\\dynamic.py\", line 83, in _GetGoodDispatch\n    IDispatch = pythoncom.CoCreateInstance(\n        IDispatch, None, clsctx, pythoncom.IID_IDispatch\n    )\npywintypes.com_error: (-2147221008, '尚未调用 CoInitialize。', None, None)\n"
+      },
+      "fin_size": 194864
+    },
+    {
+      "id": "f11",
+      "file": "f11.dxf",
+      "name": "锁定柱",
+      "expect": [
+        75.0,
+        19.63,
+        17.0
+      ],
+      "stock": "hex",
+      "dxf": "C:\\Users\\yue\\Desktop\\chejian_cmp\\dxf_fixtures\\f11.dxf",
+      "out": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\chejian\\f11_锁定柱.SLDPRT",
+      "plan": {
+        "length_mm": 75.0,
+        "max_radius_mm": 9.820000000003859,
+        "stock": "hex",
+        "stock_size_mm": [
+          17.0
+        ],
+        "profile_n": 14
+      },
+      "generated": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\chejian\\f11_锁定柱.SLDPRT",
+      "measure": {
+        "path": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\chejian\\f11_锁定柱.SLDPRT",
+        "exists": true,
+        "bodies": [
+          [
+            75.0,
+            19.629909152447276,
+            17.0
+          ]
+        ],
+        "LWH_mm": [
+          75.0,
+          19.629909152447276,
+          17.0
+        ],
+        "title": "f11_锁定柱.SLDPRT"
+      },
+      "pass_expect": true,
+      "fin_path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-02-Z0203-001×4-皮带座锁定柱(48W).SLDPRT",
+      "fin_measure": {
+        "path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-02-Z0203-001×4-皮带座锁定柱(48W).SLDPRT",
+        "exists": true,
+        "bodies": [
+          [
+            75.0,
+            19.629837434606326,
+            17.0264691186446
+          ]
+        ],
+        "LWH_mm": [
+          75.0,
+          19.629837434606326,
+          17.0264691186446
+        ],
+        "title": "FX-PX-ZYQDYT-02-Z0203-001×4-皮带座锁定柱(48W).SLDPRT"
+      },
+      "fin_size": 169420,
+      "prog_size": 88004,
+      "size_ratio": 0.519
+    },
+    {
+      "id": "f15",
+      "file": "f15.dxf",
+      "name": "导轮轴",
+      "expect": [
+        54.97,
+        10.0,
+        10.0
+      ],
+      "stock": "revolve",
+      "dxf": "C:\\Users\\yue\\Desktop\\chejian_cmp\\dxf_fixtures\\f15.dxf",
+      "out": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\chejian\\f15_导轮轴.SLDPRT",
+      "plan": {
+        "length_mm": 54.967988245700326,
+        "max_radius_mm": 5.0,
+        "stock": "revolve",
+        "stock_size_mm": [],
+        "profile_n": 32
+      },
+      "error": "SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。",
+      "trace": "Traceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\run_turned_accept_out.py\", line 127, in main\n    path = generate_turned_part(plan, str(out))\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 829, in generate_turned_part\n    profile_sketch = draw(\n        build.revolve.contour_mm,\n    ...<2 lines>...\n        build.revolve.segments,\n    )\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 738, in draw\n    _require_closed_contour(type_library, sketch, name)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 942, in _require_closed_contour\n    raise sw.SolidWorksGenerationError(\n        f\"{name}没有闭合轮廓，已中止保存，避免生成片体。\"\n    )\nsolidworks_generator.SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。\n",
+      "fin_path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-08-Z0203-001×18-皮带导轮轴.SLDPRT",
+      "fin_measure": {
+        "path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-08-Z0203-001×18-皮带导轮轴.SLDPRT",
+        "exists": true,
+        "bodies": [
+          [
+            55.0,
+            9.999999999999998,
+            9.999999999999998
+          ]
+        ],
+        "LWH_mm": [
+          55.0,
+          9.999999999999998,
+          9.999999999999998
+        ],
+        "title": "FX-PX-ZYQDYT-08-Z0203-001×18-皮带导轮轴.SLDPRT"
+      },
+      "fin_size": 172772
+    },
+    {
+      "id": "f19",
+      "file": "f19.dxf",
+      "name": "延长轴",
+      "expect": [
+        385.0,
+        15.0,
+        15.0
+      ],
+      "stock": "revolve",
+      "dxf": "C:\\Users\\yue\\Desktop\\chejian_cmp\\dxf_fixtures\\f19.dxf",
+      "out": "D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\chejian\\f19_延长轴.SLDPRT",
+      "plan": {
+        "length_mm": 385.0,
+        "max_radius_mm": 7.500000000000866,
+        "stock": "revolve",
+        "stock_size_mm": [],
+        "profile_n": 23
+      },
+      "error": "SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。",
+      "trace": "Traceback (most recent call last):\n  File \"D:\\工程\\钣金导入\\wb_pr57_full_20261026_134308\\run_turned_accept_out.py\", line 127, in main\n    path = generate_turned_part(plan, str(out))\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 829, in generate_turned_part\n    profile_sketch = draw(\n        build.revolve.contour_mm,\n    ...<2 lines>...\n        build.revolve.segments,\n    )\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 738, in draw\n    _require_closed_contour(type_library, sketch, name)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\yue\\Downloads\\cad2sw-dl\\ext\\CAD转SolidWorks\\turned_part.py\", line 942, in _require_closed_contour\n    raise sw.SolidWorksGenerationError(\n        f\"{name}没有闭合轮廓，已中止保存，避免生成片体。\"\n    )\nsolidworks_generator.SolidWorksGenerationError: 旋转轮廓没有闭合轮廓，已中止保存，避免生成片体。\n",
+      "fin_path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-12-Z04-001×2-延长轴.SLDPRT",
+      "fin_measure": {
+        "path": "C:\\Users\\yue\\Desktop\\QL-5050PX左右驱动一体封箱机\\车件图\\FX-PX-ZYQDYT-12-Z04-001×2-延长轴.SLDPRT",
+        "exists": true,
+        "bodies": [
+          [
+            385.0,
+            15.0,
+            15.0
+          ]
+        ],
+        "LWH_mm": [
+          385.0,
+          15.0,
+          15.0
+        ],
+        "title": "FX-PX-ZYQDYT-12-Z04-001×2-延长轴.SLDPRT"
+      },
+      "fin_size": 108763
+    }
+  ],
+  "ok": false
+}

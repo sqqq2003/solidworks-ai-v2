@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Mock build: no SolidWorks interop assemblies required. -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Real mode (pending_windows_validation): build with
+         dotnet build -p:DefineConstants=SOLIDWORKS_INTEROP
+         plus references to the SolidWorks interop assemblies, on a
+         Windows machine with SolidWorks installed. -->
+  </PropertyGroup>
+</Project>
