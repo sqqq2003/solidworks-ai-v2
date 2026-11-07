@@ -367,3 +367,11 @@
 - 原基线 `aca899b`，原 head `5e07963`。`dev/cloud-ai` 已到 `62a9c91`（Integrate desktop and sheet metal updates with isolated cloud regression）。逐提交 rebase 不安全：主干整合提交已经带上同一套会话、文档清单和引用文档所有权文件，重放 13 个旧补丁会碰到更新过的 COM 代码。本分支改为合并 `origin/dev/cloud-ai`。
 - 内容冲突只在 `TASK_STATUS.md`。两处 add/add 只是文件尾空白，已按主干收掉。`native_machine.math_transform` 自动合并出了重复定义，已删成与主干相同的一份。引用文档所有权、文档清单重列、CloseDoc-only 保活（不调用 ExitApp）与 `5e07963` 相同，且这些源文件与 `62a9c91` 一致。`GetNextView` / 比例锁定不在本 PR 另改，仍留给 PR #59。
 - Linux `python3 work/run_cloud_tests.py`（Python 3.12.3）：739 ran / 735 passed / 0 failures / 0 errors / 4 skipped。跨进程锁通过。`solidworks_live_verified=false`，`sw_live=not_run_simulation_only`。`manufacturing_approved` 未改为 true。这不是 Windows 实机通过，也不是生产图通过。
+
+## DESKTOP-DAILY-20261107：设计工作台日常使用补全
+
+- 基线 `dev/cloud-ai` @ `546547a`，云端基线 775 ran / 771 passed / 4 skipped。本批只改桌面与离线模块，不碰 COM、会话所有权和原生生成路径。开放中的 PR 堆栈（#63–#70、#72–#76）已覆盖 36 个 pending 合约和联网 AI 助手，本批不重复。
+- 本地文字识别：`design_instruction.parse_design_text` 读取钣金板厚/内半径/角度/K/轮廓/缩放、整机型号与长×宽×高、车件/滚筒规格。只取文字中明确写出的数值；冲突、非 mm 单位、K 超出 0–1、对象类型混杂时列入待确认，不填值、不补默认。原 `parse_request` 滚筒合约不变。
+- 桌面：识别结果可“填入任务设置”（只填识别项，取消已核对，不入队、不执行）；记住 SLDWORKS.exe 路径和最近 8 个输入文件（`runtime/desktop-settings.json`，t/R/角度/K 不保存）；队列支持上移/下移/删除所选，运行中禁用；新增“历史报告”只读窗口与 `work/project.py history`。
+- `python3 work/run_cloud_tests.py`（Linux，Python 3.12.3，虚拟显示）：818 ran / 814 passed / 0 failures / 0 errors / 4 skipped（仍是 DWG、LibreDWG、基线哈希），跨进程锁通过。新增 43 项测试。`sw_live=not_run_simulation_only`。
+- 未做 Windows 桌面点击验收；文字识别只是填表辅助，不是设计审核或 CAD 放行。

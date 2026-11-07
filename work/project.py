@@ -22,12 +22,19 @@ def main():
     batch = commands.add_parser('batch')
     batch.add_argument('manifest',type=Path)
     batch.add_argument('--reports',type=Path,default=ROOT/'runtime/project-reports')
+    history = commands.add_parser('history',help='list saved batch reports, newest first; read-only')
+    history.add_argument('--reports',type=Path,default=ROOT/'runtime/project-reports')
+    history.add_argument('--limit',type=int,default=20)
     args = p.parse_args()
     try:
         if args.command == 'status':
             report = capabilities()
         elif args.command == 'doctor':
             report = doctor()
+        elif args.command == 'history':
+            from report_history import list_reports
+            report = {'status':'completed','reports_dir':str(args.reports.resolve()),
+                      'reports':list_reports(args.reports,limit=args.limit),'cad_executed':False}
         elif args.command == 'ql':
             from ql5050px.workflow import run_workflow
             config = json.loads(args.config.read_text(encoding='utf-8-sig'))

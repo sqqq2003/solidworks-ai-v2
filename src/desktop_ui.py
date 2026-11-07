@@ -6,6 +6,8 @@ import threading
 from desktop_jobs import MODES, ACTIONS, QL_ACTIONS, STATUS_LABELS, build_desktop_job
 
 ROOT=Path(__file__).resolve().parents[1]
+SETTINGS_FILE=ROOT/'runtime'/'desktop-settings.json'
+REPORTS_DIR=ROOT/'runtime'/'project-reports'
 BG='#F8F8F7'; WHITE='#FFFFFF'; INK='#252525'; MUTED='#787872'; LINE='#E8E8E5'
 BLUE='#242424'; NAV='#EFEFED'
 
@@ -48,6 +50,32 @@ def explain_task_result(row):
     return title+'\n请打开“运行详情”查看原因。'
 
 
+def queue_label(job):
+    """Distinguishable queue text; envelope jobs have no file name to show."""
+    if job.get('kind')=='parametric':
+        size='×'.join(f'{job[k]:g}' for k in ('length','width','height') if isinstance(job.get(k),(int,float)))
+        return ' · '.join(part for part in (job.get('machine',''),size+' mm' if size else '') if part) or '目标包络'
+    return Path(job.get('config') or job.get('source') or '目标包络').name
+
+
+def format_report_detail(entry,report=None):
+    """Read-only history text; a saved report never becomes a new approval."""
+    lines=['时间：'+entry['written_at'].replace('T',' ')[:19],'报告文件：'+entry['path']]
+    if entry.get('error') or report is None:
+        lines.append('无法读取：'+str(entry.get('error') or '报告不可用'))
+        return '\n'.join(lines)
+    status=report.get('status')
+    lines.append('结果：'+STATUS_LABELS.get(status,str(status or '未知')))
+    counts=report.get('counts') if isinstance(report.get('counts'),dict) else {}
+    if counts:lines.append('统计：'+' · '.join(f'{STATUS_LABELS.get(k,k)} {v}' for k,v in counts.items()))
+    if report.get('error'):lines.append('队列错误：'+str(report['error'])[:350])
+    rows=[row for row in report.get('results',[]) if isinstance(row,dict)]
+    if rows:lines.extend(['']+[explain_task_result(row)+'\n' for row in rows])
+    if entry.get('artifacts'):lines.extend(['输出文件：']+['  '+path for path in entry['artifacts']])
+    lines.extend(['','历史报告只供查看；重新执行请在任务设置中核对后重新加入队列。'])
+    return '\n'.join(lines)
+
+
 class Workbench:
     def __init__(self, root):
         import tkinter as tk
@@ -62,6 +90,7 @@ class Workbench:
             'uniform_scale':'',
             'length':'1800','width':'900','height':'1500'}.items()}
         self.confirmed=tk.BooleanVar();self.flip=tk.BooleanVar();self.inferred=tk.BooleanVar();self.preserve_circle_holes=tk.BooleanVar()
+        self.settings_file=SETTINGS_FILE;self.load_preferences()
         self.native_open=False;self.advanced_open=False;self.detail_open=False
         self.report_text='';self.inputs=[];self.nav_buttons={};self.row_ids=[]
         self.running_rows=[];self.running_jobs=[];self.queue_running=False;self.last_request=None
@@ -124,6 +153,7 @@ class Workbench:
         self.button(nav,'尺寸试改预检',self.native_review).pack(fill='x',padx=12,pady=2)
         tk.Frame(nav,bg=LINE,height=1).pack(fill='x',padx=20,pady=20)
         self.button(nav,'任务队列',self.show_queue).pack(fill='x',padx=12,pady=2)
+        self.button(nav,'历史报告',self.show_history).pack(fill='x',padx=12,pady=2)
         self.button(nav,'设置',self.show_environment).pack(fill='x',padx=12,pady=2)
         self.button(nav,'运行记录',self.show_logs).pack(fill='x',padx=12,pady=2)
         self.label(nav,'V2  ·  本地工作副本',size=9,bg=NAV,color=MUTED).pack(side='bottom',anchor='w',padx=22,pady=24)
@@ -182,6 +212,7 @@ class Workbench:
         self.composer.bind('<Command-Return>',lambda e:self.send_instruction())
         tools=tk.Frame(self.composer_panel,bg=BG);tools.pack(fill='x',pady=(10,0))
         attach=self.button(tools,'＋ 添加文件',lambda:self.choose('source'));attach.configure(bg=BG);attach.pack(side='left')
+        self.recent_button=self.button(tools,'最近 ▾',self.show_recent);self.recent_button.configure(bg=BG);self.recent_button.pack(side='left')
         self.attachment=tk.StringVar(value='')
         self.tk.Label(tools,textvariable=self.attachment,bg=BG,fg=MUTED,font=(self.family,9)).pack(side='left',padx=8)
         self.send_button=self.button(tools,'↑',self.send_instruction,primary=True);self.send_button.configure(padx=14,pady=5);self.send_button.pack(side='right')
@@ -258,8 +289,12 @@ class Workbench:
         self.label(top,'任务队列',size=17,bold=True).pack(side='left')
         self.tk.Label(top,textvariable=self.queue_count,bg=WHITE,fg=MUTED).pack(side='left',padx=12)
         self.clear_button=self.button(top,'清空',self.clear);self.clear_button.pack(side='right')
+        self.remove_button=self.button(top,'删除所选',self.remove_selected);self.remove_button.pack(side='right',padx=(0,8))
+        self.down_button=self.button(top,'下移',lambda:self.move_selected(1));self.down_button.pack(side='right',padx=(0,8))
+        self.up_button=self.button(top,'上移',lambda:self.move_selected(-1));self.up_button.pack(side='right',padx=(0,8))
         body=tk.Frame(self.queue_window,bg=WHITE,padx=20);body.pack(fill='both',expand=True)
         self.table=ttk.Treeview(body,columns=('task','file','state'),show='headings',height=7,selectmode='browse')
+        self.table.bind('<<TreeviewSelect>>',lambda e:self._sync_buttons())
         for key,label,width in [('task','任务',150),('file','文件 / 项目',460),('state','状态',170)]:
             self.table.heading(key,text=label,anchor='w');self.table.column(key,width=width,anchor='w',stretch=(key=='file'))
         self.table.pack(side='left',fill='both',expand=True);scroll=ttk.Scrollbar(body,command=self.table.yview);scroll.pack(side='right',fill='y');self.table.configure(yscrollcommand=scroll.set)
@@ -359,6 +394,49 @@ class Workbench:
             path=filedialog.askopenfilename(parent=self.root,filetypes=[('输入文件',pattern),('所有文件','*.*')])
         if path:
             self.values[key].set(path);self.journal.record('input_selected',field=key,path=path,kind=kind)
+            if key=='source':self._remember_source(path)
+            elif key=='sw_exe':self.preferences['sw_exe']=path;self._save_preferences()
+
+    def load_preferences(self):
+        # Only the program path and recent file names persist; t/R/angle/K stay per-job inputs.
+        from user_settings import load_settings
+        self.preferences=load_settings(self.settings_file)
+        saved_exe=self.preferences.get('sw_exe')
+        if isinstance(saved_exe,str) and Path(saved_exe).name.casefold()=='sldworks.exe' and Path(saved_exe).is_file():
+            self.values['sw_exe'].set(saved_exe)
+
+    def _save_preferences(self):
+        from user_settings import save_settings
+        if not save_settings(self.preferences,self.settings_file):
+            self.journal.record('preferences_save_failed',path=str(self.settings_file),level='WARNING')
+
+    def _remember_source(self,path):
+        from user_settings import update_recent
+        self.preferences['recent_files']=update_recent(self.preferences,path);self._save_preferences()
+
+    def recent_entries(self):
+        from user_settings import recent_files
+        return recent_files(self.preferences)
+
+    def show_recent(self):
+        if self.state['busy']:return
+        menu=self.tk.Menu(self.root,tearoff=0)
+        entries=self.recent_entries()
+        for path in entries:
+            menu.add_command(label=Path(path).name+'  ·  '+str(Path(path).parent),command=lambda p=path:self.use_recent(p))
+        if not entries:menu.add_command(label='暂无最近文件',state='disabled')
+        button=self.recent_button
+        try:menu.tk_popup(button.winfo_rootx(),button.winfo_rooty()-menu.winfo_reqheight())
+        finally:menu.grab_release()
+
+    def use_recent(self,path):
+        """Select a remembered input only; the job still needs review before queueing."""
+        if self.state['busy'] or not Path(path).is_file():return
+        suffix=Path(path).suffix.casefold();kind=self.values['kind'].get()
+        if suffix=='.json' and kind!='ql5050px':self.switch_mode('ql5050px')
+        elif suffix in {'.dxf','.dwg'} and kind not in {'sheet','roller','turned'}:self.switch_mode('sheet')
+        self.values['source'].set(path);self._remember_source(path)
+        self.journal.record('input_selected',field='source',path=path,kind=self.values['kind'].get(),recent=True)
 
     def append(self):
         if self.state['busy']:return False
@@ -371,11 +449,11 @@ class Workbench:
                 self.row_ids=[]
             self.state['jobs'].append(job)
             self.journal.record('job_queued',job=job)
-            source=job.get('config',job.get('source','目标包络'))
-            item=self.table.insert('', 'end',values=(MODES[job['kind']][0],Path(source).name,'待运行'))
+            label=queue_label(job)
+            item=self.table.insert('', 'end',values=(MODES[job['kind']][0],label,'待运行'))
             self.row_ids.append(item);self.empty.place_forget();self.summary.set('任务已加入队列，准备好后点击运行。')
             self.queue_count.set(f"{len(self.state['jobs'])} 项待运行");self.status.set('就绪');self._sync_buttons()
-            self.add_message('任务已加入队列',MODES[job['kind']][0]+' · '+Path(source).name+'\n准备好后，在任务队列中运行。')
+            self.add_message('任务已加入队列',MODES[job['kind']][0]+' · '+label+'\n准备好后，在任务队列中运行。')
             return True
         except (OSError,ValueError,KeyError) as exc:
             self.journal.exception('job_validation_failed',exc)
@@ -398,6 +476,10 @@ class Workbench:
         self.run_current_button.configure(state='disabled' if busy else 'normal')
         self.start_button.configure(state='normal' if has_jobs and not busy else 'disabled')
         self.clear_button.configure(state='disabled' if busy or not self.table.get_children() else 'normal')
+        index=self._selected_queue_index();count=len(self.state['jobs'])
+        self.remove_button.configure(state='normal' if index is not None else 'disabled')
+        self.up_button.configure(state='normal' if index else 'disabled')
+        self.down_button.configure(state='normal' if index is not None and index<count-1 else 'disabled')
         self.stop_button.configure(state='normal' if busy else 'disabled')
         self.native_button.configure(state='disabled' if busy else 'normal')
         for button in self.nav_buttons.values():button.configure(state='disabled' if busy else 'normal')
@@ -415,9 +497,38 @@ class Workbench:
         def worker():
             try:
                 report=run_batch(jobs,stop_requested=self.stop.is_set)
-                path=write_report(report,ROOT/'runtime/project-reports');self.messages.put((report,str(path)))
+                path=write_report(report,REPORTS_DIR);self.messages.put((report,str(path)))
             except Exception as exc:self.messages.put(({'status':'failed','error':str(exc)},None))
         threading.Thread(target=worker,daemon=True).start()
+
+    def _selected_queue_index(self):
+        """Index of the selected pending job; None while running or showing results."""
+        if self.state['busy'] or not self.state['jobs']:return None
+        selection=self.table.selection()
+        if not selection or selection[0] not in self.row_ids:return None
+        index=self.row_ids.index(selection[0])
+        return index if index<len(self.state['jobs']) else None
+
+    def remove_selected(self):
+        index=self._selected_queue_index()
+        if index is None:return
+        item=self.row_ids.pop(index);job=self.state['jobs'].pop(index)
+        self.table.delete(item);self.journal.record('job_removed',job=job)
+        remaining=len(self.state['jobs'])
+        self.queue_count.set(f'{remaining} 项待运行')
+        if not remaining:
+            self.empty.place(relx=.5,rely=.60,anchor='center');self.summary.set('添加任务后，可在这里查看进度和结果。')
+        self._sync_buttons()
+
+    def move_selected(self,offset):
+        index=self._selected_queue_index()
+        if index is None or not 0<=index+offset<len(self.state['jobs']):return
+        target=index+offset;jobs=self.state['jobs'];rows=self.row_ids
+        jobs[index],jobs[target]=jobs[target],jobs[index]
+        rows[index],rows[target]=rows[target],rows[index]
+        self.table.move(rows[target],'',target);self.table.selection_set(rows[target])
+        self.journal.record('job_reordered',from_index=index,to_index=target)
+        self._sync_buttons()
 
     def stop_after_current(self):
         self.journal.record('queue_stop_requested')
@@ -495,7 +606,7 @@ class Workbench:
         if not self.composer.get('1.0','end').strip():
             self.composer.insert('1.0',self.placeholder);self.composer.configure(fg=MUTED);self.placeholder_visible=True
 
-    def add_message(self,title,body,*,request=None,overview_source=None):
+    def add_message(self,title,body,*,request=None,overview_source=None,actions=()):
         self.welcome.place_forget()
         card=self.tk.Frame(self.conversation,bg=WHITE,pady=16);card.pack(fill='x',anchor='n')
         self.chat_cards.append(card)
@@ -504,29 +615,56 @@ class Workbench:
         self.label(card,body,size=11,justify='left',anchor='w',wraplength=width).pack(anchor='w',fill='x')
         if request is not None:self.button(card,'保存审核请求',lambda:self.save_request(request)).pack(anchor='w',pady=(12,0))
         if overview_source:self.button(card,'查看这张图的概览',lambda:self.open_dxf_overview(overview_source)).pack(anchor='w',pady=(12,0))
+        for text,command in actions:self.button(card,text,command).pack(anchor='w',pady=(12,0))
         self.root.update_idletasks();self.feed_canvas.yview_moveto(1)
 
     def send_instruction(self):
         if self.state['busy'] or self.placeholder_visible:return 'break'
         text=self.composer.get('1.0','end').strip()
         if not text:return 'break'
-        from design_instruction import instruction_request
+        from design_instruction import instruction_request,describe_design,form_updates
         from tkinter import messagebox
         try:request=instruction_request({'text':text})
         except (ValueError,KeyError,TypeError) as exc:
             messagebox.showerror('无法生成审核请求',str(exc),parent=self.root);return 'break'
         self.add_message('你',text)
-        parsed=request['parsed'];self.last_request=request
-        if parsed['part_kind']!='roller' or parsed['target_overall_mm'] is None:
-            summary='当前快捷指令支持滚筒总长改型，请写明总长（mm）和需要保持不变的接口。其他任务可在任务设置中选择配置文件。'
-        else:
+        parsed=request['parsed'];design=request['design'];self.last_request=request
+        if design['part_kind']=='roller' and parsed['target_overall_mm'] is not None:
             names={'shaft_diameter':'轴径','shaft_end_installation_interfaces':'两端安装结构'}
             protected='、'.join(names[k] for k in parsed['protected_requirements'])
             summary=f'目标总长：{parsed["target_overall_mm"]:g} mm\n'+('保持不变：'+protected+'\n' if protected else '待补充：需要保持不变的接口。\n')
             summary+='下一步：在真实模型上确认尺寸绑定与修改范围。\n尚未执行模型修改。'
-        self.add_message('方案待审核',summary,request=request)
+        else:
+            summary=describe_design(design)
+            if design['part_kind'] in {'sheet','roller','turned'} and not self.values['source'].get():
+                summary+='\n还需添加图纸工作副本。'
+        actions=[]
+        if form_updates(design):
+            summary+='\n“填入任务设置”只填写上面识别出的项，未提到的项保持当前内容，请一并核对。'
+            actions.append(('填入任务设置',lambda:self.apply_design(design)))
+        self.add_message('方案待审核',summary,request=request,actions=actions)
         self.composer.delete('1.0','end');self._composer_blur();self.status.set('审核请求已生成 · 未执行模型修改')
         return 'break'
+
+    def apply_design(self,design):
+        """Copy recognized values into the form; never confirms, queues or runs."""
+        if self.state['busy']:return False
+        from design_instruction import form_updates
+        updates=form_updates(design)
+        if updates is None:return False
+        fields=dict(updates['fields']);kind=fields.pop('kind')
+        self.switch_mode(kind)
+        if kind=='sheet' and self.action.get()=='识别图纸' and {'thickness','radius','angle','k_factor'}&set(fields):
+            self.action.set('生成计划')
+        for key,value in fields.items():self.values[key].set(value)
+        if updates['flags'].get('flip'):self.flip.set(True)
+        if updates['flags'].get('preserve_circle_holes'):self.preserve_circle_holes.set(True)
+        if {'profile','variant'}&set(fields):self.advanced_open=True;self._refresh_options()
+        self.confirmed.set(False)
+        if not self.settings_open:self.toggle_settings()
+        self.journal.record('design_text_applied',kind=kind,fields=sorted(fields),flags=sorted(updates['flags']))
+        self.status.set('已填入任务设置 · 请核对后再加入队列')
+        return True
 
     def save_request(self,request):
         from tkinter import filedialog,messagebox
@@ -567,6 +705,57 @@ class Workbench:
                     str(environment.get('platform'))+' / Python '+str(environment.get('python')))
         text.configure(state='disabled')
 
+    def show_history(self):
+        from report_history import list_reports,load_report,open_folder
+        from tkinter import messagebox
+        tk,ttk=self.tk,self.ttk
+        win=tk.Toplevel(self.root);win.title('历史报告');win.geometry('1040x620');win.configure(bg=WHITE)
+        top=tk.Frame(win,bg=WHITE,padx=18,pady=14);top.pack(fill='x')
+        self.label(top,'历史报告',size=16,bold=True).pack(side='left')
+        self.label(top,'只读查看以往队列结果，不会重新运行任务。',color=MUTED).pack(side='left',padx=12)
+        body=tk.Frame(win,bg=WHITE,padx=18);body.pack(fill='both',expand=True,pady=(0,18))
+        table=ttk.Treeview(body,columns=('time','status','tasks'),show='headings',selectmode='browse')
+        for key,label,width in (('time','时间',150),('status','结果',90),('tasks','任务',230)):
+            table.heading(key,text=label,anchor='w');table.column(key,width=width,anchor='w',stretch=key=='tasks')
+        table.pack(side='left',fill='y')
+        detail=tk.Text(body,wrap='word',padx=14,pady=10,relief='flat',bg='#F7F9FC',fg=INK)
+        detail.pack(side='left',fill='both',expand=True,padx=(12,0))
+        entries={}
+        def selected():
+            selection=table.selection()
+            return entries.get(selection[0]) if selection else None
+        def show(_event=None):
+            entry=selected()
+            if entry is None:
+                body_text='暂无历史报告。队列运行结束后会自动保存。' if not entries else '选择左侧一条记录查看详情。'
+            else:
+                try:report=None if entry['error'] else load_report(entry['path'])
+                except (OSError,ValueError,UnicodeError) as exc:entry=dict(entry,error=str(exc));report=None
+                body_text=format_report_detail(entry,report)
+            detail.configure(state='normal');detail.delete('1.0','end');detail.insert('end',body_text);detail.configure(state='disabled')
+        def refresh():
+            table.delete(*table.get_children());entries.clear()
+            for entry in list_reports(REPORTS_DIR):
+                status='无法读取' if entry['error'] else STATUS_LABELS.get(entry['status'],entry['status'] or '未知')
+                names='、'.join(entry['names'][:3])+('…' if len(entry['names'])>3 else '')
+                tasks=f"{entry['tasks']} 项 · {names}" if entry['tasks'] else '—'
+                entries[table.insert('','end',values=(entry['written_at'].replace('T',' ')[:16],status,tasks))]=entry
+            show()
+        def reveal(path):
+            try:open_folder(path)
+            except OSError as exc:messagebox.showerror('无法打开文件夹',str(exc),parent=win)
+        def reveal_output():
+            entry=selected()
+            if entry and entry['artifacts']:reveal(Path(entry['artifacts'][0]).parent)
+            else:messagebox.showinfo('没有输出文件','所选记录没有生成文件。',parent=win)
+        table.bind('<<TreeviewSelect>>',show)
+        self.button(top,'打开输出所在文件夹',reveal_output).pack(side='right')
+        self.button(top,'打开报告文件夹',lambda:reveal(REPORTS_DIR)).pack(side='right',padx=8)
+        self.button(top,'刷新',refresh).pack(side='right')
+        refresh()
+        self.journal.record('report_history_viewed',reports=len(entries))
+        return win
+
     def show_logs(self):
         from tkinter import filedialog,messagebox
         from app_logging import WorkJournal
@@ -599,7 +788,10 @@ class Workbench:
                    'diagnostics_exported':'日志已导出','doctor_completed':'环境检查完成'}
             names.update({'package_identified':'测试包版本','reference_relocation_started':'引用修复开始',
                           'reference_updated':'引用已更新','reference_relocation_failed':'引用修复失败',
-                          'reference_relocation_finished':'引用修复结束'})
+                          'reference_relocation_finished':'引用修复结束',
+                          'design_text_applied':'文字方案填入任务设置','job_removed':'删除排队任务',
+                          'job_reordered':'调整任务顺序','report_history_viewed':'查看历史报告',
+                          'preferences_save_failed':'偏好保存失败'})
             for row in self.journal.events():text.insert('end',row['time']+'  '+row['level']+'  '+names.get(row['event'],row['event'])+'\n'+json.dumps(row['details'],ensure_ascii=False)+'\n\n')
             text.see('end')
         def export():
@@ -638,6 +830,7 @@ class Workbench:
         from tkinter import filedialog
         source=filedialog.askopenfilename(parent=self.root,title='选择已转换的钣金 DXF 工作副本',filetypes=[('DXF 图纸','*.dxf')])
         if not source:return
+        self._remember_source(source)
         win=self.tk.Toplevel(self.root);win.title('钣金批量预检');win.geometry('950x620')
         widget=self.tk.Text(win,wrap='word',padx=16,pady=12);widget.pack(fill='both',expand=True)
         widget.insert('end','正在检查候选轮廓…');widget.configure(state='disabled')
@@ -731,6 +924,7 @@ class Workbench:
         if not path:return
         self.switch_mode('sheet');self.action.set('识别图纸');self.values['source'].set(path)
         self.journal.record('input_selected',field='source',path=path,kind='sheet')
+        self._remember_source(path)
         self.open_dxf_overview(path)
 
     def open_dxf_overview(self,path=None):

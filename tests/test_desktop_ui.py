@@ -10,7 +10,11 @@ from unittest.mock import patch
 class DesktopUITests(unittest.TestCase):
     def setUp(self):
         import tkinter as tk
+        import desktop_ui
         from desktop_ui import Workbench
+        folder=tempfile.TemporaryDirectory();self.addCleanup(folder.cleanup);self.tmp=Path(folder.name)
+        for name,value in (('SETTINGS_FILE',self.tmp/'desktop-settings.json'),('REPORTS_DIR',self.tmp/'reports')):
+            patcher=patch.object(desktop_ui,name,value);patcher.start();self.addCleanup(patcher.stop)
         self.root=tk.Tk();self.view=Workbench(self.root);self.root.update()
         self.addCleanup(self.view.close)
 
