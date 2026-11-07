@@ -97,7 +97,7 @@ def bootstrap(root,component='workbench'):
     try:_journal=WorkJournal(Path(root)/'runtime/logs',component)
     except OSError:_journal=WorkJournal(Path(os.environ.get('LOCALAPPDATA',Path.home()))/'SolidWorksAI/logs',component)
     fingerprints={}
-    for name in ('app.py','src/desktop_ui.py','src/project_workbench.py','src/solidworks_generator.py','src/sw_session.py'):
+    for name in ('app.py','src/desktop_ui.py','src/project_workbench.py','src/solidworks_generator.py','src/roller_geometry.py','src/sheet_metal_geometry.py','src/sw_session.py'):
         path=Path(root)/name
         if path.is_file():fingerprints[name]=hashlib.sha256(path.read_bytes()).hexdigest()
     _journal.record('code_identified',sha256=fingerprints)

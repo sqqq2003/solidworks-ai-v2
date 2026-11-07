@@ -41,7 +41,7 @@ def prepare(folder,*,thickness,radius,angle,k_factor,sw_exe):
           '--angle',str(angle),'--k-factor',str(k_factor),'--direction','normal',
           '--confirm-bends','--no-relief-retries','--live','--sw-exe',str(sw_exe),
           '--out',str(folder/'native'),'--diagnostic-log',str(folder/'session.log')]
-    modules=['src/solidworks_generator.py','src/sw_session.py','src/sw_owned_launch.py','src/sheet_metal_windows.py']
+    modules=['src/solidworks_generator.py','src/sheet_metal_geometry.py','src/roller_geometry.py','src/sw_session.py','src/sw_owned_launch.py','src/sheet_metal_windows.py']
     report=dict(scope='synthetic_fixture_only_not_production',cad_executed=False,
                 parameters=parameters,profile_index=index,index_base=0,
                 source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),

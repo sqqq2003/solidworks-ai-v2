@@ -28,7 +28,7 @@ def declared_inputs(plan):
 def code_fingerprint():
     source=Path(__file__).resolve().parent
     paths=list(source.glob('*.py'))
-    paths += [source.parent/name for name in ('sw_session.py','sw_owned_launch.py','solidworks_generator.py',
+    paths += [source.parent/name for name in ('sw_session.py','sw_owned_launch.py','solidworks_generator.py','roller_geometry.py','sheet_metal_geometry.py',
         'turned_part.py','turned_generate.py','part_verification.py','sheet_metal_pipeline.py','sheet_metal_windows.py','sw_math_arrays.py')]
     paths += list((source.parent/'sw_compat').glob('*.py')) + [source.parent/'owned_document_lifetime.py']
     return {str(p.relative_to(source.parent)).replace('\\','/'):file_sha256(p) for p in sorted(paths) if p.is_file()}

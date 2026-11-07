@@ -18,8 +18,8 @@ MAX_FILE = 64 * 1024 * 1024
 CATALOG = (
     ('dxf_overview', 'DXF 图纸概览', 'ezdxf / 只读', ('src/dxf_overview.py', 'src/desktop_ui.py')),
     ('drawing_analysis', 'DWG / DXF 图纸识别', 'ezdxf / SolidWorks 转换', ('src/cad_analyzer.py', 'src/dwg_converter.py')),
-    ('sheet_metal', '钣金零件生成', 'SolidWorks COM', ('src/sheet_metal_pipeline.py', 'src/solidworks_generator.py')),
-    ('roller', '滚筒零件生成', 'SolidWorks COM', ('src/roller_spec.py', 'src/solidworks_generator.py')),
+    ('sheet_metal', '钣金零件生成', 'SolidWorks COM', ('src/sheet_metal_pipeline.py', 'src/solidworks_generator.py', 'src/sheet_metal_geometry.py')),
+    ('roller', '滚筒零件生成', 'SolidWorks COM', ('src/roller_spec.py', 'src/solidworks_generator.py', 'src/roller_geometry.py')),
     ('turned', '车削零件生成', 'SolidWorks COM', ('src/turned_generate.py', 'src/solidworks_generator.py')),
     ('assembly', '整机参数改型与配合', 'SolidWorks COM', ('src/a01_next/production.py', 'src/a01_next/native_production.py')),
     ('geometry_change', '尺寸与几何变化记录', 'SolidWorks COM / 离线比较',
