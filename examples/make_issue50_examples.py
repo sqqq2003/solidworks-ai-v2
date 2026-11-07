@@ -21,9 +21,15 @@ def examples():
             {'id':'bom','kind':'bom','source':'bom.csv','revision':'A','depends_on':['machine']}]
     after=json.loads(json.dumps(before)); after[0]['revision']='B'
     changes={'before':before,'after':after}
-    assembly={'components':[{'id':'frame','fixed':True},{'id':'roller','expected_dof':1}],
-              'mates':[{'id':'concentric','a':'frame','b':'roller','type':'concentric','moving':'roller'},
-                       {'id':'axial','a':'frame','b':'roller','type':'distance','moving':'roller'}],
+    pose='synthetic current-pose mate geometry'
+    assembly={'components':[{'id':'frame','fixed':True},
+                            {'id':'roller','expected_dof':1,'expected_motions':[{'type':'rotation','axis_point_mm':[0,0,0],'direction':[1,0,0]}]}],
+              'mates':[{'id':'concentric','a':'frame','b':'roller','type':'concentric','moving':'roller',
+                        'geometry':{'unit':'mm','source':pose,'a':{'kind':'axis','point_mm':[0,0,0],'direction':[1,0,0]},
+                                    'b':{'kind':'axis','point_mm':[400,0,0],'direction':[-1,0,0]}}},
+                       {'id':'axial','a':'frame','b':'roller','type':'distance','moving':'roller',
+                        'geometry':{'unit':'mm','source':pose,'a':{'kind':'plane','point_mm':[0,0,0],'normal':[1,0,0]},
+                                    'b':{'kind':'plane','point_mm':[5,0,40],'normal':[-1,0,0]},'distance':q(5,'mm','synthetic axial clearance')}}],
               'joints':[{'id':'lift','component':'roller','minimum':0,'maximum':100,'position':20,'unit':'mm','source':'synthetic travel'}]}
     review={'scope':'roller_example','minimum_confidence':.9,'values':{'barrel':q(690,'mm'),'minimum':q(200,'mm')},
             'rules':[{'id':'barrel_min','left':'barrel','right':'minimum','op':'ge','unit':'mm','source':'synthetic design requirement',

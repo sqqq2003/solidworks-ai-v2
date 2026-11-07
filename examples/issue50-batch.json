@@ -95,7 +95,22 @@
         },
         {
           "id": "roller",
-          "expected_dof": 1
+          "expected_dof": 1,
+          "expected_motions": [
+            {
+              "type": "rotation",
+              "axis_point_mm": [
+                0,
+                0,
+                0
+              ],
+              "direction": [
+                1,
+                0,
+                0
+              ]
+            }
+          ]
         }
       ],
       "mates": [
@@ -104,14 +119,79 @@
           "a": "frame",
           "b": "roller",
           "type": "concentric",
-          "moving": "roller"
+          "moving": "roller",
+          "geometry": {
+            "unit": "mm",
+            "source": "synthetic current-pose mate geometry",
+            "a": {
+              "kind": "axis",
+              "point_mm": [
+                0,
+                0,
+                0
+              ],
+              "direction": [
+                1,
+                0,
+                0
+              ]
+            },
+            "b": {
+              "kind": "axis",
+              "point_mm": [
+                400,
+                0,
+                0
+              ],
+              "direction": [
+                -1,
+                0,
+                0
+              ]
+            }
+          }
         },
         {
           "id": "axial",
           "a": "frame",
           "b": "roller",
           "type": "distance",
-          "moving": "roller"
+          "moving": "roller",
+          "geometry": {
+            "unit": "mm",
+            "source": "synthetic current-pose mate geometry",
+            "a": {
+              "kind": "plane",
+              "point_mm": [
+                0,
+                0,
+                0
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ]
+            },
+            "b": {
+              "kind": "plane",
+              "point_mm": [
+                5,
+                0,
+                40
+              ],
+              "normal": [
+                -1,
+                0,
+                0
+              ]
+            },
+            "distance": {
+              "value": 5,
+              "unit": "mm",
+              "source": "synthetic axial clearance"
+            }
+          }
         }
       ],
       "joints": [

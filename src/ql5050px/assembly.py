@@ -38,7 +38,7 @@ def inspect_assembly(components, mates, transmissions=()):
     removed = dict.fromkeys(nodes, 0)
     issues = []
     # Scalar DOF accounting is a conservative heuristic; no Jacobian rank claim.
-    rank = {"fixed": 6, "coincident": 1, "parallel": 2, "concentric": 4, "distance": 1, "angle": 1}
+    rank = {"fixed": 6, "coincident": 1, "parallel": 2, "perpendicular": 1, "concentric": 4, "distance": 1, "angle": 1}
     for m in mates:
         a,b = m["a"],m["b"]
         if a not in nodes or b not in nodes or a == b:
