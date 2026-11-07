@@ -132,7 +132,7 @@ class ProjectTests(unittest.TestCase):
         self.assertTrue(path.is_file())
         self.assertIn("'=1+1",path.with_suffix('.csv').read_text(encoding='utf-8-sig'))
         states = {r['id']:r['state'] for r in capabilities()['modules']}
-        self.assertIn('scaffold',states['assembly_mates_motion'])
+        self.assertIn('pending_native',states['assembly_mates_motion'])
         self.assertIn('pending',states['native_engineering_drawings'])
 
     def test_turned_plan_entry_never_calls_native_generation(self):

@@ -20,7 +20,7 @@ python work/engineering_intelligence.py tolerances examples/issue50-tolerances.j
 |---|---|
 | dimensions.solve_chain | dimensions唯一id、mm/value、datum、source、role、可选上下限；terms逐项dimension/direction±1；派生目标需显式solve_for指向唯一可调叶。输出before/after/changes和保护读回项；不支持多未知联立方程 |
 | dimensions.tolerance_stack | 同基准的mm尺寸，tolerance含lower/upper/unit/source；有符号terms与可选required_interval_mm。无制造公差时worst_case=null；未自动采用任何公差等级 |
-| assembly.diagnose_assembly | 既有components/mates/transmissions契约，加id；joints明确mm或deg、min/max/position/source。native_readback绑定review_digest({components,mates})并记录来源、SW scope与逐项检查，始终需要独立核对原生日志 |
+| assembly.diagnose_assembly | 既有components/mates/transmissions契约，加id；joints明确mm或deg、min/max/position/source。mates可带当前位姿geometry（点/轴/面，mm，source），全部带齐时输出constraint_rank：自由度、剩余运动、冗余配合，见 docs/assembly-constraint-rank.md。native_readback绑定review_digest({components,mates})并记录来源、SW scope与逐项检查，始终需要独立核对原生日志 |
 | changes.track_changes | before/after文档节点，id/kind/source/revision/depends_on；输出改变、影响、删除、失效引用、再生成顺序及回退计划。节点含哈希字段时也纳入diff |
 | review.review_design | values有value/unit/source；rules复用PR45格式，另含scope/confidence和suggestion；规则作用域/阈值不明待复核，不静默修复 |
 | transmission.transmission | inputs每项value/unit/source：diameter mm、speed m/s、force N、ratio/efficiency/safety ratio。ratio=电机/滚筒转速；输出N*m/W/rpm。selection_requests显式category/requirements；复用来源/型号/修订/接口齐备的catalogue；电机追加功率、扭矩、转速检查，其他类别必须明确额定和接口要求 |

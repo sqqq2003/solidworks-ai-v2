@@ -102,7 +102,7 @@ def capabilities():
             {'id':'parametric','state':'offline_implemented_pending_mapping','entry':'src.a01_parametric.cli'},
             {'id':'ql5050px','state':'offline_implemented_pending_mapping','entry':'work/project.py ql'},
             {'id':'ql_assembly_bom_drawing','state':'offline_implemented_pending_native','entry':'ql5050px.workflow'},
-            {'id':'assembly_mates_motion','state':'scaffold_pending_native','entry':'src/a01_next/mate_check.py'},
+            {'id':'assembly_mates_motion','state':'offline_constraint_rank_pending_native','entry':'work/engineering_intelligence.py assembly'},
             {'id':'native_engineering_drawings','state':'scaffold_pending_native','entry':'src/a01_next/drawing_export.py'},
             {'id':'desktop','state':'implemented_pending_desktop_test','entry':'app.py'},
         ], 'mechanical_acceptance':'unverified','pending_original_feature_contracts':0,'separately_tested_original_feature_contracts':36}
