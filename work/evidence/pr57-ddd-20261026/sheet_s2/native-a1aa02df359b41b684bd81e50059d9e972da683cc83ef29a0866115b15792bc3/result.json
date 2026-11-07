@@ -1,0 +1,192 @@
+{
+  "status": "native_features_verified",
+  "plan_id": "a1aa02df359b41b684bd81e50059d9e972da683cc83ef29a0866115b15792bc3",
+  "simulated_only": false,
+  "sw_live_verified": true,
+  "mechanical_acceptance": "unverified",
+  "generation": {
+    "path": "part.SLDPRT",
+    "profile_index": 0,
+    "bend_count": 1,
+    "hole_count": 1,
+    "folded_bounds": [
+      -2.691406479254948e-17,
+      -0.04,
+      -0.05401548697908967,
+      0.05,
+      0.040000000000000015,
+      0.0
+    ],
+    "flat_bounds": [
+      -0.05,
+      -0.04,
+      -0.0025000000000000005,
+      0.05,
+      0.04,
+      0.0
+    ],
+    "relief_slot_count": 0,
+    "auto_bent": true,
+    "bend_sketch_name": "",
+    "bend_sketch_line_count": 0,
+    "cad_imported": false,
+    "auto_bend_attempts": 1,
+    "auto_bend_abandoned": false,
+    "auto_bend_failed_count": 0,
+    "bend_allowance_verified": true,
+    "k_factor_readback": 0.36,
+    "relief_step_used": 0,
+    "bend_attempts": [
+      {
+        "attempt": 1,
+        "relief_step": 0,
+        "relief_extra_mm": 0.0,
+        "status": "completed",
+        "completed_bend_count": 1,
+        "relief_slot_count": 0,
+        "bend_group_attempts": [
+          {
+            "sequence": 1,
+            "bend_indices": [
+              0
+            ],
+            "index_base": 0,
+            "fixed_point_mm": [
+              73.07692307692308,
+              40.0
+            ],
+            "relief_step": 0,
+            "status": "created",
+            "native_attempts": [
+              {
+                "face_index": 0,
+                "pick_m": [
+                  0.02307692307692308,
+                  0.0,
+                  -0.0025
+                ],
+                "bend_indices": [
+                  0
+                ],
+                "index_base": 0,
+                "stage": "complete",
+                "status": "created",
+                "feature_type": "SM3dBend",
+                "native_error": [
+                  0,
+                  false
+                ]
+              }
+            ],
+            "scope": "feature_creation_not_native_acceptance",
+            "elapsed_seconds": 2.035335300024599
+          }
+        ]
+      }
+    ],
+    "bend_group_attempts": [
+      {
+        "sequence": 1,
+        "bend_indices": [
+          0
+        ],
+        "index_base": 0,
+        "fixed_point_mm": [
+          73.07692307692308,
+          40.0
+        ],
+        "relief_step": 0,
+        "status": "created",
+        "native_attempts": [
+          {
+            "face_index": 0,
+            "pick_m": [
+              0.02307692307692308,
+              0.0,
+              -0.0025
+            ],
+            "bend_indices": [
+              0
+            ],
+            "index_base": 0,
+            "stage": "complete",
+            "status": "created",
+            "feature_type": "SM3dBend",
+            "native_error": [
+              0,
+              false
+            ]
+          }
+        ],
+        "scope": "feature_creation_not_native_acceptance",
+        "elapsed_seconds": 2.035335300024599
+      }
+    ],
+    "post_save_disconnect": ""
+  },
+  "reopen": {
+    "reopened": true,
+    "rebuilt": true,
+    "feature_types": [
+      "FlatPattern",
+      "SM3dBend",
+      "ProfileFeature",
+      "ICE",
+      "ProfileFeature",
+      "SMBaseFlange",
+      "SheetMetal",
+      "ProfileFeature",
+      "ConfigTableFolder",
+      "OriginProfileFeature",
+      "RefPlane",
+      "RefPlane",
+      "RefPlane",
+      "MaterialFolder",
+      "EqnFolder",
+      "CommentsFolder",
+      "SurfaceBodyFolder",
+      "SolidBodyFolder",
+      "EnvFolder",
+      "InkMarkupFolder",
+      "DetailCabinet",
+      "DocsFolder",
+      "SensorFolder",
+      "SelectionSetFolder",
+      "HistoryFolder",
+      "FavoriteFolder"
+    ],
+    "editable": true,
+    "completed_bend_count": 1,
+    "bend_feature_count": 1,
+    "thickness_mm": 2.5,
+    "radius_mm": 1.0,
+    "bend_allowance_type": 2,
+    "k_factor": 0.36,
+    "geometry_states": {
+      "status": "measured",
+      "units": "mm",
+      "folded_bounds": [
+        -2.691406479254948e-14,
+        -40.0,
+        -54.01548697908967,
+        50.0,
+        40.000000000000014,
+        0.0
+      ],
+      "flat_bounds": [
+        -50.0,
+        -40.0,
+        -2.5000000000000004,
+        50.0,
+        40.0,
+        0.0
+      ],
+      "axes": "model_axes",
+      "saved": false
+    }
+  },
+  "artifact_sha256": {
+    "part.SLDPRT": "480e90a7a5526e58c8e82b2e1e613601c8414f2b1de0be16cce1b85ea037318f",
+    "flat.DXF": "c59c543a64538d2b6ef9229b4a282947c1c2b45ac7d25d523c17575f2c1de104"
+  }
+}

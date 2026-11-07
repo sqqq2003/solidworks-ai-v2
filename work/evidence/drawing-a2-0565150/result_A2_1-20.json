@@ -1,0 +1,145 @@
+{
+  "status": "partial_drawing_test_completed_pending_visual_review",
+  "error": null,
+  "case": {
+    "sheet": "A2",
+    "scale_label": "1:20",
+    "width_mm": 594,
+    "height_mm": 420,
+    "scale": [
+      1,
+      20
+    ],
+    "template": "C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2025\\templates\\gb_a2.drwdot"
+  },
+  "settings": {
+    "projection": "first_angle",
+    "bom_template": "D:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/lang/chinese-simplified/bom-standard.sldbomtbt",
+    "width_mm": 594,
+    "height_mm": 420,
+    "scale": [
+      1,
+      20
+    ],
+    "assembly_template": "C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2025\\templates\\gb_a2.drwdot"
+  },
+  "task": {
+    "template": "C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2025\\templates\\gb_a2.drwdot",
+    "width_mm": 594.0,
+    "height_mm": 420.0,
+    "scale": [
+      1,
+      20
+    ],
+    "filename": "QL-5050PX-A2R-A2_1-20.SLDDRW",
+    "bom_position_mm": [
+      400.0,
+      390.0
+    ],
+    "view_positions_mm": [
+      {
+        "id": "front",
+        "position_mm": [
+          300.0,
+          280.0
+        ]
+      },
+      {
+        "id": "top",
+        "position_mm": [
+          300.0,
+          110.0
+        ]
+      },
+      {
+        "id": "right",
+        "position_mm": [
+          150.0,
+          280.0
+        ]
+      }
+    ]
+  },
+  "sheet_readback": {
+    "sheet_scale": [
+      1.0,
+      20.0
+    ],
+    "sheet_size_mm": [
+      594.0,
+      420.0
+    ]
+  },
+  "session": {
+    "ownership": "spawned_pid_and_live_handle",
+    "pid": 36756,
+    "image": "D:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\SLDWORKS.exe",
+    "attached_existing": false,
+    "native_verification": "session_only_not_cad_acceptance",
+    "cleanup_status": "left_open_keepalive",
+    "cleanup_error": null,
+    "cleanup_disconnect": null,
+    "cleanup_exit_code": null,
+    "keepalive_policy": "close_doc_only_keep_alive_exit_not_required",
+    "exit_poll_seconds": 20.0,
+    "anchor_created": false,
+    "anchor_closed": false,
+    "keepalive_verified": true
+  },
+  "loads": [
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\总图\\FX-PX-ZYQDYT-001×1.SLDASM",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\models\\总图\\FX-PX-ZYQDYT-001×1.SLDASM",
+      "error": 0,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\a2r_A2_1-20\\drawings\\QL-5050PX-A2R-A2_1-20.SLDDRW",
+      "error": 0,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\a2r_A2_1-20\\drawings\\QL-5050PX-A2R-A2_1-20.SLDDRW",
+      "error": 0,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\a2r_A2_1-20\\drawings\\QL-5050PX-A2R-A2_1-20.SLDDRW",
+      "error": 2,
+      "readonly": true
+    },
+    {
+      "path": "C:\\Users\\yue\\Documents\\Codex\\2026-10-22\\referenced-chatgpt-conversation-this-is-an\\work\\codex-rerun-20261025\\ql5050px-real\\a2r_A2_1-20\\drawings\\QL-5050PX-A2R-A2_1-20.SLDDRW",
+      "error": 2,
+      "readonly": true
+    }
+  ],
+  "bom_configuration_binding": {
+    "before": [
+      [
+        "默认"
+      ],
+      [
+        true
+      ]
+    ],
+    "set_ok": true,
+    "after": [
+      [
+        "默认"
+      ],
+      [
+        true
+      ]
+    ]
+  },
+  "readback_error": null,
+  "silent_autoscale": false,
+  "manufacturing_approved": false,
+  "mode": "explicit_partial_model_test",
+  "traceback": null
+}
