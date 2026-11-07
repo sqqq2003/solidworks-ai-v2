@@ -3,7 +3,8 @@ from pathlib import Path
 import json
 import queue
 import threading
-from desktop_jobs import MODES, ACTIONS, QL_ACTIONS, STATUS_LABELS, build_desktop_job
+from desktop_jobs import (MODES, ACTIONS, QL_ACTIONS, STATUS_LABELS, build_desktop_job,
+    form_state_from_job, job_copy_for_queue)
 
 ROOT=Path(__file__).resolve().parents[1]
 SETTINGS_FILE=ROOT/'runtime'/'desktop-settings.json'
@@ -292,6 +293,11 @@ class Workbench:
         self.remove_button=self.button(top,'删除所选',self.remove_selected);self.remove_button.pack(side='right',padx=(0,8))
         self.down_button=self.button(top,'下移',lambda:self.move_selected(1));self.down_button.pack(side='right',padx=(0,8))
         self.up_button=self.button(top,'上移',lambda:self.move_selected(-1));self.up_button.pack(side='right',padx=(0,8))
+        edits=tk.Frame(self.queue_window,bg=WHITE,padx=20);edits.pack(fill='x')
+        self.load_button=self.button(edits,'载入设置',self.load_selected);self.load_button.pack(side='left')
+        self.replace_button=self.button(edits,'用当前设置替换',self.replace_selected);self.replace_button.pack(side='left',padx=(8,0))
+        self.duplicate_button=self.button(edits,'再排一份',self.duplicate_selected);self.duplicate_button.pack(side='left',padx=(8,0))
+        self.label(edits,'载入只填表，不改队列、不执行。',size=9,color=MUTED).pack(side='left',padx=12)
         body=tk.Frame(self.queue_window,bg=WHITE,padx=20);body.pack(fill='both',expand=True)
         self.table=ttk.Treeview(body,columns=('task','file','state'),show='headings',height=7,selectmode='browse')
         self.table.bind('<<TreeviewSelect>>',lambda e:self._sync_buttons())
@@ -438,12 +444,16 @@ class Workbench:
         self.values['source'].set(path);self._remember_source(path)
         self.journal.record('input_selected',field='source',path=path,kind=self.values['kind'].get(),recent=True)
 
+    def _job_from_form(self):
+        return build_desktop_job({k:v.get() for k,v in self.values.items()},ACTIONS.get(self.action.get(),'plan'),
+             confirmed=self.confirmed.get(),flip=self.flip.get(),allow_inferred=self.inferred.get(),
+             preserve_circle_holes=self.preserve_circle_holes.get())
+
     def append(self):
         if self.state['busy']:return False
         from tkinter import messagebox
         try:
-            job=build_desktop_job({k:v.get() for k,v in self.values.items()},ACTIONS.get(self.action.get(),'plan'),
-                 confirmed=self.confirmed.get(),flip=self.flip.get(),allow_inferred=self.inferred.get(),preserve_circle_holes=self.preserve_circle_holes.get())
+            job=self._job_from_form()
             if not self.state['jobs']:
                 for item in self.table.get_children():self.table.delete(item)
                 self.row_ids=[]
@@ -480,6 +490,8 @@ class Workbench:
         self.remove_button.configure(state='normal' if index is not None else 'disabled')
         self.up_button.configure(state='normal' if index else 'disabled')
         self.down_button.configure(state='normal' if index is not None and index<count-1 else 'disabled')
+        for button in (self.load_button,self.replace_button,self.duplicate_button):
+            button.configure(state='normal' if index is not None else 'disabled')
         self.stop_button.configure(state='normal' if busy else 'disabled')
         self.native_button.configure(state='disabled' if busy else 'normal')
         for button in self.nav_buttons.values():button.configure(state='disabled' if busy else 'normal')
@@ -529,6 +541,75 @@ class Workbench:
         self.table.move(rows[target],'',target);self.table.selection_set(rows[target])
         self.journal.record('job_reordered',from_index=index,to_index=target)
         self._sync_buttons()
+
+    def _apply_form_state(self,state):
+        """Fill the task form from a queued job. Does not queue, replace, or run."""
+        fields=dict(state['fields']);kind=fields.pop('kind')
+        self.switch_mode(kind)
+        if state.get('action_label'):self.action.set(state['action_label'])
+        ql_key=fields.pop('ql_action');self.values['ql_action'].set(ql_key)
+        ql_label=state.get('ql_label') or next((label for label,key in QL_ACTIONS.items() if key==ql_key),None)
+        if ql_label:self.ql_action.set(ql_label)
+        for key,value in fields.items():self.values[key].set(value)
+        self.flip.set(state['flags']['flip']);self.inferred.set(state['flags']['allow_inferred'])
+        self.preserve_circle_holes.set(state['flags']['preserve_circle_holes']);self.confirmed.set(False)
+        if kind=='sheet' and (fields.get('profile') not in {'','1'} or fields.get('uniform_scale') or state['flags']['preserve_circle_holes']):
+            self.advanced_open=True
+        if kind in {'roller','turned'} and (fields.get('variant') not in {'','0'} or state['flags']['allow_inferred']):
+            self.advanced_open=True
+        if kind in {'sheet','roller','turned'} and (fields.get('sw_exe') or state['flags']['flip'] or state.get('action_label')=='原生生成'):
+            self.native_open=True
+        self._refresh_options()
+        if not self.settings_open:self.toggle_settings()
+
+    def load_selected(self):
+        """Copy the selected job into the form. The queue entry stays as it is."""
+        index=self._selected_queue_index()
+        if index is None:return False
+        from tkinter import messagebox
+        job=self.state['jobs'][index]
+        try:state=form_state_from_job(job)
+        except (TypeError,ValueError,KeyError) as exc:
+            messagebox.showerror('无法载入这项任务',str(exc),parent=self.queue_window);return False
+        self._apply_form_state(state)
+        self.journal.record('job_loaded',index=index,kind=job.get('kind'))
+        self.summary.set('已把这项任务填入设置。队列没有改动，也没有执行。')
+        self.status.set('已载入队列任务 · 请核对后再替换或加入队列')
+        return True
+
+    def replace_selected(self):
+        """Replace the selected pending job with a newly checked copy of the form."""
+        index=self._selected_queue_index()
+        if index is None:return False
+        from tkinter import messagebox
+        try:job=self._job_from_form()
+        except (OSError,ValueError,KeyError,TypeError) as exc:
+            self.journal.exception('job_replace_rejected',exc)
+            messagebox.showerror('请检查任务信息',str(exc),parent=self.queue_window);return False
+        self.state['jobs'][index]=job
+        item=self.row_ids[index]
+        self.table.item(item,values=(MODES[job['kind']][0],queue_label(job),'待运行'))
+        self.table.selection_set(item)
+        self.journal.record('job_replaced',index=index,job=job)
+        if job.get('confirmed') is True:self.summary.set('已替换所选任务，并带上当前表单的核对。')
+        else:self.summary.set('已替换所选任务。当前未勾选核对，原生生成仍不会放行。')
+        self.status.set('已更新队列中的一项 · 未执行');self._sync_buttons();return True
+
+    def duplicate_selected(self):
+        """Queue the same inputs again. A native approval is not copied onto the new row."""
+        index=self._selected_queue_index()
+        if index is None:return False
+        from tkinter import messagebox
+        try:job=job_copy_for_queue(self.state['jobs'][index])
+        except (OSError,ValueError,KeyError,TypeError) as exc:
+            messagebox.showerror('无法再排一份',str(exc),parent=self.queue_window);return False
+        self.state['jobs'].insert(index+1,job)
+        item=self.table.insert('',index+1,values=(MODES[job['kind']][0],queue_label(job),'待运行'))
+        self.row_ids.insert(index+1,item);self.table.selection_set(item);self.empty.place_forget()
+        self.queue_count.set(f"{len(self.state['jobs'])} 项待运行")
+        self.journal.record('job_duplicated',index=index,kind=job.get('kind'))
+        self.summary.set('已再排一份相同参数的任务。原生核对不会跟着复制。')
+        self.status.set('已复制队列任务 · 未执行');self._sync_buttons();return True
 
     def stop_after_current(self):
         self.journal.record('queue_stop_requested')
