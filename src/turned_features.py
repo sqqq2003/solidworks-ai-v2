@@ -742,7 +742,6 @@ def _label_end_threads(turn: EndTurnSpec, threads, length: float) -> EndTurnSpec
         size = _thread_major(thread.designation)
         if size is None or abs(size / 2.0 - turn.radius_mm) > 1.2:
             continue
-        anchor = turn.start_mm + turn.length_mm / 2.0
         if thread.x is None:
             distance = 0.0
         else:

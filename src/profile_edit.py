@@ -480,7 +480,6 @@ def resize_profile_dimensions(
             )
     outer_bounds = (min_x, min_y, max_x, max_y)
 
-    target_profiles = {profile_index} | hole_indices
     # 先把 CAD 折线圆角重拟成真弧，再变换；单向缩放才能走三点重拟而不是越拉越歪的折线。
     prepared_profiles = {
         profile_index: refit_circular_fillets(profile),

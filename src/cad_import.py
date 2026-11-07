@@ -19,7 +19,6 @@ from typing import Iterable, Sequence
 
 import ezdxf
 from ezdxf import units
-from ezdxf.math import Matrix44
 
 Point = tuple[float, float]
 Ring = Sequence[Point]
@@ -416,7 +415,6 @@ def build_part_dxf(
     )
     index = _RingIndex(outline_rings)
     mover = _VertexMover(move_pairs)
-    to_mm = Matrix44.scale(scale, scale, scale)
 
     out = ezdxf.new("R2010", setup=False)
     out.units = units.MM

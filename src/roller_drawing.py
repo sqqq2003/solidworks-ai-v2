@@ -873,8 +873,6 @@ def _infer_side_view_from_entities(
         scaled_verticals = [
             (x * scale, height_mm * scale) for x, height_mm in verticals
         ]
-        left_x = min(x for x, _h in scaled_verticals)
-        right_x = max(x for x, _h in scaled_verticals)
         barrel_xs = sorted(
             x
             for x, height_mm in scaled_verticals
