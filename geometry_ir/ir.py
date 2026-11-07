@@ -123,7 +123,6 @@ def _sketch_geometry(node: dict) -> dict:
 
 def _execution_order(nodes: list) -> list:
     """Topological order (Kahn, input-order stable). Raises on cycles."""
-    by_id = {n["id"]: n for n in nodes}
     indegree = {n["id"]: 0 for n in nodes}
     followers = {n["id"]: [] for n in nodes}
     for node in nodes:

@@ -494,7 +494,6 @@ def check_mates(machine: dict) -> list:
     precheck, not a full degree-of-freedom solver: it does not prove a
     whole assembly is fully constrained, and it does not move geometry.
     """
-    params = machine["parameters"]
     parts = machine["parts"]
     conflicts = []
     # First pass: mate-level status.

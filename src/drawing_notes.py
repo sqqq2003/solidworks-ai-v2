@@ -104,8 +104,6 @@ def hints_from_texts(texts: list[str]) -> DrawingHints:
     wall_thickness_source: str | None = None
     material: str | None = None
     material_source: str | None = None
-    wall_thickness_mm: float | None = None
-    wall_thickness_source: str | None = None
     notes: list[str] = []
 
     for raw in texts:
