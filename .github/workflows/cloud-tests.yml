@@ -2,6 +2,7 @@ name: Portable Python regression
 on:
   push:
     branches: [dev/cloud-ai]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,7 +19,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-      - run: python -m pip install -r requirements-cloud.txt
+      - run: python -m pip install -r requirements-cloud.txt pyflakes==4.1.0
+      - run: python work/check_undefined_names.py
       - run: python work/run_cloud_tests.py
       - uses: actions/upload-artifact@v4
         if: always()
