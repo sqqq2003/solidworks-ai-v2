@@ -83,6 +83,20 @@ class FormulaTests(unittest.TestCase):
             p=deepcopy(base);p['parameters']['y']={'expression':expression,'unit':'ratio'}
             with self.subTest(expression=expression),self.assertRaises((ValueError,TypeError)):solve_functions(p)
 
+    def test_invalid_arithmetic_and_rule_shapes_raise_value_error(self):
+        base={'kind':'parametric_functions','schema_version':1,'source':'test',
+              'inputs':{'x':{'unit':'mm','value':10},'z':{'unit':'ratio','value':0}},'parameters':{}}
+        for expression,unit in [('x / (x - x)','ratio'),('z ** -1','ratio'),('-(z < 1)','ratio'),('+(z < 1)','ratio')]:
+            p=deepcopy(base);p['parameters']['y']={'expression':expression,'unit':unit}
+            with self.subTest(expression=expression),self.assertRaises(ValueError):solve_functions(p)
+        for change in ('inputs','parameters','constraint'):
+            p=deepcopy(base);p['parameters']['y']={'expression':'x','unit':'mm'}
+            if change=='constraint':p['constraints']=['y < 20']
+            else:p[change]=list(p[change])
+            with self.subTest(change=change),self.assertRaises(ValueError):solve_functions(p)
+        from parametric_functions.expressions import compile_expression, evaluate
+        with self.assertRaisesRegex(ValueError,'unknown parameter'):evaluate(compile_expression('missing + 1')[0],{})
+
     def test_unknowns_stay_unknown_and_constraint_failure_blocks(self):
         spec=read_json(ROOT/'examples/function-roller.json');spec['inputs']['left_end'].pop('value')
         result=solve_functions(spec)
