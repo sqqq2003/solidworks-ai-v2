@@ -12,6 +12,8 @@ def solve_functions(specification, inputs=None):
         raise ValueError('parametric_functions schema_version 1 required')
     source = spec.get('source')
     if not isinstance(source,str) or not source.strip():raise ValueError('rule source required')
+    if not all(isinstance(spec.get(key,{}),dict) for key in ('inputs','parameters')):
+        raise ValueError('inputs and parameters must be objects keyed by parameter name')
     nodes = {**spec.get('inputs',{}), **spec.get('parameters',{})}
     if set(spec.get('inputs',{})) & set(spec.get('parameters',{})):
         raise ValueError('input and formula parameter names collide')
@@ -59,6 +61,7 @@ def solve_functions(specification, inputs=None):
     if not isinstance(constraints,list) or len(constraints)>64:raise ValueError('at most 64 explicit constraints')
     checks=[]
     for row in constraints:
+        if not isinstance(row,dict):raise ValueError('each constraint must be an object with an expression')
         tree,deps=compile_expression(row.get('expression'))
         if not deps<=set(nodes):raise ValueError('constraint has unknown parameter')
         result=None if not deps<=set(quantities) else evaluate(tree,quantities)
