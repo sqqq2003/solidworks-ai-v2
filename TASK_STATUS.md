@@ -375,3 +375,9 @@
 - 桌面：识别结果可“填入任务设置”（只填识别项，取消已核对，不入队、不执行）；记住 SLDWORKS.exe 路径和最近 8 个输入文件（`runtime/desktop-settings.json`，t/R/角度/K 不保存）；队列支持上移/下移/删除所选，运行中禁用；新增“历史报告”只读窗口与 `work/project.py history`。
 - `python3 work/run_cloud_tests.py`（Linux，Python 3.12.3，虚拟显示）：818 ran / 814 passed / 0 failures / 0 errors / 4 skipped（仍是 DWG、LibreDWG、基线哈希），跨进程锁通过。新增 43 项测试。`sw_live=not_run_simulation_only`。
 - 未做 Windows 桌面点击验收；文字识别只是填表辅助，不是设计审核或 CAD 放行。
+
+## DESKTOP-QUEUE-EDIT-20261107：队列任务可载入、替换、再排
+
+- 基线是设计工作台日常使用补全（`cursor/feature-gap-review-98ea` @ `1abc4ee`）。队列此前只能上移、下移、删除，改一项参数必须删掉重填。
+- “载入设置”把所选任务填回表单，取消“已核对”，不改队列、不执行。“用当前设置替换”按当前表单重新检查后换掉这一项；未勾选核对时原生生成仍不放行。“再排一份”只复制识别/计划类输入，不复制原生核对；原生生成直接复制会被拒绝，避免未核对的一项在运行前挡住整条队列。
+- `python3 work/run_cloud_tests.py`（Linux，Python 3.12.3，虚拟显示）：826 ran / 822 passed / 0 failures / 0 errors / 4 skipped，跨进程锁通过。新增 8 项测试。`sw_live=not_run_simulation_only`。这次没有 Windows 实机验收，也不是 CAD 放行。

@@ -2,8 +2,8 @@
   "scope": "portable_simulation_only",
   "platform": "Linux",
   "python": "3.12.3",
-  "tests_run": 818,
-  "passed": 814,
+  "tests_run": 826,
+  "passed": 822,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -117,7 +117,7 @@
   "runtime_capabilities": {
     "platform": "Linux",
     "python": "3.12.3",
-    "python_executable": "/usr/bin/python3",
+    "python_executable": "/opt/sw-ai-venv/bin/python",
     "ezdxf_available": true,
     "tkinter_available": true,
     "pywin32_available": false,

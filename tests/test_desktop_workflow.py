@@ -143,9 +143,74 @@ class DesktopWorkflowTests(unittest.TestCase):
         self.queue_three();rows=list(self.view.row_ids)
         self.view.table.selection_set(rows[0]);self.view.state['busy']=True;self.view._sync_buttons()
         self.assertEqual(str(self.view.remove_button.cget('state')),'disabled')
+        self.assertEqual(str(self.view.load_button.cget('state')),'disabled')
         self.view.remove_selected();self.view.move_selected(1)
+        self.assertFalse(self.view.load_selected());self.assertFalse(self.view.replace_selected())
+        self.assertFalse(self.view.duplicate_selected())
         self.assertEqual([j['length'] for j in self.view.state['jobs']],[1700.0,1800.0,1900.0])
         self.view.state['busy']=False
+
+    def test_selected_job_loads_into_the_form_without_changing_the_queue(self):
+        self.queue_three()
+        self.view.values['length'].set('2000');self.view.values['machine'].set('QL-5050PX')
+        self.view.table.selection_set(self.view.row_ids[1]);self.root.update()
+        self.assertTrue(self.view.load_selected());self.root.update()
+        self.assertEqual(self.view.values['kind'].get(),'parametric')
+        self.assertEqual(self.view.values['machine'].get(),'GT-ZX')
+        self.assertEqual([self.view.values[k].get() for k in ('length','width','height')],['1800','900','1500'])
+        self.assertFalse(self.view.confirmed.get())
+        self.assertTrue(self.view.settings_open)
+        self.assertEqual([j['length'] for j in self.view.state['jobs']],[1700.0,1800.0,1900.0])
+        self.assertIn('队列没有改动',self.view.summary.get())
+
+    def test_replace_uses_the_current_form_and_keeps_the_other_jobs(self):
+        from tkinter import messagebox
+        self.queue_three();self.view.table.selection_set(self.view.row_ids[0]);self.root.update()
+        self.view.values['length'].set('1650')
+        self.assertTrue(self.view.replace_selected())
+        self.assertEqual([j['length'] for j in self.view.state['jobs']],[1650.0,1800.0,1900.0])
+        self.assertEqual(self.view.table.item(self.view.row_ids[0],'values')[1],'GT-ZX · 1650×900×1500 mm')
+        self.assertEqual(len(self.view.row_ids),3)
+        self.view.switch_mode('sheet')
+        with patch.object(messagebox,'showerror') as show:
+            self.assertFalse(self.view.replace_selected())
+            self.assertIn('板厚',show.call_args[0][1])
+        self.assertEqual(self.view.state['jobs'][0]['kind'],'parametric')
+        self.assertEqual(self.view.state['jobs'][0]['length'],1650.0)
+
+    def test_plan_job_can_be_duplicated_and_native_approval_cannot(self):
+        from tkinter import messagebox
+        self.queue_three();self.view.table.selection_set(self.view.row_ids[1]);self.root.update()
+        self.assertTrue(self.view.duplicate_selected())
+        lengths=[j['length'] for j in self.view.state['jobs']]
+        self.assertEqual(lengths,[1700.0,1800.0,1800.0,1900.0])
+        self.assertEqual(self.view.queue_count.get(),'4 项待运行')
+        self.assertIsNot(self.view.state['jobs'][1],self.view.state['jobs'][2])
+        drawing=self.tmp/'plate.dxf';drawing.write_bytes(b'dxf')
+        exe=self.tmp/'SLDWORKS.exe';exe.write_bytes(b'')
+        output=self.tmp/'plate.SLDPRT'
+        self.view.switch_mode('sheet');self.view.action.set('原生生成')
+        self.view.values['source'].set(str(drawing));self.view.values['output'].set(str(output))
+        self.view.values['sw_exe'].set(str(exe))
+        for key,value in (('thickness','2.5'),('radius','1'),('angle','90'),('k_factor','0.36'),('profile','1')):
+            self.view.values[key].set(value)
+        self.view.confirmed.set(True)
+        self.assertTrue(self.view.append())
+        native=self.view.state['jobs'][-1]
+        self.assertTrue(native['confirmed']);self.assertIn('confirmation_digest',native)
+        self.view.table.selection_set(self.view.row_ids[-1]);self.root.update()
+        with patch.object(messagebox,'showerror') as show:
+            self.assertFalse(self.view.duplicate_selected())
+            self.assertIn('核对不能复制',show.call_args[0][1])
+        self.assertEqual(len(self.view.state['jobs']),5)
+        self.assertTrue(native['confirmed']);self.assertIn('confirmation_digest',native)
+        self.view.load_selected();self.root.update()
+        self.assertEqual(self.view.values['thickness'].get(),'2.5')
+        self.assertEqual(self.view.values['k_factor'].get(),'0.36')
+        self.assertEqual(self.view.action.get(),'原生生成')
+        self.assertFalse(self.view.confirmed.get())
+        self.assertTrue(self.view.native_open)
+        self.assertTrue(native['confirmed'])
 
     def test_history_lists_saved_reports_read_only(self):
         import tkinter as tk
@@ -194,6 +259,71 @@ class DesktopWorkflowTests(unittest.TestCase):
             while self.view.state['busy'] and time.monotonic()<deadline:
                 self.root.update();time.sleep(.02)
         self.assertEqual(len(list(self.reports.glob('project-report-*.json'))),1)
+
+
+class QueueEditContractTests(unittest.TestCase):
+    def sample_sheet(self,action='plan',**extra):
+        from desktop_jobs import build_desktop_job
+        folder=Path(tempfile.mkdtemp());self.addCleanup(lambda:__import__('shutil').rmtree(folder))
+        source=folder/'side.dxf';source.write_bytes(b'dxf')
+        values={'kind':'sheet','source':str(source),'output':str(folder/'side.SLDPRT'),'sw_exe':str(folder/'SLDWORKS.exe'),
+                'machine':'QL-5050PX','ql_action':'plan','profile':'2','variant':'0','thickness':'2.5','radius':'1',
+                'angle':'90','k_factor':'0.36','uniform_scale':'1.5','length':'1800','width':'900','height':'1500'}
+        if action=='generate':(folder/'SLDWORKS.exe').write_bytes(b'')
+        values.update(extra)
+        return build_desktop_job(values,action,confirmed=action=='generate',flip=True,preserve_circle_holes=True)
+
+    def test_sheet_plan_round_trips_without_copying_approval(self):
+        from desktop_jobs import form_state_from_job
+        job=self.sample_sheet();job['confirmed']=True
+        state=form_state_from_job(job)
+        self.assertEqual(state['action_label'],'生成计划')
+        self.assertEqual(state['fields']['source'],job['source'])
+        self.assertEqual(state['fields']['thickness'],'2.5')
+        self.assertEqual(state['fields']['k_factor'],'0.36')
+        self.assertEqual(state['fields']['profile'],'2')
+        self.assertEqual(state['fields']['uniform_scale'],'1.5')
+        self.assertTrue(state['flags']['flip']);self.assertTrue(state['flags']['preserve_circle_holes'])
+        self.assertFalse(state['flags']['confirmed'])
+        self.assertNotIn('confirmation_digest',state['fields'])
+        self.assertTrue(job['confirmed'])
+
+    def test_analyze_job_does_not_invent_sheet_numbers(self):
+        from desktop_jobs import form_state_from_job
+        state=form_state_from_job(self.sample_sheet('analyze'))
+        self.assertEqual(state['action_label'],'识别图纸')
+        self.assertEqual(state['fields']['thickness'],'')
+        self.assertEqual(state['fields']['k_factor'],'')
+        self.assertEqual(state['fields']['uniform_scale'],'')
+
+    def test_machine_and_ql_jobs_restore_their_own_fields(self):
+        from desktop_jobs import form_state_from_job
+        machine=form_state_from_job({'kind':'parametric','machine':'GT-ZX','length':1800.0,'width':900.5,'height':1500})
+        self.assertEqual(machine['fields']['length'],'1800')
+        self.assertEqual(machine['fields']['width'],'900.5')
+        self.assertIsNone(machine['action_label'])
+        ql=form_state_from_job({'kind':'ql5050px','action':'bom','config':'C:/cfg/ql.json','output_dir':'C:/out'})
+        self.assertEqual(ql['ql_label'],'BOM 清单')
+        self.assertEqual(ql['fields']['ql_action'],'bom')
+        self.assertEqual(ql['fields']['source'],'C:/cfg/ql.json')
+        self.assertEqual(ql['fields']['output'],'C:/out')
+
+    def test_unreadable_jobs_are_refused(self):
+        from desktop_jobs import form_state_from_job
+        for job in (None,{'kind':'unified'},{'kind':'parametric','machine':'其他','length':1,'width':1,'height':1},
+                    {'kind':'parametric','machine':'GT-ZX','length':float('nan'),'width':1,'height':1},
+                    {'kind':'ql5050px','action':'not-an-action'},{'kind':'sheet','action':'generate'}):
+            with self.assertRaises((TypeError,ValueError,KeyError)):form_state_from_job(job)
+
+    def test_plan_copy_drops_approval_and_native_copy_is_refused(self):
+        from desktop_jobs import job_copy_for_queue
+        plan=self.sample_sheet();plan['confirmed']=True;plan['confirmation_digest']='stale';plan['source_sha256']='stale'
+        copy=job_copy_for_queue(plan)
+        self.assertFalse(copy['confirmed']);self.assertNotIn('confirmation_digest',copy);self.assertNotIn('source_sha256',copy)
+        self.assertTrue(plan['confirmed']);self.assertEqual(plan['confirmation_digest'],'stale')
+        self.assertIsNot(copy,plan)
+        with self.assertRaises(ValueError) as raised:job_copy_for_queue(self.sample_sheet('generate'))
+        self.assertIn('核对不能复制',str(raised.exception))
 
 
 class QueueLabelTests(unittest.TestCase):

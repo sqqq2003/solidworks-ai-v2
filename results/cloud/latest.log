@@ -222,14 +222,22 @@ test_history_lists_saved_reports_read_only (test_desktop_workflow.DesktopWorkflo
 test_history_window_handles_empty_folder (test_desktop_workflow.DesktopWorkflowTests.test_history_window_handles_empty_folder) ... ok
 test_invalid_or_missing_remembered_program_is_ignored (test_desktop_workflow.DesktopWorkflowTests.test_invalid_or_missing_remembered_program_is_ignored) ... ok
 test_machine_envelope_text_fills_parametric_form (test_desktop_workflow.DesktopWorkflowTests.test_machine_envelope_text_fills_parametric_form) ... ok
+test_plan_job_can_be_duplicated_and_native_approval_cannot (test_desktop_workflow.DesktopWorkflowTests.test_plan_job_can_be_duplicated_and_native_approval_cannot) ... ok
 test_queue_cannot_be_edited_while_running (test_desktop_workflow.DesktopWorkflowTests.test_queue_cannot_be_edited_while_running) ... ok
 test_queue_items_can_be_reordered_and_removed (test_desktop_workflow.DesktopWorkflowTests.test_queue_items_can_be_reordered_and_removed) ... ok
 test_queue_reports_are_written_to_history_folder (test_desktop_workflow.DesktopWorkflowTests.test_queue_reports_are_written_to_history_folder) ... ok
 test_recent_files_are_listed_and_select_matching_mode (test_desktop_workflow.DesktopWorkflowTests.test_recent_files_are_listed_and_select_matching_mode) ... ok
+test_replace_uses_the_current_form_and_keeps_the_other_jobs (test_desktop_workflow.DesktopWorkflowTests.test_replace_uses_the_current_form_and_keeps_the_other_jobs) ... ok
+test_selected_job_loads_into_the_form_without_changing_the_queue (test_desktop_workflow.DesktopWorkflowTests.test_selected_job_loads_into_the_form_without_changing_the_queue) ... ok
 test_sheet_text_fills_form_without_confirming_or_queueing (test_desktop_workflow.DesktopWorkflowTests.test_sheet_text_fills_form_without_confirming_or_queueing) ... ok
 test_solidworks_path_is_remembered_but_sheet_parameters_are_not (test_desktop_workflow.DesktopWorkflowTests.test_solidworks_path_is_remembered_but_sheet_parameters_are_not) ... ok
 test_unmentioned_fields_are_left_as_they_were (test_desktop_workflow.DesktopWorkflowTests.test_unmentioned_fields_are_left_as_they_were) ... ok
 test_unrecognized_text_offers_no_form_change (test_desktop_workflow.DesktopWorkflowTests.test_unrecognized_text_offers_no_form_change) ... ok
+test_analyze_job_does_not_invent_sheet_numbers (test_desktop_workflow.QueueEditContractTests.test_analyze_job_does_not_invent_sheet_numbers) ... ok
+test_machine_and_ql_jobs_restore_their_own_fields (test_desktop_workflow.QueueEditContractTests.test_machine_and_ql_jobs_restore_their_own_fields) ... ok
+test_plan_copy_drops_approval_and_native_copy_is_refused (test_desktop_workflow.QueueEditContractTests.test_plan_copy_drops_approval_and_native_copy_is_refused) ... ok
+test_sheet_plan_round_trips_without_copying_approval (test_desktop_workflow.QueueEditContractTests.test_sheet_plan_round_trips_without_copying_approval) ... ok
+test_unreadable_jobs_are_refused (test_desktop_workflow.QueueEditContractTests.test_unreadable_jobs_are_refused) ... ok
 test_labels_name_the_file_or_the_envelope (test_desktop_workflow.QueueLabelTests.test_labels_name_the_file_or_the_envelope) ... ok
 test_detail_for_unreadable_report_states_reason (test_desktop_workflow.ReportDetailTests.test_detail_for_unreadable_report_states_reason) ... ok
 test_detail_never_upgrades_result (test_desktop_workflow.ReportDetailTests.test_detail_never_upgrades_result) ... ok
@@ -859,6 +867,6 @@ test_lease_cannot_exit_different_application (test_review_session_boundaries.Ses
 test_new_foreign_document_blocks_exit (test_review_session_boundaries.SessionBoundaryReview.test_new_foreign_document_blocks_exit) ... ok
 
 ----------------------------------------------------------------------
-Ran 818 tests in 9.876s
+Ran 826 tests in 9.342s
 
 OK (skipped=4)

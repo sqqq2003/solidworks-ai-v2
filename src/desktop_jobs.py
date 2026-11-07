@@ -1,4 +1,5 @@
 """Presentation labels and desktop job adapter; no Tk/COM side effects."""
+import math
 from pathlib import Path
 from project_workbench import build_command, confirm_job
 
@@ -53,3 +54,75 @@ def build_desktop_job(values, action='plan', *, confirmed=False, flip=False, all
         if action=='generate' and confirmed:job=confirm_job(job)
     build_command(job)
     return job
+
+
+def number_text(value):
+    """Stable form text for a queued number. Booleans and non-finite values are refused."""
+    if isinstance(value,bool) or not isinstance(value,(int,float)):
+        raise ValueError('任务里的数值无法显示')
+    if isinstance(value,float) and not math.isfinite(value):
+        raise ValueError('任务里的数值无法显示')
+    if isinstance(value,float) and value.is_integer() and abs(value)<1e15:
+        return str(int(value))
+    return format(value,'.12g')
+
+
+def form_state_from_job(job):
+    """Map one queued job onto the task form. Native approval is never copied."""
+    if not isinstance(job,dict) or job.get('kind') not in MODES:
+        raise ValueError('这项任务无法载入设置')
+    kind=job['kind']
+    fields={'kind':kind,'source':'','output':'','sw_exe':'','machine':'QL-5050PX','ql_action':'plan',
+            'profile':'1','variant':'0','thickness':'','radius':'','angle':'','k_factor':'','uniform_scale':'',
+            'length':'1800','width':'900','height':'1500'}
+    flags={'flip':False,'allow_inferred':False,'preserve_circle_holes':False,'confirmed':False}
+    action_label=None;ql_label=None
+    if kind=='parametric':
+        machine=job.get('machine')
+        if machine not in {'QL-5050PX','GT-ZX'}:raise ValueError('这项任务的机型无法载入当前设置')
+        fields['machine']=machine
+        for key in ('length','width','height'):fields[key]=number_text(job[key])
+    elif kind=='ql5050px':
+        action=job.get('action')
+        labels=[label for label,key in QL_ACTIONS.items() if key==action]
+        if len(labels)!=1:raise ValueError('这项整机任务的处理方式无法载入当前设置')
+        ql_label=labels[0];fields['ql_action']=action;fields['machine']='QL-5050PX'
+        fields['source']=str(job.get('config') or '');fields['output']=str(job.get('output_dir') or '')
+    else:
+        action=job.get('action')
+        labels=[label for label,key in ACTIONS.items() if key==action]
+        if len(labels)!=1:raise ValueError('这项任务的处理方式无法载入当前设置')
+        action_label=labels[0]
+        fields['source']=str(job.get('source') or '');fields['output']=str(job.get('output') or '')
+        fields['sw_exe']=str(job.get('sw_exe') or '')
+        flags['flip']=job.get('flip') is True
+        flags['allow_inferred']=job.get('allow_inferred') is True
+        flags['preserve_circle_holes']=job.get('preserve_circle_holes') is True
+        if kind=='sheet':
+            keys=('thickness','radius','angle','k_factor','profile')
+            if action!='analyze':
+                for key in keys:fields[key]=number_text(job[key])
+                if 'uniform_scale' in job:fields['uniform_scale']=number_text(job['uniform_scale'])
+            else:
+                for key in keys+('uniform_scale',):
+                    if key in job and job[key] not in ('',None):fields[key]=number_text(job[key])
+        if kind in {'roller','turned'}:fields['variant']=number_text(job['variant'])
+    return {'fields':fields,'flags':flags,'action_label':action_label,'ql_label':ql_label}
+
+
+def job_copy_for_queue(job):
+    """A second pending entry with the same inputs. Native approval is not copied.
+
+    A native generation copy is refused: it would be unconfirmed, and the queue
+    preflight would then block every other job.
+    """
+    if not isinstance(job,dict) or job.get('kind') not in MODES:
+        raise ValueError('这项任务无法再排一份')
+    copy={key:value for key,value in job.items() if key not in {'confirmation_digest','source_sha256'}}
+    if 'confirmed' in copy:copy['confirmed']=False
+    try:build_command(copy)
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        if job.get('action') in {'generate','batch'}:
+            raise ValueError('原生生成的核对不能复制。请载入设置，改好新的输出路径并重新勾选核对后再加入队列。') from exc
+        raise
+    return copy
