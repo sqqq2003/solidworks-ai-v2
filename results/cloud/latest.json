@@ -1,9 +1,9 @@
 {
   "scope": "portable_simulation_only",
   "platform": "Linux",
-  "python": "3.12.14",
-  "tests_run": 527,
-  "passed": 523,
+  "python": "3.12.3",
+  "tests_run": 1231,
+  "passed": 1227,
   "failures": 0,
   "errors": 0,
   "skipped": [
@@ -25,13 +25,13 @@
     }
   ],
   "pending_feature_cases": {
-    "test_border_relief_notch.py": 9,
     "test_turned_part.py": 22,
+    "test_border_relief_notch.py": 9,
     "test_spur_segments.py": 5
   },
   "cross_process_lock_passed": true,
   "solidworks_live_verified": false,
-  "sw_live": "not_applicable_on_linux",
+  "sw_live": "not_run_simulation_only",
   "a01_parametric": {
     "status": "review_required",
     "envelope_mm": {
@@ -54,12 +54,42 @@
       "A01.interfaces.thread_major_diameter"
     ],
     "cad_executed": false,
-    "sw_live": "not_applicable_on_linux"
+    "sw_live": "not_run_simulation_only"
   },
   "whole_project": {
     "project": "SolidWorks AI V2",
     "scope": "whole_project",
     "modules": [
+      {
+        "id": "unified_release",
+        "state": "offline_integrated_pending_native",
+        "entry": "work/project.py release"
+      },
+      {
+        "id": "engineering_intelligence",
+        "state": "offline_implemented_pending_engineering_review",
+        "entry": "work/engineering_intelligence.py"
+      },
+      {
+        "id": "design_platform",
+        "state": "offline_implemented_pending_native",
+        "entry": "work/design_platform.py"
+      },
+      {
+        "id": "existing_roller_variant",
+        "state": "native_adapter_pending_live",
+        "entry": "work/roller_variant.py"
+      },
+      {
+        "id": "native_part_batch",
+        "state": "native_adapter_pending_live",
+        "entry": "work/run_reviewed_parts.py"
+      },
+      {
+        "id": "geometry_ir",
+        "state": "offline_prototype_pending_native",
+        "entry": "geometry_ir.cli"
+      },
       {
         "id": "cad",
         "state": "implemented",
@@ -112,12 +142,13 @@
       }
     ],
     "mechanical_acceptance": "unverified",
-    "pending_original_feature_contracts": 36
+    "pending_original_feature_contracts": 0,
+    "separately_tested_original_feature_contracts": 36
   },
   "runtime_capabilities": {
     "platform": "Linux",
-    "python": "3.12.14",
-    "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "python": "3.12.3",
+    "python_executable": "/usr/bin/python3",
     "ezdxf_available": true,
     "tkinter_available": true,
     "pywin32_available": false,
