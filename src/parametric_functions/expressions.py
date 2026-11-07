@@ -75,9 +75,13 @@ def compile_expression(text):
 
 def evaluate(node, values):
     if isinstance(node, ast.Constant):return Quantity(finite(node.value))
-    if isinstance(node, ast.Name):return values[node.id] if node.id in values else Quantity(CONSTANTS[node.id])
+    if isinstance(node, ast.Name):
+        if node.id in values:return values[node.id]
+        if node.id in CONSTANTS:return Quantity(CONSTANTS[node.id])
+        raise ValueError('unknown parameter: ' + node.id)
     if isinstance(node, ast.UnaryOp):
         q = evaluate(node.operand, values)
+        if not isinstance(q, Quantity):raise ValueError('comparison cannot be an arithmetic operand')
         return Quantity(q.value * (-1 if isinstance(node.op, ast.USub) else 1), q.dimension)
     if isinstance(node, (ast.BinOp, ast.Compare)):
         a = evaluate(node.left, values)
@@ -95,9 +99,12 @@ def evaluate(node, values):
             if isinstance(op, ast.Eq):return a.value == b.value
             return a.value != b.value
         if isinstance(op, ast.Mult):return Quantity(a.value*b.value, tuple(x+y for x,y in zip(a.dimension,b.dimension)))
-        if isinstance(op, ast.Div):return Quantity(a.value/b.value, tuple(x-y for x,y in zip(a.dimension,b.dimension)))
+        if isinstance(op, ast.Div):
+            if b.value == 0:raise ValueError('division by zero')
+            return Quantity(a.value/b.value, tuple(x-y for x,y in zip(a.dimension,b.dimension)))
         if b.dimension != (0, 0) or not b.value.is_integer() or abs(b.value) > 8:
             raise ValueError('power must be a dimensionless integer in [-8,8]')
+        if a.value == 0 and b.value < 0:raise ValueError('division by zero')
         return Quantity(a.value ** int(b.value), tuple(x*int(b.value) for x in a.dimension))
     if isinstance(node, ast.Call):
         args = [evaluate(x, values) for x in node.args]
