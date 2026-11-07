@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 from tempfile import TemporaryDirectory, gettempdir
-from typing import Iterable
+from typing import Any, Iterable
 
 import ezdxf
 from ezdxf import units
