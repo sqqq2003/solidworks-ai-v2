@@ -101,9 +101,9 @@ def read_owned_inventory(
         except Exception as exc:
             if _inventory_rewalk(exc):
                 if rebind is None or disconnect_used >= disconnect_attempts:
-                    if not isinstance(exc, InventoryWalkDisconnected):
-                        from sw_session import InventoryWalkDisconnected
+                    from sw_session import InventoryWalkDisconnected
 
+                    if not isinstance(exc, InventoryWalkDisconnected):
                         raise InventoryWalkDisconnected(
                             "document inventory walk disconnected during GetNext; "
                             "writes refused; ExitApp was not called"

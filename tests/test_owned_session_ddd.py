@@ -1127,5 +1127,27 @@ class DddOwnedSessionTests(unittest.TestCase):
         self.assertIn(r"C:\job\bolt.SLDPRT", facts["FX-PX.SLDASM"])
 
 
+class ReadOwnedInventoryTests(unittest.TestCase):
+    def test_walk_drop_without_rebind_or_after_retries_is_inventory_disconnect(self):
+        from owned_document_lifetime import read_owned_inventory
+
+        class com_error(Exception):
+            pass
+
+        for label, hresult in (("disconnect", -2147417848), ("member_not_found", -2147352573)):
+            def walk(_app, hresult=hresult):
+                raise com_error(hresult, label, None, None)
+
+            for mode, options in (
+                ("no_rebind", {}),
+                ("retries_exhausted", {"rebind": lambda: object(), "disconnect_attempts": 0}),
+            ):
+                with self.subTest(error=label, mode=mode):
+                    with self.assertRaises(sw_session.InventoryWalkDisconnected) as caught:
+                        read_owned_inventory(walk, object(), **options)
+                    self.assertIsInstance(caught.exception.__cause__, com_error)
+                    self.assertIn("ExitApp was not called", str(caught.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
