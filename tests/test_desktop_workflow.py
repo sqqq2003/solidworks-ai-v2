@@ -127,6 +127,8 @@ class DesktopWorkflowTests(unittest.TestCase):
         self.assertEqual([j['length'] for j in self.view.state['jobs']],[1800.0,1700.0,1900.0])
         self.assertEqual(list(self.view.table.get_children()),[rows[1],rows[0],rows[2]])
         self.assertEqual(self.view.row_ids,[rows[1],rows[0],rows[2]])
+        labels=[self.view.table.item(item,'values')[1] for item in self.view.table.get_children()]
+        self.assertEqual(labels,['GT-ZX · 1800×900×1500 mm','GT-ZX · 1700×900×1500 mm','GT-ZX · 1900×900×1500 mm'])
         self.assertEqual(str(self.view.up_button.cget('state')),'disabled')
         self.view.move_selected(-1)
         self.assertEqual([j['length'] for j in self.view.state['jobs']],[1800.0,1700.0,1900.0])
@@ -192,6 +194,16 @@ class DesktopWorkflowTests(unittest.TestCase):
             while self.view.state['busy'] and time.monotonic()<deadline:
                 self.root.update();time.sleep(.02)
         self.assertEqual(len(list(self.reports.glob('project-report-*.json'))),1)
+
+
+class QueueLabelTests(unittest.TestCase):
+    def test_labels_name_the_file_or_the_envelope(self):
+        from desktop_ui import queue_label
+        self.assertEqual(queue_label({'kind':'sheet','source':'D:/图纸/侧板.dxf'}),'侧板.dxf')
+        self.assertEqual(queue_label({'kind':'ql5050px','config':'C:/cfg/ql.json','source':''}),'ql.json')
+        self.assertEqual(queue_label({'kind':'parametric','machine':'QL-5050PX','length':1800.0,'width':900.0,'height':1500.5}),
+                         'QL-5050PX · 1800×900×1500.5 mm')
+        self.assertEqual(queue_label({'kind':'parametric'}),'目标包络')
 
 
 class ReportDetailTests(unittest.TestCase):

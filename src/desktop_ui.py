@@ -50,6 +50,14 @@ def explain_task_result(row):
     return title+'\n请打开“运行详情”查看原因。'
 
 
+def queue_label(job):
+    """Distinguishable queue text; envelope jobs have no file name to show."""
+    if job.get('kind')=='parametric':
+        size='×'.join(f'{job[k]:g}' for k in ('length','width','height') if isinstance(job.get(k),(int,float)))
+        return ' · '.join(part for part in (job.get('machine',''),size+' mm' if size else '') if part) or '目标包络'
+    return Path(job.get('config') or job.get('source') or '目标包络').name
+
+
 def format_report_detail(entry,report=None):
     """Read-only history text; a saved report never becomes a new approval."""
     lines=['时间：'+entry['written_at'].replace('T',' ')[:19],'报告文件：'+entry['path']]
@@ -441,11 +449,11 @@ class Workbench:
                 self.row_ids=[]
             self.state['jobs'].append(job)
             self.journal.record('job_queued',job=job)
-            source=job.get('config',job.get('source','目标包络'))
-            item=self.table.insert('', 'end',values=(MODES[job['kind']][0],Path(source).name,'待运行'))
+            label=queue_label(job)
+            item=self.table.insert('', 'end',values=(MODES[job['kind']][0],label,'待运行'))
             self.row_ids.append(item);self.empty.place_forget();self.summary.set('任务已加入队列，准备好后点击运行。')
             self.queue_count.set(f"{len(self.state['jobs'])} 项待运行");self.status.set('就绪');self._sync_buttons()
-            self.add_message('任务已加入队列',MODES[job['kind']][0]+' · '+Path(source).name+'\n准备好后，在任务队列中运行。')
+            self.add_message('任务已加入队列',MODES[job['kind']][0]+' · '+label+'\n准备好后，在任务队列中运行。')
             return True
         except (OSError,ValueError,KeyError) as exc:
             self.journal.exception('job_validation_failed',exc)
