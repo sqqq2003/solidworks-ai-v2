@@ -40,10 +40,10 @@ def settings_path() -> Path:
     return settings_directory() / SETTINGS_FILE_NAME
 
 
-def load_settings() -> dict[str, Any]:
+def load_settings(path: str | Path | None = None) -> dict[str, Any]:
     """读取设置；文件缺失或损坏时返回空字典。"""
 
-    path = settings_path()
+    path = Path(path) if path is not None else settings_path()
     try:
         # utf-8-sig：记事本 / PowerShell 写出的 JSON 常带 BOM，不能当成损坏文件。
         with path.open("r", encoding="utf-8-sig") as handle:
@@ -55,10 +55,10 @@ def load_settings() -> dict[str, Any]:
     return data
 
 
-def save_settings(data: dict[str, Any]) -> bool:
+def save_settings(data: dict[str, Any], path: str | Path | None = None) -> bool:
     """原子写入设置；失败返回 False，绝不抛异常。"""
 
-    path = settings_path()
+    path = Path(path) if path is not None else settings_path()
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         handle = tempfile.NamedTemporaryFile(

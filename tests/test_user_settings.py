@@ -60,6 +60,13 @@ class UserSettingsTests(unittest.TestCase):
         )
         self.assertEqual(user_settings.load_settings(), payload)
 
+    def test_explicit_path_round_trip_does_not_touch_default_file(self) -> None:
+        target = self.base / "portable" / "desktop-settings.json"
+        self.assertTrue(user_settings.save_settings({"sw_exe": "C:/SW/SLDWORKS.exe"}, target))
+        self.assertEqual(user_settings.load_settings(target), {"sw_exe": "C:/SW/SLDWORKS.exe"})
+        self.assertFalse((self.base / user_settings.SETTINGS_FILE_NAME).exists())
+        self.assertEqual(user_settings.load_settings(self.base / "missing.json"), {})
+
     def test_save_leaves_no_temp_files_behind(self) -> None:
         user_settings.save_settings({"a": 1})
         leftovers = list(self.base.glob("settings-*.tmp"))
