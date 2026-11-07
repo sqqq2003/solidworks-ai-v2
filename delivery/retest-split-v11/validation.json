@@ -1,0 +1,54 @@
+{
+  "source_revision": "74808b59de97e4aa74200ade67569d730738f30e",
+  "code_tree": "330dde7cf3cd069739666df3387dea7af821dd78",
+  "installed_full_regression": {
+    "directory": "fresh install of gork-test-kit.zip (delivery.py install), app/",
+    "venv": "new venv (uv), requirements-cloud.txt only",
+    "command": "xvfb-run -a python work/run_cloud_tests.py",
+    "python": "3.11.18",
+    "platform": "Linux",
+    "tests_run": 1232,
+    "passed": 1228,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4,
+    "skipped_reasons": [
+      "测试用滚筒 DWG 不在 uploads",
+      "本机未安装 LibreDWG dwg2dxf",
+      "Drawing1_e7b7.dwg 未上传",
+      "results/cursor/baseline/src originals are not in the cloud pack"
+    ],
+    "exit_code": 0,
+    "log": "installed-tests.log"
+  },
+  "repo_full_regression": {
+    "command": "xvfb-run -a python3 work/run_cloud_tests.py",
+    "python": [
+      "3.12",
+      "3.11"
+    ],
+    "tests_run": 1232,
+    "passed": 1228,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4
+  },
+  "sheet_metal_dry_run_equivalence": {
+    "script": "examples/sheet_metal_dry_run.py",
+    "before": "88cfc40af69311263d729b770d86eb0394be37f4",
+    "after": "74808b59de97e4aa74200ade67569d730738f30e",
+    "result": "identical after normalizing hashes and timestamps"
+  },
+  "offline_formula_checks": {
+    "python work/parametric.py preview examples/function-block.json --length 80 --width 30 --height 10": "exit 0, review_required",
+    "python work/parametric.py materialize <block-preview.json>": "exit 0",
+    "python work/parametric.py preview examples/function-roller.json --length 800 --width 1 --height 1": "exit 0, hole_count 9",
+    "invalid syntax 'length * (width'": "exit 1, {\"status\":\"failed\",\"error\":\"invalid expression syntax\"}",
+    "non-whitelisted '__import__(\"os\")'": "exit 1, {\"status\":\"failed\",\"error\":\"function outside numeric whitelist\"}"
+  },
+  "full_regression": true,
+  "windows_native_tested": false,
+  "solidworks_executed": false,
+  "installed_source_executed": true,
+  "manufacturing_approved": false
+}

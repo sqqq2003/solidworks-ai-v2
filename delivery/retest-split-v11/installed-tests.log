@@ -1,0 +1,378 @@
+auto bend rejected attempt=1 relief_step=0 failed=(0,) completed=0
+auto bend rejected attempt=2 relief_step=1 failed=(0,) completed=0
+auto bend rejected attempt=3 relief_step=2 failed=(0,) completed=0
+auto bend rejected attempt=1 relief_step=0 failed=(0,) completed=0
+auto bend rejected attempt=2 relief_step=1 failed=(0,) completed=0
+auto bend rejected attempt=3 relief_step=2 failed=(0,) completed=0
+auto bend rejected attempt=1 relief_step=0 failed=(0,) completed=0
+auto bend rejected attempt=1 relief_step=0 failed=(0, 1) completed=0
+bridge build failed, falling back to port generate: build exploded
+bridge reopen failed, falling back to port reopen: reopen exploded
+bridge probe failed, falling back to port-only path: pipe not found
+bridge probe failed, falling back to port-only path: pipe not found
+bridge probe failed, falling back to port-only path: pipe not found
+bridge build failed, falling back to port generate: unknown method 'build'
+bridge reopen failed, falling back to port reopen: unknown method 'reopen'
+bridge build failed, falling back to port generate: unknown method 'build'
+bridge reopen failed, falling back to port reopen: unknown method 'reopen'
+bridge build failed, falling back to port generate: unknown method 'build'
+bridge reopen failed, falling back to port reopen: unknown method 'reopen'
+bridge build failed, falling back to port generate: unknown method 'build'
+bridge reopen failed, falling back to port reopen: unknown method 'reopen'
+bridge build failed, falling back to port generate: unknown method 'build'
+bridge reopen failed, falling back to port reopen: unknown method 'reopen'
+bridge teardown failed for plan 37a3f3427a16e691657c73a3d89352fff0bd672dd1246a3834923c6f150f58dc: teardown blew up
+bridge spawn failed, falling back to port-only path: bridge request spawn timed out after 30s
+bridge spawn failed, falling back to port-only path: bridge request spawn timed out after 30s
+bridge probe failed, falling back to port-only path: pipe not found
+bridge probe failed, falling back to port-only path: pipe not found
+bridge probe failed, falling back to port-only path: pipe not found
+bridge build failed, falling back to port generate: unknown method 'build'
+bridge reopen failed, falling back to port reopen: unknown method 'reopen'
+Contour search budget exhausted; remaining geometry requires review
+task worker poisoned: call timed out or the watchdog abandoned the wait
+2026-11-07 12:51:55,047 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-b246511f6eac
+2026-11-07 12:51:55,048 INFO    [MainThread] sw_session: running owned-cad-cli on task STA sw-task-b246511f6eac
+2026-11-07 12:51:55,052 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-3baa84662db1
+2026-11-07 12:51:55,053 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-11-07 12:51:55,053 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-11-07 12:51:55,055 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-68327c0d8dd3
+2026-11-07 12:51:55,056 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-11-07 12:51:55,056 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-11-07 12:51:55,058 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-bfab5b9e670a
+2026-11-07 12:51:55,058 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-11-07 12:51:55,058 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-11-07 12:51:55,060 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-960ce64a1f8f
+2026-11-07 12:51:55,063 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-ce4f8688e4af
+2026-11-07 12:51:55,064 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-11-07 12:51:55,064 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-11-07 12:51:55,065 INFO    [MainThread] sw_session: running fake-dwg on task STA sw-task-af5becd3b6ee
+2026-11-07 12:51:55,066 INFO    [sw-task-sta] sw_session: owned application keepalive verified: UserControl=True pid=54321
+2026-11-07 12:51:55,066 INFO    [sw-task-sta] sw_session: leaving SolidWorks running; exclusive ownership is not proven (created_by_task=True attached_existing=False spawn_claimed=True)
+2026-11-07 12:51:55,067 WARNING [MainThread] cad_analyzer: DWG 转换器 solidworks 已转换，识别失败：A-01左右牙条牙套.dwg（Contour search limit reached）
+Traceback (most recent call last):
+  File "/tmp/installed/app/src/cad_analyzer.py", line 1869, in analyze_cad_file
+    analysis = analyze_dxf(converted_path, display_path=source)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+ValueError: Contour search limit reached
+2026-11-07 12:51:55,070 INFO    [MainThread] sw_session: running convert_dwg_with_solidworks on task STA sw-task-6e452f992adf
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-11-07 12:51:55,075 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-11-07 12:51:55,077 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-11-07 12:51:55,077 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-11-07 12:51:55,084 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-11-07 12:51:55,086 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-11-07 12:51:55,086 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-11-07 12:51:55,092 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-11-07 12:51:55,094 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-11-07 12:51:55,094 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-11-07 12:51:55,100 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-11-07 12:51:55,101 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-11-07 12:51:55,101 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-11-07 12:51:55,102 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-11-07 12:51:55,102 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-11-07 12:51:55,128 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-11-07 12:51:55,128 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-11-07 12:51:55,128 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-11-07 12:51:55,128 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={}
+2026-11-07 12:51:55,129 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'not_fixed_xy_plane': 1}
+2026-11-07 12:51:55,129 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'anchor_outside_trimmed_face': 1}
+2026-11-07 12:51:55,130 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=1 rejected={'AttributeError': 2}
+2026-11-07 12:51:55,130 INFO    [MainThread] solidworks_generator: InsertSheetMetal3dBend try #1 face=0 pos=1 flip=False
+2026-11-07 12:51:55,130 INFO    [MainThread] solidworks_generator: 自动折弯成功：bends=(3, 4) face=0 pos=1 flip=False defaultR=False cba=False pick=(50.000,40.000)
+2026-11-07 12:51:55,130 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=2 rejected={'AttributeError': 2}
+2026-11-07 12:51:55,132 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(50.0, 40.0) bends=(1, 2, 3, 4)
+2026-11-07 12:51:55,134 INFO    [MainThread] solidworks_generator: Fixed panel pinned for all bend groups: xy=(65.38461538461539, 46.15384615384615) bends=(1, 2, 3, 4)
+2026-11-07 12:51:55,134 WARNING [MainThread] solidworks_generator: 同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+2026-11-07 12:51:55,139 INFO    [MainThread] solidworks_generator: Fixed panel face verification: candidates=0 rejected={'AttributeError': 1}
+2026-11-07 12:51:57,853 INFO    [MainThread] run_recovery: recovered stale publish lock from /tmp/tmpi3miysln/.label.lock.archived-20261107_125157-bb141461 (pid=10699 alive=False age=0.0s)
+2026-11-07 12:51:57,855 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmpzduq1o09/.label-aaa -> /tmp/tmpzduq1o09/orphaned/.label-aaa-4049f25e
+2026-11-07 12:51:57,855 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-11-07 12:51:57,855 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-11-07 12:51:57,855 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-11-07 12:51:57,855 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-11-07 12:51:57,856 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-11-07 12:51:57,858 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-11-07 12:51:57,858 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-11-07 12:51:57,873 INFO    [MainThread] sheet_metal_pipeline: resuming plan 6deab704a61380a82dcc9ba3a7f2248ae829f7e6c4179f57bd0aa5cbc15cbe4a from checkpoint S1 in /tmp/tmpxbt_ynip/out2/.simulation-6deab704a61380a82dcc9ba3a7f2248ae829f7e6c4179f57bd0aa5cbc15cbe4a-crashsim
+2026-11-07 12:51:57,875 INFO    [MainThread] ezdxf: creating ACAD_COLOR dictionary
+2026-11-07 12:51:57,875 INFO    [MainThread] ezdxf: creating ACAD_GROUP dictionary
+2026-11-07 12:51:57,875 INFO    [MainThread] ezdxf: creating ACAD_LAYOUT dictionary
+2026-11-07 12:51:57,875 INFO    [MainThread] ezdxf: creating ACAD_MATERIAL dictionary
+2026-11-07 12:51:57,875 INFO    [MainThread] ezdxf: creating ACAD_MLEADERSTYLE dictionary
+2026-11-07 12:51:57,876 INFO    [MainThread] ezdxf: creating ACAD_MLINESTYLE dictionary
+2026-11-07 12:51:57,876 INFO    [MainThread] ezdxf: creating ACAD_PLOTSETTINGS dictionary
+2026-11-07 12:51:57,876 INFO    [MainThread] ezdxf: creating ACAD_PLOTSTYLENAME dictionary
+2026-11-07 12:51:57,876 INFO    [MainThread] ezdxf: creating ACAD_SCALELIST dictionary
+2026-11-07 12:51:57,876 INFO    [MainThread] ezdxf: creating ACAD_TABLESTYLE dictionary
+2026-11-07 12:51:57,876 INFO    [MainThread] ezdxf: creating ACAD_VISUALSTYLE dictionary
+2026-11-07 12:51:57,877 INFO    [MainThread] ezdxf: did not write header var $INTERFEREOBJVS, value is None.
+2026-11-07 12:51:57,877 INFO    [MainThread] ezdxf: did not write header var $INTERFEREVPVS, value is None.
+2026-11-07 12:51:57,889 INFO    [MainThread] run_recovery: quarantined orphan staging /tmp/tmpshgmbtvk/out3/.simulation-5213c120688d518c5781aad74827ac72aababe4de75b0c3b4201840b73bcf819-junk -> /tmp/tmpshgmbtvk/out3/orphaned/.simulation-5213c120688d518c5781aad74827ac72aababe4de75b0c3b4201840b73bcf819-junk-6306c986
+2026-11-07 12:51:57,889 INFO    [MainThread] sheet_metal_pipeline: quarantined orphan staging: ['/tmp/tmpshgmbtvk/out3/orphaned/.simulation-5213c120688d518c5781aad74827ac72aababe4de75b0c3b4201840b73bcf819-junk-6306c986']
+2026-11-07 12:51:57,894 WARNING [MainThread] test_logging_setup: 第二个日志目录
+2026-11-07 12:51:57,894 WARNING [MainThread] logging_setup: 无法创建日志文件 /tmp/tmpdsuvvhs2/CadSheetMetalTool/logs/app.log、/tmp/tmp10lw4qyn/CadSheetMetalTool/logs/app.log：[Errno 20] Not a directory: '/tmp/tmpdsuvvhs2/CadSheetMetalTool/logs'
+2026-11-07 12:51:57,895 WARNING [MainThread] test_logging_setup: 测试写入 内容
+COM disconnect during CloseDoc keep-alive; left the owned process open: ComSessionDisconnected: owned COM server disconnected; writes refused; ExitApp was not called
+COM disconnect after the part was saved; ExitApp was not called: ComSessionDisconnected: owned COM server disconnected; writes refused; ExitApp was not called
+saved part kept after cleanup/inventory COM failure; ExitApp was not called: SessionOwnershipError: document inventory unavailable; refusing writes
+COM disconnect after the part was saved; ExitApp was not called: InventoryWalkDisconnected: document inventory walk disconnected during GetNext; writes refused; ExitApp was not called
+COM disconnect after the part was saved; ExitApp was not called: InventoryWalkDisconnected: document inventory walk disconnected during GetNext; writes refused; ExitApp was not called
+auto bend rejected attempt=1 relief_step=0 failed=(108, 109) completed=2
+auto bend rejected attempt=2 relief_step=1 failed=(108, 109) completed=2
+auto bend rejected attempt=3 relief_step=2 failed=(108, 109) completed=2
+COM disconnect closing owned document 'Part1'; not calling ExitApp and not force-killing SolidWorks
+同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+同草图一次折弯失败 bends=(1, 2, 3, 4)，改为平行分组再逐条
+on_result callback failed for resumed artifact
+Traceback (most recent call last):
+  File "/tmp/installed/app/src/batch_export.py", line 430, in _export_jobs
+    on_result(item)
+  File "/tmp/installed/app/tests/test_resume_manifest.py", line 140, in broken_callback
+    raise RuntimeError('synthetic observer failure')
+RuntimeError: synthetic observer failure
+DWG 转换器 solidworks 转换失败：1.3米斜滚筒线滚筒尺寸图（斜滚筒线专用）(1).dwg（SolidWorks 未能导入此 DWG 文件。）
+Traceback (most recent call last):
+  File "/tmp/installed/app/src/cad_analyzer.py", line 1867, in analyze_cad_file
+    converter(source, converted_path)
+  File "/tmp/installed/app/tests/test_sheet_metal.py", line 246, in boom
+    raise DwgConversionError("SolidWorks 未能导入此 DWG 文件。")
+dwg_converter.DwgConversionError: SolidWorks 未能导入此 DWG 文件。
+DWG 转换失败，回退为文件名滚筒规格：1.3米斜滚筒线滚筒尺寸图（斜滚筒线专用）(1).dwg（solidworks 转换失败: SolidWorks 未能导入此 DWG 文件。）
+skipped close of unowned document 'Part9': refusing to close document 'Part9': this task cannot prove it owns that document
+SolidWorks 内存过高（私有 5000 MB，系统可用提交 100.0 MB）。仅当本任务已证明独占会话时才回收。
+拒绝回收 SolidWorks 会话（不关闭、不退出、不结束未知实例）：Refusing to recycle SolidWorks (private memory 5000 MB, free commit 100.0). No verified exclusive session. This task will not GetActiveObject, CloseAllDocuments, ExitApp, or kill SLDWORKS.exe.
+COM disconnect closing owned document 'Part1'; not calling ExitApp and not force-killing SolidWorks
+SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+task sw-task-ea915af920c3: timeout; owned pid handled outside COM. Watchdog is not calling COM.
+task worker poisoned: call timed out or the watchdog abandoned the wait
+SolidWorks 内存过高（私有 4200 MB，系统可用提交 100.0 MB）。仅当本任务已证明独占会话时才回收。
+SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+task sw-task-6571ed824975: timeout; unproven sessions are not closed or killed. Watchdog is not calling COM.
+task worker poisoned: call timed out or the watchdog abandoned the wait
+SolidWorks call exceeded 0.2s; watchdog is not calling COM and will not kill by process name
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+entities: 5 (flagged: 0)
+relations: 15
+features: 5
+pending: 1
+  pending: job_params_missing:thickness_mm,radius_mm,angle_degrees,k_factor
+wrote: /tmp/tmpl6n2tw7g/out/geometry.json
+wrote: /tmp/tmpl6n2tw7g/out/plan.json
+{
+  "scope": "portable_simulation_only",
+  "platform": "Linux",
+  "python": "3.11.18",
+  "tests_run": 1232,
+  "passed": 1228,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [
+    {
+      "test": "test_drawing1_real_dwg_renamed_still_finds_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_drawing1_real_dwg_renamed_still_finds_rollers)",
+      "reason": "\u6d4b\u8bd5\u7528\u6eda\u7b52 DWG \u4e0d\u5728 uploads"
+    },
+    {
+      "test": "test_libredwg_fallback_converts_uploaded_sketch_dwg (test_sheet_metal.RollerDrawingRoutingTests.test_libredwg_fallback_converts_uploaded_sketch_dwg)",
+      "reason": "\u672c\u673a\u672a\u5b89\u88c5 LibreDWG dwg2dxf"
+    },
+    {
+      "test": "test_uploaded_drawing1_dwg_finds_seven_rollers (test_sheet_metal.RollerDrawingRoutingTests.test_uploaded_drawing1_dwg_finds_seven_rollers)",
+      "reason": "Drawing1_e7b7.dwg \u672a\u4e0a\u4f20"
+    },
+    {
+      "test": "test_baseline_hashes_match_uploaded_sources (test_sw_session_safety.SessionSafetyTests.test_baseline_hashes_match_uploaded_sources)",
+      "reason": "results/cursor/baseline/src originals are not in the cloud pack; hash check stays local-only and is not a SolidWorks live test"
+    }
+  ],
+  "pending_feature_cases": {
+    "test_turned_part.py": 22,
+    "test_border_relief_notch.py": 9,
+    "test_spur_segments.py": 5
+  },
+  "cross_process_lock_passed": true,
+  "solidworks_live_verified": false,
+  "sw_live": "not_run_simulation_only",
+  "a01_parametric": {
+    "status": "review_required",
+    "envelope_mm": {
+      "length": 1800.0,
+      "width": 900.0,
+      "height": 1500.0
+    },
+    "pending_mapping": [
+      "A01.conveyor.passline_height",
+      "A01.conveyor.roller_pitch",
+      "A01.conveyor.roller_count",
+      "A01.drive.center_along_length",
+      "A01.drive.chain_pitch",
+      "A01.drive.sprocket_teeth",
+      "A01.drive.bearing_journal",
+      "A01.mount.motor_x",
+      "A01.mount.motor_z",
+      "A01.mount.bearing_span",
+      "A01.interfaces.sheet_thickness",
+      "A01.interfaces.thread_major_diameter"
+    ],
+    "cad_executed": false,
+    "sw_live": "not_run_simulation_only"
+  },
+  "whole_project": {
+    "project": "SolidWorks AI V2",
+    "scope": "whole_project",
+    "modules": [
+      {
+        "id": "unified_release",
+        "state": "offline_integrated_pending_native",
+        "entry": "work/project.py release"
+      },
+      {
+        "id": "engineering_intelligence",
+        "state": "offline_implemented_pending_engineering_review",
+        "entry": "work/engineering_intelligence.py"
+      },
+      {
+        "id": "design_platform",
+        "state": "offline_implemented_pending_native",
+        "entry": "work/design_platform.py"
+      },
+      {
+        "id": "existing_roller_variant",
+        "state": "native_adapter_pending_live",
+        "entry": "work/roller_variant.py"
+      },
+      {
+        "id": "native_part_batch",
+        "state": "native_adapter_pending_live",
+        "entry": "work/run_reviewed_parts.py"
+      },
+      {
+        "id": "geometry_ir",
+        "state": "offline_prototype_pending_native",
+        "entry": "geometry_ir.cli"
+      },
+      {
+        "id": "cad",
+        "state": "implemented",
+        "entry": "src/cad_analyzer.py"
+      },
+      {
+        "id": "sheet",
+        "state": "native_implemented_partial_live",
+        "entry": "src/sw_tool_cli.py --mode sheet"
+      },
+      {
+        "id": "roller",
+        "state": "native_implemented_pending_live",
+        "entry": "src/sw_tool_cli.py --mode roller"
+      },
+      {
+        "id": "turned",
+        "state": "native_implemented_pending_live",
+        "entry": "src/sw_tool_cli.py --mode turned"
+      },
+      {
+        "id": "parametric",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "src.a01_parametric.cli"
+      },
+      {
+        "id": "ql5050px",
+        "state": "offline_implemented_pending_mapping",
+        "entry": "work/project.py ql"
+      },
+      {
+        "id": "ql_assembly_bom_drawing",
+        "state": "offline_implemented_pending_native",
+        "entry": "ql5050px.workflow"
+      },
+      {
+        "id": "assembly_mates_motion",
+        "state": "scaffold_pending_native",
+        "entry": "src/a01_next/mate_check.py"
+      },
+      {
+        "id": "native_engineering_drawings",
+        "state": "scaffold_pending_native",
+        "entry": "src/a01_next/drawing_export.py"
+      },
+      {
+        "id": "desktop",
+        "state": "implemented_pending_desktop_test",
+        "entry": "app.py"
+      }
+    ],
+    "mechanical_acceptance": "unverified",
+    "pending_original_feature_contracts": 0,
+    "separately_tested_original_feature_contracts": 36
+  },
+  "runtime_capabilities": {
+    "platform": "Linux",
+    "python": "3.11.18",
+    "python_executable": "/tmp/cleanvenv/bin/python",
+    "ezdxf_available": true,
+    "tkinter_available": true,
+    "pywin32_available": false,
+    "sw_started": false,
+    "cad_executed": false,
+    "desktop_display_tested": false,
+    "note": "Import availability is not SolidWorks installation or ownership proof."
+  }
+}

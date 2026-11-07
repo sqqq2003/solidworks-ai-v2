@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "unified",
+      "sha": "74808b59de97e4aa74200ade67569d730738f30e",
+      "checks": [
+        {
+          "id": "cloud_regression",
+          "scope": "offline"
+        },
+        {
+          "id": "desktop_and_api",
+          "scope": "offline"
+        },
+        {
+          "id": "coexisting_instances",
+          "scope": "native"
+        },
+        {
+          "id": "dwg_analyze",
+          "scope": "native"
+        },
+        {
+          "id": "sheet_rebuild_flat_pattern",
+          "scope": "native"
+        },
+        {
+          "id": "roller_800_interfaces",
+          "scope": "native"
+        },
+        {
+          "id": "assembly_motion_interference",
+          "scope": "native"
+        },
+        {
+          "id": "drawings_bom_manufacturing",
+          "scope": "native"
+        },
+        {
+          "id": "save_reopen_references",
+          "scope": "native"
+        },
+        {
+          "id": "process_exit_and_source_unchanged",
+          "scope": "native"
+        },
+        {
+          "id": "checkpoint_half_edit_restore",
+          "scope": "native"
+        },
+        {
+          "id": "request_idempotency_and_conflict",
+          "scope": "native"
+        },
+        {
+          "id": "unresolved_session_reconciliation",
+          "scope": "native"
+        },
+        {
+          "id": "drawing_visual_acceptance",
+          "scope": "native"
+        },
+        {
+          "id": "drawing_atomic_evidence",
+          "scope": "native"
+        },
+        {
+          "id": "drawing_dimension_rollback",
+          "scope": "native"
+        },
+        {
+          "id": "modeling_named_bodies_and_features",
+          "scope": "native"
+        },
+        {
+          "id": "modeling_half_build_rollback",
+          "scope": "native"
+        },
+        {
+          "id": "modeling_revision_and_observation",
+          "scope": "native"
+        },
+        {
+          "id": "modeling_body_clearance",
+          "scope": "native"
+        },
+        {
+          "id": "modeling_request_replay_and_quarantine",
+          "scope": "native"
+        },
+        {
+          "id": "parametric_function_units_and_dependencies",
+          "scope": "offline"
+        },
+        {
+          "id": "parametric_generated_feature_part",
+          "scope": "native"
+        },
+        {
+          "id": "parametric_existing_part_batch",
+          "scope": "native"
+        },
+        {
+          "id": "parametric_review_and_request_replay",
+          "scope": "native"
+        },
+        {
+          "id": "parametric_saved_batch_rollback",
+          "scope": "native"
+        }
+      ]
+    }
+  ]
+}

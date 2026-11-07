@@ -1,0 +1,76 @@
+{
+  "source_revision": "74808b59de97e4aa74200ade67569d730738f30e",
+  "code_tree": "330dde7cf3cd069739666df3387dea7af821dd78",
+  "candidate": {
+    "schema_version": 1,
+    "source_revision": "74808b59de97e4aa74200ade67569d730738f30e",
+    "package_sha256": "d17d9058c51f0a54efbd1676671c7f4dd88e6b4d3d38ab8ba5d834256356d463",
+    "file_count": 603,
+    "source_manifest_sha256": "32bbcf6be6db71019c268aae211c3605895e9665044a13d8e7e6e9c0b3b5c30a",
+    "matrix_sha256": "e36594557a16731e960f64f954b833ec39abce42ab6808197f09a84ee4930662",
+    "native_acceptance": "not_run",
+    "manufacturing_approved": false,
+    "runtime_bundled": false,
+    "source_only": true,
+    "candidate_id": "d8f98c3a2aeaa898e004c12279acf1cd405c0578e9572471776842ae40f35d5c"
+  },
+  "kit_bytes": 1467007,
+  "kit_sha256": "d48befb35332c5b58e487f1349cfffb81aab180346cf1cbf83a142292313f368",
+  "kit_git_blob_sha": "259327794f0407b4e0525035ae5338d2a9a14ccf",
+  "inspection": {
+    "schema_version": 1,
+    "status": "passed",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "d48befb35332c5b58e487f1349cfffb81aab180346cf1cbf83a142292313f368",
+    "source_revision": "74808b59de97e4aa74200ade67569d730738f30e",
+    "candidate_id": "d8f98c3a2aeaa898e004c12279acf1cd405c0578e9572471776842ae40f35d5c",
+    "source_files": 603,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false
+  },
+  "installation": {
+    "schema_version": 1,
+    "status": "review_required",
+    "scope": "source_kit_integrity_only",
+    "kit_sha256": "d48befb35332c5b58e487f1349cfffb81aab180346cf1cbf83a142292313f368",
+    "source_revision": "74808b59de97e4aa74200ade67569d730738f30e",
+    "candidate_id": "d8f98c3a2aeaa898e004c12279acf1cd405c0578e9572471776842ae40f35d5c",
+    "source_files": 603,
+    "external_checksum_verified": true,
+    "runtime_bundled": false,
+    "cad_executed": false,
+    "manufacturing_approved": false,
+    "phase": "source_installed_runtime_required",
+    "directory": "/tmp/installed2",
+    "app_directory": "/tmp/installed2/app",
+    "files_written": 605,
+    "next_steps": [
+      "Create a new Python environment and install app/requirements-cloud.txt.",
+      "Run python work/verify_test_handoff.py . inside app.",
+      "Run python app.py; native work still requires explicit Windows review."
+    ],
+    "original_installation_modified": false,
+    "code_executed": false
+  },
+  "installation_exit_code": 3,
+  "installation_exit_code_meaning": "expected: phase source_installed_runtime_required",
+  "verification": {
+    "status": "verified",
+    "revision": "74808b59de97e4aa74200ade67569d730738f30e",
+    "mismatches": [],
+    "note": "Integrity check is not native CAD acceptance."
+  },
+  "verification_command": "python work/verify_test_handoff.py .  (inside installed app/)",
+  "source_index_blobs": 832,
+  "baseline_revision": "88cfc40af69311263d729b770d86eb0394be37f4",
+  "blobs_vs_baseline": {
+    "changed": 12,
+    "added": 2,
+    "removed": 0,
+    "unchanged": 818
+  },
+  "native_tested": false,
+  "manufacturing_approved": false
+}
