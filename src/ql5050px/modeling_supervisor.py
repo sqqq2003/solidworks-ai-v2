@@ -8,7 +8,7 @@ def _supervise_locked(jobs,root,*,resume=False,timeout=900,stop_requested=lambda
     source=Path(__file__).resolve().parent
     engine=source.parent
     version_files=list(source.glob('*.py'))
-    version_files += [engine/name for name in ('solidworks_generator.py','sheet_metal_pipeline.py','sheet_metal_windows.py','turned_part.py','turned_generate.py','cad_analyzer.py','profile_sanitize.py','profile_selection.py','bend_allowance.py','part_verification.py','sw_session.py','sw_owned_launch.py','owned_document_lifetime.py')]
+    version_files += [engine/name for name in ('solidworks_generator.py','roller_geometry.py','sheet_metal_geometry.py','sheet_metal_pipeline.py','sheet_metal_windows.py','turned_part.py','turned_generate.py','cad_analyzer.py','profile_sanitize.py','profile_selection.py','bend_allowance.py','part_verification.py','sw_session.py','sw_owned_launch.py','owned_document_lifetime.py')]
     version_files += list((engine/'sw_compat').glob('*.py'))
     code={p.relative_to(engine).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in version_files if p.is_file()}
     signature=hashlib.sha256(json.dumps({'jobs':jobs,'code':code},sort_keys=True,allow_nan=False).encode()).hexdigest()

@@ -18,7 +18,7 @@ class S2RetestFixtureTests(unittest.TestCase):
             self.assertEqual(result['index_base'],0)
             self.assertEqual(len(result['source_sha256']),64)
             self.assertIn('--no-relief-retries',result['command_argv'])
-            self.assertEqual(len(result['loaded_code_sha256']),4)
+            self.assertEqual(len(result['loaded_code_sha256']),6)
             self.assertTrue((folder/'retest-plan.json').is_file())
             with self.assertRaises(FileExistsError):prepare(folder,**kwargs)
 

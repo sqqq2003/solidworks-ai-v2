@@ -33,6 +33,7 @@ def implementation_hashes():
     root = Path(__file__).resolve().parents[1]
     names = ['cad_run.py', 'cad_checkpoint.py', 'cad_receipts.py', 'sw_session.py',
              'sw_owned_launch.py', 'sw_feature_calls.py', 'solidworks_generator.py',
+             'roller_geometry.py', 'sheet_metal_geometry.py',
              'sw_compat/com_access.py', 'ql5050px/native_part_host.py',
              'ql5050px/native_machine.py', 'ql5050px/editable_features.py',
              'ql5050px/feature_operations.py', 'ql5050px/com_selection.py',
